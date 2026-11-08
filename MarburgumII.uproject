@@ -2,11 +2,26 @@
   "FileVersion": 3,
   "EngineAssociation": "5.8",
   "Category": "Games",
-  "Description": "Magna Raedarum: Marburgum II — requires Unreal Engine 5.8.3",
+  "Description": "Magna Raedarum: Marburgum II — MMORPG-first Unreal Engine 5.8.3",
   "Modules": [
     {
       "Name": "MarburgumII",
       "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "MarburgumIIShared",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "MarburgumIIClient",
+      "Type": "ClientOnly",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "MarburgumIIServer",
+      "Type": "ServerOnly",
       "LoadingPhase": "Default"
     }
   ]

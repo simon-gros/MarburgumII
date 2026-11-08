@@ -16,10 +16,14 @@ C# runs Unreal's build rules and independently developed .NET toolchain tasks. R
 
 The game's design centers on a persistent fictionalized 1990s Maribor with skills, missions, jobs, vehicles, economic/social systems and a solo-friendly experience. The previous automatically generated talent subsystem is intentionally excluded.
 
+## ADR-005 — MMORPG-first authority and module boundaries (accepted 2026-11-08)
+
+The title is a server-authoritative **MMORPG from initial architecture**, with solo-friendly and small-group play occurring under the same world/authority rules. The original project's Client/Shared/Server module separation is retained conceptually in a fresh implementation: `MarburgumIIClient` (ClientOnly), `MarburgumIIShared` (Runtime) and `MarburgumIIServer` (ServerOnly). The dedicated-server runtime and client/network acceptance are Stage **0** requirements, not Stage 4 optional work. Shared definitions are engine-independent wherever possible, and the new runtime initially uses Unreal-native replication rather than assuming compatibility with the original TCP protocol v3. Gameplay and narrative systems from the original remain the majority of the planned game, but their implementation is rebuilt and verified incrementally.
+
 ## Open decisions
 
 - Public license and rules for distributing source/art; no license has been selected.
 - Minimum shipping platforms and tested build matrix.
-- Multiplayer transport, persistence engine, migrations and service topology.
+- Production persistence engine, migrations, account/session admission, login security and service topology; initial Unreal-native replication is accepted for the first vertical slice.
 - Rust static-library integration across Windows/Linux and ABI test approach.
 - Geospatial/historical data provenance and acceptable licensing.

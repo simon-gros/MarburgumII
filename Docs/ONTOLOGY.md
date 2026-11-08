@@ -113,7 +113,7 @@ The relation vocabulary is also published in the companion JSON file. The `cardi
 6. **Definitions and instances do not collapse.** A catalogue entry is never a particular player's saved item, vehicle, mission run or skill progress.
 7. **Progression without talents.** The ontology has no `Talent` or `TalentTree` entity. Skills and discrete activity/interaction definitions cover the initial design.
 8. **Visible UX before breadth.** Definitions should support legible prompts, journal/evidence, inventory, money and progress UI; dozens of raw text/debug indices are not an acceptable final interface.
-9. **Single-player semantics first, network-compatible ownership.** Local play should work without assuming a live public MMO, while identity, authority and transaction design should support later dedicated-server sessions.
+9. **MMORPG authority from the first slice, solo-friendly experience.** Even a local one-player test runs against an authoritative dedicated-server design. Identity, authoritative state, replication and transaction semantics are prerequisites; solo accessibility does not authorize client-side world mutation.
 10. **No implied implementation.** A concept listed here does not imply a working C++ actor, Rust bridge, persistent database, vehicle, NPC population or map import.
 
 ## 6. Example semantic slice (design, not implemented)

@@ -4,9 +4,12 @@
 #include "GameFramework/GameModeBase.h"
 #include "MarburgumGameMode.generated.h"
 
-/** Minimal game mode; do not mistake this scaffold for a playable game. */
+/** Server-authoritative entry point, also used by Editor/standalone development. */
 UCLASS()
 class MARBURGUMII_API AMarburgumGameMode : public AGameModeBase
 {
     GENERATED_BODY()
+
+public:
+    AMarburgumGameMode();
 };

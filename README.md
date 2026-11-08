@@ -1,6 +1,6 @@
 # Magna Raedarum: Marburgum II
 
-**Marburgum II** is a clean-room restart of *Magna Raedarum: Marburgum*, a systemic, persistent urban role-playing game set in a fictionalized **1990s Maribor, Slovenia**.
+**Marburgum II** is a clean-room technical rebuild of *Magna Raedarum: Marburgum*: an authoritative shared-world **MMORPG** set in a fictionalized **1990s Maribor, Slovenia**, preserving the original project's core game design and systems.
 
 > **Status:** Initial source scaffold. No Unreal Editor build, packaged executable, imported city map, or gameplay vertical slice has yet been validated in this repository.
 
@@ -17,19 +17,23 @@ The exact patch requirement is tracked in [`.unreal-engine-version`](.unreal-eng
 
 ## Project vision
 
-Explore a fictionalized 1990s Maribor and build a persistent life through missions, work, social relationships, travel, trading, vehicles, investigations and skills. Inspiration from systemic RPGs concerns depth of progression and interactions rather than a fantasy setting. Combat and PvP are not the default progression loop. The game is designed to be satisfying alone, in small cooperative groups, and eventually in larger authoritative online sessions.
+Explore a fictionalized 1990s Maribor and build a persistent life through missions, work, social relationships, travel, trading, vehicles, investigations and skills. Inspiration from systemic RPGs concerns depth of progression and interactions rather than a fantasy setting. Combat and PvP are not the default progression loop. The game is **MMORPG-first** architecturally: even its initial one-player testing uses a dedicated authoritative server, while solo-friendly and 2–5-player cooperative gameplay are central experiences. High-population servers must be proven by measurements, not assumed.
 
 - **Skills, not talents.** The previous project's generated talent system is not part of this restart.
 - **Missions, not quests.** Ordinary urban experiences, choices, and consequences establish the tone.
 - **A long campaign is a design goal, not a current implementation.** First prove a compact playable vertical slice.
-- **Persistent, authoritative state** is an architectural goal; no existing backend is claimed to be working.
+- **Client/shared/server separation exists from Stage 0.** Real connection, replication and persistence tests still remain to be implemented and passed.
 - **Historical/geospatial data and art** must have documented provenance and appropriate use rights. No copyrighted game-engine code or third-party commercial-game assets are copied into this repository.
 
 ## Repository layout
 
 ```text
 MarburgumII.uproject         Unreal Engine project descriptor
-Source/                     Unreal C++ game module and build targets
+Source/MarburgumII/         Common game module (GameMode, replicated GameState / PlayerState)
+Source/MarburgumIIShared/   Shared gameplay/network contracts
+Source/MarburgumIIClient/   ClientOnly input/UI/presentation foundation
+Source/MarburgumIIServer/   ServerOnly authority/service foundation
+Source/*.Target.cs          Client, dedicated Server, Editor and dev Game build targets
 Config/                     Unreal project settings
 native/marburgum-sim-core/   Rust native library and C ABI header (not yet linked)
 tools/MarburgumII.Tools/    .NET 8 project validation utility
@@ -48,7 +52,9 @@ Docs/                       Vision, architecture, setup and development mileston
 ```bash
 export UE_ROOT=/path/to/UnrealEngine-5.8.3
 ./scripts/check-engine-version.sh "$UE_ROOT"
-./scripts/build-linux.sh
+./scripts/build-linux.sh MarburgumIIEditor
+./scripts/build-linux.sh MarburgumIIClient
+./scripts/build-linux.sh MarburgumIIServer
 ```
 
 The Linux build script invokes UnrealBuildTool through the specified engine; it does not download/build Unreal Engine. For other environments, consult [Docs/DEVELOPMENT.md](Docs/DEVELOPMENT.md).
@@ -93,9 +99,7 @@ utility was compiled with SDK **8.0.425** using an isolated temporary SDK pin,
 then run successfully from the repository with the user-local .NET host.
 UnrealBuildTool was checked using the engine's own bundled .NET host.
 
-**Validation boundary:** prerequisites and independent source checks pass. This
-audit did not build `MarburgumIIEditor`, launch the editor, validate a packaged
-executable, or run an in-editor gameplay smoke test. No packages were installed
+**Validation boundary:** the earlier prerequisite audit passed, but the new client/shared/server modules have **not** been compiled. The prior audit did not build `MarburgumIIEditor`, launch the editor, validate a packaged executable, or run an in-editor gameplay smoke test. No packages were installed
 and no persistent shell configuration was changed.
 
 ## Documentation
@@ -103,6 +107,7 @@ and no persistent shell configuration was changed.
 - [Game scope and design constraints](Docs/VISION.md)
 - [Foundational game ontology (v0.1.0)](Docs/ONTOLOGY.md) and [machine-readable vocabulary](Data/Ontology/core.v0.1.json)
 - [Architecture and language boundaries](Docs/ARCHITECTURE.md)
+- [MMORPG client/server contract and milestone gates](Docs/NETWORK_ARCHITECTURE.md)
 - [Development prerequisites and commands](Docs/DEVELOPMENT.md)
 - [Roadmap and acceptance gates](Docs/ROADMAP.md)
 - [Engineering decisions](Docs/DECISIONS.md)

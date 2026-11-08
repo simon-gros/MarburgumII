@@ -3,6 +3,15 @@ set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 ue_root="${UE_ROOT:-}"
+target="${1:-MarburgumIIEditor}"
+
+case "$target" in
+    MarburgumIIEditor|MarburgumIIClient|MarburgumIIServer|MarburgumII) ;;
+    *)
+        echo "Usage: $0 [MarburgumIIEditor|MarburgumIIClient|MarburgumIIServer|MarburgumII]" >&2
+        exit 2
+        ;;
+esac
 
 if [[ -z "$ue_root" ]]; then
     echo "Set UE_ROOT to your Unreal Engine 5.8.3 installation root." >&2
@@ -17,5 +26,5 @@ if [[ ! -f "$build_script" ]]; then
     exit 1
 fi
 
-bash "$build_script" MarburgumIIEditor Linux Development \
+bash "$build_script" "$target" Linux Development \
     -Project="$repo_root/MarburgumII.uproject" -WaitMutex

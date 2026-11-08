@@ -26,6 +26,18 @@ If the engine was built from source, a local installation GUID may be required f
 
 Install/register Unreal Engine **5.8.3** and its supported C++ compiler toolchain. Generate IDE project files through your installed engine, then build `MarburgumIIEditor` in `Development Editor | Win64`. Confirm `Engine/Build/Build.version` reports 5.8.3, even if the desktop engine association says only `5.8`.
 
+## Client/server targets (source scaffold)
+
+The game is designed as an MMORPG from Stage 0. On Linux use `UE_ROOT` pointing to **exactly 5.8.3** and build separate executable targets:
+
+```bash
+./scripts/build-linux.sh MarburgumIIEditor
+./scripts/build-linux.sh MarburgumIIClient
+./scripts/build-linux.sh MarburgumIIServer
+```
+
+The unqualified build script invocation defaults to the Editor target. A combined `MarburgumII` Game target is for local development only. The first network milestone still requires launching an actual headless server, connecting one then two clients, observing replicated GameState and testing reconnect; source validation alone proves none of these. See [NETWORK_ARCHITECTURE.md](NETWORK_ARCHITECTURE.md).
+
 ## Independent source checks
 
 ```bash
