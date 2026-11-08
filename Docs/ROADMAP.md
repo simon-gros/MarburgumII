@@ -14,9 +14,9 @@ One dedicated server plus one client, then two clients, join the same small test
 
 **Gate:** repeatable, observed server/client data path and networked authority. No account backend or persistence is claimed before they actually exist.
 
-## Stage 0C — Premium modular graphical UI foundation (UI-00 through UI-03 in parallel with Stage 0B)
+## Stage 0C — Premium modular graphical UI and early chat foundation (UI-00 through UI-03 in parallel with Stage 0B)
 
-Begin the client-facing visual system as soon as the native Editor/Client builds are available, **alongside** the dedicated server and two-client work rather than after all networking or content production. Preserve original Marburgum HUD semantics but rebuild the appearance professionally in UE **5.8.3**: responsive UMG theme, branded connection/transition screens, low-clutter exploration HUD, contextual prompt, location banner, one pinned objective, condition display, graphical notifications, and coherent on-demand Character, Skills, Inventory and Journal shells. The UI must consume replicated/server-owned state when present, with honest empty/loading/error states; static fixtures cannot masquerade as live MMO gameplay.
+Begin the client-facing visual system as soon as the native Editor/Client builds are available, **alongside** the dedicated server and two-client work rather than after all networking or content production. Preserve original Marburgum HUD semantics but rebuild the appearance professionally in UE **5.8.3**: responsive UMG theme, branded connection/transition screens, low-clutter exploration HUD, contextual prompt, location banner, one pinned objective, condition display, graphical notifications, and coherent on-demand Character, Skills, Inventory and Journal shells. The UI must consume replicated/server-owned state when present, with honest empty/loading/error states; static fixtures cannot masquerade as live MMO gameplay. Also add an early low-clutter [general/private text chat](CHAT.md): general to everyone on the connected logical server, and private conversation delivered **only to sender and intended recipient**, with server validation and client UMG presentation.
 
 **Exclusions:** do not import the original wanted stars, wanted/heat levels, police pursuit/chase system or chase-specific HUD. Do not restore generated talents or Talent screens.
 
@@ -39,6 +39,8 @@ Owner-reported local Hunyuan3D-2.1 installation is a **potential** mesh/PBR text
 Provenance-reviewed compact urban district **preferably using an approved purchased Maribor Lent/Drava geometry slice** (with an independent test-level fallback while purchase is pending), player movement/camera, **high-quality visually finished initial graphical HUD**, interactable item and NPC, authoritative event/feedback, and a save/restart round trip. The original HUD's interaction/location/objective/condition/notification vocabulary and its Character/Skills/Inventory/Journal screens are carried into newly designed graphical interfaces rather than exposed as clumped debug text. Verify two clients cannot duplicate a limited item or gain unauthorized progress. Record a player-facing 1440p/4K gameplay capture after the networked loop works.
 
 **Additional mandatory gate:** the project owner personally tests the playable world/interaction/HUD on the exact build and explicitly approves it; otherwise Stage 1 remains awaiting owner approval.
+
+**Chat gate:** compile and run CHAT-001 on an actual dedicated UE 5.8.3 server with **three** separate clients (A→all general, A→B private, C never sees private), correct input focus, stale recipient handling, anti-spam checks and a documented personal owner playtest.
 
 **Gate:** complete UI-03 live-HUD and UI-04 management-panel acceptance in [UI_HUD_ROADMAP.md](UI_HUD_ROADMAP.md): interaction → authoritative event/receipt → replicated state → restart → same outcome, with polished UI. Pass a responsive screenshot/interface-scale/focus matrix and a short *genuine* multiplayer-client capture. Static mockups or UI fixtures cannot close a gameplay gate.
 

@@ -23,6 +23,7 @@ Explore a fictionalized 1990s Maribor and build a persistent life through missio
 - **Missions, not quests.** Ordinary urban experiences, choices, and consequences establish the tone.
 - **A long campaign is a design goal, not a current implementation.** First prove a compact playable vertical slice.
 - **Early showcase-quality graphical UI/HUD.** Preserve the original's place/interaction/objective/skills/inventory/journal structure in a polished UE 5.8.3 client interface, built alongside the networking milestone. **Wanted stars and police chases are excluded.**
+- **Early general and private text chat:** initial player-owned Unreal RPC routing plus a client-only UMG panel are committed as source; general goes to the current logical server, private messages only to the two participants. Real UE 5.8.3 native/multiclient tests and owner approval are pending.
 - **Client/shared/server separation exists from Stage 0.** Real connection, replication and persistence tests still remain to be implemented and passed.
 - **Planned default map:** the purchased-to-be [Maribor city 3D model](Docs/WORLD_MAP_ADOPTION.md) (TurboSquid 1639711), replacing the original generated base geometry after personal owner acceptance; it has **not** been acquired/imported yet. The original's fish, vegetation, missions and historical/gameplay identity continue via controlled adaptation.
 - **Owner approval:** no major playable feature is accepted without personally performed in-game testing and explicit approval.
@@ -121,6 +122,7 @@ A [freshness guard](Docs/PLAYTEST_FRESHNESS.md) is present to prevent owner acce
 - [Original Marburgum design parity register](Docs/LEGACY_PARITY.md) and [machine-readable source matrix](Data/Parity/source-matrix.v0.1.json)
 - [Architecture and language boundaries](Docs/ARCHITECTURE.md)
 - [MMORPG client/server contract and milestone gates](Docs/NETWORK_ARCHITECTURE.md)
+- [General chat and private conversations: design, source and acceptance gates](Docs/CHAT.md)
 - [Early graphical UI and HUD design contract](Docs/UI_HUD_DESIGN.md)
 - [Ontology of User Interface and HUD](Docs/UI_HUD_ONTOLOGY.md) and [machine-readable vocabulary](Data/Ontology/ui_hud.v0.1.json)
 - [Phased UI/HUD implementation and quality roadmap](Docs/UI_HUD_ROADMAP.md)

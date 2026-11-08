@@ -35,6 +35,10 @@
 
 No starter map, login, durable persistence service, UI or client/server network smoke test has been completed in this repository.
 
+## Server-routed chat boundary
+
+A [general/private chat slice](CHAT.md) has been committed in C++ source: player-owned RPCs in `MarburgumII`, a client-only UMG chat panel in `MarburgumIIClient`, and per-client private delivery rather than globally replicated private state. This requires native UE 5.8.3 build, multi-client routing/privacy validation, UI refinement and the owner's personal acceptance. The current limited rate cap is not production moderation.
+
 ## Commercial map and city-source boundary
 
 The primary **planned** map source is [TurboSquid Maribor city model 1639711](WORLD_MAP_ADOPTION.md), contingent upon purchase/license verification, coordinate/format inspection, 1990s historical correction, Unreal 5.8.3 import/playtest and explicit owner approval. It replaces the prior generated 121-window city as the default geometry production path. The old pipeline remains reference/fallback; original district, mission, vegetation, fish and authored world identities remain engine-neutral. Paid assets must never be committed to public source or public build artifacts; see the ignored `ThirdParty/Licensed/` and `Content/Licensed/` paths.

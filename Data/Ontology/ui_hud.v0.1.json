@@ -523,7 +523,8 @@
         "location_banner",
         "interaction_prompt",
         "pinned_objective",
-        "notification_feed"
+        "notification_feed",
+        "chat_panel"
       ],
       "stage": "UI-03"
     },
@@ -692,8 +693,8 @@
     },
     {
       "id": "chat_event",
-      "authority": "authoritative_replicated",
-      "description": "Sanitized, permission-scoped moderated communication; later only."
+      "authority": "authoritative_unicast",
+      "description": "Server-validated, plain-text on-server general message delivered to each owning client via unicast RPC, never global GameState history. Source status: committed C++ not native-tested."
     },
     {
       "id": "world_clock",
@@ -729,6 +730,11 @@
       "id": "design_preview",
       "authority": "test_fixture_only",
       "description": "Clearly labeled display-only fixture, never produces authoritative events."
+    },
+    {
+      "id": "private_chat_event",
+      "authority": "authoritative_unicast",
+      "description": "Privacy-scoped server-to-owner unicast containing a direct message; visible to sender and intended connected recipient only."
     }
   ],
   "module_registry": [
@@ -984,7 +990,7 @@
         "party_state",
         "chat_event"
       ],
-      "description": "Party invitation/session detail, chat where authorized and moderated.",
+      "description": "Party invitation/session detail, chat where authorized and moderated. Social chat extensions depend on independently approved moderation/account services; general/private text chat is a separate early UI-03 module.",
       "status": "planned"
     },
     {
@@ -1049,6 +1055,20 @@
       ],
       "description": "Important non-excluded hazards only when real gameplay supports them.",
       "status": "planned"
+    },
+    {
+      "id": "chat_panel",
+      "kind": "hud",
+      "stage": "UI-03",
+      "primary_mode": "exploration",
+      "priority": "standard",
+      "required_signals": [
+        "chat_event",
+        "private_chat_event",
+        "connection_phase"
+      ],
+      "description": "Compact general/private messaging panel; private conversation is never a globally replicated display signal.",
+      "status": "source_implementation_unverified_native_and_owner"
     }
   ],
   "invariants": [

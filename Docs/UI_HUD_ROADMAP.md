@@ -47,7 +47,7 @@ Preserve Marburgum's recognizable experience: transient district names; concise 
 | **UI-00: Semantic baseline and parity** | Stage 0C entry | Approved ontology, naming, signal ownership, modules, visual references and explicit exclusions | Original Marburgum HUD review | Versioned ontology and traceability, no unresolved concept IDs |
 | **UI-01: Visual design system and shell** | Stage 0C | Cohesive UMG theme, responsive layout primitives, icon/type system and widget gallery | UE 5.8.3 Editor/Client builds for runtime acceptance | Actual UMG screenshots, contrast/readability review, reusable theme tokens |
 | **UI-02: Session, focus and navigation** | Stage 0B–0C | Branded launch/connect/retry/refusal state and keyboard/controller navigation shell | UI-01; actual session semantics for "ready" | Correct connect/reconnect/error states against NET-001 where available |
-| **UI-03: Live modular exploration HUD** | Stage 0C–1 | Location, condition, context prompt, objective, subject cue, notifications using server state | UI-01, UI-02 and NET-001 for live status | One authoritative action → both clients' UI state → no duplicates |
+| **UI-03: Live modular exploration HUD and basic communications** | Stage 0C–1 | Location, condition, context prompt, objective, subject cue, notifications and general/private chat | UI-01, UI-02, NET-001 for live status, CHAT-001 for messaging | Real general/private recipient routing, graphical display and no privacy leaks |
 | **UI-04: Information-rich management screens** | Stage 1 | Visual Character, Skills, Inventory, Journal and Settings with unified navigation | UI-01 and signal/view-model contracts | Nonempty/empty/error/stale state matrix; screenshot-backed UI review |
 | **UI-05: Context and cooperative overlays** | Stage 2–3 | Fishing/work/trading/dialogue/driving/group presentation as systems become real | Real corresponding authoritative gameplay systems | Correct context entry/exit, privacy, no phantom controls |
 | **UI-06: Layout personalization** | After Stage 1 baseline, Stage 2–3 | Presets, local persistence, per-module sizing/position/visibility, edit mode and reset | Accepted default UI and focus/safe-zone constraints | Drag/move/scale/snap/restore tests; essential alerts always visible |
@@ -106,6 +106,8 @@ The minimal HUD consists of a restrained player-condition module, transient loca
 - The initial default layout must be attractive **without** custom player rearrangement.
 
 **Exit gate:** at least two real clients connected to one dedicated server correctly see appropriate server-owned state changes and do not show fabricated client rewards. Record on-screen and log evidence. This is a substantive integration gate beyond NET-001's minimal replication marker.
+
+**Early chat integration:** Build the [`chat_panel`](CHAT.md) with always-available server-wide general messages and private player-to-player conversation. General messages may reach all clients on the logical server; private ones must reach **only sender and chosen recipient**, never other clients' replicated state or notifications. Source scaffolding exists, but it requires real UE 5.8.3 compilation, dedicated server / three-client isolation test, visual refinement and personal owner approval. Keep server routing independent of UMG, and give the chat its own focus/opacity/unread-message policies so it does not obscure the interaction HUD.
 
 ## 7. UI-04 — Core MMORPG information architecture
 

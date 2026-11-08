@@ -1,0 +1,81 @@
+{
+  "format": "marburgumii.chat.descriptive_contract",
+  "version": "0.1.0",
+  "engine": "Unreal Engine 5.8.3",
+  "status": "cxx_source_scaffold_native_build_and_owner_approval_pending",
+  "message": {
+    "max_code_units": 240,
+    "text_format": "plain_text_single_line",
+    "sender": "derived_only_from_server_player_state",
+    "recipient": "server_resolved_session_player_id",
+    "sender_sequence": "monotonic_per_sender_server_owned",
+    "delivery": "owned_player_controller_client_rpc_only",
+    "retention": "bounded_client_memory_max_80_no_server_history"
+  },
+  "channels": [
+    {
+      "id": "general",
+      "audience": "all_currently_connected_clients_on_same_logical_server",
+      "sender_echo": true,
+      "other_clients_can_observe": true
+    },
+    {
+      "id": "private",
+      "audience": "sender_and_one_connected_recipient_only",
+      "sender_echo": true,
+      "other_clients_can_observe": false
+    },
+    {
+      "id": "system",
+      "audience": "single_owning_client",
+      "client_may_request": false
+    }
+  ],
+  "input": {
+    "general_default": true,
+    "explicit_general_command": "/g <message>",
+    "private_commands": [
+      "/w <session-player-id> <message>",
+      "/whisper <session-player-id> <message>"
+    ],
+    "player_discovery": "client ONLINE button reads replicated player state session IDs",
+    "submit_key": "Enter"
+  },
+  "initial_rate_limits": {
+    "min_seconds_between_accepted": 0.8,
+    "max_accepted_per_window": 8,
+    "window_seconds": 10
+  },
+  "not_implemented": [
+    "persistent_message_history",
+    "account_level_contacts",
+    "offline_delivery",
+    "cross_server_global_chat",
+    "friends_list",
+    "per_account_mute_block_ignore_report",
+    "production_moderation_and_audit",
+    "server_side_invalid_request_flood_limit",
+    "accessibility_review",
+    "user_experience_owner_approval"
+  ],
+  "privacy_invariants": [
+    "Private text never enters globally replicated GameState or NetMulticast.",
+    "Neither sender identity nor delivery outcome is client-authored.",
+    "Server does not log chat bodies.",
+    "Disconnected/nonexistent targets are not sent private messages.",
+    "No client sees another player's direct messages unless itself sender or recipient."
+  ],
+  "evidence_gates": [
+    "native_UE_5_8_3_client_server_editor_compile",
+    "3_independent_client_processes_one_server",
+    "general_once_to_all",
+    "private_only_sender_recipient",
+    "invalid_target_rejection",
+    "rate_and_unicode_validation",
+    "disconnect_reconnect",
+    "UMG_focus_and_visual_review",
+    "fresh_asset_snapshot",
+    "owner_personal_playtest",
+    "owner_explicit_approval"
+  ]
+}

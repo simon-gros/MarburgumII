@@ -22,6 +22,8 @@ A strong large-scale online interface follows these independent principles:
 
 The aesthetic identity remains **Marburgum**: restrained, high-quality, documentary/urban Central European design informed by 1990s signage, industrial materials, civic paperwork, urban transport and the Drava cityscape. Decorative nostalgia must not harm usability. Minimal permanent chrome is especially important for public screenshot and video quality.
 
+**Communication:** The initial `chat_panel` is a first-wave UI-03 client module for server-wide general and one-to-one private messages. Chat is a server-validated unicast event flow; in particular, `private_chat_event` cannot be globally replicated. This is currently C++ source awaiting real UE 5.8.3 runtime tests, UI refinement and the owner's personal acceptance. See [CHAT.md](CHAT.md).
+
 **Binding product exclusions:** do not import the original wanted-star, heat/wanted-level or police-pursuit/chase system and do not create any HUD/widget from those mechanics. The previous generated Talent system and Talent UI are also excluded. Narrative institutions and ordinary non-pursuit characters are separate questions; they are not excuses to introduce the excluded systems.
 
 ## 2. Ontological levels: what a UI object is

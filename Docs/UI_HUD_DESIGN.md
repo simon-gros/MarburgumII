@@ -28,6 +28,7 @@ The city itself remains the visual focus. The normal exploration state must have
 | Skills | Scannable skill icons, name, level, XP/progress, meaningful milestone; dense but not text-clumped | On demand |
 | Inventory | Purposeful slot/list-grid hybrid to test, item silhouettes, quantity, selection details, available actions and evidence role | On demand |
 | Mission Journal and evidence | Structured mission timeline, active/completed state, current objective, gathered evidence and pin/unpin, with understated archival graphic motifs | On demand |
+| General and private chat | Compact lower-left communication panel with server-wide channel, distinct one-to-one conversations, online player discovery and readable connection/error state. Private text is never visible to unrelated players; later configurable opacity and unread counters | Available during online play, unobtrusive by default |
 | Settings and pause | Consistent menu, interface scale, audio/display/control settings, resume and logout; explicit online disconnect behavior | On demand |
 | Login / connect / reconnect | A branded shell with state, loading feedback, actionable error, retry and cancel controls | On joining, loading or recovering |
 
