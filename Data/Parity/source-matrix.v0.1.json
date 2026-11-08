@@ -1,0 +1,217 @@
+{
+  "version": "0.1.0",
+  "scope": "Design parity matrix: source-of-intent, not an import manifest or proof of working functionality",
+  "original_repository": "simon-gros/magna-raedarum-marburgum",
+  "target_repository": "simon-gros/MarburgumII",
+  "source_reference": "original/main as reviewed 2026-11-08",
+  "rules": [
+    "Preserve original Marburgum gameplay identity by default.",
+    "Rebuild runtime technology, networking and implementation rather than copying code.",
+    "Never treat legacy design or catalog existence as MarburgumII implementation.",
+    "Never import data/assets without provenance, rights and historical/geometric review.",
+    "Any intentional redesign requires an ADR and explicit parity-matrix update."
+  ],
+  "entries": [
+    {
+      "id": "world_geography",
+      "name": "Marburgum geography and district identity",
+      "legacy_sources": [
+        "docs/GENERAL_FRAMEWORK.md",
+        "docs/MARBURGUM_FICTIONALIZATION_ROADMAP.md",
+        "project/data/areas.json",
+        "project/data/districts.json",
+        "project/data/landmarks.json"
+      ],
+      "intent": "A recognizably Maribor-based 1990s fictional city with the Drava, districts, places, buildings and route geography.",
+      "migration": "Review source provenance/rights, geometry, corrections, period reconstruction and fictional identities before creating UE World Partition assets.",
+      "stage": "3",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "historical_state",
+      "name": "1990s culture and period correctness",
+      "legacy_sources": [
+        "docs/NINETIES_AUTHENTICITY_WORLD_STATE_ROADMAP.md",
+        "project/data/historical_overrides.json",
+        "project/data/building_period.json"
+      ],
+      "intent": "1990–1999 historically grounded vehicles, institutions, businesses, media, technology, signage and social change; distinguish evidence from fictionalization.",
+      "migration": "Retain source IDs, asserted dates, uncertainty, licensing and design approvals.",
+      "stage": "3",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "characters_population",
+      "name": "Characters, NPCs and virtual population",
+      "legacy_sources": [
+        "project/data/npcs.json",
+        "project/data/population.json",
+        "project/data/population_groups.json"
+      ],
+      "intent": "Individual NPCs and broader simulated community with neighborhoods, schedules, social roles and contextual reactions.",
+      "migration": "Recreate from design/data rather than importing legacy C++ or assuming thousands of active AI Actors.",
+      "stage": "3",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "skills",
+      "name": "Skill progression",
+      "legacy_sources": [
+        "docs/SKILLING_ROADMAP.md",
+        "project/data/skills.json"
+      ],
+      "intent": "Keep skills as the major progression system. Original source registered Fishing, Photography, Housing, Trading and Reputation; fifteen were in the long-term design roster. Preserve original 0–1990 level identity for design review.",
+      "migration": "Agree and regression-test XP curve/levels before shipping; do not import auto-generated talents or imply all fifteen are implemented.",
+      "stage": "2",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "fishing",
+      "name": "Fishing",
+      "legacy_sources": [
+        "docs/FISHING_SKILL_ROADMAP.md",
+        "project/data/fishing.json",
+        "project/data/interactions.json"
+      ],
+      "intent": "River fishing as an ordinary persistent skill and a representative stateful interaction loop.",
+      "migration": "New server-owned cast/wait/bite/hook result, catch/XP and idempotent inventory effects.",
+      "stage": "2",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "missions_story",
+      "name": "Missions, story and evidence",
+      "legacy_sources": [
+        "docs/NARRATIVE_BIBLE.md",
+        "docs/MAIN_STORYLINE.md",
+        "docs/SIDE_STORY_BIBLE.md",
+        "project/data/missions.json"
+      ],
+      "intent": "The City in the Ledger narrative, investigations, character choices, evidence and long-running authored urban missions rather than fantasy quests.",
+      "migration": "Preserve approved narrative canon; remap mission IDs/objectives to new engine-neutral schemas; do not claim unported chapters function.",
+      "stage": "2-5",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "reputation_social",
+      "name": "Reputation, relationships and organizations",
+      "legacy_sources": [
+        "docs/REPUTATION_SKILL_ROADMAP.md",
+        "docs/OCTOBER_2026_GAMEPLAY_DESIGN_BRAINSTORM.md"
+      ],
+      "intent": "A reversible public-facing Reputation measure with distinct local relationships, institutional contexts and social consequences.",
+      "migration": "Keep decisions and witness knowledge server-owned; avoid auto-duplicating bars for every group.",
+      "stage": "2-3",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "economy_trading",
+      "name": "Economy and trading",
+      "legacy_sources": [
+        "docs/TRADING_SKILL_ROADMAP.md",
+        "project/data/items.json"
+      ],
+      "intent": "Money, inventory, vendors, local opportunities and bounded, understandable exchange with historical context.",
+      "migration": "Implement atomic integer-money/item transactions, receipts, validation and retry safety before player-to-player markets.",
+      "stage": "1-2",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "inventory_items",
+      "name": "Items, clues and inventory",
+      "legacy_sources": [
+        "project/data/items.json",
+        "project/data/missions.json"
+      ],
+      "intent": "Ordinary goods, equipment and evidence as durable state connected to missions, work and skills.",
+      "migration": "Separate definitions/instances; ensure unique ownership and double-spend prevention.",
+      "stage": "1",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "housing",
+      "name": "Housing and property",
+      "legacy_sources": [
+        "docs/HOUSING_SKILL_ROADMAP.md"
+      ],
+      "intent": "Persistent housing access, interior use and social/economic consequences.",
+      "migration": "Server-owned property/permissions and address/interior identities; scale after the first district.",
+      "stage": "3",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "vehicles",
+      "name": "Vehicles and transportation",
+      "legacy_sources": [
+        "project/data/vehicles.json",
+        "project/data/vehicle_instances.json",
+        "docs/PHYSICS_MOVEMENT_VEHICLES_ROADMAP.md"
+      ],
+      "intent": "Period-appropriate driving, roads, public transit, vehicle state, logistics and movement convenience.",
+      "migration": "New Unreal physics/replication with authoritative ownership/condition and journey costs.",
+      "stage": "3",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "weather_time",
+      "name": "City time, seasonal weather and environment",
+      "legacy_sources": [
+        "docs/CLIMATE_CALENDAR_WEATHER_ROADMAP.md",
+        "docs/NINETIES_AUTHENTICITY_WORLD_STATE_ROADMAP.md"
+      ],
+      "intent": "Shared local clock, dynamic weather, year-state and consequences for NPCs/mission opportunities.",
+      "migration": "Distinguish civil simulation time from real wall clock; synchronize replicated world state.",
+      "stage": "3",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "interactions",
+      "name": "Unified urban interaction verbs",
+      "legacy_sources": [
+        "project/data/interactions.json",
+        "docs/GENERAL_FRAMEWORK.md"
+      ],
+      "intent": "Talk, inspect, take, use, work, fish, photograph, trade, drive and other city actions under coherent interaction rules.",
+      "migration": "Establish client request → server validation → authoritative result from first gameplay proof.",
+      "stage": "1",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "jobs_opportunity",
+      "name": "Employment, opportunity scarcity and fairness",
+      "legacy_sources": [
+        "docs/OCTOBER_2026_GAMEPLAY_DESIGN_BRAINSTORM.md",
+        "docs/MISSIONS_ROADMAP.md"
+      ],
+      "intent": "City jobs and limited opportunities, with safeguards for repeatedly unlucky players and story-critical access.",
+      "migration": "Preserve the thematic design without adopting untested scarcity percentages or soft-locking the main story.",
+      "stage": "2-4",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "user_interface",
+      "name": "Player-facing UI and journal",
+      "legacy_sources": [
+        "docs/USER_INTERFACE_ROADMAP.md",
+        "docs/PLAYER_EXPERIENCE_PLATFORM_QUALITY_ROADMAP.md"
+      ],
+      "intent": "Legible graphical interaction, inventory, mission/evidence journal, character progression and world-state feedback.",
+      "migration": "Implement in new client-only module; prevent a wall of raw debug text.",
+      "stage": "1",
+      "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "network_persistence",
+      "name": "Dedicated authoritative MMORPG world",
+      "legacy_sources": [
+        "docs/ARCHITECTURE.md",
+        "docs/PROTOCOL_V3.md",
+        "docs/MULTIPLAYER_SCALABILITY_ROADMAP.md"
+      ],
+      "intent": "Separate client/shared/server code, persistent world/character state, reconnect, bounded AOI and eventual shared-shard scale.",
+      "migration": "New UE 5.8.3 source modules, Unreal-native replication baseline, native server/client proof at Stage 0. Do NOT silently preserve old protocol-v3 wire compatibility.",
+      "stage": "0-4",
+      "status": "design_retained_implementation_pending"
+    }
+  ]
+}

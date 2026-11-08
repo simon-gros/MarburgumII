@@ -1,6 +1,6 @@
 # Milestone roadmap — MMORPG-first from Stage 0
 
-**Controlling rule:** MarburgumII preserves the majority of original Marburgum world/gameplay requirements but reimplements them in fresh Unreal Engine **5.8.3** C++ code. Dedicated authoritative client/server must be present in the **first running milestone**. “Solo-friendly” describes game experience, **not client authority or an offline-only code path**. See [NETWORK_ARCHITECTURE.md](NETWORK_ARCHITECTURE.md) and [ONTOLOGY.md](ONTOLOGY.md).
+**Controlling rule:** MarburgumII preserves the majority of original Marburgum world/gameplay requirements but reimplements them in fresh Unreal Engine **5.8.3** C++ code. Dedicated authoritative client/server must be present in the **first running milestone**. “Solo-friendly” describes game experience, **not client authority or an offline-only code path**. See [NETWORK_ARCHITECTURE.md](NETWORK_ARCHITECTURE.md), [ONTOLOGY.md](ONTOLOGY.md) and [LEGACY_PARITY.md](LEGACY_PARITY.md).
 
 ## Stage 0A — Native engine and role separation
 

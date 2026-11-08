@@ -106,6 +106,7 @@ and no persistent shell configuration was changed.
 
 - [Game scope and design constraints](Docs/VISION.md)
 - [Foundational game ontology (v0.1.0)](Docs/ONTOLOGY.md) and [machine-readable vocabulary](Data/Ontology/core.v0.1.json)
+- [Original Marburgum design parity register](Docs/LEGACY_PARITY.md) and [machine-readable source matrix](Data/Parity/source-matrix.v0.1.json)
 - [Architecture and language boundaries](Docs/ARCHITECTURE.md)
 - [MMORPG client/server contract and milestone gates](Docs/NETWORK_ARCHITECTURE.md)
 - [Development prerequisites and commands](Docs/DEVELOPMENT.md)
