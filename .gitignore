@@ -1,0 +1,22 @@
+# Unreal generated data
+/Binaries/
+/DerivedDataCache/
+/Intermediate/
+/Saved/
+/.vs/
+*.sln
+*.suo
+*.VC.db
+*.xcodeproj
+*.xcworkspace
+# Developer tools
+**/bin/
+**/obj/
+**/target/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
