@@ -1,0 +1,257 @@
+{
+  "format": "marburgumii.ecology.fish",
+  "version": "0.1.0",
+  "status": "reviewed_migration_metadata_not_runtime",
+  "purpose": "Preserve original Marburgum fish ecology/gameplay catalogue in the same city, with source-provenance and distinct implementation statuses.",
+  "original_repository": "simon-gros/magna-raedarum-marburgum",
+  "source_paths": {
+    "legacy_fishing": "project/data/fishing.json",
+    "legacy_items": "project/data/items.json",
+    "design": "docs/FISHING_SKILL_ROADMAP.md"
+  },
+  "source_shas": {
+    "legacy_fishing": "2e4761e9b54e2b142b09306baa2acf1bfdbd208e",
+    "legacy_items": "cf7b51533eaab2026140d1c756ee549ed24f6d2d"
+  },
+  "migration_policy": {
+    "species_ids": "Preserve IDs of the three enabled fish (chub, roach, perch), assign stable new IDs to other legacy-designed fish without changing meaning.",
+    "legacy_weights": "Keep original integer weights and XP as parity baseline; do not automatically assume final rates.",
+    "habitat": "Period/ecology evidence required before applying modern abundance or legal rules to 1990s.",
+    "authority": "Server controls hook/catch/item grant/XP/release; idempotent and reconnect-safe.",
+    "ui": "Client displays only actual gameplay phases and confirmed catch outcomes.",
+    "owner_gate": "Only the project owner's personal playtest and explicit approval can accept a fishing feature."
+  },
+  "legacy_first_spot": {
+    "id": "drava_fishing_spot",
+    "water": "Drava, Lent bank",
+    "habitat": "Slow water against the old town bank, shaded by the promenade wall.",
+    "catch_table": [
+      {
+        "item_id": "chub",
+        "display_name": "European chub",
+        "weight": 5,
+        "legacy_xp": 20,
+        "distribution_status": "legacy_enabled_not_implemented_in_MarburgumII"
+      },
+      {
+        "item_id": "roach",
+        "display_name": "Common roach",
+        "weight": 4,
+        "legacy_xp": 16,
+        "distribution_status": "legacy_enabled_not_implemented_in_MarburgumII"
+      },
+      {
+        "item_id": "perch",
+        "display_name": "European perch",
+        "weight": 3,
+        "legacy_xp": 24,
+        "distribution_status": "legacy_enabled_not_implemented_in_MarburgumII"
+      }
+    ],
+    "source_sha": "2e4761e9b54e2b142b09306baa2acf1bfdbd208e"
+  },
+  "design_species": [
+    {
+      "id": "chub",
+      "name": "European chub",
+      "slovene": "klen",
+      "scientific_name": "Squalius cephalus",
+      "habitat_role": "early_common",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "nase",
+      "name": "Common nase",
+      "slovene": "podust",
+      "scientific_name": "Chondrostoma nasus",
+      "habitat_role": "common_current",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "barbel",
+      "name": "Common barbel",
+      "slovene": "mrena / navadna mrena",
+      "scientific_name": "Barbus barbus",
+      "habitat_role": "stronger_bottom_current",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "roach",
+      "name": "Common roach",
+      "slovene": "rdečeoka",
+      "scientific_name": "Rutilus rutilus",
+      "habitat_role": "early_common",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "bleak",
+      "name": "Bleak",
+      "slovene": "zelenika",
+      "scientific_name": "Alburnus alburnus",
+      "habitat_role": "small_early",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "bream",
+      "name": "Common bream",
+      "slovene": "ploščič",
+      "scientific_name": "Abramis brama",
+      "habitat_role": "deep_water",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "rudd",
+      "name": "Rudd",
+      "slovene": "rdečeperka",
+      "scientific_name": "Scardinius erythrophthalmus",
+      "habitat_role": "still_water",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "danube_roach",
+      "name": "Danube roach",
+      "slovene": "platnica",
+      "scientific_name": "Rutilus virgo",
+      "habitat_role": "regional",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "carp",
+      "name": "Common carp",
+      "slovene": "krap",
+      "scientific_name": "Cyprinus carpio",
+      "habitat_role": "large_fish",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "brown_trout",
+      "name": "Brown trout",
+      "slovene": "potočna postrv",
+      "scientific_name": "Salmo trutta",
+      "habitat_role": "flowing_water",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "rainbow_trout",
+      "name": "Rainbow trout",
+      "slovene": "šarenka",
+      "scientific_name": "Oncorhynchus mykiss",
+      "habitat_role": "stocked_introduced",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "perch",
+      "name": "European perch",
+      "slovene": "navadni ostriž",
+      "scientific_name": "Perca fluviatilis",
+      "habitat_role": "early_common_predator",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "pike",
+      "name": "Northern pike",
+      "slovene": "ščuka",
+      "scientific_name": "Esox lucius",
+      "habitat_role": "large_predator",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "zander",
+      "name": "Zander",
+      "slovene": "smuč",
+      "scientific_name": "Sander lucioperca",
+      "habitat_role": "deep_predator",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "catfish",
+      "name": "Wels catfish",
+      "slovene": "som",
+      "scientific_name": "Silurus glanis",
+      "habitat_role": "trophy",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "vimba",
+      "name": "Vimba bream",
+      "slovene": "ogrica",
+      "scientific_name": "Vimba vimba",
+      "habitat_role": "specialist",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "schraetzer",
+      "name": "Schraetzer",
+      "slovene": "smrkež",
+      "scientific_name": "Gymnocephalus schraetser",
+      "habitat_role": "rare_collector",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    },
+    {
+      "id": "zingel",
+      "name": "Zingel",
+      "slovene": "čep",
+      "scientific_name": "Zingel zingel",
+      "habitat_role": "rare_specialist",
+      "design_status": "documented_legacy_design_not_enabled_in_MarburgumII",
+      "source": "docs/FISHING_SKILL_ROADMAP.md",
+      "source_category": "18_species_target_roster"
+    }
+  ],
+  "secondary_candidate_taxa": [
+    {
+      "name": "Grass carp",
+      "scientific_name": "Ctenopharyngodon idella",
+      "status": "secondary_candidate"
+    },
+    {
+      "name": "Carassius species complex",
+      "scientific_name": "Carassius spp.",
+      "status": "secondary_candidate_taxonomic_uncertainty"
+    },
+    {
+      "name": "Ruffe",
+      "scientific_name": "Gymnocephalus cernua",
+      "status": "secondary_candidate"
+    }
+  ],
+  "risk_flags": [
+    "Later source-specific evidence is not a direct population survey for every in-game river section.",
+    "2014/modern environment and stocking rules cannot be projected backward into the 1990s without review.",
+    "No fish models, fishing animation, live server rules or 3D water habitat imported in this metadata commit."
+  ]
+}

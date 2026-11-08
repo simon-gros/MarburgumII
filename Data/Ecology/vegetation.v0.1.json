@@ -1,0 +1,1101 @@
+{
+  "format": "marburgumii.ecology.vegetation",
+  "version": "0.1.0",
+  "status": "reviewed_migration_metadata_not_runtime",
+  "purpose": "Continuity index for canonical vegetation meshes and placement datasets across the same Maribor geography, without importing binary assets or asserting 1990s accuracy.",
+  "original_repository": "simon-gros/magna-raedarum-marburgum",
+  "mesh_manifest_path": "UnrealMarburgum/SourceAssets/FromGodot/trees/MANIFEST.json",
+  "source_manifest_blob_sha": "88eb60d08ede931a661c0ad4a9b1849d9e5dfdf3",
+  "notes": [
+    "20 original mesh definitions include 16 species-specific/plant-category entries and four general archetypes; do not misrepresent all 20 as distinct botanical species.",
+    "121 legacy *_plants.json placement products remain referenced by exact path and Git blob SHA; their large payloads are not copied by this metadata commit.",
+    "Original placement sources rely on ARSO 2014 LiDAR: spatial occupancy and dimensions are evidence for 2014, not exact 1990s individual tree or species observations.",
+    "Original placement species are inferred by ecological region, not measured directly by LiDAR.",
+    "Preserve same place/street and stable species IDs; later reviewed canonical transforms may reject contemporary removals or changes.",
+    "Meshes may need independent rights/provenance review, Unreal 5.8.3 reimport, material reconstruction and owner visual approval.",
+    "Avoid experimental Nanite foliage dependency; ordinary Unreal foliage/HISM + measured LOD/HLOD is acceptable baseline."
+  ],
+  "visual_asset_definitions": [
+    {
+      "id": "white_willow",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/white_willow.tres",
+      "source_mesh_blob_sha": "eab407fe789a6de9cb85b17f35466ca14a8b3796",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/white_willow.glb",
+      "glb_blob_sha": "7670844581a445fcd24e8ba8c7c49d658583619a",
+      "vertices": 3360,
+      "triangles": 4672,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "black_alder",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/black_alder.tres",
+      "source_mesh_blob_sha": "01659b7374661955d7d24b2ed084f293d24414bf",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/black_alder.glb",
+      "glb_blob_sha": "a375ef8f950b521119d6987a136dd721595f1f10",
+      "vertices": 1848,
+      "triangles": 2584,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "black_poplar",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/black_poplar.tres",
+      "source_mesh_blob_sha": "63c77fb9f11f43fc2ed5518fd2772200c998faa5",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/black_poplar.glb",
+      "glb_blob_sha": "f3a507a0ae91beb9f4559fa8484b54550984bb43",
+      "vertices": 3672,
+      "triangles": 5120,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "ash",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/ash.tres",
+      "source_mesh_blob_sha": "abce104e97c3bf275da51d238d08e56f3a729440",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/ash.glb",
+      "glb_blob_sha": "299f3af3107cfd6887be543d0efa6df2346dbfbe",
+      "vertices": 1812,
+      "triangles": 2516,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "pedunculate_oak",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/pedunculate_oak.tres",
+      "source_mesh_blob_sha": "e88606a09d5d40d6ccb0376930c28fbec5f4f110",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/pedunculate_oak.glb",
+      "glb_blob_sha": "d99cf57b7b2d7376476696fadaec65ea7ffdc318",
+      "vertices": 2352,
+      "triangles": 3288,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "lime",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/lime.tres",
+      "source_mesh_blob_sha": "549091e035917b3f4fc5befaf408345ae16ecc5b",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/lime.glb",
+      "glb_blob_sha": "366c48ace0ac01d9b2764cb427ba25a8d598b5e0",
+      "vertices": 2826,
+      "triangles": 4000,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "norway_maple",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/norway_maple.tres",
+      "source_mesh_blob_sha": "d033568f4eb422198df732102c6bbe7c82591129",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/norway_maple.glb",
+      "glb_blob_sha": "d80f3d05e5253969c065c8cea8615bacc9a31345",
+      "vertices": 2040,
+      "triangles": 2864,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "london_plane",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/london_plane.tres",
+      "source_mesh_blob_sha": "9714bcf320b2d32853285013ae1ac650234655e4",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/london_plane.glb",
+      "glb_blob_sha": "07445b7bec540dbdcd9395e2f4650067dc65ed7c",
+      "vertices": 2448,
+      "triangles": 3428,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "horse_chestnut",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/horse_chestnut.tres",
+      "source_mesh_blob_sha": "969088fd07b896d930f3191d6cdb115958a6d628",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/horse_chestnut.glb",
+      "glb_blob_sha": "db40257eccb0a0d2857d12ec288cf4ba95a5ce45",
+      "vertices": 2292,
+      "triangles": 3216,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "silver_birch",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/silver_birch.tres",
+      "source_mesh_blob_sha": "87320b361ca3b2839a1b70788a05e3aa5700bbdb",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/silver_birch.glb",
+      "glb_blob_sha": "7607565d040dd403d72af5333748b6c702a6ac35",
+      "vertices": 2040,
+      "triangles": 2858,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "hazel",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/hazel.tres",
+      "source_mesh_blob_sha": "0650770439f0ddd64cb5794238cbc69a2fa47ab5",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/hazel.glb",
+      "glb_blob_sha": "d18a7e61db7b6d3506b130c9e10b67079d08c7e1",
+      "vertices": 3780,
+      "triangles": 5404,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "elder",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/elder.tres",
+      "source_mesh_blob_sha": "d0e73a297f035be9e71c25d4e706b380a27bb4d5",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/elder.glb",
+      "glb_blob_sha": "e72735a432c6d12c3a4b90b7c7e1060269fb8c0c",
+      "vertices": 3132,
+      "triangles": 4490,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "dogwood",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/dogwood.tres",
+      "source_mesh_blob_sha": "d361ac06453b3cdc36e36ad352a8a32e6ac221e7",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/dogwood.glb",
+      "glb_blob_sha": "03ed75503dd7314e1a7c4f5cc41b35a3263b05c4",
+      "vertices": 3504,
+      "triangles": 5016,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "bramble",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/bramble.tres",
+      "source_mesh_blob_sha": "4af7942bf0fbff78526b31329d4b2897beae44c1",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/bramble.glb",
+      "glb_blob_sha": "a38dec426a48021fcb457978339dec632b74e3f3",
+      "vertices": 1982,
+      "triangles": 2860,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "privet",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/privet.tres",
+      "source_mesh_blob_sha": "d80c18ff0c0fb5becf52772639c621667db002f1",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/privet.glb",
+      "glb_blob_sha": "41e39adc4469a50519e422f06fec8c20f42909d2",
+      "vertices": 1444,
+      "triangles": 2080,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "reeds",
+      "kind": "plant_visual_category",
+      "original_mesh_source": "project/assets/models/trees/reeds.tres",
+      "source_mesh_blob_sha": "753a1bdbaf7cf1ecafe7ec13d94fba04b4e2388c",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/reeds.glb",
+      "glb_blob_sha": "be908dd597d19e59fe3a7999008f9fa3f56ba54d",
+      "vertices": 1556,
+      "triangles": 2180,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "tree_broad",
+      "kind": "general_archetype",
+      "original_mesh_source": "project/assets/models/trees/tree_broad.tres",
+      "source_mesh_blob_sha": "b2d31d032e8c50f3b22f0a0ce4a884153a1f9004",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/tree_broad.glb",
+      "glb_blob_sha": "927500a601b9eda5e38119df9c99668c790a2733",
+      "vertices": 1788,
+      "triangles": 2512,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "tree_poplar",
+      "kind": "general_archetype",
+      "original_mesh_source": "project/assets/models/trees/tree_poplar.tres",
+      "source_mesh_blob_sha": "d1f2a0e29f1bba19f2cc5c7a7b1b0161cb98690c",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/tree_poplar.glb",
+      "glb_blob_sha": "5ca6e839e56f01a010fa072f0eef1cff76f47d0c",
+      "vertices": 2532,
+      "triangles": 3566,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "tree_young",
+      "kind": "general_archetype",
+      "original_mesh_source": "project/assets/models/trees/tree_young.tres",
+      "source_mesh_blob_sha": "aad85f5ef90a9ac50b393d7da4b63c5578f66065",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/tree_young.glb",
+      "glb_blob_sha": "18a5225dc20c407a6aa9dbb3a026db59c58df5cc",
+      "vertices": 912,
+      "triangles": 1322,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    },
+    {
+      "id": "bush",
+      "kind": "general_archetype",
+      "original_mesh_source": "project/assets/models/trees/bush.tres",
+      "source_mesh_blob_sha": "ee8825541907132760183702d34b1194aaad8432",
+      "original_glb_source": "UnrealMarburgum/SourceAssets/FromGodot/trees/bush.glb",
+      "glb_blob_sha": "7cd99d462668bc5399480948b4760e61fb65885b",
+      "vertices": 2820,
+      "triangles": 4042,
+      "status": "asset_available_in_original_not_imported_in_MarburgumII"
+    }
+  ],
+  "placement_datasets": [
+    {
+      "source_path": "project/assets/terrain/adamiceva_plants.json",
+      "source_blob_sha": "d70a7f3cad0310233575c986d41d8e1b31f349fe",
+      "bytes": 202102,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/avtobusna_plants.json",
+      "source_blob_sha": "9ebe76477453cbd78522d6fe3391e73054ea1bb8",
+      "bytes": 132408,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/babnikova_plants.json",
+      "source_blob_sha": "14ad75203ed2921b6f5cad355c91eb19417910f1",
+      "bytes": 216360,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/betnava_plants.json",
+      "source_blob_sha": "8052d1fd600651b27a833fc221f1f186935959ce",
+      "bytes": 187562,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/betnavski_gozd_plants.json",
+      "source_blob_sha": "ffd1ead21a08e0f7238921baec1b4e76d05c6b67",
+      "bytes": 116764,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/bezenskova_plants.json",
+      "source_blob_sha": "c94600d2fe8c927bdd615ddfa79cee77add5fd83",
+      "bytes": 189197,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/borova_vas_plants.json",
+      "source_blob_sha": "fbc4fc5888d5d359167b42831d8e01e76d1d88b3",
+      "bytes": 154953,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/borovje_plants.json",
+      "source_blob_sha": "085e2778238c24ea908b0a846cd9b7660ee827cd",
+      "bytes": 224262,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/borstnikova_plants.json",
+      "source_blob_sha": "952532b130a5b22cee3a41447f340ccb422c76fd",
+      "bytes": 224025,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/center_plants.json",
+      "source_blob_sha": "7dc60b24d5b9c88bc8f3a0d158422363c596a85b",
+      "bytes": 147572,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/cesta_xiv_divizije_plants.json",
+      "source_blob_sha": "55281f9edd5ca3987ff3b290e81d29dedebe3737",
+      "bytes": 265947,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/cesta_zmage_plants.json",
+      "source_blob_sha": "c88a1ee83088acf3fa7d77b5f56f8d92ec392a48",
+      "bytes": 291565,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/copova_plants.json",
+      "source_blob_sha": "686bd2418be77454bcc826fbfa3e56f0c774f1ba",
+      "bytes": 276502,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/crnogorska_plants.json",
+      "source_blob_sha": "13cfbd121e5f355abbdf87ea70dcc7e6c2932ccc",
+      "bytes": 274830,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/devova_plants.json",
+      "source_blob_sha": "48bc03cc7dcbc2f934f00b5b68c66d48c6d2eb0f",
+      "bytes": 235095,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/elektrarniska_plants.json",
+      "source_blob_sha": "e51ebb285ca279857ef3e5cabd76acef6c742707",
+      "bytes": 255377,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/eve_lovse_plants.json",
+      "source_blob_sha": "bd7ce850ad5c0f783b9d9e18c1f86eb7ea8ac9c9",
+      "bytes": 169224,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/gosposvetska_plants.json",
+      "source_blob_sha": "6bda43ba4f5a7e81c32f46cf1d4bf3a1e6ce012e",
+      "bytes": 188795,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/greenwich_plants.json",
+      "source_blob_sha": "9ff291d85f39a23c86880e45529fb96e93a8f520",
+      "bytes": 145782,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/igriska_plants.json",
+      "source_blob_sha": "a4447f3908a27f950582414c84b7bc6c4728ed9e",
+      "bytes": 217677,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/irsiceva_plants.json",
+      "source_blob_sha": "35e60d85879cf5e3f76287e5249970a86f341b4c",
+      "bytes": 233370,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/jadranska_plants.json",
+      "source_blob_sha": "5674922958d1df29dfd29c1bdc7ada196f576ebc",
+      "bytes": 176565,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/jocova_plants.json",
+      "source_blob_sha": "8d8e5b6c5fb6a2904143b1ff31a583f390282f83",
+      "bytes": 266828,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/kalvarija_plants.json",
+      "source_blob_sha": "ba2703406382999731a77415192ee6905d5d86f9",
+      "bytes": 400271,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/kamenskova_plants.json",
+      "source_blob_sha": "ef2f66e41e4af4019efff14a3f623257abee6e12",
+      "bytes": 174534,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/kamniski_breg_plants.json",
+      "source_blob_sha": "566ab3c8aa11382f7066bda73964834e472bbd81",
+      "bytes": 347537,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/kidriceva_plants.json",
+      "source_blob_sha": "6668ef0267fb406ca0b873e655b9bb8fc27f5922",
+      "bytes": 258867,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/kodriceva_plants.json",
+      "source_blob_sha": "dd21ed8687632eb26f910ee0f5b6acfd4b3d1bd9",
+      "bytes": 312739,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/konjeniski_plants.json",
+      "source_blob_sha": "b6e68139f3bf267ff2ef7e305a629ec22886a713",
+      "bytes": 242476,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/konsakova_plants.json",
+      "source_blob_sha": "9f7905c74a9c1ec67b3cf6e55e8572e58701cd34",
+      "bytes": 338230,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/korbunova_plants.json",
+      "source_blob_sha": "2c3b1a6c2083f81c48970d9aed44ab2c00cafed6",
+      "bytes": 199752,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/koroska_plants.json",
+      "source_blob_sha": "2e4b91ca027ea2e803e7f775fa79e42c23541ad6",
+      "bytes": 270439,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/kosaki_plants.json",
+      "source_blob_sha": "64f30ce642f11b46e85e385b3f684135c1cde191",
+      "bytes": 423323,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/kosaski_dol_plants.json",
+      "source_blob_sha": "62641ff897e66717b92bced6005a20b4f76382cd",
+      "bytes": 429883,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/krcevinska_plants.json",
+      "source_blob_sha": "3142c9f44e82f2340124f8895bc4744faa58fc86",
+      "bytes": 351859,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/kurilnica_plants.json",
+      "source_blob_sha": "165912e55f5af5f2957d6d3acfef8eae7c024901",
+      "bytes": 234992,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/kurirska_plants.json",
+      "source_blob_sha": "02b13031e8d13174a3c5747c47ca7c1424601de7",
+      "bytes": 355932,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/kuzmiceva_plants.json",
+      "source_blob_sha": "f5c7fa8da1890ee947ed26387b7437dcaadc1eb4",
+      "bytes": 290832,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/lackova_plants.json",
+      "source_blob_sha": "375f4ca1567f93bb5537530a58254c60e88d6381",
+      "bytes": 180143,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/ledina_plants.json",
+      "source_blob_sha": "893e038182c2540975a3fc635530babd652a028c",
+      "bytes": 133643,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/lent_plants.json",
+      "source_blob_sha": "ceb3b43890e9d46c9b908752262b609b7a0c6f3c",
+      "bytes": 119328,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/limbuska_plants.json",
+      "source_blob_sha": "8b5c6e601a1a9a8b87f5768eda7ebf42859f1268",
+      "bytes": 302929,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/ljubljanska_plants.json",
+      "source_blob_sha": "d4f50c87644eaa8bbed64d2b662ce44fc5e2c242",
+      "bytes": 251541,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/ljudski_vrt_plants.json",
+      "source_blob_sha": "1af44a64798bb8bdf0cf21c24f7a3c23190d9fbc",
+      "bytes": 176150,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/lovska_plants.json",
+      "source_blob_sha": "11e5333fdfa6bbc0aaf42bcec12bb10b2d58c6e0",
+      "bytes": 241685,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/magdalena_plants.json",
+      "source_blob_sha": "8f9cadcca51f1ce78c61d1d5ea95e34138b8db99",
+      "bytes": 175328,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/makedonska_plants.json",
+      "source_blob_sha": "0d321e4d04cb71415925030b920a07309e10efb2",
+      "bytes": 274643,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/malecniski_plants.json",
+      "source_blob_sha": "afa4e08d8bcce0c11d29b68d67f9241ee8395d7f",
+      "bytes": 181736,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/mariborski_otok_plants.json",
+      "source_blob_sha": "ceb2b5f39ce465d1bedafaf31335c0edfd32f8bf",
+      "bytes": 174663,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/mejna_plants.json",
+      "source_blob_sha": "c7106b0adf8d4036001dde3777a4fd65ad351c4e",
+      "bytes": 297677,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/melje_plants.json",
+      "source_blob_sha": "e3b2f522aa6f732118c96a70b2868f214e08d34b",
+      "bytes": 137546,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/meljska_galerija_plants.json",
+      "source_blob_sha": "d7a0fde6c3a49c382d2d9cff15b85dc4a37c43d6",
+      "bytes": 340868,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/meljska_plants.json",
+      "source_blob_sha": "1dba1d1b6603351aba48ab578a33148e2cde8eed",
+      "bytes": 161668,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/meljski_dol_plants.json",
+      "source_blob_sha": "530878e043e351820604f4fefb989d61c136d692",
+      "bytes": 416146,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/meljski_hrib_plants.json",
+      "source_blob_sha": "faeb1b64afc347b015a775368159b31a0db8f115",
+      "bytes": 388948,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/mestni_park_plants.json",
+      "source_blob_sha": "ccf3ff2f076b27c82154ed3f30209ce9f32cb142",
+      "bytes": 242222,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/murausova_plants.json",
+      "source_blob_sha": "4b2eb2cb349e641404b7e36af48f8814e9b90be2",
+      "bytes": 439783,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/nasipna_plants.json",
+      "source_blob_sha": "d5dab0850962940f965d71953328f5b432d51e5b",
+      "bytes": 360200,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/nova_vas_plants.json",
+      "source_blob_sha": "19d03b43e9497c28219c91cfac9840c2aa5a2b18",
+      "bytes": 285316,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/ob_dravi_plants.json",
+      "source_blob_sha": "e72a6fc87d78159c7bd37b84b43f472f6cf7b69d",
+      "bytes": 139329,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/ob_kanalu_plants.json",
+      "source_blob_sha": "974b918a9a7676cf867f49883c6db2c5c995836e",
+      "bytes": 195386,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/ob_zeleznici_plants.json",
+      "source_blob_sha": "c3d71f9812d43cd66912f4c08b65281742ff03dd",
+      "bytes": 196635,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/obrezna_plants.json",
+      "source_blob_sha": "4d7738dfe51e6cee50358db1c099bb566831e0bf",
+      "bytes": 262204,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/okope_plants.json",
+      "source_blob_sha": "1811b6c26864f46df6635b2e67bfe8b172e07560",
+      "bytes": 205021,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/pekrska_plants.json",
+      "source_blob_sha": "f2d14b8e4a8ae05e18131ef0a5e59e18dd0c2dfc",
+      "bytes": 290019,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/pekrski_potok_plants.json",
+      "source_blob_sha": "d5834db212517bcd7f17381491512a3629df7e6f",
+      "bytes": 79761,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/piramida_plants.json",
+      "source_blob_sha": "490f5c8ff4dd983105dbf108dcfd3ef31070cc27",
+      "bytes": 354234,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/pobreska_plants.json",
+      "source_blob_sha": "95eed0ebb0364422ab9ce206b93d7790331cd8ee",
+      "bytes": 292923,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/pobrezje_plants.json",
+      "source_blob_sha": "307f5202570a0fd79ca49099cee09f0a2e18b8d2",
+      "bytes": 287014,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/pod_stolnim_vrhom_plants.json",
+      "source_blob_sha": "38f9df92c8ccca7291ce0d09e8279fe24577db29",
+      "bytes": 396218,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/pokopalisce_plants.json",
+      "source_blob_sha": "2e599517fc02ba37a02b7f3b3547eb9000cb1c94",
+      "bytes": 312043,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/poljane_plants.json",
+      "source_blob_sha": "578c3f00161f5c4cc98c5251e016801fb67638af",
+      "bytes": 271411,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/praprotnikova_plants.json",
+      "source_blob_sha": "bbc8e5011dcc92112a51d3dcde6a713b92898393",
+      "bytes": 238945,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/prekmurska_plants.json",
+      "source_blob_sha": "99ac25fca8af037d61c715c3b20ed0e93a6bc2f6",
+      "bytes": 243590,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/preradoviceva_plants.json",
+      "source_blob_sha": "285810ea052aacac24a17aea3914fea2d1fabc6f",
+      "bytes": 219190,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/prisojna_plants.json",
+      "source_blob_sha": "e1998170dfe75968b193f78e81f1e10d9a9fbc06",
+      "bytes": 425149,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/pristan_plants.json",
+      "source_blob_sha": "1d6b8201cb5bbf7e03292dc778e89b6c7c50d0ef",
+      "bytes": 170241,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/proletarskih_brigad_plants.json",
+      "source_blob_sha": "300c4795074e77ebe53e7284dab89af290d5af43",
+      "bytes": 147815,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/ptujska_plants.json",
+      "source_blob_sha": "fc53b6ad152a5764cde598b9f51a58e3ef2d7c2b",
+      "bytes": 283599,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/puhova_plants.json",
+      "source_blob_sha": "320f365e1becd853972cfba23eeee88adaa57ced",
+      "bytes": 260317,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/racji_dvor_plants.json",
+      "source_blob_sha": "19151a26091027dc1e14accbaa243bd84b1ee288",
+      "bytes": 272826,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/radvanjska_plants.json",
+      "source_blob_sha": "4f35b57fa1c6f8aa12ca4075476e6ff0356f5fdb",
+      "bytes": 190282,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/radvanjski_gozd_plants.json",
+      "source_blob_sha": "ce9dbdc5e9de831ed8b9b8ccbe4991eeb4fc3078",
+      "bytes": 234368,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/raski_dol_plants.json",
+      "source_blob_sha": "a94fba5766ca11297f8d38d958548b783eae8b92",
+      "bytes": 520275,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/razvanje_plants.json",
+      "source_blob_sha": "402deadaa66bfae61bd782ae15eb7a1e237b2a44",
+      "bytes": 92179,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/ribicija_plants.json",
+      "source_blob_sha": "d24981dec121377e7e8fe2736f4bb638c4e43e0a",
+      "bytes": 458631,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/ribnisko_selo_plants.json",
+      "source_blob_sha": "b855a70bbb127c52e1b095ef5c961bb723f35d56",
+      "bytes": 201956,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/roberta_kukovca_plants.json",
+      "source_blob_sha": "4cda25510ba7c5f4b1f82de8003b1453fbeaba9b",
+      "bytes": 181365,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/roska_plants.json",
+      "source_blob_sha": "38c8ef7326a2a0f9ea24451280c99e127eb3c659",
+      "bytes": 231456,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/rospoh_plants.json",
+      "source_blob_sha": "01ea63f9b36166c2d04146666b55b34b4d17f5c9",
+      "bytes": 372665,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/ruska_plants.json",
+      "source_blob_sha": "93c9aab0153d49d78d613f30a6580cd5e0a06447",
+      "bytes": 202139,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/smetanova_plants.json",
+      "source_blob_sha": "1f2cca81b87c1a1f1d996eb8141c377309c5c5e0",
+      "bytes": 209074,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/sokolska_plants.json",
+      "source_blob_sha": "fd81c9396f90e163e2c4acb63290d74873640fab",
+      "bytes": 311015,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/spelina_plants.json",
+      "source_blob_sha": "3bc4fa29aa796380bba4aa9fee10089e511fab5a",
+      "bytes": 167613,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/spodnje_radvanje_plants.json",
+      "source_blob_sha": "9962dba4793983cc86f8e1d2315a34b0bc33d703",
+      "bytes": 223441,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/stolni_vrh_plants.json",
+      "source_blob_sha": "4c1c139094a83278c802a81c1427783303b1e5d5",
+      "bytes": 287703,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/strazun_plants.json",
+      "source_blob_sha": "092ba59db447d6dd92de99d4e77e9c6ecd089345",
+      "bytes": 240545,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/strekljeva_plants.json",
+      "source_blob_sha": "50099d6b1944e68fff5dda8b239ac2b4f68b3439",
+      "bytes": 238084,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/streliska_plants.json",
+      "source_blob_sha": "e4fcd1e42ca8896409a28e8e05fa932592db2920",
+      "bytes": 182757,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/studenci_plants.json",
+      "source_blob_sha": "f9f92808b2d34d480c534ce6eb004ab0d5bf5b2e",
+      "bytes": 193899,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/tabor_plants.json",
+      "source_blob_sha": "ac7f35ed8807714838ebf6cd2673bd28580eced3",
+      "bytes": 195349,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/terceva_plants.json",
+      "source_blob_sha": "536a466b32e8a9037d21ce96174cc7666c7c0bed",
+      "bytes": 399174,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/tezenska_plants.json",
+      "source_blob_sha": "bd6689c6c3dd715ae0af72618e7e84528adb58fd",
+      "bytes": 236676,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/tezno_plants.json",
+      "source_blob_sha": "c54074dc174ec4d7701786c4b0372842a7edb891",
+      "bytes": 253732,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/titov_most_plants.json",
+      "source_blob_sha": "2c50f681a3710451f37e70e299a4ec7d410205b6",
+      "bytes": 99784,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/tomsiceva_plants.json",
+      "source_blob_sha": "c1692148fba48b7451949188a1dec48a59c1ca42",
+      "bytes": 302258,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/trije_ribniki_plants.json",
+      "source_blob_sha": "73ad554fffd6a6d52d03fd1a694d4b73064d3548",
+      "bytes": 331683,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/trzaska_plants.json",
+      "source_blob_sha": "964bd542b345137456377230da4265aa76d68439",
+      "bytes": 196350,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/vesnaverjeva_plants.json",
+      "source_blob_sha": "5ce54f732bc22519e118c516c257ce202187c79e",
+      "bytes": 126166,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/vinarska_plants.json",
+      "source_blob_sha": "c23e37b00ffd7f1b05cf27debf242ac438769253",
+      "bytes": 301250,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/vinarski_potok_plants.json",
+      "source_blob_sha": "ea20b8bdd900879901a52909e10134e7a7c1926f",
+      "bytes": 384296,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/vinogradi_plants.json",
+      "source_blob_sha": "cfbddc2c565f6184b5bc070b04d2763e1c961ef6",
+      "bytes": 279926,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/vodovodna_plants.json",
+      "source_blob_sha": "27f8a9404c653e38ff0eab26dc970be2d89609f4",
+      "bytes": 215209,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/vrbanska_plants.json",
+      "source_blob_sha": "9dfb42bc566383060200eb3b7ad8a0ecf1dfc160",
+      "bytes": 319561,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/vrbanski_plato_plants.json",
+      "source_blob_sha": "2f047e71e699f4244ea113911c69453e88a233f1",
+      "bytes": 94842,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/za_gradom_plants.json",
+      "source_blob_sha": "f444ac88f7b8457006791152b853c2692788ecb6",
+      "bytes": 309310,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/zadruzna_plants.json",
+      "source_blob_sha": "7b11d21f0cd0fbf31e4d73a8d4ce8805dfdd92f7",
+      "bytes": 183852,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/zagrebska_plants.json",
+      "source_blob_sha": "16430bc7dba2bd32f4597d071f8f21292b782ccb",
+      "bytes": 220354,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/zelezniska_plants.json",
+      "source_blob_sha": "748b1822e9f0248486f2afe6a0b53123d072315b",
+      "bytes": 175531,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/zgornje_radvanje_plants.json",
+      "source_blob_sha": "afa3019197116bed887c82e417344b4d47eceb75",
+      "bytes": 245185,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    },
+    {
+      "source_path": "project/assets/terrain/zrkovska_plants.json",
+      "source_blob_sha": "48ccdac55e5428ce675429e29df2c7bc4696f849",
+      "bytes": 228135,
+      "period": "2014_LiDAR_inference_not_1990s_truth",
+      "status": "reference_pending_transform_and_import"
+    }
+  ],
+  "regions": [
+    "urban_street",
+    "park_formal",
+    "residential_garden",
+    "drava_riparian",
+    "mariborski_otok",
+    "vineyard_hill",
+    "industrial_disturbed",
+    "woodland_foothills"
+  ],
+  "source_roadmap": "docs/VEGETATION_BIOMES_ROADMAP.md",
+  "owner_gate": "Actual species silhouettes, density, road clearance, riverbank character, wind, seasonal changes and performance require the project owner's personal in-game playtest."
+}
