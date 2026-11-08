@@ -2,7 +2,7 @@
 
 **Marburgum II** is a clean-room technical rebuild of *Magna Raedarum: Marburgum*: an authoritative shared-world **MMORPG** set in a fictionalized **1990s Maribor, Slovenia**, preserving the original project's core game design and systems.
 
-> **Status:** Initial source scaffold. No Unreal Editor build, packaged executable, imported city map, or gameplay vertical slice has yet been validated in this repository.
+> **Status:** Stage 0 network foundation. The Editor, dedicated Server and Client targets build with UE 5.8.3 on Linux. A packaged headless server and separate packaged client processes pass the Stage 0B network smoke on an empty test map: replicated server-owned state, a refused client mutation, an idempotent operation, disconnect/reconnect, and two concurrent clients. See [Docs/STAGE0_EVIDENCE.md](Docs/STAGE0_EVIDENCE.md). No imported city map, graphical UI, persistence, login or gameplay vertical slice exists yet.
 
 ## Required engine and languages
 
@@ -62,6 +62,13 @@ export UE_ROOT=/path/to/UnrealEngine-5.8.3
 ```
 
 The Linux build script invokes UnrealBuildTool through the specified engine; it does not download/build Unreal Engine. For other environments, consult [Docs/DEVELOPMENT.md](Docs/DEVELOPMENT.md).
+
+Package the separate dedicated server and client, then run the Stage 0B network smoke:
+
+```bash
+./scripts/package-linux.sh            # Saved/StagedBuilds/LinuxServer + LinuxClient
+./scripts/net-smoke-linux.sh          # packaged binaries; 'editor' runs uncooked -server/-game processes
+```
 
 Run independent toolchain checks:
 

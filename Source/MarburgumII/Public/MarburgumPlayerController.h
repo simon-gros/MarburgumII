@@ -3,11 +3,15 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "MarburgumChatTypes.h"
+#include "MarburgumGameState.h"
 #include "MarburgumPlayerController.generated.h"
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(FMarburgumRequestResultEvent, const FGuid& /*OperationId*/, EMarburgumRequestOutcome /*Outcome*/);
 
 /**
  * Player-owned RPC boundary: the server derives sender identity from PlayerState,
  * never from the client's payload. Private chat is not replicated to bystanders.
+ * Clients submit requests; only the server decides and commits outcomes.
  */
 UCLASS()
 class MARBURGUMII_API AMarburgumPlayerController : public APlayerController
@@ -26,6 +30,17 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Marburgum|Chat")
     void SendPrivateChat(int32 RecipientPlayerId, const FString& Text);
 
+    /** Submit an idempotent operation. Re-sending the same id must never apply twice. */
+    UFUNCTION(Server, Reliable)
+    void ServerSubmitOperation(FGuid OperationId);
+
+    /** Ask the server to change the network contract version. Clients hold no such authority. */
+    UFUNCTION(Server, Reliable)
+    void ServerRequestContractVersion(int32 RequestedVersion);
+
+    /** Client-local notification when the server answers a request. */
+    FMarburgumRequestResultEvent OnRequestResult;
+
     /** Server-approved deliveries only. Local history is bounded and nonpersistent. */
     UPROPERTY(BlueprintAssignable, Category = "Marburgum|Chat")
     FMarburgumChatMessageEvent OnChatReceived;
@@ -33,7 +48,13 @@ public:
     UPROPERTY(BlueprintReadOnly, Transient, Category = "Marburgum|Chat")
     TArray<FMarburgumChatMessage> RecentChat;
 
+protected:
+    UFUNCTION(Client, Reliable)
+    void ClientReceiveRequestResult(FGuid OperationId, EMarburgumRequestOutcome Outcome);
+
 private:
+    AMarburgumGameState* GetMarburgumGameState() const;
+
     UFUNCTION(Server, Reliable)
     void ServerSendChat(EMarburgumChatChannel Channel, int32 RecipientPlayerId, const FString& RawText);
 

@@ -1,16 +1,13 @@
 using UnrealBuildTool;
 
-// Client-only UMG and input presentation. No ServerOnly or persistent backend dependency.
+// Client-only input, UI, camera, audiovisual and local prediction adapters.
+// May consume the core module's replicated types; does not depend on MarburgumIIServer.
 public class MarburgumIIClient : ModuleRules
 {
     public MarburgumIIClient(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-        PublicDependencyModuleNames.Add("Core");
-        PrivateDependencyModuleNames.AddRange(new[]
-        {
-            "CoreUObject", "Engine", "UMG", "Slate", "SlateCore",
-            "MarburgumII", "MarburgumIIShared"
-        });
+        PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine", "MarburgumII" });
+        PrivateDependencyModuleNames.AddRange(new[] { "UMG", "Slate", "SlateCore", "MarburgumIIShared" });
     }
 }

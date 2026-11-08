@@ -2,6 +2,7 @@
 
 #include "MarburgumClientUiHooks.h"
 #include "MarburgumChatPolicy.h"
+#include "MarburgumNetworkContract.h"
 #include "Components/InputComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerState.h"
@@ -13,6 +14,17 @@ namespace
     constexpr double MinimumSpacingSeconds = 0.8;
     constexpr double WindowSeconds = 10.0;
     constexpr int32 MaxMessagesPerWindow = 8;
+
+    const TCHAR* OutcomeName(EMarburgumRequestOutcome Outcome)
+    {
+        switch (Outcome)
+        {
+        case EMarburgumRequestOutcome::Applied: return TEXT("applied");
+        case EMarburgumRequestOutcome::Duplicate: return TEXT("duplicate");
+        case EMarburgumRequestOutcome::Rejected: return TEXT("rejected");
+        }
+        return TEXT("unknown");
+    }
 }
 
 void AMarburgumPlayerController::BeginPlay()
@@ -180,4 +192,51 @@ void AMarburgumPlayerController::ClientReceiveChat_Implementation(const FMarburg
         RecentChat.RemoveAt(0, RecentChat.Num() - MaxLocalMessages);
     }
     OnChatReceived.Broadcast(Message);
+}
+
+AMarburgumGameState* AMarburgumPlayerController::GetMarburgumGameState() const
+{
+    const UWorld* World = GetWorld();
+    return World ? World->GetGameState<AMarburgumGameState>() : nullptr;
+}
+
+void AMarburgumPlayerController::ServerSubmitOperation_Implementation(FGuid OperationId)
+{
+    AMarburgumGameState* GameState = GetMarburgumGameState();
+    const EMarburgumRequestOutcome Outcome = GameState
+        ? GameState->CommitOperation(OperationId)
+        : EMarburgumRequestOutcome::Rejected;
+
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=operation player=%d op=%s outcome=%s applied_total=%d"),
+        MarburgumII::Network::SmokeLogPrefix,
+        PlayerState ? PlayerState->GetPlayerId() : -1,
+        *OperationId.ToString(EGuidFormats::Digits),
+        OutcomeName(Outcome),
+        GameState ? GameState->AppliedRequestCount : -1);
+
+    ClientReceiveRequestResult(OperationId, Outcome);
+}
+
+void AMarburgumPlayerController::ServerRequestContractVersion_Implementation(int32 RequestedVersion)
+{
+    // The contract version is server-defined; any client request to change it is refused.
+    AMarburgumGameState* GameState = GetMarburgumGameState();
+    if (GameState)
+    {
+        GameState->RecordRejectedRequest();
+    }
+
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=contract_change_refused player=%d requested=%d contract=%d rejected_total=%d"),
+        MarburgumII::Network::SmokeLogPrefix,
+        PlayerState ? PlayerState->GetPlayerId() : -1,
+        RequestedVersion,
+        GameState ? GameState->NetworkContractVersion : -1,
+        GameState ? GameState->RejectedRequestCount : -1);
+
+    ClientReceiveRequestResult(FGuid(), EMarburgumRequestOutcome::Rejected);
+}
+
+void AMarburgumPlayerController::ClientReceiveRequestResult_Implementation(FGuid OperationId, EMarburgumRequestOutcome Outcome)
+{
+    OnRequestResult.Broadcast(OperationId, Outcome);
 }

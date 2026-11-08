@@ -1,6 +1,6 @@
 # MarburgumII — MMORPG-first client/server architecture
 
-**Status:** Accepted foundational direction; source modules and target manifests scaffolded, runtime integration and testing still required.  
+**Status:** Accepted foundational direction. Gate 0A builds and the Gate 0B loopback network smoke pass on Linux with UE 5.8.3 ([evidence](STAGE0_EVIDENCE.md)); persistence, login, AOI and scale remain unbuilt.  
 **Engine:** Unreal Engine **5.8.3**.  
 **Relationship to original:** The original project separated Unreal `MarburgumClient`, `MarburgumServer` and `MarburgumShared`, and used an authoritative server with a legacy protocol-v3 TCP/JSON contract. MarburgumII preserves the **roles and gameplay semantics**, but rebuilds their implementation. The old protocol is **not** a drop-in compatibility requirement.
 
@@ -19,7 +19,7 @@ The game ultimately retains the original Marburgum's core disciplines: 1990s fic
 | `MarburgumIIClient` | ClientOnly | Local input, camera, HUD, audiovisual projection, request creation, client prediction | Authoritative grants of currency, XP, inventory or mission rewards |
 | `MarburgumIIServer` | ServerOnly | Account/session admission adapters, authoritative domain reducers, persistence and AOI/interest-management services (future) | Client UI, cameras, graphical streaming, untrusted display state |
 
-**Dependency rule:** both side-specific modules may depend on `MarburgumIIShared`; neither depends on the other. The main game module may consume shared contracts but not either side-specific implementation. The three roles are **source/target separation**, not three independently functioning services today.
+**Dependency rule:** both side-specific modules may depend on `MarburgumIIShared` and on the core `MarburgumII` module's replicated types; neither depends on the other. The core and shared modules never depend on a side-specific module, and shared never depends on core. The .NET validator enforces these edges, and symbol inspection of the packaged binaries confirms that the Client contains no server-module code and the Server contains no client-module code ([ADR-012](DECISIONS.md)).
 
 Unreal `AGameModeBase` exists only on server authority; `AGameStateBase` and `APlayerState` replicate relevant public state to clients. The initial `AMarburgumGameState::NetworkContractVersion` is a replicated marker for network smoke testing; it is not proof of a successful client/server handshake.
 
@@ -39,7 +39,18 @@ export UE_ROOT=/absolute/path/to/UnrealEngine-5.8.3
 ./scripts/build-linux.sh MarburgumIIClient
 ```
 
-**Validation status:** the .NET source validator checks this manifest topology. There has **not** been a UE 5.8.3 compile/link, Editor multiplayer session, headless server run, client login, replication smoke, or load test of the new modules in this change.
+**Validation status:** all four targets compile and link with UE 5.8.3 on Linux, and `scripts/package-linux.sh` cooks and stages the separate `LinuxServer` and `LinuxClient` builds. `scripts/net-smoke-linux.sh` passes Gate 0B over loopback using a headless dedicated server and `-nullrhi` client processes ([evidence](STAGE0_EVIDENCE.md)). Not yet tested: rendered clients, non-loopback or lossy networks, Windows builds, persistence, login and load.
+
+### Stage 0B smoke protocol
+
+| Piece | Module | Role |
+| --- | --- | --- |
+| `AMarburgumGameState` | core | Replicates `NetworkContractVersion`, a server-timer `AuthorityHeartbeat`, and `AppliedRequestCount` / `RejectedRequestCount`; keeps a server-side, process-lifetime idempotency ledger of operation GUIDs |
+| `AMarburgumPlayerController` | core | `ServerSubmitOperation(FGuid)` commits once and answers `Applied` or `Duplicate`; `ServerRequestContractVersion(int32)` is always refused; results return through a client RPC |
+| `FMarburgumIIServerModule` | server | Logs authority-side `ready`, `login` and `logout` evidence |
+| `UMarburgumNetSmokeSubsystem` | client | Active only with `-MB2NetSmoke`; drives the request sequence, optional disconnect/reconnect (`-MB2SmokeReconnect`) and peer wait (`-MB2SmokePeers=N`), then exits 0 or 1 |
+
+Evidence lines share the `LogMarburgumNet` category and the `MB2SMOKE` prefix. The idempotency ledger is a placeholder for the durable receipt store Gate 1 requires; it does not survive a server restart.
 
 ## 4. Authority and lifecycle
 

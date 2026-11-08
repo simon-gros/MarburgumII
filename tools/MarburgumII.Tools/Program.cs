@@ -78,14 +78,21 @@ string[] requiredFiles =
     "Source/MarburgumII/Public/MarburgumGameState.h",
     "Source/MarburgumII/Private/MarburgumGameState.cpp",
     "Source/MarburgumII/Public/MarburgumPlayerState.h",
+    "Source/MarburgumII/Public/MarburgumPlayerController.h",
+    "Source/MarburgumII/Private/MarburgumPlayerController.cpp",
     "Source/MarburgumIIShared/MarburgumIIShared.Build.cs",
     "Source/MarburgumIIShared/Private/MarburgumIISharedModule.cpp",
     "Source/MarburgumIIShared/Public/MarburgumNetworkContract.h",
     "Source/MarburgumIIClient/MarburgumIIClient.Build.cs",
     "Source/MarburgumIIClient/Private/MarburgumIIClientModule.cpp",
+    "Source/MarburgumIIClient/Public/MarburgumNetSmokeSubsystem.h",
+    "Source/MarburgumIIClient/Private/MarburgumNetSmokeSubsystem.cpp",
     "Source/MarburgumIIServer/MarburgumIIServer.Build.cs",
     "Source/MarburgumIIServer/Private/MarburgumIIServerModule.cpp",
     "Docs/NETWORK_ARCHITECTURE.md",
+    "Content/Maps/NetSmoke.umap",
+    "scripts/package-linux.sh",
+    "scripts/net-smoke-linux.sh",
     "native/marburgum-sim-core/Cargo.toml",
     "native/marburgum-sim-core/include/marburgum_sim_core.h"
 };
@@ -117,7 +124,8 @@ if (File.Exists(Path.Combine(root, serverTargetPath)))
     if (!content.Contains("\"MarburgumIIServer\"") || content.Contains("\"MarburgumIIClient\""))
         errors.Add("Server target must include server and exclude client module.");
 }
-foreach (string module in new[] { "MarburgumIIShared", "MarburgumIIClient", "MarburgumIIServer" })
+// Side modules may consume core and shared modules; core and shared never depend on a side.
+foreach (string module in new[] { "MarburgumII", "MarburgumIIShared", "MarburgumIIClient", "MarburgumIIServer" })
 {
     string path = $"Source/{module}/{module}.Build.cs";
     if (!File.Exists(Path.Combine(root, path))) continue;
@@ -127,6 +135,9 @@ foreach (string module in new[] { "MarburgumIIShared", "MarburgumIIClient", "Mar
     if (module != "MarburgumIIServer" && content.Contains("\"MarburgumIIServer\""))
         errors.Add($"{module} must not depend on the server module.");
 }
+string sharedBuildPath = "Source/MarburgumIIShared/MarburgumIIShared.Build.cs";
+if (File.Exists(Path.Combine(root, sharedBuildPath)) && Read(sharedBuildPath).Contains("\"MarburgumII\""))
+    errors.Add("MarburgumIIShared must not depend on the core game module.");
 foreach (string error in errors) Console.Error.WriteLine($"ERROR: {error}");
 if (errors.Count > 0) return 1;
 

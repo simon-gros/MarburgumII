@@ -26,7 +26,7 @@ If the engine was built from source, a local installation GUID may be required f
 
 Install/register Unreal Engine **5.8.3** and its supported C++ compiler toolchain. Generate IDE project files through your installed engine, then build `MarburgumIIEditor` in `Development Editor | Win64`. Confirm `Engine/Build/Build.version` reports 5.8.3, even if the desktop engine association says only `5.8`.
 
-## Client/server targets (source scaffold)
+## Client/server targets
 
 The game is designed as an MMORPG from Stage 0. On Linux use `UE_ROOT` pointing to **exactly 5.8.3** and build separate executable targets:
 
@@ -36,7 +36,18 @@ The game is designed as an MMORPG from Stage 0. On Linux use `UE_ROOT` pointing 
 ./scripts/build-linux.sh MarburgumIIServer
 ```
 
-The unqualified build script invocation defaults to the Editor target. A combined `MarburgumII` Game target is for local development only. The first network milestone still requires launching an actual headless server, connecting one then two clients, observing replicated GameState and testing reconnect; source validation alone proves none of these. See [NETWORK_ARCHITECTURE.md](NETWORK_ARCHITECTURE.md).
+The unqualified build script invocation defaults to the Editor target. A combined `MarburgumII` Game target is for local development only. Source validation alone proves no network behaviour; use the network smoke below. See [NETWORK_ARCHITECTURE.md](NETWORK_ARCHITECTURE.md).
+
+## Test map, packaging and network smoke (Linux)
+
+```bash
+./scripts/create-net-smoke-map.sh     # regenerate Content/Maps/NetSmoke.umap via the editor Python commandlet
+./scripts/package-linux.sh            # BuildCookRun: Saved/StagedBuilds/LinuxServer and LinuxClient
+./scripts/net-smoke-linux.sh          # Gate 0B against the packaged builds
+./scripts/net-smoke-linux.sh editor   # same test with uncooked UnrealEditor -server / -game processes
+```
+
+The smoke script starts one headless dedicated server on port 7777 (override with `MB2_SMOKE_PORT`). It runs one client through a refused mutation, an idempotent operation and a disconnect/reconnect, then two concurrent clients. Logs and `summary.txt` go to `Saved/NetSmoke/<UTC timestamp>/`. A nonzero exit means a failed expectation. The PythonScriptPlugin and EditorScriptingUtilities plugins are enabled only for the Editor target.
 
 ## Local asset production (conditional)
 

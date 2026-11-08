@@ -3,12 +3,20 @@
 /DerivedDataCache/
 /Intermediate/
 /Saved/
+/Build/*/FileOpenOrder/
+/Content/Developers/
+/Content/Collections/
 /.vs/
 *.sln
 *.suo
 *.VC.db
 *.xcodeproj
 *.xcworkspace
+# GenerateProjectFiles.sh output (Linux Makefile/CMake/VS Code)
+/Makefile
+/CMakeLists.txt
+/*.code-workspace
+/.ignore
 # Developer tools
 **/bin/
 **/obj/

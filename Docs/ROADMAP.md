@@ -6,13 +6,15 @@
 
 Delivered **as source only**: `MarburgumII.uproject`, core/shared/client/server module descriptors, Client/Server/Editor/Game build targets, engine version pin, a server-owned GameMode and replicated GameState contract marker, .NET source-manifest verifier, Rust crate and baseline CI.
 
-**Acceptance still outstanding:** compile the four module variants with real UE 5.8.3 on Linux, complete UHT and linking, launch Editor and headless dedicated server, and verify target/module loading. Green .NET/Rust validation does not close this stage.
+**Linux status (2026-11-08): passed.** Editor, Server, Client and the packaged LinuxServer/LinuxClient builds compile and link with UE 5.8.3. The Editor launches and loads the startup map, the headless server loads its modules, and symbol inspection confirms there is no side-to-side linkage ([evidence](STAGE0_EVIDENCE.md)). **Still outstanding:** a Windows build of the same targets.
 
 ## Stage 0B — Minimal actual online session (before gameplay)
 
 One dedicated server plus one client, then two clients, join the same small test map using the same authoritative World/GameState. Verify the replicated contract version, joint visibility of server-owned state, clean disconnect and reconnect, and rejection of unauthorized client mutation. Record command line, binary build SHA and logs; run as distinct processes, not merely standalone PIE.
 
 **Gate:** repeatable, observed server/client data path and networked authority. No account backend or persistence is claimed before they actually exist.
+
+**Linux status (2026-11-08): passed on loopback.** `scripts/net-smoke-linux.sh` runs a packaged headless server with one client (refused mutation, idempotent operation, disconnect and reconnect), then two concurrent clients ([evidence](STAGE0_EVIDENCE.md)). The clients run `-nullrhi`, so a rendered-client join is still to be captured alongside Stage 0C.
 
 ## Stage 0C — Premium modular graphical UI and early chat foundation (UI-00 through UI-03 in parallel with Stage 0B)
 
