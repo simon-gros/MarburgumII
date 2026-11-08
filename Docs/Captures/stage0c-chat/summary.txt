@@ -1,0 +1,80 @@
+MarburgumII CHAT-001 three-client chat smoke
+result: PASS
+date_utc: 2026-11-08T23:36:23Z
+git_sha: cda5415a1f995b419bc7f61c2865cbe6de336a17
+mode: staged
+host: Linux 6.18.60-2-cachyos-lts x86_64
+server_accepted_messages: 5
+private_bodies_in_logs: none
+
+MB2CHAT role=client tag=A event=start timeout=150 shot=1
+MB2CHAT role=client tag=A event=tick step=0 admitted=0 frame=1 dt=0.074
+MB2CHAT role=client tag=A event=roster self=257 a=257 b=256 c=258
+MB2CHAT role=client tag=A event=sent kind=G1
+MB2CHAT role=client tag=A event=received channel=general sender=257 recipient=-1 seq=1 body=G1
+MB2CHAT role=client tag=A event=tick step=1 admitted=1 frame=10 dt=0.123
+MB2CHAT role=client tag=A event=sent kind=P1 to=256
+MB2CHAT role=client tag=A event=received channel=private sender=257 recipient=256 seq=2 body=P1
+MB2CHAT role=client tag=A event=tick step=2 admitted=1 frame=575 dt=0.004
+MB2CHAT role=client tag=A event=received channel=private sender=256 recipient=257 seq=1 body=R1
+MB2CHAT role=client tag=A event=sent kind=GHOST to=999999
+MB2CHAT role=client tag=A event=received channel=system sender=-1 recipient=-1 seq=0 body=notice
+MB2CHAT role=client tag=A event=tick step=4 admitted=1 frame=864 dt=0.004
+MB2CHAT role=client tag=A event=sent kind=BAD
+MB2CHAT role=client tag=A event=received channel=system sender=-1 recipient=-1 seq=0 body=notice
+MB2CHAT role=client tag=A event=sent kind=BURST1+BURST2
+MB2CHAT role=client tag=A event=received channel=general sender=257 recipient=-1 seq=3 body=BURST1
+MB2CHAT role=client tag=A event=received channel=system sender=-1 recipient=-1 seq=0 body=notice
+MB2CHAT role=client tag=A event=tick step=6 admitted=1 frame=1380 dt=0.003
+MB2CHAT role=client tag=A event=sent kind=END
+MB2CHAT role=client tag=A event=received channel=general sender=257 recipient=-1 seq=4 body=END
+MB2CHAT role=client tag=A event=sent kind=OPERATION_TWICE
+MB2CHAT role=client tag=A event=receipt outcome=0
+MB2CHAT role=client tag=A event=receipt outcome=1
+MB2CHAT role=client tag=A event=tick step=9 admitted=1 frame=1874 dt=0.006
+MB2CHAT role=client tag=A event=counts general=3 private=2 system=3 receipts=2
+MB2CHAT role=client tag=A event=pass
+MB2CHAT role=client tag=A event=shot saved=1
+MB2CHAT role=client tag=B event=start timeout=150 shot=0
+MB2CHAT role=client tag=B event=tick step=0 admitted=0 frame=862 dt=0.000
+MB2CHAT role=client tag=B event=tick step=0 admitted=1 frame=12992 dt=0.000
+MB2CHAT role=client tag=B event=roster self=256 a=257 b=256 c=258
+MB2CHAT role=client tag=B event=received channel=general sender=257 recipient=-1 seq=1 body=G1
+MB2CHAT role=client tag=B event=tick step=0 admitted=1 frame=23532 dt=0.001
+MB2CHAT role=client tag=B event=received channel=private sender=257 recipient=256 seq=2 body=P1
+MB2CHAT role=client tag=B event=sent kind=R1 to=257
+MB2CHAT role=client tag=B event=received channel=private sender=256 recipient=257 seq=1 body=R1
+MB2CHAT role=client tag=B event=tick step=2 admitted=1 frame=32370 dt=0.001
+MB2CHAT role=client tag=B event=tick step=2 admitted=1 frame=43274 dt=0.000
+MB2CHAT role=client tag=B event=received channel=general sender=257 recipient=-1 seq=3 body=BURST1
+MB2CHAT role=client tag=B event=tick step=2 admitted=1 frame=52375 dt=0.001
+MB2CHAT role=client tag=B event=received channel=general sender=257 recipient=-1 seq=4 body=END
+MB2CHAT role=client tag=B event=tick step=2 admitted=1 frame=62518 dt=0.000
+MB2CHAT role=client tag=B event=counts general=3 private=2 system=0 receipts=0
+MB2CHAT role=client tag=B event=pass
+MB2CHAT role=client tag=C event=start timeout=150 shot=1
+MB2CHAT role=client tag=C event=tick step=0 admitted=0 frame=1 dt=0.098
+MB2CHAT role=client tag=C event=roster self=258 a=257 b=256 c=258
+MB2CHAT role=client tag=C event=received channel=general sender=257 recipient=-1 seq=1 body=G1
+MB2CHAT role=client tag=C event=tick step=0 admitted=1 frame=26 dt=0.062
+MB2CHAT role=client tag=C event=tick step=0 admitted=1 frame=316 dt=0.003
+MB2CHAT role=client tag=C event=tick step=0 admitted=1 frame=911 dt=0.003
+MB2CHAT role=client tag=C event=received channel=general sender=257 recipient=-1 seq=3 body=BURST1
+MB2CHAT role=client tag=C event=tick step=0 admitted=1 frame=1370 dt=0.040
+MB2CHAT role=client tag=C event=received channel=general sender=257 recipient=-1 seq=4 body=END
+MB2CHAT role=client tag=C event=tick step=0 admitted=1 frame=1827 dt=0.004
+MB2CHAT role=client tag=C event=counts general=3 private=0 system=0 receipts=0
+MB2CHAT role=client tag=C event=pass
+MB2CHAT role=client tag=C event=shot saved=1
+MB2SMOKE role=server event=ready map=NetSmoke port=7777 contract=1
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=login player=257 players=2
+MB2SMOKE role=server event=login player=258 players=3
+Marburgum chat accepted: channel=0 sender=257 sequence=1
+Marburgum chat accepted: channel=1 sender=257 sequence=2
+Marburgum chat accepted: channel=1 sender=256 sequence=1
+Marburgum chat accepted: channel=0 sender=257 sequence=3
+Marburgum chat accepted: channel=0 sender=257 sequence=4
+MB2SMOKE role=server event=logout player=256 players=2
+MB2SMOKE role=server event=logout player=257 players=1
+MB2SMOKE role=server event=logout player=258 players=0

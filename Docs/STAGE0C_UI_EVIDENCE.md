@@ -6,7 +6,7 @@
 
 | Item | Value |
 | --- | --- |
-| Source | `ae3868a3c1c3987766688fc8bb5375365a38df66` (clean tree; Editor, Server and Client rebuilt and repackaged from it) |
+| Source | `ae3868a3c1c3987766688fc8bb5375365a38df66` (clean tree; Editor, Server and Client rebuilt and repackaged from it). That commit was later rebased onto upstream chat work as `b42f562`; the same captures were re-run and passed on the merged tree `f279781` (`Saved/UICapture/20261108T230141Z`) and on `cda5415` |
 | Engine | Unreal Engine **5.8.3** source build, engine-bundled clang toolchain |
 | Host / GPU | CachyOS Linux 6.18.60 x86_64; NVIDIA GeForce RTX 5080, driver 620.70.06 |
 | Rendering | Packaged `MarburgumIIClient` with `-RenderOffScreen -windowed -ForceRes -ResX/-ResY` (real GPU rendering without a display) |

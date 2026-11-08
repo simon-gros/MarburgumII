@@ -1,6 +1,6 @@
 # General and Private Chat — MMORPG Communication Contract
 
-**Status:** Initial C++ routing and native UMG panel **committed as source**, **UE 5.8.3 native compilation and network tests pending**, **owner playtest/approval pending**.  
+**Status:** Routing and the UMG `chat_panel` **compile and run in UE 5.8.3 Linux builds**. Matrix cases 1–4, part of 6 and Linux 1080p screenshots pass an automated dedicated-server + three-client test ([evidence](STAGE0C_CHAT_EVIDENCE.md)). **Owner playtest/approval pending (ADR-008)**; cases 5 and 7 are only partly covered.  
 **Milestone:** CHAT-001 / Stage 0B–1, integrated with [NET-001](https://github.com/simon-gros/MarburgumII/issues/2) and [UI-001](https://github.com/simon-gros/MarburgumII/issues/3).  
 **Engine:** Unreal Engine **5.8.3**, authoritative network architecture.
 
@@ -10,7 +10,7 @@
 
 **Private:** a sender addresses **one connected player** by their current **session PlayerState ID**. Only the sender and intended online recipient see the message and it is never placed on replicated GameState, an all-client multicast, or general chat. Server-side validation determines the recipient actor from the authoritative connected controller roster. A player's display name is **not** used as an authentication credential or unique routing key. In this provisional no-account phase, IDs are ephemeral: reconnect may assign another ID and a sender must refresh the ONLINE roster.
 
-The interface has an always-available compact, dark-toned chat frame in the client's lower-left. It is **early native UMG scaffolding**, not final visually accepted UI. Enter activates the composer. Free text sends to General; `/g text` explicitly sends to General; `/w <session-id> text` or `/whisper <session-id> text` requests a private message. The **ONLINE** button lists replicated connected PlayerState names and session IDs. Server-confirmed private messages are tagged **PRIVATE** and visually separated from general messages; system failures are tagged **SYSTEM** and never presented as accepted messages. A client can interact via Blueprint API `SendGeneralChat`, `SendPrivateChat`, and `OnChatReceived` without adopting the command-parser UI.
+The interface has an always-available compact, dark-toned chat frame in the client's lower-left, built from the UI-01 tokens and mounted in the UI root's HUD layer once the client is admitted. It is a first themed implementation, not final visually accepted UI. Enter activates the composer. Free text sends to General; `/g text` explicitly sends to General; `/w <session-id> text` or `/whisper <session-id> text` requests a private message. The **ONLINE** button lists replicated connected PlayerState names and session IDs. Server-confirmed private messages are tagged **PRIVATE** and visually separated from general messages; system failures are tagged **SYSTEM** and never presented as accepted messages. A client can interact via Blueprint API `SendGeneralChat`, `SendPrivateChat`, and `OnChatReceived` without adopting the command-parser UI.
 
 ### Scope and future design
 
@@ -78,6 +78,8 @@ The project owner **personally plays** the accepted build, checks general/privat
 
 **Source already added:** `MarburgumChatTypes.h`, `MarburgumPlayerController.{h,cpp}`, `MarburgumChatPolicy.{h,cpp}`, `MarburgumChatWidget.{h,cpp}`, client module event hook, native automation test `Marburgum.Chat.TextPolicy`. The native UI automatically registers through a client-only event after local PlayerController initialization.
 
-**Not verified:** UnrealHeaderTool, C++ compilation/link, actual dedicated-server RPC execution, correctly mounted UMG in a packaged client, receipt ordering in real networking, functional client input after travel or server reconnect, or owner testing. Results must be marked `implementation_pending_native_qualification` until proven in a real Unreal 5.8.3 runtime. The source-level CI checks only static contracts.
+**Verified on Linux (2026-11-09):** UnrealHeaderTool, compilation and linking of all targets; `Marburgum.Chat.TextPolicy` passes; `scripts/chat-smoke-linux.sh` runs a packaged dedicated server and three packaged clients (sender, recipient, bystander) through matrix cases 1–4 and checks that no private body reaches the server or any client log; the panel renders in packaged clients ([evidence](STAGE0C_CHAT_EVIDENCE.md)). Native qualification found and fixed two defects that kept the original panel off screen (see the evidence).
+
+**Not verified:** interactive keyboard input and focus (case 5), chat across reconnect, screenshots beyond 1080p and Slovene UI copy (case 7), protocol fuzzing, Windows, and owner testing.
 
 **References:** [MMORPG networking](NETWORK_ARCHITECTURE.md), [UI/HUD roadmap](UI_HUD_ROADMAP.md), [source acceptance rules](DECISIONS.md), [fresh playtest policy](PLAYTEST_FRESHNESS.md), [Unreal RPC requirements](https://dev.epicgames.com/documentation/unreal-engine/remote-procedure-calls-in-unreal-engine).
