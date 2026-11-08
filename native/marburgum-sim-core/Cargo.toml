@@ -1,0 +1,12 @@
+[package]
+name = "marburgum-sim-core"
+version = "0.1.0"
+edition = "2021"
+description = "Engine-independent deterministic primitives for Marburgum II"
+publish = false
+
+[lib]
+name = "marburgum_sim_core"
+crate-type = ["rlib", "staticlib"]
+
+[dependencies]

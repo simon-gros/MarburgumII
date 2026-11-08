@@ -1,0 +1,29 @@
+name: Source validation
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  managed-tools:
+    name: C# manifest validation (.NET 8)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet run --project tools/MarburgumII.Tools -- verify
+
+  rust-core:
+    name: Rust native simulation unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustc --version && cargo --version
+      - run: cargo test --manifest-path native/marburgum-sim-core/Cargo.toml
+
+# This workflow does not test or package Unreal Engine 5.8.3.
