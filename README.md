@@ -2,7 +2,7 @@
 
 **Marburgum II** is a clean-room technical rebuild of *Magna Raedarum: Marburgum*: an authoritative shared-world **MMORPG** set in a fictionalized **1990s Maribor, Slovenia**, preserving the original project's core game design and systems.
 
-> **Status:** Stage 0 network foundation. The Editor, dedicated Server and Client targets build with UE 5.8.3 on Linux. A packaged headless server and separate packaged client processes pass the Stage 0B network smoke on an empty test map: replicated server-owned state, a refused client mutation, an idempotent operation, disconnect/reconnect, and two concurrent clients. See [Docs/STAGE0_EVIDENCE.md](Docs/STAGE0_EVIDENCE.md). No imported city map, graphical UI, persistence, login or gameplay vertical slice exists yet.
+> **Status:** Stage 0 network foundation. The Editor, dedicated Server and Client targets build with UE 5.8.3 on Linux. A packaged headless server and separate packaged client processes pass the Stage 0B network smoke on an empty test map: replicated server-owned state, a refused client mutation, an idempotent operation, disconnect/reconnect, and two concurrent clients. See [Docs/STAGE0_EVIDENCE.md](Docs/STAGE0_EVIDENCE.md). A first Stage 0C UI foundation (design tokens, component gallery, and a connection shell with truthful connect/reconnect/error states) renders in packaged clients and awaits owner playtest; see [Docs/STAGE0C_UI_EVIDENCE.md](Docs/STAGE0C_UI_EVIDENCE.md). No imported city map, exploration HUD, persistence, login or gameplay vertical slice exists yet.
 
 ## Required engine and languages
 

@@ -46,10 +46,10 @@ The same test also passes with uncooked editor processes (`scripts/net-smoke-lin
 
 ## Not proven by this evidence
 
-- **Rendered clients:** every client ran `-nullrhi`, so no rendered client join or screen capture exists yet. That belongs with Stage 0C UI work.
+- **Rendered clients:** every client here ran `-nullrhi`. Rendered joins are covered by [STAGE0C_UI_EVIDENCE.md](STAGE0C_UI_EVIDENCE.md).
 - **Real networks:** only loopback was tested; no non-loopback, latency, packet loss or NAT testing.
 - **Windows:** no Windows builds.
 - **Persistence:** the idempotency ledger lives in server memory and is lost on server restart. Durable receipts are a Gate 1 requirement.
 - **Login and admission:** none; any process that reaches the port can join.
-- **Client fallback authority:** after a disconnect, the Client target falls back to a local standalone copy of the game map, where its own `GameMode` holds authority. A future front-end/connection map should replace that fallback, so a disconnected client never simulates game rules locally.
+- **Client fallback authority:** resolved by ADR-011. A disconnected client now returns to `/Game/Maps/FrontEnd`, which has no gameplay authority, instead of a standalone copy of the test map.
 - **Load:** no load or soak testing.

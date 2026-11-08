@@ -6,7 +6,7 @@
 **Visual contract:** [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md).  
 **Network dependency:** [NET-001](https://github.com/simon-gros/MarburgumII/issues/2), a genuine two-client authoritative session.  
 **Umbrella implementation task:** [UI-001](https://github.com/simon-gros/MarburgumII/issues/3).  
-**Status:** Design and roadmap only. None of the graphical UI gates below is currently evidenced as implemented in MarburgumII.
+**Status:** UI-01 (design tokens, primitives, gallery) and UI-02 (session state machine and connection shell) have a first runtime implementation with rendered-client captures on Linux ([evidence](STAGE0C_UI_EVIDENCE.md)); per ADR-008 they are `implemented_awaiting_owner_playtest`, not accepted. UI-02 keyboard/controller focus traversal is not yet verified. UI-03 onward remain design only.
 
 ## 1. Product requirement and planning principle
 

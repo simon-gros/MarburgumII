@@ -14,7 +14,7 @@ One dedicated server plus one client, then two clients, join the same small test
 
 **Gate:** repeatable, observed server/client data path and networked authority. No account backend or persistence is claimed before they actually exist.
 
-**Linux status (2026-11-08): passed on loopback.** `scripts/net-smoke-linux.sh` runs a packaged headless server with one client (refused mutation, idempotent operation, disconnect and reconnect), then two concurrent clients ([evidence](STAGE0_EVIDENCE.md)). The clients run `-nullrhi`, so a rendered-client join is still to be captured alongside Stage 0C.
+**Linux status (2026-11-08): passed on loopback.** `scripts/net-smoke-linux.sh` runs a packaged headless server with one client (refused mutation, idempotent operation, disconnect and reconnect), then two concurrent clients ([evidence](STAGE0_EVIDENCE.md)). Rendered-client joins are now captured by the Stage 0C UI evidence below.
 
 ## Stage 0C — Premium modular graphical UI and early chat foundation (UI-00 through UI-03 in parallel with Stage 0B)
 
@@ -23,6 +23,8 @@ Begin the client-facing visual system as soon as the native Editor/Client builds
 **Exclusions:** do not import the original wanted stars, wanted/heat levels, police pursuit/chase system or chase-specific HUD. Do not restore generated talents or Talent screens.
 
 **Gate:** complete UI-00 ontology/parity validation and proceed through UI-01 (actual UMG tokens/gallery), UI-02 (session/focus shell) and initial UI-03 (modular, authority-aware HUD). Each has a separate runtime and screenshot gate; the complete server-connected public capture remains Stage 1. See [UI_HUD_ROADMAP.md](UI_HUD_ROADMAP.md) and [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md).
+
+**Linux status (2026-11-08): UI-01 and UI-02 first implementation captured, awaiting owner playtest.** Design tokens, UMG primitives and a SAMPLE DATA gallery, plus the connection shell driven by a client session state machine on a no-authority front-end map (ADR-011), render in packaged clients from 720p to 4K. A packaged-server join, a connection timeout, and a real server stop/restart with automatic client recovery are captured ([evidence](STAGE0C_UI_EVIDENCE.md)). Focus traversal, the UI-scale matrix, a visual design review and UI-03 remain open.
 
 ## Stage 0D — Licensed world-map acquisition and safe intake (parallel, nonblocking)
 
