@@ -9,7 +9,8 @@ public class MarburgumII : ModuleRules
         {
             "Core",
             "CoreUObject",
-            "Engine"
+            "Engine",
+            "InputCore"
         });
         // Common runtime types may consume contracts; never depend on presentation or service modules.
         PrivateDependencyModuleNames.Add("MarburgumIIShared");
