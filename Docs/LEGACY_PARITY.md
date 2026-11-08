@@ -30,10 +30,16 @@ Changes made explicitly in this restart take precedence: **Unreal Engine 5.8.3**
 | `weather_time` | City time, seasonal weather and environment | Stage 3 | Legacy design retained; implementation pending |
 | `interactions` | Unified urban interaction verbs | Stage 1 | Legacy design retained; implementation pending |
 | `jobs_opportunity` | Employment, opportunity scarcity and fairness | Stage 2-4 | Legacy design retained; implementation pending |
-| `user_interface` | Player-facing UI and journal | Stage 1 | Legacy design retained; implementation pending |
+| `user_interface` | Player-facing UI, HUD and journal (visually rebuilt) | Stage 0C–1 | Legacy interface semantics retained; polished new appearance pending |
 | `network_persistence` | Dedicated authoritative MMORPG world | Stage 0-4 | Legacy design retained; implementation pending |
 
 The companion JSON contains the original source paths and explicit migration rules for all 16 areas. This table is **not** a claim that the whole content catalogue, source assets, data imports, maps, or network services have been ported.
+
+## Explicit owner-approved exclusions
+
+The preservation principle does **not** apply to everything: the original **wanted stars**, **wanted/heat levels**, **police-chase/pursuit loop** (including escalation, roadblocks or chase indicators), and **legacy generated talents/Talent UI** are intentionally excluded from MarburgumII. No migration ticket should restore them indirectly through the HUD, NPC behavior, missions or copied gameplay data. NPCs serving institutional/narrative roles are a separate design question, not permission to rebuild the wanted system. See [ADR-006](DECISIONS.md) and [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md).
+
+The original HUD's *interaction, place, condition, objective, notification, skills, inventory and journal semantics* remain in scope, but their visual assets and architecture must be freshly designed, cohesive and high quality from the first public-facing builds.
 
 ## High-value original references
 

@@ -81,6 +81,8 @@ A population of 10,000–20,000 **virtual** inhabitants and 250 concurrent playe
 
 **Gate 0B — first real network loop:** launch one dedicated server and one actual client process; join the same empty map; observe replicated `NetworkContractVersion` and `GameState`, disconnect, reconnect, and verify no unauthorized client-side change. Repeat with two clients concurrently, proving both observe the same server-owned state. Include log and build SHA evidence. It is fine for the first world to be an empty test map.
 
+**UI/visual qualification in parallel:** [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md) governs the early client-only graphical HUD. The UI may be previewed with clearly marked demo fixtures, but public gameplay footage must display honest server-originated/replicated state. The authoritative server does not load UMG. The wanted-star/police-pursuit system is explicitly not being carried forward.
+
 **Gate 1 — first gameplay transaction:** one client requests an interaction, server validates it, commits one change (e.g. an inventory item), replicates the result and survives a save/restart; exercise duplicated requests and two clients attempting the same limited resource. UI reports the committed result; rejected requests have no effects.
 
 **Gate 2 — representative Marburgum gameplay:** implement fishing + skills + mission objectives + inventory/currency as server-owned, accessible through genuine client UI, including reconnect/load without XP/item duplication. Work in a tiny approved district first.

@@ -14,11 +14,19 @@ One dedicated server plus one client, then two clients, join the same small test
 
 **Gate:** repeatable, observed server/client data path and networked authority. No account backend or persistence is claimed before they actually exist.
 
-## Stage 1 — Networked playable district and clear UI
+## Stage 0C — Premium graphical UI foundation (in parallel with Stage 0B)
 
-Provenance-reviewed compact urban district, player movement/camera, context prompts, minimal HUD, interactable item and NPC, initial server-owned event, client UI feedback and a save/restart round trip. Verify two clients cannot duplicate a limited item or gain unauthorized progress.
+Begin the client-facing visual system as soon as the native Editor/Client builds are available, **alongside** the dedicated server and two-client work rather than after all networking or content production. Preserve original Marburgum HUD semantics but rebuild the appearance professionally in UE **5.8.3**: responsive UMG theme, branded connection/transition screens, low-clutter exploration HUD, contextual prompt, location banner, one pinned objective, condition display, graphical notifications, and coherent on-demand Character, Skills, Inventory and Journal shells. The UI must consume replicated/server-owned state when present, with honest empty/loading/error states; static fixtures cannot masquerade as live MMO gameplay.
 
-**Gate:** reproducible interaction → authoritative event/receipt → replicated state → restart → same outcome, with a clean player-facing UI.
+**Exclusions:** do not import the original wanted stars, wanted/heat levels, police pursuit/chase system or chase-specific HUD. Do not restore generated talents or Talent screens.
+
+**Gate:** documented UI layout/theme, actual UMG implementation and initial rendered screen captures, while keeping `MarburgumIIClient` free of server implementation dependencies. The complete server-connected public capture is gated in Stage 1. See [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md).
+
+## Stage 1 — Networked playable district and showcase-quality UI
+
+Provenance-reviewed compact urban district, player movement/camera, **high-quality visually finished initial graphical HUD**, interactable item and NPC, authoritative event/feedback, and a save/restart round trip. The original HUD's interaction/location/objective/condition/notification vocabulary and its Character/Skills/Inventory/Journal screens are carried into newly designed graphical interfaces rather than exposed as clumped debug text. Verify two clients cannot duplicate a limited item or gain unauthorized progress. Record a player-facing 1440p/4K gameplay capture after the networked loop works.
+
+**Gate:** reproducible interaction → authoritative event/receipt → replicated state → restart → same outcome, with a polished UI. Pass the documented responsive screenshot/interface-scale matrix, keyboard/controller focus smoke, visibility/readability, and a short *genuine* multiplayer client capture. A static mockup cannot close this gate.
 
 ## Stage 2 — Marburgum-specific missions, skills and economy
 
@@ -48,3 +56,5 @@ Grow a finished **3–6-hour MMO-architected vertical slice** toward the origina
 - Never label a proposed system, data definition, source module or roadmap as working multiplayer.
 - Reuse reviewed **requirements, ontology and provenance-audited game data** from original Marburgum; do not mechanically transplant Godot runtime code, server protocol, unreviewed assets or historical assumptions.
 - No significant gameplay feature can bypass the client → authoritative server → replicated result boundary simply to simplify local testing.
+- Every public-facing development capture must use a reviewed graphical UI and clearly distinguish functional gameplay from UI mockups.
+- Intentionally excluded features (wanted stars, police pursuit/chases, legacy talents) are not implementation backlog items.

@@ -161,4 +161,4 @@ This ontology was synthesized from the **original private project**'s design/dat
 
 ### Open questions before freezing a v1.0 gameplay ontology
 
-The 0–1990 level equation; currency/price and scarcity rules; precise character/account/session identity; per-NPC knowledge and relationship data; year-state transition model; taxi journey semantics; crime/policing; mission party ownership; save/replication schema; and how the reviewed geospatial source catalogue is imported remain subject to implementation-oriented design and acceptance testing.
+The 0–1990 level equation; currency/price and scarcity rules; precise character/account/session identity; per-NPC knowledge and relationship data; year-state transition model; taxi journey semantics; institutional/narrative law-related content (**excluding** the original wanted-star/police-pursuit systems); mission party ownership; save/replication schema; and how the reviewed geospatial source catalogue is imported remain subject to implementation-oriented design and acceptance testing.

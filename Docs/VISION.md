@@ -14,6 +14,7 @@ Design ambition includes a substantial authored main storyline (historical targe
 
 - **Skills, not talents.** Do not revive the earlier auto-generated talent framework. A level cap of 1990 was explored in the previous project but must be designed and tested afresh.
 - **Missions, not quests.** The setting, vocabulary and writing must fit 1990s Maribor.
+- **Early premium graphical interface.** Rebuild a polished, visually distinctive HUD and Character/Skills/Inventory/Journal screens early enough for real public-facing gameplay captures, while preserving the original's interaction and information architecture. No wanted stars or police-chase system.
 - **MMORPG-first, solo-friendly.** Dedicated authoritative server/client separation is required from Stage 0. Solo play and 2–5-person cooperation remain important experiences within the shared-world architecture. High-population shards remain unverified targets subject to load testing.
 - **Consequential actions.** Scarcity, fair opportunities for unsuccessful players, money, social position and reputation should shape meaningful decisions.
 - **An evolving city.** Local time, seasonal conditions, local geography and institutions should affect gameplay. Past climate, historical, geospatial and narrative datasets are reference sources pending an explicit import and provenance audit.

@@ -9,7 +9,8 @@
     "Rebuild runtime technology, networking and implementation rather than copying code.",
     "Never treat legacy design or catalog existence as MarburgumII implementation.",
     "Never import data/assets without provenance, rights and historical/geometric review.",
-    "Any intentional redesign requires an ADR and explicit parity-matrix update."
+    "Any intentional redesign requires an ADR and explicit parity-matrix update.",
+    "Explicit exclusions override original parity: no wanted stars, wanted levels, police pursuit/chases, or generated talent UI."
   ],
   "entries": [
     {
@@ -195,9 +196,9 @@
         "docs/USER_INTERFACE_ROADMAP.md",
         "docs/PLAYER_EXPERIENCE_PLATFORM_QUALITY_ROADMAP.md"
       ],
-      "intent": "Legible graphical interaction, inventory, mission/evidence journal, character progression and world-state feedback.",
-      "migration": "Implement in new client-only module; prevent a wall of raw debug text.",
-      "stage": "1",
+      "intent": "Preserve original low-clutter HUD semantics, contextual prompts/location banner/objective/condition and notifications plus Character/Skills/Inventory/Journal, rebuilt immediately as a premium graphical, responsive UE 5.8.3 client interface for genuine public-facing gameplay captures.",
+      "migration": "New UMG/C++ presentation and shared visual theme; event-driven view models read replicated/authoritative data; honest empty and loading states; screenshot/readability/input matrix. Original wanted stars, chase UI and talent pages deliberately excluded.",
+      "stage": "0C-1",
       "status": "design_retained_implementation_pending"
     },
     {
@@ -212,6 +213,26 @@
       "migration": "New UE 5.8.3 source modules, Unreal-native replication baseline, native server/client proof at Stage 0. Do NOT silently preserve old protocol-v3 wire compatibility.",
       "stage": "0-4",
       "status": "design_retained_implementation_pending"
+    }
+  ],
+  "excluded_features": [
+    {
+      "id": "wanted_stars_and_wanted_level",
+      "source": "Original HUD and police response system",
+      "decision": "EXCLUDE",
+      "scope": "No wanted stars, heat counter, wanted level, UI meter, thresholds or HUD feedback in MarburgumII."
+    },
+    {
+      "id": "police_pursuit_chase",
+      "source": "Original police pursuit/chase system",
+      "decision": "EXCLUDE",
+      "scope": "No AI police pursuit/escalation system, chase gameplay loop, roadblocks or chase-specific interface migrated."
+    },
+    {
+      "id": "generated_talents",
+      "source": "Original generated talent framework",
+      "decision": "EXCLUDE",
+      "scope": "No generated talent trees and no Talent UI screen."
     }
   ]
 }

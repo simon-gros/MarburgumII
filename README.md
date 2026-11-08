@@ -22,6 +22,7 @@ Explore a fictionalized 1990s Maribor and build a persistent life through missio
 - **Skills, not talents.** The previous project's generated talent system is not part of this restart.
 - **Missions, not quests.** Ordinary urban experiences, choices, and consequences establish the tone.
 - **A long campaign is a design goal, not a current implementation.** First prove a compact playable vertical slice.
+- **Early showcase-quality graphical UI/HUD.** Preserve the original's place/interaction/objective/skills/inventory/journal structure in a polished UE 5.8.3 client interface, built alongside the networking milestone. **Wanted stars and police chases are excluded.**
 - **Client/shared/server separation exists from Stage 0.** Real connection, replication and persistence tests still remain to be implemented and passed.
 - **Historical/geospatial data and art** must have documented provenance and appropriate use rights. No copyrighted game-engine code or third-party commercial-game assets are copied into this repository.
 
@@ -109,6 +110,7 @@ and no persistent shell configuration was changed.
 - [Original Marburgum design parity register](Docs/LEGACY_PARITY.md) and [machine-readable source matrix](Data/Parity/source-matrix.v0.1.json)
 - [Architecture and language boundaries](Docs/ARCHITECTURE.md)
 - [MMORPG client/server contract and milestone gates](Docs/NETWORK_ARCHITECTURE.md)
+- [Early graphical UI and HUD design contract](Docs/UI_HUD_DESIGN.md)
 - [Development prerequisites and commands](Docs/DEVELOPMENT.md)
 - [Roadmap and acceptance gates](Docs/ROADMAP.md)
 - [Engineering decisions](Docs/DECISIONS.md)

@@ -42,7 +42,7 @@ No starter map, login, durable persistence service, UI or client/server network 
 3. **Deterministic logic:** stable integer/fixed-point operations and replayable tests where distributed simulation requires them; avoid relying on wall-clock calls inside gameplay reducers.
 4. **Data provenance:** do not use map, landmark, imagery, music or game assets without reviewable source, transformation, and license.
 5. **Performance budgets:** city-scale streaming, virtual NPC population, network replication and memory overhead require measured tests.
-6. **Playable milestones:** implement one complete loop and UI first, rather than exposing dozens of textual placeholders.
+6. **Playable, visually reviewable milestones:** build a professional graphical HUD and polished primary player panels in parallel with the first networked gameplay loop; do not expose raw debug indices or treat mock screenshots as functioning gameplay. See [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md).
 
 ## Acceptance
 
