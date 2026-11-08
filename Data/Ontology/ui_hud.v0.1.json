@@ -1,0 +1,1167 @@
+{
+  "format": "marburgumii.ui_hud.descriptive_ontology",
+  "version": "0.1.0",
+  "engine": "Unreal Engine 5.8.3",
+  "status": "design_only_not_implemented",
+  "name": "MarburgumII User Interface and HUD Ontology",
+  "source": "Docs/UI_HUD_ONTOLOGY.md",
+  "compatibility": "Companion semantic layer to Data/Ontology/core.v0.1.json, not a network packet or Unreal blueprint schema.",
+  "type_definitions": [
+    {
+      "id": "interface_session",
+      "domain": "runtime",
+      "description": "An active local player's interface lifecycle, independent of account identity or server session."
+    },
+    {
+      "id": "presentation_mode",
+      "domain": "runtime",
+      "description": "A mutually or partly exclusive context that selects relevant HUD modules, e.g. exploration or driving."
+    },
+    {
+      "id": "session_state",
+      "domain": "runtime",
+      "description": "A truthful client connection/join/recovery state, distinguished from renderer loading."
+    },
+    {
+      "id": "ui_surface",
+      "domain": "composition",
+      "description": "A root screen-space or world-space container with layering, input and visibility contracts."
+    },
+    {
+      "id": "module_definition",
+      "domain": "composition",
+      "description": "A stable named interface feature with semantic responsibility and render contract."
+    },
+    {
+      "id": "module_instance",
+      "domain": "composition",
+      "description": "The actual active projection of a module for a player and viewport."
+    },
+    {
+      "id": "widget",
+      "domain": "composition",
+      "description": "A reusable control or content primitive within a module."
+    },
+    {
+      "id": "layout_region",
+      "domain": "layout",
+      "description": "A responsive safe-area region in which modules may be anchored or docked."
+    },
+    {
+      "id": "layout_profile",
+      "domain": "layout",
+      "description": "A saved set of positions, sizes and visibility choices for configurable modules."
+    },
+    {
+      "id": "layout_constraint",
+      "domain": "layout",
+      "description": "Rules for safe area, bounds, collision avoidance, minimum readable size and stacking."
+    },
+    {
+      "id": "visibility_policy",
+      "domain": "layout",
+      "description": "A predicate over context, data availability, player settings and priority."
+    },
+    {
+      "id": "semantic_signal",
+      "domain": "data",
+      "description": "A typed piece of presentation-relevant state with declared provenance, freshness and privacy."
+    },
+    {
+      "id": "view_model",
+      "domain": "data",
+      "description": "A client projection that turns signals into display-ready, localizable content."
+    },
+    {
+      "id": "command_intent",
+      "domain": "data",
+      "description": "A user request for a gameplay-affecting action; never itself a successful outcome."
+    },
+    {
+      "id": "authoritative_receipt",
+      "domain": "data",
+      "description": "An acknowledged server-owned outcome or rejection keyed to a stable operation ID."
+    },
+    {
+      "id": "feedback_event",
+      "domain": "feedback",
+      "description": "A deduplicated signal of meaningful change shown through visual and optional audio channels."
+    },
+    {
+      "id": "notification_policy",
+      "domain": "feedback",
+      "description": "Priority, queuing, aggregation, persistence and acknowledgement rules for feedback events."
+    },
+    {
+      "id": "player_frame",
+      "domain": "hud",
+      "description": "Compact server-derived player condition and identity context."
+    },
+    {
+      "id": "subject_frame",
+      "domain": "hud",
+      "description": "Information about a selected, addressed or nearby relevant entity, subject to visibility/privacy."
+    },
+    {
+      "id": "party_frame",
+      "domain": "hud",
+      "description": "Compact summaries of other party members from authorized session data."
+    },
+    {
+      "id": "activity_indicator",
+      "domain": "hud",
+      "description": "A progress, readiness, duration or state cue for an active noncombat or bounded-danger activity."
+    },
+    {
+      "id": "context_prompt",
+      "domain": "hud",
+      "description": "One actionable verb, input glyph, target and eligibility feedback at a time."
+    },
+    {
+      "id": "objective_tracker",
+      "domain": "hud",
+      "description": "A pinned concise objective, separate from full mission history."
+    },
+    {
+      "id": "location_banner",
+      "domain": "hud",
+      "description": "A transient, period-correct display name for a visited place."
+    },
+    {
+      "id": "navigation_aid",
+      "domain": "hud",
+      "description": "Optional context-sensitive local wayfinding using only approved knowledge and period conventions."
+    },
+    {
+      "id": "notification_feed",
+      "domain": "hud",
+      "description": "A controlled, readable channel of event and reward messages."
+    },
+    {
+      "id": "action_palette",
+      "domain": "hud",
+      "description": "Optional compact actions/tools tied to actual owned capabilities, not a permanent combat hotbar."
+    },
+    {
+      "id": "inventory_view",
+      "domain": "screen",
+      "description": "The inventory and inspection interface, with quantities, evidence roles and valid actions."
+    },
+    {
+      "id": "skills_view",
+      "domain": "screen",
+      "description": "Skill proficiency, earned XP, meaningful unlocks and mastery presentation."
+    },
+    {
+      "id": "journal_view",
+      "domain": "screen",
+      "description": "Mission states, objectives, history, evidence and player annotations."
+    },
+    {
+      "id": "character_view",
+      "domain": "screen",
+      "description": "Identity, condition, possessions, authorized equipment and social information."
+    },
+    {
+      "id": "dialogue_view",
+      "domain": "screen",
+      "description": "Focused NPC/player conversation with choices, attribution and server-confirmed results."
+    },
+    {
+      "id": "social_view",
+      "domain": "screen",
+      "description": "Optional party roster, invitations and moderated communication interfaces."
+    },
+    {
+      "id": "settings_view",
+      "domain": "screen",
+      "description": "Display, UI scaling, audio, controls, accessibility and recovery settings."
+    },
+    {
+      "id": "modal_dialog",
+      "domain": "screen",
+      "description": "An exclusive confirmation/refusal/error flow with focus and escape semantics."
+    },
+    {
+      "id": "input_action",
+      "domain": "interaction",
+      "description": "A semantic command such as interact, open inventory, back or accept."
+    },
+    {
+      "id": "focus_scope",
+      "domain": "interaction",
+      "description": "A layer that owns focus navigation and restore behavior while active."
+    },
+    {
+      "id": "presentation_token",
+      "domain": "design",
+      "description": "Versioned typography, color, icon, spacing, sound, border or motion design token."
+    },
+    {
+      "id": "localized_string",
+      "domain": "design",
+      "description": "Culture-aware player-facing text with localization identifier and formatting constraints."
+    },
+    {
+      "id": "accessible_semantics",
+      "domain": "accessibility",
+      "description": "Role/name/description/value/live announcement metadata, not inferred from artwork."
+    },
+    {
+      "id": "player_preference",
+      "domain": "accessibility",
+      "description": "Persisted local appearance, scale, input, contrast and motion settings."
+    },
+    {
+      "id": "capture_case",
+      "domain": "validation",
+      "description": "A reproducible target resolution, mode, data state and expected screenshot/interaction outcome."
+    },
+    {
+      "id": "design_fixture",
+      "domain": "validation",
+      "description": "Labeled deterministic UI preview data that cannot issue authoritative gameplay commands."
+    },
+    {
+      "id": "performance_budget",
+      "domain": "validation",
+      "description": "A measured CPU/GPU/memory responsiveness expectation for UI surfaces."
+    },
+    {
+      "id": "capability_gate",
+      "domain": "validation",
+      "description": "Authoritative gameplay availability used to disable/hide unsupported UI actions."
+    }
+  ],
+  "relation_definitions": [
+    {
+      "id": "projects",
+      "source": "interface_session",
+      "target": "ui_surface",
+      "cardinality": "1..*",
+      "description": "One active session projects a set of UI surfaces."
+    },
+    {
+      "id": "has_mode",
+      "source": "interface_session",
+      "target": "presentation_mode",
+      "cardinality": "1..*",
+      "description": "Modes may overlap subject to precedence rules."
+    },
+    {
+      "id": "has_session_state",
+      "source": "interface_session",
+      "target": "session_state",
+      "cardinality": "1",
+      "description": "Connection status is an explicit state, not inferred from widget visibility."
+    },
+    {
+      "id": "contains_module",
+      "source": "ui_surface",
+      "target": "module_instance",
+      "cardinality": "0..*",
+      "description": "Surface owns rendered modules; client instance only."
+    },
+    {
+      "id": "instantiates",
+      "source": "module_instance",
+      "target": "module_definition",
+      "cardinality": "1",
+      "description": "Stable registered module definition."
+    },
+    {
+      "id": "contains_widget",
+      "source": "module_instance",
+      "target": "widget",
+      "cardinality": "0..*",
+      "description": "Composed reusable controls."
+    },
+    {
+      "id": "occupies_region",
+      "source": "module_instance",
+      "target": "layout_region",
+      "cardinality": "1",
+      "description": "A primary region is assigned per instance."
+    },
+    {
+      "id": "obeys_constraint",
+      "source": "module_instance",
+      "target": "layout_constraint",
+      "cardinality": "1..*",
+      "description": "Safe areas, collision, size and overlay rules."
+    },
+    {
+      "id": "uses_visibility",
+      "source": "module_definition",
+      "target": "visibility_policy",
+      "cardinality": "1",
+      "description": "Visibility policy is explicit, not an ad-hoc Tick check."
+    },
+    {
+      "id": "uses_profile",
+      "source": "interface_session",
+      "target": "layout_profile",
+      "cardinality": "0..1",
+      "description": "Saved local preset determines optional placements."
+    },
+    {
+      "id": "binds_signal",
+      "source": "view_model",
+      "target": "semantic_signal",
+      "cardinality": "1..*",
+      "description": "View models consume typed signals with provenance."
+    },
+    {
+      "id": "presents_model",
+      "source": "module_instance",
+      "target": "view_model",
+      "cardinality": "0..*",
+      "description": "Modules present small view models."
+    },
+    {
+      "id": "issues_intent",
+      "source": "input_action",
+      "target": "command_intent",
+      "cardinality": "0..1",
+      "description": "Only supported actions create gameplay intents."
+    },
+    {
+      "id": "resolves_intent",
+      "source": "authoritative_receipt",
+      "target": "command_intent",
+      "cardinality": "1",
+      "description": "Only the authoritative server resolves consequential intents."
+    },
+    {
+      "id": "notifies",
+      "source": "feedback_event",
+      "target": "notification_feed",
+      "cardinality": "0..1",
+      "description": "One feed entry may aggregate multiple related events."
+    },
+    {
+      "id": "uses_feedback_policy",
+      "source": "feedback_event",
+      "target": "notification_policy",
+      "cardinality": "1",
+      "description": "Transient versus persistent rules are predictable."
+    },
+    {
+      "id": "summarizes_player",
+      "source": "player_frame",
+      "target": "semantic_signal",
+      "cardinality": "1..*",
+      "description": "Condition and status originate from authorized signals."
+    },
+    {
+      "id": "summarizes_target",
+      "source": "subject_frame",
+      "target": "semantic_signal",
+      "cardinality": "1..*",
+      "description": "Knowledge-restricted target state only."
+    },
+    {
+      "id": "summarizes_party",
+      "source": "party_frame",
+      "target": "semantic_signal",
+      "cardinality": "1..*",
+      "description": "Only party-authorized data."
+    },
+    {
+      "id": "represents_activity",
+      "source": "activity_indicator",
+      "target": "semantic_signal",
+      "cardinality": "1..*",
+      "description": "Active work/fishing/vehicle state and duration."
+    },
+    {
+      "id": "presents_action",
+      "source": "context_prompt",
+      "target": "input_action",
+      "cardinality": "0..1",
+      "description": "Do not advertise unsupported client-side actions."
+    },
+    {
+      "id": "tracks_goal",
+      "source": "objective_tracker",
+      "target": "semantic_signal",
+      "cardinality": "0..*",
+      "description": "Only the pinned currently actionable objective."
+    },
+    {
+      "id": "labels_location",
+      "source": "location_banner",
+      "target": "semantic_signal",
+      "cardinality": "0..*",
+      "description": "Period and fictionalization verified display identity."
+    },
+    {
+      "id": "presents_feedback",
+      "source": "notification_feed",
+      "target": "feedback_event",
+      "cardinality": "0..*",
+      "description": "Bounded queue/aggregation."
+    },
+    {
+      "id": "uses_token",
+      "source": "widget",
+      "target": "presentation_token",
+      "cardinality": "0..*",
+      "description": "Visual appearance from shared design system."
+    },
+    {
+      "id": "displays_text",
+      "source": "widget",
+      "target": "localized_string",
+      "cardinality": "0..*",
+      "description": "No hard-coded unlocalizable strings."
+    },
+    {
+      "id": "has_accessibility",
+      "source": "widget",
+      "target": "accessible_semantics",
+      "cardinality": "0..1",
+      "description": "Every interactive/essential widget must define semantics."
+    },
+    {
+      "id": "maps_to_input",
+      "source": "context_prompt",
+      "target": "input_action",
+      "cardinality": "0..*",
+      "description": "Visual prompt adapts to currently active input device."
+    },
+    {
+      "id": "owns_focus",
+      "source": "modal_dialog",
+      "target": "focus_scope",
+      "cardinality": "1",
+      "description": "Modal traps focus deliberately and restores prior scope on closing."
+    },
+    {
+      "id": "applies_preference",
+      "source": "interface_session",
+      "target": "player_preference",
+      "cardinality": "0..*",
+      "description": "UI scale/opacity/language/layout are per-player local choices."
+    },
+    {
+      "id": "tests_module",
+      "source": "capture_case",
+      "target": "module_definition",
+      "cardinality": "1..*",
+      "description": "Capture matrix spans modes and data states."
+    },
+    {
+      "id": "uses_fixture",
+      "source": "capture_case",
+      "target": "design_fixture",
+      "cardinality": "0..1",
+      "description": "Fixtures are labeled and never claimed as live state."
+    },
+    {
+      "id": "constrained_by_budget",
+      "source": "ui_surface",
+      "target": "performance_budget",
+      "cardinality": "0..*",
+      "description": "Profile representative runtime surfaces."
+    },
+    {
+      "id": "requires_capability",
+      "source": "module_definition",
+      "target": "capability_gate",
+      "cardinality": "0..*",
+      "description": "No fake feature completion or actions."
+    },
+    {
+      "id": "offers_action",
+      "source": "action_palette",
+      "target": "input_action",
+      "cardinality": "0..*",
+      "description": "Limited urban activity shortcuts based on real abilities."
+    },
+    {
+      "id": "opens_inventory",
+      "source": "inventory_view",
+      "target": "input_action",
+      "cardinality": "0..*",
+      "description": "Items have only server-supported actions."
+    },
+    {
+      "id": "provides_navigation",
+      "source": "social_view",
+      "target": "focus_scope",
+      "cardinality": "0..*",
+      "description": "Party/social layers obey focus and moderation requirements."
+    }
+  ],
+  "implementation_stages": [
+    "UI-00",
+    "UI-01",
+    "UI-02",
+    "UI-03",
+    "UI-04",
+    "UI-05",
+    "UI-06",
+    "UI-07"
+  ],
+  "presentation_modes": [
+    {
+      "id": "connection",
+      "description": "Boot, session/join and recovery interface; no false connected state.",
+      "default_modules": [
+        "connection_shell",
+        "error_dialog",
+        "connection_status"
+      ],
+      "stage": "UI-02"
+    },
+    {
+      "id": "exploration",
+      "description": "Quiet city exploration with minimal HUD.",
+      "default_modules": [
+        "player_condition",
+        "location_banner",
+        "interaction_prompt",
+        "pinned_objective",
+        "notification_feed"
+      ],
+      "stage": "UI-03"
+    },
+    {
+      "id": "focused_interaction",
+      "description": "Contact or nearby interactable selected, with concise action and contextual subject information.",
+      "default_modules": [
+        "interaction_prompt",
+        "subject_context",
+        "notification_feed"
+      ],
+      "stage": "UI-03"
+    },
+    {
+      "id": "investigation",
+      "description": "Evidence inspection, dialogue, mission decisions and journal access.",
+      "default_modules": [
+        "dialogue_panel",
+        "journal_panel",
+        "pinned_objective",
+        "notification_feed"
+      ],
+      "stage": "UI-04"
+    },
+    {
+      "id": "activity",
+      "description": "Fishing, working, photographing, crafting or trading; show only context-specific progress and actions.",
+      "default_modules": [
+        "activity_status",
+        "action_palette",
+        "notification_feed"
+      ],
+      "stage": "UI-05"
+    },
+    {
+      "id": "driving",
+      "description": "Vehicle context; minimal speed, condition if approved, exit action and local navigation.",
+      "default_modules": [
+        "vehicle_status",
+        "interaction_prompt",
+        "notification_feed"
+      ],
+      "stage": "UI-05"
+    },
+    {
+      "id": "party",
+      "description": "Small cooperative group; important member state and invitations without default raid-size clutter.",
+      "default_modules": [
+        "party_roster",
+        "social_panel",
+        "notification_feed"
+      ],
+      "stage": "UI-05"
+    },
+    {
+      "id": "management",
+      "description": "Character, skills, inventory, journal and settings as deliberate large on-demand screens.",
+      "default_modules": [
+        "character_panel",
+        "skills_panel",
+        "inventory_panel",
+        "journal_panel",
+        "settings_panel"
+      ],
+      "stage": "UI-04"
+    },
+    {
+      "id": "system_modal",
+      "description": "Confirmation, refusal, critical network error or destructive action in exclusive focus.",
+      "default_modules": [
+        "error_dialog"
+      ],
+      "stage": "UI-02"
+    }
+  ],
+  "semantic_signals": [
+    {
+      "id": "connection_phase",
+      "authority": "client_observed",
+      "description": "Connection/handshake/timeout lifecycle; 'ready' requires verified actual session."
+    },
+    {
+      "id": "network_contract",
+      "authority": "authoritative_replicated",
+      "description": "Server-replicated contract version and compatibility."
+    },
+    {
+      "id": "player_identity",
+      "authority": "authoritative_replicated",
+      "description": "Public/owner-visible player identity; avoid account secrets."
+    },
+    {
+      "id": "player_condition",
+      "authority": "authoritative_replicated",
+      "description": "Vitality/stamina and condition only if available."
+    },
+    {
+      "id": "target_context",
+      "authority": "authoritative_replicated",
+      "description": "Selected/nearby semantic subject with eligibility and privacy limits."
+    },
+    {
+      "id": "interaction_options",
+      "authority": "authoritative_replicated",
+      "description": "Actual permitted verbs and verified targets."
+    },
+    {
+      "id": "location_identity",
+      "authority": "authored_verified",
+      "description": "Display name with period, map and fictionalization provenance."
+    },
+    {
+      "id": "mission_pinned",
+      "authority": "authoritative_replicated",
+      "description": "Pinned mission and one current actionable objective."
+    },
+    {
+      "id": "mission_history",
+      "authority": "authoritative_replicated",
+      "description": "Committed mission progress and evidence reference history."
+    },
+    {
+      "id": "mission_receipt",
+      "authority": "authoritative_receipt",
+      "description": "Committed or rejected mission-related player intent."
+    },
+    {
+      "id": "inventory_state",
+      "authority": "authoritative_replicated",
+      "description": "Items, validated quantities, status and custody."
+    },
+    {
+      "id": "currency_state",
+      "authority": "authoritative_replicated",
+      "description": "Money/explicit currency for client owner only."
+    },
+    {
+      "id": "skill_state",
+      "authority": "authoritative_replicated",
+      "description": "Skill level/XP and allowed unlocks."
+    },
+    {
+      "id": "reputation_state",
+      "authority": "authoritative_replicated",
+      "description": "Current public reputation; contextual private standing is restricted."
+    },
+    {
+      "id": "progress_receipt",
+      "authority": "authoritative_receipt",
+      "description": "Unique XP/item/currency/evidence result, dedupe by transaction/operation identity."
+    },
+    {
+      "id": "vehicle_state",
+      "authority": "authoritative_replicated",
+      "description": "Owned/occupied vehicle identity, speed, condition and authorization."
+    },
+    {
+      "id": "activity_state",
+      "authority": "authoritative_replicated",
+      "description": "Active fishing/work/trade state and progression."
+    },
+    {
+      "id": "party_state",
+      "authority": "authoritative_replicated",
+      "description": "Party-visible summary, join/leave state and permitted member condition."
+    },
+    {
+      "id": "chat_event",
+      "authority": "authoritative_replicated",
+      "description": "Sanitized, permission-scoped moderated communication; later only."
+    },
+    {
+      "id": "world_clock",
+      "authority": "authoritative_replicated",
+      "description": "Shared in-world date/time distinct from wall clock."
+    },
+    {
+      "id": "gameplay_warning",
+      "authority": "authoritative_replicated",
+      "description": "Meaningful hazard/condition alerts; only when that mechanic exists."
+    },
+    {
+      "id": "input_device",
+      "authority": "client_local",
+      "description": "Keyboard/mouse/controller glyph and device-family detection."
+    },
+    {
+      "id": "ui_settings",
+      "authority": "client_local",
+      "description": "Interface scale, opacity, contrast, motion, preference, preset."
+    },
+    {
+      "id": "layout_config",
+      "authority": "client_local",
+      "description": "Validated module positions/sizes/visibility stored client-side."
+    },
+    {
+      "id": "translated_text",
+      "authority": "localized",
+      "description": "Localization keys and culture-aware formats."
+    },
+    {
+      "id": "design_preview",
+      "authority": "test_fixture_only",
+      "description": "Clearly labeled display-only fixture, never produces authoritative events."
+    }
+  ],
+  "module_registry": [
+    {
+      "id": "connection_shell",
+      "kind": "screen",
+      "stage": "UI-02",
+      "primary_mode": "connection",
+      "priority": "critical",
+      "required_signals": [
+        "connection_phase",
+        "network_contract"
+      ],
+      "description": "Full connection/loading/reconnect shell; truthful statuses and recovery.",
+      "status": "planned"
+    },
+    {
+      "id": "connection_status",
+      "kind": "hud",
+      "stage": "UI-02",
+      "primary_mode": "connection",
+      "priority": "critical",
+      "required_signals": [
+        "connection_phase"
+      ],
+      "description": "Concise progress/error and retry state; never fake admission.",
+      "status": "planned"
+    },
+    {
+      "id": "error_dialog",
+      "kind": "modal",
+      "stage": "UI-02",
+      "primary_mode": "system_modal",
+      "priority": "critical",
+      "required_signals": [
+        "connection_phase"
+      ],
+      "description": "Actionable errors and confirmations with preserved focus.",
+      "status": "planned"
+    },
+    {
+      "id": "player_condition",
+      "kind": "hud",
+      "stage": "UI-03",
+      "primary_mode": "exploration",
+      "priority": "critical",
+      "required_signals": [
+        "player_condition"
+      ],
+      "description": "Compact vitality/stamina module, with meaningful absence/unknown state.",
+      "status": "planned"
+    },
+    {
+      "id": "location_banner",
+      "kind": "hud",
+      "stage": "UI-03",
+      "primary_mode": "exploration",
+      "priority": "standard",
+      "required_signals": [
+        "location_identity"
+      ],
+      "description": "Transient district/landmark transition, archive-aware period identity.",
+      "status": "planned"
+    },
+    {
+      "id": "interaction_prompt",
+      "kind": "hud",
+      "stage": "UI-03",
+      "primary_mode": "focused_interaction",
+      "priority": "critical",
+      "required_signals": [
+        "interaction_options",
+        "target_context",
+        "input_device"
+      ],
+      "description": "Single concise eligible action with device glyph, localized verb, target.",
+      "status": "planned"
+    },
+    {
+      "id": "subject_context",
+      "kind": "world_overlay",
+      "stage": "UI-03",
+      "primary_mode": "focused_interaction",
+      "priority": "standard",
+      "required_signals": [
+        "target_context"
+      ],
+      "description": "Selective relevant NPC/object nameplate, not a label above every pedestrian.",
+      "status": "planned"
+    },
+    {
+      "id": "pinned_objective",
+      "kind": "hud",
+      "stage": "UI-03",
+      "primary_mode": "exploration",
+      "priority": "high",
+      "required_signals": [
+        "mission_pinned"
+      ],
+      "description": "One brief actionable objective only while pinned.",
+      "status": "planned"
+    },
+    {
+      "id": "notification_feed",
+      "kind": "hud",
+      "stage": "UI-03",
+      "primary_mode": "exploration",
+      "priority": "high",
+      "required_signals": [
+        "progress_receipt",
+        "mission_receipt",
+        "connection_phase"
+      ],
+      "description": "Deduped priority queue with actionable error persistence.",
+      "status": "planned"
+    },
+    {
+      "id": "action_palette",
+      "kind": "hud",
+      "stage": "UI-05",
+      "primary_mode": "activity",
+      "priority": "standard",
+      "required_signals": [
+        "interaction_options",
+        "activity_state",
+        "input_device"
+      ],
+      "description": "Small context-specific activity/tool strip; no mandatory combat action bar.",
+      "status": "planned"
+    },
+    {
+      "id": "activity_status",
+      "kind": "hud",
+      "stage": "UI-05",
+      "primary_mode": "activity",
+      "priority": "high",
+      "required_signals": [
+        "activity_state"
+      ],
+      "description": "Fishing/trade/work progress and timing when authorized.",
+      "status": "planned"
+    },
+    {
+      "id": "vehicle_status",
+      "kind": "hud",
+      "stage": "UI-05",
+      "primary_mode": "driving",
+      "priority": "high",
+      "required_signals": [
+        "vehicle_state"
+      ],
+      "description": "Contextual vehicle identity/speed only when operating a vehicle.",
+      "status": "planned"
+    },
+    {
+      "id": "character_panel",
+      "kind": "screen",
+      "stage": "UI-04",
+      "primary_mode": "management",
+      "priority": "high",
+      "required_signals": [
+        "player_identity",
+        "player_condition",
+        "reputation_state"
+      ],
+      "description": "Polished identity/condition/stats/equipment; empty states are honest.",
+      "status": "planned"
+    },
+    {
+      "id": "skills_panel",
+      "kind": "screen",
+      "stage": "UI-04",
+      "primary_mode": "management",
+      "priority": "high",
+      "required_signals": [
+        "skill_state"
+      ],
+      "description": "Dense icon/proficiency/XP/milestone grid/list with reviewable unlocks.",
+      "status": "planned"
+    },
+    {
+      "id": "inventory_panel",
+      "kind": "screen",
+      "stage": "UI-04",
+      "primary_mode": "management",
+      "priority": "high",
+      "required_signals": [
+        "inventory_state",
+        "currency_state"
+      ],
+      "description": "Graphical item overview with selection/evidence details and legal actions.",
+      "status": "planned"
+    },
+    {
+      "id": "journal_panel",
+      "kind": "screen",
+      "stage": "UI-04",
+      "primary_mode": "management",
+      "priority": "high",
+      "required_signals": [
+        "mission_history",
+        "mission_pinned"
+      ],
+      "description": "Mission progress, historical records, evidence, timeline and pinning.",
+      "status": "planned"
+    },
+    {
+      "id": "dialogue_panel",
+      "kind": "screen",
+      "stage": "UI-05",
+      "primary_mode": "investigation",
+      "priority": "high",
+      "required_signals": [
+        "target_context",
+        "interaction_options",
+        "mission_receipt"
+      ],
+      "description": "Readable attributed dialogue and server-backed response choices.",
+      "status": "planned"
+    },
+    {
+      "id": "settings_panel",
+      "kind": "screen",
+      "stage": "UI-04",
+      "primary_mode": "management",
+      "priority": "high",
+      "required_signals": [
+        "ui_settings",
+        "input_device"
+      ],
+      "description": "Interface scaling, text, contrast, input and graphics options.",
+      "status": "planned"
+    },
+    {
+      "id": "party_roster",
+      "kind": "hud",
+      "stage": "UI-05",
+      "primary_mode": "party",
+      "priority": "standard",
+      "required_signals": [
+        "party_state"
+      ],
+      "description": "Small-group status with privacy and UI density limits.",
+      "status": "planned"
+    },
+    {
+      "id": "social_panel",
+      "kind": "screen",
+      "stage": "UI-05",
+      "primary_mode": "party",
+      "priority": "standard",
+      "required_signals": [
+        "party_state",
+        "chat_event"
+      ],
+      "description": "Party invitation/session detail, chat where authorized and moderated.",
+      "status": "planned"
+    },
+    {
+      "id": "navigation_aid",
+      "kind": "hud",
+      "stage": "UI-05",
+      "primary_mode": "exploration",
+      "priority": "optional",
+      "required_signals": [
+        "location_identity",
+        "mission_pinned"
+      ],
+      "description": "Subtle period-plausible orientation; no always-on satellite/GPS requirement.",
+      "status": "planned"
+    },
+    {
+      "id": "layout_editor",
+      "kind": "screen",
+      "stage": "UI-06",
+      "primary_mode": "management",
+      "priority": "optional",
+      "required_signals": [
+        "layout_config",
+        "ui_settings"
+      ],
+      "description": "Grid/snap/move/scale/visibility with reset, preview and profiles.",
+      "status": "planned"
+    },
+    {
+      "id": "activity_tooltip",
+      "kind": "overlay",
+      "stage": "UI-05",
+      "primary_mode": "activity",
+      "priority": "standard",
+      "required_signals": [
+        "activity_state",
+        "interaction_options"
+      ],
+      "description": "Details on demand, not persistent prose.",
+      "status": "planned"
+    },
+    {
+      "id": "world_time",
+      "kind": "hud",
+      "stage": "UI-05",
+      "primary_mode": "exploration",
+      "priority": "optional",
+      "required_signals": [
+        "world_clock"
+      ],
+      "description": "Optional time on deliberate request or context; not always on.",
+      "status": "planned"
+    },
+    {
+      "id": "status_alert",
+      "kind": "hud",
+      "stage": "UI-05",
+      "primary_mode": "exploration",
+      "priority": "high",
+      "required_signals": [
+        "gameplay_warning"
+      ],
+      "description": "Important non-excluded hazards only when real gameplay supports them.",
+      "status": "planned"
+    }
+  ],
+  "invariants": [
+    {
+      "id": "no_false_authority",
+      "rule": "UI may display or propose gameplay changes, but cannot author money/items/XP/mission/state outcomes; server receipt and replication are the only live truth.",
+      "level": "must"
+    },
+    {
+      "id": "fixture_separation",
+      "rule": "Preview fixtures are labeled SAMPLE DATA and isolated from live networking and gameplay commands; public runtime evidence must indicate source.",
+      "level": "must"
+    },
+    {
+      "id": "no_excluded_mechanics",
+      "rule": "No wanted stars/heat, police chase/pursuit system or legacy generated Talent UI can be registered or made visible.",
+      "level": "must"
+    },
+    {
+      "id": "one_intent_one_receipt",
+      "rule": "A gameplay command intent is distinct from a successful receipt; notifications deduplicate by event/operation identity.",
+      "level": "must"
+    },
+    {
+      "id": "no_hud_clutter",
+      "rule": "No permanent eight-bar ability array or text-wall; semantic priority and visibility policies preserve the center view.",
+      "level": "must"
+    },
+    {
+      "id": "privacy_and_knowledge",
+      "rule": "Never show other players' private inventory, balances, secret missions or NPC data that the server has not authorized.",
+      "level": "must"
+    },
+    {
+      "id": "focus_integrity",
+      "rule": "Modal focus traps intentionally; close/back restores prior focus and relevant gameplay input context.",
+      "level": "must"
+    },
+    {
+      "id": "fallback_and_unknown",
+      "rule": "Loading, unknown, disabled, empty, missing-asset and network-error states have explicit graphics and text; never invent values.",
+      "level": "must"
+    },
+    {
+      "id": "responsive_and_localizable",
+      "rule": "Use localizable strings, diacritic-capable fonts, scale/safe-area constraints, readable text and tested input devices.",
+      "level": "must"
+    },
+    {
+      "id": "showcase_verified",
+      "rule": "Screenshot/capture metadata includes engine/version, source SHA, display size, UI scale and live-vs-fixture distinction.",
+      "level": "must"
+    },
+    {
+      "id": "no_hidden_bloat",
+      "rule": "Hidden complex panels are lazy loaded or otherwise verified not to create unnecessary work; prefer event-driven updates.",
+      "level": "should"
+    },
+    {
+      "id": "default_before_layout_edit",
+      "rule": "The default HUD is visually accepted before optional drag-and-drop editor is promoted; editing cannot hide critical error cues.",
+      "level": "must"
+    }
+  ],
+  "excluded_features": [
+    {
+      "mechanic": "wanted_stars",
+      "reason": "Explicit project owner exclusion"
+    },
+    {
+      "mechanic": "wanted_level_or_heat",
+      "reason": "Explicit project owner exclusion"
+    },
+    {
+      "mechanic": "police_pursuit_or_chase",
+      "reason": "Explicit project owner exclusion"
+    },
+    {
+      "mechanic": "legacy_talents",
+      "reason": "Replaced by skill-only progression"
+    }
+  ],
+  "ui_preferences": {
+    "scale_range_percent": [
+      80,
+      200
+    ],
+    "candidate_default_percent": 100,
+    "profiles_planned": [
+      "exploration",
+      "activity",
+      "driving",
+      "party"
+    ],
+    "final_values_subject_to_review": true
+  },
+  "verification": {
+    "capture_resolutions": [
+      "1280x720",
+      "1366x768",
+      "1920x1080",
+      "2560x1440",
+      "3440x1440",
+      "3840x2160"
+    ],
+    "capture_scales_percent": [
+      80,
+      100,
+      125,
+      150,
+      200
+    ],
+    "network_runtime_requires_real_server": true,
+    "mock_preview_must_be_labeled": true
+  }
+}
