@@ -51,5 +51,5 @@ The same test also passes with uncooked editor processes (`scripts/net-smoke-lin
 - **Windows:** no Windows builds.
 - **Persistence:** the idempotency ledger lives in server memory and is lost on server restart. Durable receipts are a Gate 1 requirement.
 - **Login and admission:** none; any process that reaches the port can join.
-- **Client fallback authority:** resolved by ADR-011. A disconnected client now returns to `/Game/Maps/FrontEnd`, which has no gameplay authority, instead of a standalone copy of the test map.
+- **Client fallback authority:** resolved by ADR-013. A disconnected client now returns to `/Game/Maps/FrontEnd`, which has no gameplay authority, instead of a standalone copy of the test map.
 - **Load:** no load or soak testing.
