@@ -60,6 +60,44 @@ dotnet run --project tools/MarburgumII.Tools -- verify
 cargo test --manifest-path native/marburgum-sim-core/Cargo.toml
 ```
 
+## Verified local prerequisites (2026-11-08)
+
+The development machine runs **CachyOS Linux, x86_64**. All requested
+prerequisites are installed; shell environment selection is required:
+
+| Prerequisite | Verified installation / result |
+| --- | --- |
+| Unreal Engine 5.8.3 | `/mnt/data/unreal/5.8.3`; `Engine/Build/Build.version` reports exactly **5.8.3**, and the repository's version check passes. |
+| Linux platform toolchain | Bundled **v26_clang-20.1.8-rockylinux8**, matching `Engine/Config/Linux/Linux_SDK.json`; bundled Clang runs and UnrealBuildTool `-Mode=ValidatePlatforms -Platforms=Linux` reports **Linux VALID**. Use the engine-selected SDK, not the system Clang 23.1.4. |
+| Git / Git LFS | Git **2.56.0**, Git LFS **3.8.1**; LFS filters configured. |
+| .NET 8 SDK | **8.0.425**, with .NET runtime **8.0.31**, installed under `$HOME/.dotnet`. The default `/usr/bin/dotnet` sees only the separate system SDK **10.0.114**. |
+| Stable Rust | `stable-x86_64-unknown-linux-gnu` is the default; `rustc` and Cargo **1.99.1**; all **3** simulation-core tests pass. |
+| Python | **3.14.9**; engine metadata check passes. |
+| Graphics runtime | Vulkan enumerates an **NVIDIA GeForce RTX 5080**, driver **620.70.06**; this is not an editor rendering test. |
+
+For this machine, start from the canonical checkout and select the installed tools:
+
+```bash
+cd /mnt/data/MarburgumII
+export UE_ROOT=/mnt/data/unreal/5.8.3
+export DOTNET_ROOT="$HOME/.dotnet"
+export PATH="$DOTNET_ROOT:$PATH"
+./scripts/check-engine-version.sh "$UE_ROOT"
+dotnet --list-sdks
+```
+
+The user-local .NET installation also contains newer SDKs. The PATH setting makes
+.NET 8 available but does **not** pin SDK selection to 8; use a `global.json`
+SDK pin when an exact .NET 8 SDK build is needed. During this audit, the validation
+utility was compiled with SDK **8.0.425** using an isolated temporary SDK pin,
+then run successfully from the repository with the user-local .NET host.
+UnrealBuildTool was checked using the engine's own bundled .NET host.
+
+**Validation boundary:** prerequisites and independent source checks pass. This
+audit did not build `MarburgumIIEditor`, launch the editor, validate a packaged
+executable, or run an in-editor gameplay smoke test. No packages were installed
+and no persistent shell configuration was changed.
+
 ## Documentation
 
 - [Game scope and design constraints](Docs/VISION.md)
