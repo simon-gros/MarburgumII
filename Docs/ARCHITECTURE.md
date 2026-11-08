@@ -15,7 +15,7 @@
 | UnrealBuildTool | C# | Engine's `.Target.cs` and `.Build.cs` build rules | Configured |
 | External tools | C# / .NET 8 | Manifest checks, future data pipelines and tooling | First validator |
 | Simulation library | Rust | Pure deterministic native operations through stable C ABI | Crate and tests; not linked to UE |
-| World/levels | Unreal Content | Streaming maps and authored levels | Not imported |
+| World/levels | Unreal Content | Planned licensed Maribor GIS geometry, independently authored test map, World Partition and reviewed historical/semantic overlays | No licensed map purchased/imported or tested |
 | Authoritative state/persistence | C++ and future reviewed services | State ownership, missions, economies and networking | Proposed only |
 
 **C# is not being advertised as an Unreal gameplay scripting runtime.** UnrealBuildTool happens to use C#, while our .NET application is an independent executable.
@@ -34,6 +34,10 @@
 - `AMarburgumGameMode` exists on authority and configures an `AMarburgumGameState` with a replicated version marker and an `AMarburgumPlayerState`. These are source foundations, **not a proven online session**.
 
 No starter map, login, durable persistence service, UI or client/server network smoke test has been completed in this repository.
+
+## Commercial map and city-source boundary
+
+The primary **planned** map source is [TurboSquid Maribor city model 1639711](WORLD_MAP_ADOPTION.md), contingent upon purchase/license verification, coordinate/format inspection, 1990s historical correction, Unreal 5.8.3 import/playtest and explicit owner approval. It replaces the prior generated 121-window city as the default geometry production path. The old pipeline remains reference/fallback; original district, mission, vegetation, fish and authored world identities remain engine-neutral. Paid assets must never be committed to public source or public build artifacts; see the ignored `ThirdParty/Licensed/` and `Content/Licensed/` paths.
 
 ## Future runtime principles
 

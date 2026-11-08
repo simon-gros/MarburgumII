@@ -17,6 +17,12 @@
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Locally purchased/licensed commercial map assets — NEVER commit raw, derived or extractable source.
+/ThirdParty/Licensed/
+/Content/Licensed/
+/Content/ThirdPartyLicensed/
+/PrivateAssets/
 .env
 .env.*
 !.env.example

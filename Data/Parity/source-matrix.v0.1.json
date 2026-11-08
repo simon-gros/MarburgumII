@@ -10,7 +10,9 @@
     "Never treat legacy design or catalog existence as MarburgumII implementation.",
     "Never import data/assets without provenance, rights and historical/geometric review.",
     "Any intentional redesign requires an ADR and explicit parity-matrix update.",
-    "Explicit exclusions override original parity: no wanted stars, wanted levels, police pursuit/chases, or generated talent UI."
+    "Explicit exclusions override original parity: no wanted stars, wanted levels, police pursuit/chases, or generated talent UI.",
+    "Every major playable feature requires personal in-game owner playtest and recorded approval.",
+    "Adopt TurboSquid Maribor product 1639711 as planned primary geometry only after commercial license/intake/owner approval, never public source redistribution."
   ],
   "entries": [
     {
@@ -24,9 +26,10 @@
         "project/data/landmarks.json"
       ],
       "intent": "A recognizably Maribor-based 1990s fictional city with the Drava, districts, places, buildings and route geography.",
-      "migration": "Review source provenance/rights, geometry, corrections, period reconstruction and fictional identities before creating UE World Partition assets.",
+      "migration": "Planned primary geometry is purchased Maribor model 1639711, pending verified purchase, licensed local import, 2022-to-1990s period correction and owner playtest. The original map-production geometry is reference/fallback; original authored location/mission/ecology identities require a spatial crosswalk.",
       "stage": "3",
-      "status": "design_retained_implementation_pending"
+      "status": "planned_new_default_geometry_purchase_pending_owner_acceptance",
+      "planned_geometry_source": "Data/World/source-selection.v0.1.json"
     },
     {
       "id": "historical_state",
@@ -37,7 +40,7 @@
         "project/data/building_period.json"
       ],
       "intent": "1990–1999 historically grounded vehicles, institutions, businesses, media, technology, signage and social change; distinguish evidence from fictionalization.",
-      "migration": "Retain source IDs, asserted dates, uncertainty, licensing and design approvals.",
+      "migration": "Retain source IDs, asserted dates, uncertainty, licensing and design approvals. New 2022 GIS geometry must not be presented as a faithful 1990s city without reviewed changes.",
       "stage": "3",
       "status": "design_retained_implementation_pending"
     },
@@ -75,7 +78,7 @@
         "project/data/interactions.json"
       ],
       "intent": "River fishing as an ordinary persistent skill and a representative stateful interaction loop.",
-      "migration": "New server-owned cast/wait/bite/hook result, catch/XP and idempotent inventory effects.",
+      "migration": "New server-owned cast/wait/bite/hook result, catch/XP and idempotent inventory effects. Fish species/habitats and gameplay identities stay intact across base-map replacement; map riverbank anchors require geospatial validation.",
       "stage": "2",
       "status": "design_retained_implementation_pending"
     },

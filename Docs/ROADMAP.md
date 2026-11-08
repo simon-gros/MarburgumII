@@ -22,9 +22,17 @@ Begin the client-facing visual system as soon as the native Editor/Client builds
 
 **Gate:** complete UI-00 ontology/parity validation and proceed through UI-01 (actual UMG tokens/gallery), UI-02 (session/focus shell) and initial UI-03 (modular, authority-aware HUD). Each has a separate runtime and screenshot gate; the complete server-connected public capture remains Stage 1. See [UI_HUD_ROADMAP.md](UI_HUD_ROADMAP.md) and [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md).
 
+## Stage 0D — Licensed world-map acquisition and safe intake (parallel, nonblocking)
+
+The planned **primary source for MarburgumII city geometry** is a purchased [Maribor 3D model](WORLD_MAP_ADOPTION.md) (TurboSquid product 1639711). **Purchase is pending**, and a listing is not a qualified Unreal map. Inspect the commercial file structure/rights and geometry after acquisition; preserve a local-only licensed import pipeline and do not publish paid geometry or textures to GitHub. Retain original Marburgum district/mission/ecological identities as engine-neutral content, but do **not** rebuild the old 121-window base geometry by default. Continue Stage 0B/0C using a minimal independent map until asset readiness.
+
+**Gate:** purchase/license checked, file inventory and coordinate evaluation recorded, first local Unreal 5.8.3 area imported and reviewed. Source-only manifest and successful import logs are **not** owner-approved gameplay.
+
 ## Stage 1 — Networked playable district and showcase-quality UI
 
-Provenance-reviewed compact urban district, player movement/camera, **high-quality visually finished initial graphical HUD**, interactable item and NPC, authoritative event/feedback, and a save/restart round trip. The original HUD's interaction/location/objective/condition/notification vocabulary and its Character/Skills/Inventory/Journal screens are carried into newly designed graphical interfaces rather than exposed as clumped debug text. Verify two clients cannot duplicate a limited item or gain unauthorized progress. Record a player-facing 1440p/4K gameplay capture after the networked loop works.
+Provenance-reviewed compact urban district **preferably using an approved purchased Maribor Lent/Drava geometry slice** (with an independent test-level fallback while purchase is pending), player movement/camera, **high-quality visually finished initial graphical HUD**, interactable item and NPC, authoritative event/feedback, and a save/restart round trip. The original HUD's interaction/location/objective/condition/notification vocabulary and its Character/Skills/Inventory/Journal screens are carried into newly designed graphical interfaces rather than exposed as clumped debug text. Verify two clients cannot duplicate a limited item or gain unauthorized progress. Record a player-facing 1440p/4K gameplay capture after the networked loop works.
+
+**Additional mandatory gate:** the project owner personally tests the playable world/interaction/HUD on the exact build and explicitly approves it; otherwise Stage 1 remains awaiting owner approval.
 
 **Gate:** complete UI-03 live-HUD and UI-04 management-panel acceptance in [UI_HUD_ROADMAP.md](UI_HUD_ROADMAP.md): interaction → authoritative event/receipt → replicated state → restart → same outcome, with polished UI. Pass a responsive screenshot/interface-scale/focus matrix and a short *genuine* multiplayer-client capture. Static mockups or UI fixtures cannot close a gameplay gate.
 
@@ -36,7 +44,7 @@ Expand UI-05 contextual modules for real fishing, dialogue, trade and cooperatio
 
 ## Stage 3 — City, population, mobility and historical state
 
-Advance UI-05 activity, driving and group overlays; evaluate full UI-06 profile editing after successful Stage 1 baseline without forcing every player to customize. Incrementally import reviewed Maribor topology, terrain and fictionalized 1990s data; introduce district streaming, navigation, vehicles, world clock, weather, virtual NPCs and social/environment state. **World Partition is independent of network AOI.**
+Advance UI-05 activity, driving and group overlays; evaluate full UI-06 profile editing after successful Stage 1 baseline without forcing every player to customize. Expand the **licensed Maribor base model** to the wider playable city only after a personally accepted Lent/Drava slice, performing spatial reconciliation and 1990s corrections. Restore original vegetation/fish catalogues and their ecological associations, but **not** the old generated base-city mesh pipeline as default. Incrementally import reviewed city topology, terrain and fictionalized 1990s data; introduce district streaming, navigation, vehicles, world clock, weather, virtual NPCs and social/environment state. **World Partition is independent of network AOI.**
 
 **Gate:** measured streaming/navigation stability, server-owned state, useful replication relevance and no known important map seams in shipped content.
 
@@ -53,6 +61,8 @@ Grow a finished **3–6-hour MMO-architected vertical slice** toward the origina
 ## Working rules
 
 - A stage is not complete until it builds and executes under **UE 5.8.3** with its acceptance gate.
+- **Every major playable feature requires the project owner's own in-game playtest and explicit recorded approval; automated checks are necessary but insufficient.**
+- The purchased Maribor city model is the **planned** default geometry source only after verified acquisition/rights and owner qualification; never publish commercial source/derived meshes in GitHub.
 - Never label a proposed system, data definition, source module or roadmap as working multiplayer.
 - Reuse reviewed **requirements, ontology and provenance-audited game data** from original Marburgum; do not mechanically transplant Godot runtime code, server protocol, unreviewed assets or historical assumptions.
 - No significant gameplay feature can bypass the client → authoritative server → replicated result boundary simply to simplify local testing.

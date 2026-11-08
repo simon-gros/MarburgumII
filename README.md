@@ -24,6 +24,8 @@ Explore a fictionalized 1990s Maribor and build a persistent life through missio
 - **A long campaign is a design goal, not a current implementation.** First prove a compact playable vertical slice.
 - **Early showcase-quality graphical UI/HUD.** Preserve the original's place/interaction/objective/skills/inventory/journal structure in a polished UE 5.8.3 client interface, built alongside the networking milestone. **Wanted stars and police chases are excluded.**
 - **Client/shared/server separation exists from Stage 0.** Real connection, replication and persistence tests still remain to be implemented and passed.
+- **Planned default map:** the purchased-to-be [Maribor city 3D model](Docs/WORLD_MAP_ADOPTION.md) (TurboSquid 1639711), replacing the original generated base geometry after personal owner acceptance; it has **not** been acquired/imported yet. The original's fish, vegetation, missions and historical/gameplay identity continue via controlled adaptation.
+- **Owner approval:** no major playable feature is accepted without personally performed in-game testing and explicit approval.
 - **Historical/geospatial data and art** must have documented provenance and appropriate use rights. No copyrighted game-engine code or third-party commercial-game assets are copied into this repository.
 
 ## Repository layout
@@ -107,6 +109,7 @@ and no persistent shell configuration was changed.
 
 - [Game scope and design constraints](Docs/VISION.md)
 - [Foundational game ontology (v0.1.0)](Docs/ONTOLOGY.md) and [machine-readable vocabulary](Data/Ontology/core.v0.1.json)
+- [Default map acquisition, licensing, import and owner-qualification plan](Docs/WORLD_MAP_ADOPTION.md) and [source selection manifest](Data/World/source-selection.v0.1.json)
 - [Original Marburgum design parity register](Docs/LEGACY_PARITY.md) and [machine-readable source matrix](Data/Parity/source-matrix.v0.1.json)
 - [Architecture and language boundaries](Docs/ARCHITECTURE.md)
 - [MMORPG client/server contract and milestone gates](Docs/NETWORK_ARCHITECTURE.md)
@@ -118,5 +121,7 @@ and no persistent shell configuration was changed.
 - [Engineering decisions](Docs/DECISIONS.md)
 
 ## Licensing
+
+**Commercial map exception:** any purchased map and extractable derived geometry/textures are **not** eligible for inclusion in the public GitHub repository or public Git LFS/CI artifacts. Those sources stay in ignored local-only directories, subject to their own third-party license. 
 
 **No project-wide license has yet been selected.** Publication of this repository does not, by itself, grant permission to reuse source or assets. Do not add third-party content without verifying provenance and license compatibility.

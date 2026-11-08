@@ -1,0 +1,66 @@
+{
+  "version": "0.1.0",
+  "format": "marburgumii.world_source_decision",
+  "status": "planned_purchase_pending_qualification",
+  "primary_map_source": {
+    "id": "turbosquid_maribor_1639711",
+    "url": "https://www.turbosquid.com/3d-models/3d-city-area-building-model/1639711",
+    "product_id": "1639711",
+    "display_name": "Maribor Slovenia",
+    "provider": "TurboSquid",
+    "purchase_status": "planned_not_purchased",
+    "target_role": "primary_base_city_geometry_after_owner_acceptance",
+    "claimed_gis_year": 2022,
+    "claimed_extent": "30km (dimensions/meaning unverified)",
+    "claimed_polygon_count": 100000000,
+    "geometry_count_verified": false,
+    "files_not_yet_available": true,
+    "advertised_formats": [
+      "FBX",
+      "OBJ",
+      "C4D",
+      "3DS",
+      "STL",
+      "DXF",
+      "3DM"
+    ],
+    "c4d_only_effects": [
+      "building strokes",
+      "MoGraph trees",
+      "water effects",
+      "stroked roads"
+    ],
+    "redistribution_policy": "licensed proprietary; never public raw/source/derived-extractable files",
+    "source_license_url": "https://blog.turbosquid.com/turbosquid-3d-model-license/",
+    "suitability": "candidate_pending_asset_inspection_and_owner_playtest"
+  },
+  "legacy_city_source": {
+    "id": "legacy_marburgum_generated_world",
+    "repository": "simon-gros/magna-raedarum-marburgum",
+    "default_base_geometry": false,
+    "role": "reference_fallback_authoritative_gameplay_semantics_historical_and_geospatial_evidence",
+    "current_status": "not_imported_in_MarburgumII"
+  },
+  "ecology_references": [
+    "Data/Ecology/fish.v0.1.json",
+    "Data/Ecology/vegetation.v0.1.json"
+  ],
+  "gates": [
+    "purchase_and_license_review",
+    "file_structure_and_mesh_audit",
+    "coordinate_alignment",
+    "unreal_5_8_3_local_import",
+    "collision_navigation_water_vegetation",
+    "period_1990s_validation",
+    "runtime_streaming_performance",
+    "owner_personal_playtest",
+    "explicit_owner_approval"
+  ],
+  "requires_personal_owner_approval": true,
+  "notes": [
+    "The product metadata is not verified geometry or a proven playable city.",
+    "No purchased file or purchased license has been provided or imported in this repository.",
+    "1990s corrections are mandatory over 2022 GIS portrayal.",
+    "Never commit protected model data to public GitHub; local proprietary assets are ignored."
+  ]
+}
