@@ -49,10 +49,19 @@ mkdir -p "$out_dir"
 common_args=(-log -unattended -nosound -nosplash -stdout -FullStdOutLogOutput)
 server_pid=""
 
+# The staged launcher scripts do not exec the binary, so the server runs in its own
+# process group and the whole group is stopped; otherwise the real server outlives the run.
 cleanup() {
     if [[ -n "$server_pid" ]] && kill -0 "$server_pid" 2>/dev/null; then
-        kill "$server_pid" 2>/dev/null || true
+        kill -- "-$server_pid" 2>/dev/null || true
         wait "$server_pid" 2>/dev/null || true
+    fi
+    if [[ -n "$server_pid" ]]; then
+        for _ in $(seq 1 40); do
+            pgrep -g "$server_pid" >/dev/null || break
+            sleep 0.25
+        done
+        pkill -KILL -g "$server_pid" 2>/dev/null || true
     fi
 }
 trap cleanup EXIT
@@ -66,15 +75,20 @@ run_client() {
 }
 
 client_passed() {
-    grep -q "MB2SMOKE role=client tag=$1 event=pass" "$out_dir/client-$1.log"
+    grep -aq "MB2SMOKE role=client tag=$1 event=pass" "$out_dir/client-$1.log"
 }
 
+if ss -Hlun "sport = :$port" | grep -aq .; then
+    echo "UDP port $port is already in use; stop the other server or set MB2_SMOKE_PORT." >&2
+    exit 1
+fi
+
 echo "Starting dedicated server ($mode) on port $port; evidence in $out_dir"
-"${server_cmd[@]}" "$map" -port="$port" "${common_args[@]}" > "$out_dir/server.log" 2>&1 &
+setsid "${server_cmd[@]}" "$map" -port="$port" "${common_args[@]}" > "$out_dir/server.log" 2>&1 &
 server_pid=$!
 
 for _ in $(seq 1 240); do
-    if grep -q "MB2SMOKE role=server event=ready" "$out_dir/server.log"; then
+    if grep -aq "MB2SMOKE role=server event=ready" "$out_dir/server.log"; then
         break
     fi
     if ! kill -0 "$server_pid" 2>/dev/null; then
@@ -83,8 +97,13 @@ for _ in $(seq 1 240); do
     fi
     sleep 0.5
 done
-if ! grep -q "MB2SMOKE role=server event=ready" "$out_dir/server.log"; then
+if ! grep -aq "MB2SMOKE role=server event=ready" "$out_dir/server.log"; then
     echo "Server did not become ready within 120 s; see $out_dir/server.log" >&2
+    exit 1
+fi
+# Unreal silently picks the next port if the requested one is taken; clients would then reach the wrong server.
+if ! grep -aq "MB2SMOKE role=server event=ready .* port=$port " "$out_dir/server.log"; then
+    echo "Server is not listening on port $port; see $out_dir/server.log" >&2
     exit 1
 fi
 

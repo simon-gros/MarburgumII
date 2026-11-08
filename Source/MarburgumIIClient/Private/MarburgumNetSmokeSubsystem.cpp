@@ -2,6 +2,8 @@
 
 #include "Engine/Engine.h"
 #include "Engine/GameInstance.h"
+#include "Engine/NetConnection.h"
+#include "Engine/NetDriver.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerState.h"
 #include "HAL/PlatformMisc.h"
@@ -246,9 +248,15 @@ void UMarburgumNetSmokeSubsystem::TickPhase(UWorld* World, AMarburgumGameState* 
 
 bool UMarburgumNetSmokeSubsystem::IsSessionReady(const UWorld* World, const AMarburgumGameState* GameState, const AMarburgumPlayerController* Controller) const
 {
+    // While a reconnect is pending, the local standalone world also reports NM_Client, so require
+    // a live server connection and a GameState this process has no authority over.
+    const UNetDriver* NetDriver = World ? World->GetNetDriver() : nullptr;
     return World
         && World->GetNetMode() == NM_Client
+        && NetDriver
+        && NetDriver->ServerConnection
         && GameState
+        && GameState->GetLocalRole() != ROLE_Authority
         && GameState->NetworkContractVersion != 0
         && GameState->AuthorityHeartbeat > 0
         && Controller
