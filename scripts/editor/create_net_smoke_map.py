@@ -29,8 +29,12 @@ def main():
     floor.set_actor_scale3d(unreal.Vector(100.0, 100.0, 1.0))
 
     spawn(unreal.PlayerStart, unreal.Vector(0.0, 0.0, 120.0), label="PlayerStart")
-    spawn(unreal.DirectionalLight, unreal.Vector(0.0, 0.0, 1000.0), unreal.Rotator(0.0, -45.0, 30.0), label="Sun")
-    spawn(unreal.SkyLight, unreal.Vector(0.0, 0.0, 1000.0), label="SkyLight")
+    # Movable lights need no baked lighting, so packaged builds show no "lighting needs to be rebuilt".
+    sun = spawn(unreal.DirectionalLight, unreal.Vector(0.0, 0.0, 1000.0), unreal.Rotator(0.0, -45.0, 30.0), label="Sun")
+    sun.root_component.set_mobility(unreal.ComponentMobility.MOVABLE)
+    sky = spawn(unreal.SkyLight, unreal.Vector(0.0, 0.0, 1000.0), label="SkyLight")
+    sky.root_component.set_mobility(unreal.ComponentMobility.MOVABLE)
+    sky.light_component.set_editor_property("real_time_capture", True)
     spawn(unreal.SkyAtmosphere, unreal.Vector(0.0, 0.0, 0.0), label="SkyAtmosphere")
 
     if not unreal.EditorLoadingAndSavingUtils.save_map(world, MAP_PATH):

@@ -7,7 +7,7 @@ public class MarburgumIIClient : ModuleRules
     public MarburgumIIClient(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-        PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine", "MarburgumII" });
-        PrivateDependencyModuleNames.AddRange(new[] { "UMG", "Slate", "SlateCore", "MarburgumIIShared" });
+        PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine", "MarburgumII", "MarburgumIIShared", "UMG", "SlateCore" });
+        PrivateDependencyModuleNames.AddRange(new[] { "Slate", "InputCore", "EngineSettings" });
     }
 }

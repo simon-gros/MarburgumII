@@ -28,4 +28,4 @@ bash "$ue_root/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
     -platform=Linux -client -clientconfig="$config" \
     -server -serverplatform=Linux -serverconfig="$config" \
     -build -cook -stage -pak \
-    -map=/Game/Maps/NetSmoke
+    -map=/Game/Maps/FrontEnd+/Game/Maps/NetSmoke
