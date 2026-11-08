@@ -1,12 +1,15 @@
 #include "Modules/ModuleManager.h"
 
-#include "MarburgumChatWidget.h"
 #include "MarburgumClientUiHooks.h"
-#include "GameFramework/PlayerController.h"
+#include "Engine/GameInstance.h"
 #include "Engine/World.h"
-#include "Blueprint/UserWidget.h"
+#include "GameFramework/PlayerController.h"
+#include "UI/MarburgumUISubsystem.h"
 
-/** Client-only event subscriber; the headless server never loads or references UMG. */
+/**
+ * Client-only event subscriber; the headless server never loads or references UMG.
+ * Core raises UI hooks without knowing about widgets; the UI subsystem owns where they mount.
+ */
 class FMarburgumIIClientModule final : public IModuleInterface
 {
 public:
@@ -22,46 +25,37 @@ public:
     {
         FMarburgumClientUiHooks::OnLocalPlayerReady().Remove(ReadyHandle);
         FMarburgumClientUiHooks::OnChatFocusRequested().Remove(FocusHandle);
-        ChatWidgets.Empty();
     }
 
 private:
     FDelegateHandle ReadyHandle;
     FDelegateHandle FocusHandle;
-    TMap<TWeakObjectPtr<APlayerController>, TWeakObjectPtr<UMarburgumChatWidget>> ChatWidgets;
 
-    void HandlePlayerReady(APlayerController* Player)
+    static UMarburgumUISubsystem* GetUI(APlayerController* Player)
     {
         if (!Player || !Player->IsLocalController() || Player->GetNetMode() == NM_DedicatedServer ||
             !Player->GetWorld() || !Player->GetWorld()->IsGameWorld())
         {
-            return;
+            return nullptr;
         }
+        const UGameInstance* GameInstance = Player->GetGameInstance();
+        // Absent when the process cannot render (-nullrhi): there is no chat panel to mount.
+        return GameInstance ? GameInstance->GetSubsystem<UMarburgumUISubsystem>() : nullptr;
+    }
 
-        if (const TWeakObjectPtr<UMarburgumChatWidget>* Existing = ChatWidgets.Find(TWeakObjectPtr<APlayerController>(Player)))
+    void HandlePlayerReady(APlayerController* Player)
+    {
+        if (UMarburgumUISubsystem* UI = GetUI(Player))
         {
-            if (Existing->IsValid())
-            {
-                return;
-            }
-        }
-        UMarburgumChatWidget* Widget = CreateWidget<UMarburgumChatWidget>(
-            Player, UMarburgumChatWidget::StaticClass());
-        if (Widget)
-        {
-            Widget->AddToViewport(50);
-            ChatWidgets.Add(TWeakObjectPtr<APlayerController>(Player), TWeakObjectPtr<UMarburgumChatWidget>(Widget));
+            UI->MountChat(Player);
         }
     }
 
     void HandleFocus(APlayerController* Player)
     {
-        if (const TWeakObjectPtr<UMarburgumChatWidget>* Widget = ChatWidgets.Find(Player))
+        if (UMarburgumUISubsystem* UI = GetUI(Player))
         {
-            if (Widget->IsValid())
-            {
-                Widget->Get()->FocusComposer();
-            }
+            UI->FocusChat();
         }
     }
 };

@@ -4,36 +4,49 @@
 #include "Blueprint/WidgetTree.h"
 #include "Components/Border.h"
 #include "Components/Button.h"
-#include "Components/CanvasPanel.h"
-#include "Components/CanvasPanelSlot.h"
 #include "Components/HorizontalBox.h"
-#include "Components/HorizontalBoxSlot.h"
+#include "Components/Image.h"
+#include "Components/SafeZone.h"
 #include "Components/ScrollBox.h"
+#include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
-#include "Components/VerticalBoxSlot.h"
 #include "Engine/World.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
+#include "UI/MarburgumUIBuilder.h"
+
+using namespace MarburgumUI;
 
 namespace
 {
-    const FLinearColor TextPrimary(0.93f, 0.91f, 0.84f);
-    const FLinearColor TextMuted(0.63f, 0.70f, 0.73f);
-    const FLinearColor TextPrivate(0.65f, 0.87f, 0.86f);
-    const FLinearColor TextWarning(0.99f, 0.70f, 0.47f);
+    constexpr float PanelWidth = 440.f;
+    constexpr float PanelHeight = 320.f;
+    constexpr int32 MaxFeedEntries = 60;
+
+    // CHAT.md §4: warm light text, subdued teal for private, amber for system notices.
+    FLinearColor TextPrimary() { return Tokens().Color.TextPrimary; }
+    FLinearColor TextMuted() { return Tokens().Color.TextSecondary; }
+    FLinearColor TextPrivate() { return Tokens().Color.Info; }
+    FLinearColor TextWarning() { return Tokens().Color.Warning; }
+}
+
+void UMarburgumChatWidget::NativeOnInitialized()
+{
+    Super::NativeOnInitialized();
+    // The widget tree must exist before the first RebuildWidget; a root assigned later (for
+    // example in NativeConstruct) never reaches Slate and the panel renders nothing.
+    BuildPanel();
 }
 
 void UMarburgumChatWidget::NativeConstruct()
 {
     Super::NativeConstruct();
     ChatController = Cast<AMarburgumPlayerController>(GetOwningPlayer());
-    if (!WidgetTree || !ChatController)
+    if (!ChatController)
     {
         return;
     }
-
-    BuildPanel();
 
     // Subscribe to server-approved delivery and replay bounded local history.
     ChatController->OnChatReceived.AddUniqueDynamic(this, &UMarburgumChatWidget::HandleMessage);
@@ -54,84 +67,87 @@ void UMarburgumChatWidget::NativeDestruct()
 
 void UMarburgumChatWidget::BuildPanel()
 {
-    UCanvasPanel* Root = WidgetTree->ConstructWidget<UCanvasPanel>(UCanvasPanel::StaticClass());
-    WidgetTree->RootWidget = Root;
+    const FTokens& T = Tokens();
+    FBuilder B(*WidgetTree);
 
-    UBorder* Frame = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass());
-    Frame->SetBrushColor(FLinearColor(0.045f, 0.078f, 0.095f, 0.91f));
-    Frame->SetPadding(FMargin(13.0f, 10.0f));
-    UCanvasPanelSlot* FrameSlot = Root->AddChildToCanvas(Frame);
-    FrameSlot->SetAnchors(FAnchors(0.0f, 1.0f));
-    FrameSlot->SetAlignment(FVector2D(0.0f, 1.0f));
-    FrameSlot->SetPosition(FVector2D(20.0f, -20.0f));
-    FrameSlot->SetSize(FVector2D(450.0f, 268.0f));
+    UVerticalBox* Column = B.Column();
 
-    UVerticalBox* Column = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass());
-    Frame->SetContent(Column);
-
-    UHorizontalBox* Header = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass());
-    Column->AddChildToVerticalBox(Header);
-    UTextBlock* Title = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
-    Title->SetText(FText::FromString(TEXT("MARBURGUM  /  GENERAL & PRIVATE")));
-    Title->SetColorAndOpacity(FSlateColor(TextPrimary));
-    UHorizontalBoxSlot* TitleSlot = Header->AddChildToHorizontalBox(Title);
-    TitleSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
-
-    UButton* PlayersButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass());
-    UTextBlock* PlayersLabel = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
-    PlayersLabel->SetText(FText::FromString(TEXT("ONLINE")));
-    PlayersLabel->SetColorAndOpacity(FSlateColor(TextMuted));
-    PlayersButton->AddChild(PlayersLabel);
+    UHorizontalBox* Header = B.Row();
+    UVerticalBox* Titles = B.Column();
+    FBuilder::Stack(Titles, B.Text(FText::FromString(TEXT("CHAT")), ETypeRole::Overline, T.Color.Accent), T.Space.XXS);
+    FBuilder::Stack(Titles, B.Text(FText::FromString(TEXT("General: this server  ·  Private: /w <id> text")), ETypeRole::Caption, T.Color.TextMuted), 0.f);
+    FBuilder::Inline(Header, Titles, T.Space.S, true);
+    UButton* PlayersButton = B.Button(FText::FromString(TEXT("ONLINE")), EButtonKind::Quiet);
     PlayersButton->OnClicked.AddDynamic(this, &UMarburgumChatWidget::ShowConnectedPlayers);
-    Header->AddChildToHorizontalBox(PlayersButton);
+    FBuilder::Inline(Header, PlayersButton, 0.f);
+    FBuilder::Stack(Column, Header, T.Space.S);
+    FBuilder::Stack(Column, B.Rule(T.Color.Border, 1.f), T.Space.S);
 
     MessageFeed = WidgetTree->ConstructWidget<UScrollBox>(UScrollBox::StaticClass());
-    UVerticalBoxSlot* FeedSlot = Column->AddChildToVerticalBox(MessageFeed);
-    FeedSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
-    FeedSlot->SetPadding(FMargin(0.0f, 8.0f));
+    FBuilder::Stack(Column, MessageFeed, T.Space.S, true);
 
-    UHorizontalBox* InputRow = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass());
-    Column->AddChildToVerticalBox(InputRow);
-    Composer = WidgetTree->ConstructWidget<UEditableTextBox>(UEditableTextBox::StaticClass());
-    Composer->SetHintText(FText::FromString(TEXT("Message   |   /w <player id> <private message>")));
+    UHorizontalBox* InputRow = B.Row();
+    Composer = B.TextField(FText::GetEmpty(), FText::FromString(TEXT("Message  ·  Enter to chat")));
     Composer->OnTextCommitted.AddDynamic(this, &UMarburgumChatWidget::HandleTextCommitted);
-    UHorizontalBoxSlot* InputSlot = InputRow->AddChildToHorizontalBox(Composer);
-    InputSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
-
-    UButton* SendButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass());
-    UTextBlock* SendText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
-    SendText->SetText(FText::FromString(TEXT(" SEND ")));
-    SendButton->AddChild(SendText);
+    FBuilder::Inline(InputRow, Composer, T.Space.S, true, false);
+    UButton* SendButton = B.Button(FText::FromString(TEXT("Send")), EButtonKind::Secondary);
     SendButton->OnClicked.AddDynamic(this, &UMarburgumChatWidget::HandleSendButton);
-    InputRow->AddChildToHorizontalBox(SendButton);
+    FBuilder::Inline(InputRow, SendButton, 0.f, false, false);
+    FBuilder::Stack(Column, InputRow, 0.f);
 
-    AddLine(TEXT("General is visible to this server. Private: /w 2 Hello. ONLINE lists IDs."),
-        TextMuted);
+    USizeBox* Size = WidgetTree->ConstructWidget<USizeBox>();
+    Size->SetWidthOverride(PanelWidth);
+    Size->SetHeightOverride(PanelHeight);
+    Size->SetContent(B.Surface(ESurfaceKind::Overlay, Pad(T.Space.M), Column));
+
+    // Lower-left, clear of the lower-centre interaction prompt region.
+    UBorder* Anchor = B.Surface(ESurfaceKind::Base, FMargin(T.Space.XXL, 0.f, 0.f, T.Space.XXL), Size, false);
+    Anchor->SetBrushColor(FLinearColor::Transparent);
+    FBuilder::Align(Anchor, HAlign_Left, VAlign_Bottom);
+    USafeZone* Safe = WidgetTree->ConstructWidget<USafeZone>();
+    Safe->SetContent(Anchor);
+    WidgetTree->RootWidget = Safe;
+    // Only the panel itself takes clicks; the rest of the frame stays with the game.
+    Anchor->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+    Safe->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+    AddLine(TEXT("General reaches everyone on this server. Private: /w <id> text. ONLINE lists IDs."), TextMuted());
 }
 
-void UMarburgumChatWidget::AddLine(const FString& Line, const FLinearColor& Color)
+void UMarburgumChatWidget::AddEntry(const FString& Heading, const FString& Body, const FLinearColor& HeadingColor, const FLinearColor& BodyColor)
 {
     if (!MessageFeed || !WidgetTree)
     {
         return;
     }
-    UTextBlock* Entry = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
-    Entry->SetAutoWrapText(true);
-    Entry->SetText(FText::FromString(Line));
-    Entry->SetColorAndOpacity(FSlateColor(Color));
+    const FTokens& T = Tokens();
+    FBuilder B(*WidgetTree);
+    UVerticalBox* Entry = B.Column();
+    if (!Heading.IsEmpty())
+    {
+        FBuilder::Stack(Entry, B.Text(FText::FromString(Heading), ETypeRole::Overline, HeadingColor), T.Space.XXS);
+    }
+    UTextBlock* BodyBlock = B.Text(FText::FromString(Body), ETypeRole::Body, BodyColor);
+    BodyBlock->SetAutoWrapText(true);
+    FBuilder::Stack(Entry, BodyBlock, T.Space.S);
     MessageFeed->AddChild(Entry);
-    while (MessageFeed->GetChildrenCount() > 60)
+    while (MessageFeed->GetChildrenCount() > MaxFeedEntries)
     {
         MessageFeed->RemoveChildAt(0);
     }
     MessageFeed->ScrollToEnd();
 }
 
+void UMarburgumChatWidget::AddLine(const FString& Line, const FLinearColor& Color)
+{
+    AddEntry(FString(), Line, Color, Color);
+}
+
 void UMarburgumChatWidget::HandleMessage(const FMarburgumChatMessage& Message)
 {
     if (Message.Channel == EMarburgumChatChannel::System)
     {
-        AddLine(FString::Printf(TEXT("SYSTEM  %s"), *Message.Text), TextWarning);
+        AddEntry(TEXT("SYSTEM"), Message.Text, TextWarning(), TextMuted());
         return;
     }
 
@@ -140,15 +156,14 @@ void UMarburgumChatWidget::HandleMessage(const FMarburgumChatMessage& Message)
         const bool IsSender = ChatController && ChatController->PlayerState &&
             ChatController->PlayerState->GetPlayerId() == Message.SenderPlayerId;
         const FString Address = IsSender
-            ? FString::Printf(TEXT("PRIVATE  You -> #%d"), Message.RecipientPlayerId)
-            : FString::Printf(TEXT("PRIVATE  %s (#%d) -> You"),
-                              *Message.SenderName, Message.SenderPlayerId);
-        AddLine(Address + TEXT(": ") + Message.Text, TextPrivate);
+            ? FString::Printf(TEXT("PRIVATE  ·  You → #%d"), Message.RecipientPlayerId)
+            : FString::Printf(TEXT("PRIVATE  ·  %s (#%d) → You"), *Message.SenderName, Message.SenderPlayerId);
+        AddEntry(Address, Message.Text, TextPrivate(), TextPrimary());
         return;
     }
 
-    AddLine(FString::Printf(TEXT("%s (#%d): %s"),
-        *Message.SenderName, Message.SenderPlayerId, *Message.Text), TextPrimary);
+    AddEntry(FString::Printf(TEXT("%s  ·  #%d"), *Message.SenderName.ToUpper(), Message.SenderPlayerId),
+        Message.Text, TextMuted(), TextPrimary());
 }
 
 void UMarburgumChatWidget::HandleTextCommitted(const FText& Text, ETextCommit::Type Method)
@@ -186,13 +201,13 @@ void UMarburgumChatWidget::SubmitComposer()
         if (!Rest.Split(TEXT(" "), &IdText, &Body) || !IdText.IsNumeric() ||
             Body.TrimStartAndEnd().IsEmpty())
         {
-            AddLine(TEXT("Usage: /w <online player ID> <message>"), TextWarning);
+            AddLine(TEXT("Usage: /w <online player ID> <message>"), TextWarning());
             return;
         }
         const int32 RecipientId = FCString::Atoi(*IdText);
         if (RecipientId <= 0)
         {
-            AddLine(TEXT("Choose an online positive session player ID."), TextWarning);
+            AddLine(TEXT("Choose an online positive session player ID."), TextWarning());
             return;
         }
         ChatController->SendPrivateChat(RecipientId, Body);
@@ -235,17 +250,17 @@ void UMarburgumChatWidget::ShowConnectedPlayers()
 {
     if (!GetWorld() || !GetWorld()->GetGameState())
     {
-        AddLine(TEXT("Player list is not available yet."), TextWarning);
+        AddLine(TEXT("Player list is not available yet."), TextWarning());
         return;
     }
 
-    AddLine(TEXT("ONLINE / session IDs (not persistent account identifiers):"), TextMuted);
+    AddLine(TEXT("ONLINE / session IDs (not persistent account identifiers):"), TextMuted());
     for (APlayerState* State : GetWorld()->GetGameState()->PlayerArray)
     {
         if (State)
         {
             AddLine(FString::Printf(TEXT("%s — #%d"),
-                *State->GetPlayerName(), State->GetPlayerId()), TextMuted);
+                *State->GetPlayerName(), State->GetPlayerId()), TextMuted());
         }
     }
 }

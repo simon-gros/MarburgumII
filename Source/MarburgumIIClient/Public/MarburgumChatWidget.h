@@ -9,10 +9,12 @@
 class AMarburgumPlayerController;
 class UScrollBox;
 class UTextBlock;
+class UVerticalBox;
 
 /**
- * Early native UMG chat panel. This is a working UI foundation, not the final
- * approved Marburgum visual design. Server data reaches it only via owned RPCs.
+ * `chat_panel` HUD module (UI-03, CHAT-001): general and one-to-one private text, lower-left.
+ * Built from the UI-01 tokens and mounted in the UI root's HUD layer by UMarburgumUISubsystem.
+ * Server data reaches it only via owned RPCs; it never marks a message accepted itself.
  */
 UCLASS()
 class UMarburgumChatWidget : public UUserWidget
@@ -20,6 +22,7 @@ class UMarburgumChatWidget : public UUserWidget
     GENERATED_BODY()
 
 public:
+    virtual void NativeOnInitialized() override;
     virtual void NativeConstruct() override;
     virtual void NativeDestruct() override;
 
@@ -49,6 +52,8 @@ private:
 
     void BuildPanel();
     void SubmitComposer();
+    /** One feed entry: a toned kind/address line above the body text. */
+    void AddEntry(const FString& Heading, const FString& Body, const FLinearColor& HeadingColor, const FLinearColor& BodyColor);
     void AddLine(const FString& Line, const FLinearColor& Color);
     void ReturnFocusToWorld();
 };

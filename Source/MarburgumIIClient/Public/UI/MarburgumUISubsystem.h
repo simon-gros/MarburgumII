@@ -1,10 +1,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MarburgumGameState.h"
 #include "Session/MarburgumSessionSubsystem.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "MarburgumUISubsystem.generated.h"
 
+class APlayerController;
+class UMarburgumChatWidget;
 class UMarburgumConnectionScreen;
 class UMarburgumNotificationFeed;
 class UMarburgumUIRoot;
@@ -28,6 +31,11 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
+    /** Mount the chat_panel for a local Marburgum player controller (called from the client UI hook). */
+    void MountChat(APlayerController* Player);
+    /** Give keyboard focus to the chat composer when the session is admitted. */
+    void FocusChat();
+
     /** Independent UI scale on top of DPI scaling (0.5 - 3.0). */
     static void SetInterfaceScale(float Scale);
 
@@ -39,10 +47,16 @@ private:
     void BuildForWorld(UWorld* World);
     void TearDown();
     void ApplyInputMode(bool bScreenOwnsInput);
+    void BindReceipts();
+    void HandleRequestResult(const FGuid& OperationId, EMarburgumRequestOutcome Outcome);
 
     UPROPERTY(Transient) TObjectPtr<UMarburgumUIRoot> Root;
     UPROPERTY(Transient) TObjectPtr<UMarburgumConnectionScreen> ConnectionScreen;
     UPROPERTY(Transient) TObjectPtr<UMarburgumNotificationFeed> Feed;
+    UPROPERTY(Transient) TObjectPtr<UMarburgumChatWidget> Chat;
+
+    TWeakObjectPtr<APlayerController> PendingChatOwner;
+    TWeakObjectPtr<class AMarburgumPlayerController> ReceiptController;
 
     TWeakObjectPtr<UMarburgumSessionSubsystem> Session;
     FDelegateHandle PreLoadMapHandle;

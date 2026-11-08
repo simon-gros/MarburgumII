@@ -54,8 +54,10 @@ def main():
           "message size cap must be 240 code units")
     check("0x202E" in policy and "0x2069" in policy, "text policy must reject bidi control characters")
     check("Marburgum.Chat.TextPolicy" in test, "native Unreal message policy test missing")
-    check("CreateWidget<UMarburgumChatWidget>" in module, "client must actually mount its chat widget")
-    check("AddToViewport(" in module, "chat widget must be attached to the viewport")
+    ui = file("Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp")
+    check("MountChat(" in module, "client module must forward local-player readiness to the chat mount")
+    check("CreateWidget<UMarburgumChatWidget>" in ui, "client must actually mount its chat widget")
+    check("AddToLayer(EMarburgumUILayer::Hud, Chat)" in ui, "chat widget must be attached to the HUD layer of the UI root")
     check("MarburgumIIShared" in client_rules and '"MarburgumII"' in client_rules,
           "client module must link common runtime contracts")
     check('"UMG"' in client_rules, "UMG dependency must remain client-only")

@@ -8,7 +8,9 @@
 #include "Misc/App.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "MarburgumChatWidget.h"
 #include "MarburgumNetworkContract.h"
+#include "MarburgumPlayerController.h"
 #include "UI/MarburgumConnectionScreen.h"
 #include "UI/MarburgumNotificationFeed.h"
 #include "UI/MarburgumUIGallery.h"
@@ -82,6 +84,11 @@ void UMarburgumUISubsystem::HandlePostLoadMap(UWorld* World)
 
 void UMarburgumUISubsystem::TearDown()
 {
+    if (AMarburgumPlayerController* Controller = ReceiptController.Get())
+    {
+        Controller->OnRequestResult.RemoveAll(this);
+    }
+    ReceiptController.Reset();
     if (Root)
     {
         Root->RemoveFromParent();
@@ -89,6 +96,86 @@ void UMarburgumUISubsystem::TearDown()
     Root = nullptr;
     ConnectionScreen = nullptr;
     Feed = nullptr;
+    Chat = nullptr;
+}
+
+void UMarburgumUISubsystem::MountChat(APlayerController* Player)
+{
+    if (!Player || !Player->IsLocalController() || !Cast<AMarburgumPlayerController>(Player))
+    {
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=chat_mount_skipped player=%d local=%d marburgum=%d"),
+            MarburgumII::Session::UiLogPrefix, Player ? 1 : 0, Player && Player->IsLocalController() ? 1 : 0,
+            Cast<AMarburgumPlayerController>(Player) ? 1 : 0);
+        return;
+    }
+    if (!Root)
+    {
+        // The controller can replicate before the UI root exists; mount once the root is built.
+        PendingChatOwner = Player;
+        return;
+    }
+    if (Chat && Chat->GetOwningPlayer() == Player)
+    {
+        return;
+    }
+    if (Chat)
+    {
+        Chat->RemoveFromParent();
+    }
+    Chat = CreateWidget<UMarburgumChatWidget>(Player, UMarburgumChatWidget::StaticClass());
+    if (Chat)
+    {
+        Root->AddToLayer(EMarburgumUILayer::Hud, Chat);
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=chat_mounted ok=%d"), MarburgumII::Session::UiLogPrefix, Chat ? 1 : 0);
+    PendingChatOwner.Reset();
+}
+
+void UMarburgumUISubsystem::FocusChat()
+{
+    if (Chat && LastPhase == EPhase::Ready)
+    {
+        Chat->FocusComposer();
+    }
+}
+
+void UMarburgumUISubsystem::BindReceipts()
+{
+    const UGameInstance* GameInstance = GetGameInstance();
+    const UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
+    AMarburgumPlayerController* Controller = World ? Cast<AMarburgumPlayerController>(World->GetFirstPlayerController()) : nullptr;
+    if (!Controller || ReceiptController.Get() == Controller)
+    {
+        return;
+    }
+    if (AMarburgumPlayerController* Previous = ReceiptController.Get())
+    {
+        Previous->OnRequestResult.RemoveAll(this);
+    }
+    Controller->OnRequestResult.AddUObject(this, &UMarburgumUISubsystem::HandleRequestResult);
+    ReceiptController = Controller;
+}
+
+void UMarburgumUISubsystem::HandleRequestResult(const FGuid& OperationId, EMarburgumRequestOutcome Outcome)
+{
+    if (!Feed)
+    {
+        return;
+    }
+    // Keyed by operation: a replayed request replaces its earlier receipt instead of stacking.
+    const FName Key(*FString::Printf(TEXT("receipt.%s"), *OperationId.ToString(EGuidFormats::Digits)));
+    switch (Outcome)
+    {
+    case EMarburgumRequestOutcome::Applied:
+        Feed->Push(Key, LOCTEXT("ReceiptKind", "SERVER RECEIPT"), LOCTEXT("ReceiptApplied", "Request applied by the server."), MarburgumUI::ETone::Success);
+        break;
+    case EMarburgumRequestOutcome::Duplicate:
+        Feed->Push(Key, LOCTEXT("ReceiptKind", "SERVER RECEIPT"), LOCTEXT("ReceiptDuplicate", "Already applied. The server ignored the repeat; nothing changed twice."), MarburgumUI::ETone::Info);
+        break;
+    case EMarburgumRequestOutcome::Rejected:
+        Feed->Push(Key, LOCTEXT("RefusedKind", "REFUSED"), LOCTEXT("ReceiptRejected", "The server declined this request. Nothing was changed."), MarburgumUI::ETone::Danger);
+        break;
+    }
 }
 
 void UMarburgumUISubsystem::BuildForWorld(UWorld* World)
@@ -121,6 +208,11 @@ void UMarburgumUISubsystem::BuildForWorld(UWorld* World)
     ConnectionScreen = CreateWidget<UMarburgumConnectionScreen>(GameInstance, UMarburgumConnectionScreen::StaticClass());
     Root->AddToLayer(EMarburgumUILayer::Screens, ConnectionScreen);
 
+    if (APlayerController* Pending = PendingChatOwner.Get(); Pending && Pending->GetWorld() == World)
+    {
+        MountChat(Pending);
+    }
+
     if (UMarburgumSessionSubsystem* SessionSubsystem = Session.Get())
     {
         HandleSessionChanged(SessionSubsystem->GetView());
@@ -149,6 +241,15 @@ void UMarburgumUISubsystem::HandleSessionChanged(const FMarburgumSessionView& Vi
     ConnectionScreen->SetVisibility(bShowScreen ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
     ApplyInputMode(bShowScreen);
 
+    if (View.Phase == EPhase::Ready)
+    {
+        BindReceipts();
+        // The controller's BeginPlay hook can fire before the engine marks it local on a client,
+        // so admission (which guarantees a local controller) is the reliable mount point.
+        const UGameInstance* GameInstance = GetGameInstance();
+        const UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
+        MountChat(World ? World->GetFirstPlayerController() : nullptr);
+    }
     if (View.Phase == EPhase::Ready && PreviousPhase != EPhase::Ready && Feed)
     {
         // One toast per admission; the dedupe key collapses repeated reports of the same event.
