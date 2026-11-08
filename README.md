@@ -101,6 +101,7 @@ and no persistent shell configuration was changed.
 ## Documentation
 
 - [Game scope and design constraints](Docs/VISION.md)
+- [Foundational game ontology (v0.1.0)](Docs/ONTOLOGY.md) and [machine-readable vocabulary](Data/Ontology/core.v0.1.json)
 - [Architecture and language boundaries](Docs/ARCHITECTURE.md)
 - [Development prerequisites and commands](Docs/DEVELOPMENT.md)
 - [Roadmap and acceptance gates](Docs/ROADMAP.md)
