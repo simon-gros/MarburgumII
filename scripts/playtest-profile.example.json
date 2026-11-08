@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "engine_root": "/mnt/data/unreal/5.8.3",
+  "asset_roots": [],
+  "import_commands": [],
+  "build_commands": [
+    [
+      "bash",
+      "{repo}/scripts/build-linux.sh",
+      "MarburgumIIServer"
+    ],
+    [
+      "bash",
+      "{repo}/scripts/build-linux.sh",
+      "MarburgumIIClient"
+    ]
+  ],
+  "cook_commands": [
+    [
+      "bash",
+      "{engine_root}/Engine/Build/BatchFiles/RunUAT.sh",
+      "BuildCookRun",
+      "-project={project_file}",
+      "-nop4",
+      "-build",
+      "-cook",
+      "-stage",
+      "-pak",
+      "-archive",
+      "-clean",
+      "-platform=Linux",
+      "-clientconfig=Development",
+      "-allmaps",
+      "-archivedirectory={run_dir}/client",
+      "-unattended",
+      "-utf8output"
+    ],
+    [
+      "bash",
+      "{engine_root}/Engine/Build/BatchFiles/RunUAT.sh",
+      "BuildCookRun",
+      "-project={project_file}",
+      "-nop4",
+      "-build",
+      "-cook",
+      "-stage",
+      "-pak",
+      "-archive",
+      "-clean",
+      "-server",
+      "-noclient",
+      "-serverplatform=Linux",
+      "-serverconfig=Development",
+      "-allmaps",
+      "-archivedirectory={run_dir}/server",
+      "-unattended",
+      "-utf8output"
+    ]
+  ],
+  "artifact_roots": {
+    "client": "{run_dir}/client",
+    "server": "{run_dir}/server"
+  },
+  "launch_commands": [
+    {
+      "role": "server",
+      "command": [
+        "{run_dir}/server/LinuxServer/MarburgumIIServer.sh",
+        "/Game/Maps/NetworkSmoke",
+        "-port=7777",
+        "-log",
+        "-abslog={run_dir}/logs/ue-server.log"
+      ]
+    },
+    {
+      "role": "client",
+      "command": [
+        "{run_dir}/client/Linux/MarburgumIIClient.sh",
+        "127.0.0.1:7777",
+        "-log",
+        "-abslog={run_dir}/logs/ue-client-a.log"
+      ]
+    },
+    {
+      "role": "client",
+      "command": [
+        "{run_dir}/client/Linux/MarburgumIIClient.sh",
+        "127.0.0.1:7777",
+        "-log",
+        "-abslog={run_dir}/logs/ue-client-b.log"
+      ]
+    }
+  ]
+}
