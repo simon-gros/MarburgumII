@@ -3,6 +3,7 @@
 **Status:** Approved design direction, **not implemented** in MarburgumII.  
 **Priority:** P0 presentation architecture; begin alongside Stage 0B networking and deliver a polished first playable presentation in Stage 1.  
 **Engine:** Unreal Engine **5.8.3**; client presentation belongs to `MarburgumIIClient`.  
+**Ontology and development ownership:** [UI/HUD semantic ontology](UI_HUD_ONTOLOGY.md), [machine-readable component registry](../Data/Ontology/ui_hud.v0.1.json), and [phased acceptance roadmap](UI_HUD_ROADMAP.md). Stable module IDs, signal authority, contexts and layout policies are controlled there. This file controls visual intent and identity; neither file proves runtime implementation.  
 **Source of parity:** [Original Marburgum UI roadmap](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/USER_INTERFACE_ROADMAP.md) and the original Unreal `MarburgumGameHudWidget.cpp`, `MarburgumHudModel.cpp`, `MarburgumContextPrompt.cpp`. **These sources are references, not imported code or assets.**
 
 ## 1. Product goal
@@ -115,6 +116,9 @@ The UI is **not accepted** because its data model is defined or a static image l
 **Test-quality requirements:** proper keyboard/mouse and controller focus/return, icon+text notifications, consistent color/contrast, selectable opaque/high-contrast mode, reduced-motion support, and no invented or unsafe data displayed by the UI. Record Slate performance only once there is a representative native scene.
 
 ## 7. Development ordering and boundaries
+
+**Detailed phase gates:** UI-00 (semantic baseline), UI-01 (visual tokens and gallery), UI-02 (session/focus), UI-03 (live modular HUD), UI-04 (Character/Skills/Inventory/Journal/Settings), UI-05 (activity/vehicle/group modes), UI-06 (presets and optional layout editor), UI-07 (cross-cutting quality and captures) are defined and sequenced by [UI_HUD_ROADMAP.md](UI_HUD_ROADMAP.md). All stage gates distinguish design, running UI and accepted evidence. Build a premium default before letting players rearrange modules.
+
 
 **UI-001 / Stage 0B parallel:** visual inventory of legacy surfaces → new UI visual tokens/graphical designs → UMG shell, login/connection presentation, basic exploration HUD and state/event interface. Use authoritative demo signal from NET-001 when it becomes available. Early static/UMG previews may be produced before the network test but must not be reported as online gameplay.
 

@@ -111,6 +111,8 @@ and no persistent shell configuration was changed.
 - [Architecture and language boundaries](Docs/ARCHITECTURE.md)
 - [MMORPG client/server contract and milestone gates](Docs/NETWORK_ARCHITECTURE.md)
 - [Early graphical UI and HUD design contract](Docs/UI_HUD_DESIGN.md)
+- [Ontology of User Interface and HUD](Docs/UI_HUD_ONTOLOGY.md) and [machine-readable vocabulary](Data/Ontology/ui_hud.v0.1.json)
+- [Phased UI/HUD implementation and quality roadmap](Docs/UI_HUD_ROADMAP.md)
 - [Development prerequisites and commands](Docs/DEVELOPMENT.md)
 - [Roadmap and acceptance gates](Docs/ROADMAP.md)
 - [Engineering decisions](Docs/DECISIONS.md)

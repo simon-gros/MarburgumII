@@ -18,6 +18,13 @@ jobs:
           dotnet-version: '8.0.x'
       - run: dotnet run --project tools/MarburgumII.Tools -- verify
 
+  ui-ontology:
+    name: UI/HUD ontology graph consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/validate-ui-ontology.py
+
   rust-core:
     name: Rust native simulation unit tests
     runs-on: ubuntu-latest

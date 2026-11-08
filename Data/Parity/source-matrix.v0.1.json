@@ -196,10 +196,12 @@
         "docs/USER_INTERFACE_ROADMAP.md",
         "docs/PLAYER_EXPERIENCE_PLATFORM_QUALITY_ROADMAP.md"
       ],
-      "intent": "Preserve original low-clutter HUD semantics, contextual prompts/location banner/objective/condition and notifications plus Character/Skills/Inventory/Journal, rebuilt immediately as a premium graphical, responsive UE 5.8.3 client interface for genuine public-facing gameplay captures.",
-      "migration": "New UMG/C++ presentation and shared visual theme; event-driven view models read replicated/authoritative data; honest empty and loading states; screenshot/readability/input matrix. Original wanted stars, chase UI and talent pages deliberately excluded.",
+      "intent": "Preserve original low-clutter HUD semantics, contextual prompts/location banner/objective/condition and notifications plus Character/Skills/Inventory/Journal, rebuilt immediately as a premium graphical, responsive UE 5.8.3 client interface for genuine public-facing gameplay captures. Module IDs, authority provenance, privacy/focus policy, status feedback, and later player layout profiles use the independent UI/HUD ontology.",
+      "migration": "New UMG/C++ presentation and shared visual theme; event-driven view models read replicated/authoritative data; honest empty and loading states; screenshot/readability/input matrix. Original wanted stars, chase UI and talent pages deliberately excluded. Implementation order UI-00 through UI-07 documented in Docs/UI_HUD_ROADMAP.md; default layout is accepted before optional movable widgets.",
       "stage": "0C-1",
-      "status": "design_retained_implementation_pending"
+      "status": "design_retained_implementation_pending",
+      "ontology": "Data/Ontology/ui_hud.v0.1.json",
+      "roadmap": "Docs/UI_HUD_ROADMAP.md"
     },
     {
       "id": "network_persistence",
