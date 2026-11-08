@@ -36,7 +36,7 @@ void UMarburgumChatWidget::NativeConstruct()
     BuildPanel();
 
     // Subscribe to server-approved delivery and replay bounded local history.
-    ChatController->OnChatReceived.AddDynamic(this, &UMarburgumChatWidget::HandleMessage);
+    ChatController->OnChatReceived.AddUniqueDynamic(this, &UMarburgumChatWidget::HandleMessage);
     for (const FMarburgumChatMessage& Message : ChatController->RecentChat)
     {
         HandleMessage(Message);
@@ -54,10 +54,10 @@ void UMarburgumChatWidget::NativeDestruct()
 
 void UMarburgumChatWidget::BuildPanel()
 {
-    UCanvasPanel* Root = WidgetTree->ConstructWidget<UCanvasPanel>();
+    UCanvasPanel* Root = WidgetTree->ConstructWidget<UCanvasPanel>(UCanvasPanel::StaticClass());
     WidgetTree->RootWidget = Root;
 
-    UBorder* Frame = WidgetTree->ConstructWidget<UBorder>();
+    UBorder* Frame = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass());
     Frame->SetBrushColor(FLinearColor(0.045f, 0.078f, 0.095f, 0.91f));
     Frame->SetPadding(FMargin(13.0f, 10.0f));
     UCanvasPanelSlot* FrameSlot = Root->AddChildToCanvas(Frame);
@@ -66,40 +66,40 @@ void UMarburgumChatWidget::BuildPanel()
     FrameSlot->SetPosition(FVector2D(20.0f, -20.0f));
     FrameSlot->SetSize(FVector2D(450.0f, 268.0f));
 
-    UVerticalBox* Column = WidgetTree->ConstructWidget<UVerticalBox>();
+    UVerticalBox* Column = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass());
     Frame->SetContent(Column);
 
-    UHorizontalBox* Header = WidgetTree->ConstructWidget<UHorizontalBox>();
+    UHorizontalBox* Header = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass());
     Column->AddChildToVerticalBox(Header);
-    UTextBlock* Title = WidgetTree->ConstructWidget<UTextBlock>();
+    UTextBlock* Title = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
     Title->SetText(FText::FromString(TEXT("MARBURGUM  /  GENERAL & PRIVATE")));
     Title->SetColorAndOpacity(FSlateColor(TextPrimary));
     UHorizontalBoxSlot* TitleSlot = Header->AddChildToHorizontalBox(Title);
     TitleSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
 
-    UButton* PlayersButton = WidgetTree->ConstructWidget<UButton>();
-    UTextBlock* PlayersLabel = WidgetTree->ConstructWidget<UTextBlock>();
+    UButton* PlayersButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass());
+    UTextBlock* PlayersLabel = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
     PlayersLabel->SetText(FText::FromString(TEXT("ONLINE")));
     PlayersLabel->SetColorAndOpacity(FSlateColor(TextMuted));
     PlayersButton->AddChild(PlayersLabel);
     PlayersButton->OnClicked.AddDynamic(this, &UMarburgumChatWidget::ShowConnectedPlayers);
     Header->AddChildToHorizontalBox(PlayersButton);
 
-    MessageFeed = WidgetTree->ConstructWidget<UScrollBox>();
+    MessageFeed = WidgetTree->ConstructWidget<UScrollBox>(UScrollBox::StaticClass());
     UVerticalBoxSlot* FeedSlot = Column->AddChildToVerticalBox(MessageFeed);
     FeedSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
     FeedSlot->SetPadding(FMargin(0.0f, 8.0f));
 
-    UHorizontalBox* InputRow = WidgetTree->ConstructWidget<UHorizontalBox>();
+    UHorizontalBox* InputRow = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass());
     Column->AddChildToVerticalBox(InputRow);
-    Composer = WidgetTree->ConstructWidget<UEditableTextBox>();
+    Composer = WidgetTree->ConstructWidget<UEditableTextBox>(UEditableTextBox::StaticClass());
     Composer->SetHintText(FText::FromString(TEXT("Message   |   /w <player id> <private message>")));
     Composer->OnTextCommitted.AddDynamic(this, &UMarburgumChatWidget::HandleTextCommitted);
     UHorizontalBoxSlot* InputSlot = InputRow->AddChildToHorizontalBox(Composer);
     InputSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
 
-    UButton* SendButton = WidgetTree->ConstructWidget<UButton>();
-    UTextBlock* SendText = WidgetTree->ConstructWidget<UTextBlock>();
+    UButton* SendButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass());
+    UTextBlock* SendText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
     SendText->SetText(FText::FromString(TEXT(" SEND ")));
     SendButton->AddChild(SendText);
     SendButton->OnClicked.AddDynamic(this, &UMarburgumChatWidget::HandleSendButton);
@@ -115,7 +115,7 @@ void UMarburgumChatWidget::AddLine(const FString& Line, const FLinearColor& Colo
     {
         return;
     }
-    UTextBlock* Entry = WidgetTree->ConstructWidget<UTextBlock>();
+    UTextBlock* Entry = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
     Entry->SetAutoWrapText(true);
     Entry->SetText(FText::FromString(Line));
     Entry->SetColorAndOpacity(FSlateColor(Color));

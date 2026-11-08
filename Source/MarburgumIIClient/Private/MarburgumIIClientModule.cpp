@@ -38,7 +38,7 @@ private:
             return;
         }
 
-        if (const TWeakObjectPtr<UMarburgumChatWidget>* Existing = ChatWidgets.Find(Player))
+        if (const TWeakObjectPtr<UMarburgumChatWidget>* Existing = ChatWidgets.Find(TWeakObjectPtr<APlayerController>(Player)))
         {
             if (Existing->IsValid())
             {
@@ -50,7 +50,7 @@ private:
         if (Widget)
         {
             Widget->AddToViewport(50);
-            ChatWidgets.Add(Player, Widget);
+            ChatWidgets.Add(TWeakObjectPtr<APlayerController>(Player), TWeakObjectPtr<UMarburgumChatWidget>(Widget));
         }
     }
 

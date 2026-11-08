@@ -59,6 +59,14 @@ void AMarburgumPlayerController::SendPrivateChat(int32 RecipientPlayerId, const 
 
 void AMarburgumPlayerController::SendSystemNotice(const FString& Notice)
 {
+    // Throttle negative acknowledgements too; malformed RPC floods must not
+    // amplify into a reliable server-to-client reply for every bad request.
+    const UWorld* World = GetWorld();
+    if (World && World->GetTimeSeconds() - LastSystemNoticeAt < 1.0)
+    {
+        return;
+    }
+    LastSystemNoticeAt = World ? World->GetTimeSeconds() : LastSystemNoticeAt;
     FMarburgumChatMessage Message;
     Message.Channel = EMarburgumChatChannel::System;
     Message.Text = Notice;
@@ -87,12 +95,13 @@ void AMarburgumPlayerController::ServerSendChat_Implementation(
     }
 
     const double Now = GetWorld()->GetTimeSeconds();
-    if (Now - RateWindowStart >= WindowSeconds)
+    // Sliding window: do not reward frequent sender bursts at a fixed-window boundary.
+    while (!AcceptedTimestamps.IsEmpty() && Now - AcceptedTimestamps[0] >= WindowSeconds)
     {
-        RateWindowStart = Now;
-        RateWindowMessages = 0;
+        AcceptedTimestamps.RemoveAt(0);
     }
-    if (Now - LastAcceptedAt < MinimumSpacingSeconds || RateWindowMessages >= MaxMessagesPerWindow)
+    if (Now - LastAcceptedAt < MinimumSpacingSeconds ||
+        AcceptedTimestamps.Num() >= MaxMessagesPerWindow)
     {
         SendSystemNotice(TEXT("You are sending messages too quickly."));
         return;
@@ -124,7 +133,7 @@ void AMarburgumPlayerController::ServerSendChat_Implementation(
     }
 
     LastAcceptedAt = Now;
-    ++RateWindowMessages;
+    AcceptedTimestamps.Add(Now);
     FMarburgumChatMessage Message;
     Message.Channel = Channel;
     Message.SenderPlayerId = PlayerState->GetPlayerId();

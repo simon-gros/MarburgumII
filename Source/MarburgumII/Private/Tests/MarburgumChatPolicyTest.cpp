@@ -22,8 +22,10 @@ bool FMarburgumChatPolicyTest::RunTest(const FString& Parameters)
         MarburgumII::Chat::SanitizeMessage(TEXT("first\nsecond"), Plain));
     TestFalse(TEXT("Overlong message rejected"),
         MarburgumII::Chat::SanitizeMessage(FString::ChrN(241, TEXT('x')), Plain));
+    FString Spoofed(TEXT("hello"));
+    Spoofed.AppendChar(static_cast<TCHAR>(0x202E));
     TestFalse(TEXT("Bidi control rejected"),
-        MarburgumII::Chat::SanitizeMessage(FString(TEXT("hello")) + TCHAR(0x202E), Plain));
+        MarburgumII::Chat::SanitizeMessage(Spoofed, Plain));
     return true;
 }
 

@@ -44,7 +44,7 @@ private:
     void RequestChatFocus();
 
     double LastAcceptedAt = -10000.0;
-    double RateWindowStart = -10000.0;
-    int32 RateWindowMessages = 0;
+    double LastSystemNoticeAt = -10000.0;
+    TArray<double> AcceptedTimestamps;
     int32 NextMessageSequence = 0;
 };
