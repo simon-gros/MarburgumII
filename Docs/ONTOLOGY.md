@@ -62,7 +62,7 @@ A `SkillDefinition` specifies an activity domain, a rule for earning experience 
 
 `Evidence` can be an item, witness statement, photograph, record or observation, with provenance and discoverability distinct from its interpretation. `Choice` affects mission outcomes, trust, reputation, economy or the world when its effects are authoritatively committed. Scarce job openings and fairness protections are **future design candidates**; critical authored narrative routes must remain reachable.
 
-An `Activity` such as fishing or photography can exist independently of a mission. A mission may require an activity but does not own the definition or the activity's core mechanics.
+An activity such as fishing or photography can exist independently of a mission. A mission may require an activity but does not own the definition or the activity's core mechanics.
 
 ### 3.5 Inventory and economy
 
