@@ -40,8 +40,6 @@ private:
     UFUNCTION(Client, Reliable)
     void ClientReceiveChat(const FMarburgumChatMessage& Message);
 
-    void ServerSendChat_Implementation(EMarburgumChatChannel Channel, int32 RecipientPlayerId, const FString& RawText);
-    void ClientReceiveChat_Implementation(const FMarburgumChatMessage& Message);
     void SendSystemNotice(const FString& Notice);
     void RequestChatFocus();
 

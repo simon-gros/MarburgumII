@@ -1,6 +1,7 @@
 #include "MarburgumPlayerController.h"
 
 #include "MarburgumClientUiHooks.h"
+#include "MarburgumChatPolicy.h"
 #include "Components/InputComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerState.h"
@@ -8,31 +9,10 @@
 
 namespace
 {
-    constexpr int32 MaxMessageCharacters = 240;
     constexpr int32 MaxLocalMessages = 80;
     constexpr double MinimumSpacingSeconds = 0.8;
     constexpr double WindowSeconds = 10.0;
     constexpr int32 MaxMessagesPerWindow = 8;
-
-    bool SanitizeMessage(const FString& Input, FString& Output)
-    {
-        Output = Input.TrimStartAndEnd();
-        if (Output.IsEmpty() || Output.Len() > MaxMessageCharacters)
-        {
-            return false;
-        }
-
-        // Chat is plain text, not parsed markup: reject controls and line breaks.
-        for (const TCHAR Character : Output)
-        {
-            if (Character < TEXT(' ') || Character == 0x7F)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
 }
 
 void AMarburgumPlayerController::BeginPlay()
@@ -100,7 +80,7 @@ void AMarburgumPlayerController::ServerSendChat_Implementation(
     }
 
     FString Text;
-    if (!SanitizeMessage(RawText, Text))
+    if (!MarburgumII::Chat::SanitizeMessage(RawText, Text))
     {
         SendSystemNotice(TEXT("Messages must contain 1–240 characters, without line breaks."));
         return;
