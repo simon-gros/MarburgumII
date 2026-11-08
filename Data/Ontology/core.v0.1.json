@@ -1,0 +1,475 @@
+{
+  "format": "marburgumii.descriptive_ontology",
+  "version": "0.1.0",
+  "title": "Magna Raedarum: Marburgum II — Foundational Game Ontology",
+  "engine": "Unreal Engine 5.8.3",
+  "status": "design_only_not_implemented",
+  "description": "Engine-neutral descriptive vocabulary; not yet a runtime schema or validator.",
+  "conventions": {
+    "entity_reference": "<type>:<stable_snake_case_id>",
+    "ids": "Stable, namespaced; never use display names as keys.",
+    "relation_cardinality": "The number of targets per source entity; 0..*, 0..1, 1, 1..*.",
+    "source_facts": "A source record, historical assertion, fictional identity and engine projection are distinct.",
+    "authority": "Consequential mutation requires authoritative processing and idempotent receipts.",
+    "progression": "Skills without talents; 0–1990 legacy cap under review in MarburgumII."
+  },
+  "types": [
+    {
+      "id": "world",
+      "domain": "world",
+      "description": "The authoritative semantic city/world context."
+    },
+    {
+      "id": "place",
+      "domain": "world",
+      "description": "A geographically or semantically identifiable location; may overlap other places."
+    },
+    {
+      "id": "district",
+      "domain": "world",
+      "description": "A named district, quarter, local community or gameplay region.",
+      "parent": "place"
+    },
+    {
+      "id": "building",
+      "domain": "world",
+      "description": "A structure with location, function and optional accessible interiors.",
+      "parent": "place"
+    },
+    {
+      "id": "road_segment",
+      "domain": "world",
+      "description": "A traversable road-network element used by mobility and access.",
+      "parent": "place"
+    },
+    {
+      "id": "water_body",
+      "domain": "world",
+      "description": "A river, lake or other hydrological place.",
+      "parent": "place"
+    },
+    {
+      "id": "source_record",
+      "domain": "provenance",
+      "description": "Source evidence with date, license, spatial reference and traceability."
+    },
+    {
+      "id": "historical_assertion",
+      "domain": "provenance",
+      "description": "A sourced, time-scoped claim about a real historical condition."
+    },
+    {
+      "id": "fictional_identity",
+      "domain": "provenance",
+      "description": "Approved in-game identity, function or name for a referenced place."
+    },
+    {
+      "id": "character",
+      "domain": "society",
+      "description": "An individual in-world person with identity and state."
+    },
+    {
+      "id": "player_character",
+      "domain": "society",
+      "description": "The in-world character controlled by a player.",
+      "parent": "character"
+    },
+    {
+      "id": "npc",
+      "domain": "society",
+      "description": "A non-player character with authored or simulated behaviour.",
+      "parent": "character"
+    },
+    {
+      "id": "organization",
+      "domain": "society",
+      "description": "An institution, shop, employer, association or other social entity."
+    },
+    {
+      "id": "population_group",
+      "domain": "society",
+      "description": "An aggregated category of virtual inhabitants used by simulation."
+    },
+    {
+      "id": "relationship",
+      "domain": "society",
+      "description": "A contextual tie between a character and a person or organization."
+    },
+    {
+      "id": "skill_definition",
+      "domain": "progression",
+      "description": "An authored area of learned activity and progression rules."
+    },
+    {
+      "id": "skill_state",
+      "domain": "progression",
+      "description": "One character's XP and proficiency for a registered skill."
+    },
+    {
+      "id": "reputation_state",
+      "domain": "progression",
+      "description": "A character's reversible public standing and remembered history."
+    },
+    {
+      "id": "item_definition",
+      "domain": "economy",
+      "description": "An authored item kind and its constraints."
+    },
+    {
+      "id": "item_instance",
+      "domain": "economy",
+      "description": "An individually identified held or world item; stacks may represent fungible goods."
+    },
+    {
+      "id": "inventory",
+      "domain": "economy",
+      "description": "An authoritative container or custody record for items."
+    },
+    {
+      "id": "money_account",
+      "domain": "economy",
+      "description": "A balance in an explicit currency with integer minor units."
+    },
+    {
+      "id": "market_offer",
+      "domain": "economy",
+      "description": "A time- and place-scoped proposed economic exchange."
+    },
+    {
+      "id": "transaction",
+      "domain": "economy",
+      "description": "An idempotent, committed economic transfer with an auditable receipt."
+    },
+    {
+      "id": "mission_definition",
+      "domain": "narrative",
+      "description": "An authored story, job, favor, side or investigation contract."
+    },
+    {
+      "id": "mission_run",
+      "domain": "narrative",
+      "description": "Per-character or future per-party execution/progress of a mission."
+    },
+    {
+      "id": "objective",
+      "domain": "narrative",
+      "description": "A checkable authored mission condition or step."
+    },
+    {
+      "id": "evidence",
+      "domain": "narrative",
+      "description": "A discoverable record, testimony, photograph, item or observation."
+    },
+    {
+      "id": "choice",
+      "domain": "narrative",
+      "description": "A durable player decision affecting one or more domains."
+    },
+    {
+      "id": "interaction_definition",
+      "domain": "interaction",
+      "description": "An available action verb and eligibility/effect rules."
+    },
+    {
+      "id": "action_event",
+      "domain": "interaction",
+      "description": "A recorded outcome of an accepted interaction."
+    },
+    {
+      "id": "vehicle_definition",
+      "domain": "mobility",
+      "description": "A data-driven vehicle archetype and its characteristics."
+    },
+    {
+      "id": "vehicle_instance",
+      "domain": "mobility",
+      "description": "A specific vehicle with state, position and occupants."
+    },
+    {
+      "id": "journey",
+      "domain": "mobility",
+      "description": "A trip with origin, destination, progress and possible cost/vehicle."
+    },
+    {
+      "id": "world_clock",
+      "domain": "simulation",
+      "description": "Shared in-world date, time and temporal scheduling context."
+    },
+    {
+      "id": "environmental_state",
+      "domain": "simulation",
+      "description": "The time-varying weather and environmental conditions."
+    },
+    {
+      "id": "world_event",
+      "domain": "simulation",
+      "description": "An occurrence capable of changing shared world state."
+    },
+    {
+      "id": "state_record",
+      "domain": "simulation",
+      "description": "Durable, versioned authoritative state or event projection."
+    }
+  ],
+  "relations": [
+    {
+      "id": "contains_place",
+      "source": "world",
+      "target": "place",
+      "cardinality": "0..*",
+      "description": "World membership; overlapping semantic place bounds are allowed."
+    },
+    {
+      "id": "situated_in",
+      "source": "place",
+      "target": "district",
+      "cardinality": "0..*",
+      "description": "A location can intersect multiple administrative/gameplay districts."
+    },
+    {
+      "id": "documented_by",
+      "source": "place",
+      "target": "source_record",
+      "cardinality": "0..*",
+      "description": "Source evidence is not automatically historical truth."
+    },
+    {
+      "id": "supported_by",
+      "source": "historical_assertion",
+      "target": "source_record",
+      "cardinality": "1..*",
+      "description": "A historical claim must point to provenance."
+    },
+    {
+      "id": "has_identity",
+      "source": "place",
+      "target": "fictional_identity",
+      "cardinality": "0..*",
+      "description": "A location may have multiple authored time-scoped identities."
+    },
+    {
+      "id": "historically_characterized_by",
+      "source": "place",
+      "target": "historical_assertion",
+      "cardinality": "0..*",
+      "description": "Claims include period and confidence."
+    },
+    {
+      "id": "located_at",
+      "source": "character",
+      "target": "place",
+      "cardinality": "0..1",
+      "description": "A character's semantic position, separately from Unreal render state."
+    },
+    {
+      "id": "affiliated_with",
+      "source": "character",
+      "target": "organization",
+      "cardinality": "0..*",
+      "description": "Employment, social ties or institutional membership."
+    },
+    {
+      "id": "member_of_group",
+      "source": "npc",
+      "target": "population_group",
+      "cardinality": "0..1",
+      "description": "Virtual population classification if used."
+    },
+    {
+      "id": "has_relationship",
+      "source": "character",
+      "target": "relationship",
+      "cardinality": "0..*",
+      "description": "A contextual relationship to a target person or institution."
+    },
+    {
+      "id": "knows_person",
+      "source": "relationship",
+      "target": "character",
+      "cardinality": "0..1",
+      "description": "Optional personal target of the relationship."
+    },
+    {
+      "id": "knows_organization",
+      "source": "relationship",
+      "target": "organization",
+      "cardinality": "0..1",
+      "description": "Optional organizational target of the relationship."
+    },
+    {
+      "id": "has_skill_state",
+      "source": "character",
+      "target": "skill_state",
+      "cardinality": "0..*",
+      "description": "At most one current state per character and registered skill definition."
+    },
+    {
+      "id": "references_skill",
+      "source": "skill_state",
+      "target": "skill_definition",
+      "cardinality": "1",
+      "description": "Progress references its immutable skill definition."
+    },
+    {
+      "id": "has_reputation",
+      "source": "character",
+      "target": "reputation_state",
+      "cardinality": "0..1",
+      "description": "Reversible broad reputation separate from contextual ties."
+    },
+    {
+      "id": "carries_inventory",
+      "source": "character",
+      "target": "inventory",
+      "cardinality": "0..*",
+      "description": "Character custody of inventory containers."
+    },
+    {
+      "id": "contains_item",
+      "source": "inventory",
+      "target": "item_instance",
+      "cardinality": "0..*",
+      "description": "Each persistent item has at most one current authoritative custodian."
+    },
+    {
+      "id": "instantiates_item",
+      "source": "item_instance",
+      "target": "item_definition",
+      "cardinality": "1",
+      "description": "Physical instance or stack references its item definition."
+    },
+    {
+      "id": "holds_money",
+      "source": "character",
+      "target": "money_account",
+      "cardinality": "0..*",
+      "description": "Account includes currency and integer minor-unit balance."
+    },
+    {
+      "id": "posts_offer",
+      "source": "organization",
+      "target": "market_offer",
+      "cardinality": "0..*",
+      "description": "Business or institution can offer goods/services."
+    },
+    {
+      "id": "offers_item",
+      "source": "market_offer",
+      "target": "item_definition",
+      "cardinality": "0..*",
+      "description": "An offer refers to item definitions and validated quantities."
+    },
+    {
+      "id": "transfers_item",
+      "source": "transaction",
+      "target": "item_instance",
+      "cardinality": "0..*",
+      "description": "Committed transfer must reconcile inventory and money."
+    },
+    {
+      "id": "runs_mission",
+      "source": "character",
+      "target": "mission_run",
+      "cardinality": "0..*",
+      "description": "Progress is currently per-character unless party semantics are defined."
+    },
+    {
+      "id": "instantiates_mission",
+      "source": "mission_run",
+      "target": "mission_definition",
+      "cardinality": "1",
+      "description": "A run references an authored mission definition."
+    },
+    {
+      "id": "has_objective",
+      "source": "mission_definition",
+      "target": "objective",
+      "cardinality": "1..*",
+      "description": "Authored mission completion criteria."
+    },
+    {
+      "id": "discovers_evidence",
+      "source": "character",
+      "target": "evidence",
+      "cardinality": "0..*",
+      "description": "Discovered knowledge need not equal the underlying truth."
+    },
+    {
+      "id": "establishes_choice",
+      "source": "mission_run",
+      "target": "choice",
+      "cardinality": "0..*",
+      "description": "Durable choice with authoritative consequences."
+    },
+    {
+      "id": "permits_action",
+      "source": "interaction_definition",
+      "target": "action_event",
+      "cardinality": "0..*",
+      "description": "Accepted interactions produce at most one committed outcome per operation identity."
+    },
+    {
+      "id": "acted_by",
+      "source": "action_event",
+      "target": "character",
+      "cardinality": "1",
+      "description": "Every player/NPC action has an initiating actor."
+    },
+    {
+      "id": "instantiates_vehicle",
+      "source": "vehicle_instance",
+      "target": "vehicle_definition",
+      "cardinality": "1",
+      "description": "Separate an archetype from a concrete vehicle."
+    },
+    {
+      "id": "uses_vehicle",
+      "source": "journey",
+      "target": "vehicle_instance",
+      "cardinality": "0..1",
+      "description": "A trip may take place on foot or in transport."
+    },
+    {
+      "id": "begins_at",
+      "source": "journey",
+      "target": "place",
+      "cardinality": "1",
+      "description": "Journey origin."
+    },
+    {
+      "id": "ends_at",
+      "source": "journey",
+      "target": "place",
+      "cardinality": "1",
+      "description": "Journey destination."
+    },
+    {
+      "id": "has_clock",
+      "source": "world",
+      "target": "world_clock",
+      "cardinality": "1",
+      "description": "One canonical world timeline per shared world context."
+    },
+    {
+      "id": "has_environment",
+      "source": "world",
+      "target": "environmental_state",
+      "cardinality": "0..*",
+      "description": "Time/region-scoped environmental conditions."
+    },
+    {
+      "id": "has_event",
+      "source": "world",
+      "target": "world_event",
+      "cardinality": "0..*",
+      "description": "Committed simulation events."
+    },
+    {
+      "id": "changes_state",
+      "source": "world_event",
+      "target": "state_record",
+      "cardinality": "0..*",
+      "description": "Durable consequences require authority and replay safety."
+    }
+  ]
+}
