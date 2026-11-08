@@ -38,6 +38,14 @@ The game is designed as an MMORPG from Stage 0. On Linux use `UE_ROOT` pointing 
 
 The unqualified build script invocation defaults to the Editor target. A combined `MarburgumII` Game target is for local development only. The first network milestone still requires launching an actual headless server, connecting one then two clients, observing replicated GameState and testing reconnect; source validation alone proves none of these. See [NETWORK_ARCHITECTURE.md](NETWORK_ARCHITECTURE.md).
 
+## Local asset production (conditional)
+
+The project owner reports **Hunyuan3D-2.1** installed locally. The [local generator specification](ASSET_GENERATION_HUNYUAN3D.md) records the intended image → 3D shape → PBR texture → retopology → Unreal 5.8.3 import path. Installation location and execution have **not** been verified here. Its published community license excludes EU territory; production use remains blocked until an applicable license/permission is established. The model is not a dependency of the runtime or normal server build.
+
+## Fresh owner playtests
+
+Use [PLAYTEST_FRESHNESS.md](PLAYTEST_FRESHNESS.md) and the guard `scripts/playtest-freshness.py`, with a privately configured `Saved/PlaytestProfile/profile.json`. It validates Git/source revision, hashes tracked and locally licensed asset inputs, rebuilds and recooks into a new client/server package and verifies exact archives before launch. The example profile has not been qualified with real UAT output paths and **does not** prove that a native Unreal playtest exists. Always validate that generator outputs, custom import intermediate steps and local purchased assets are included in the actual profile.
+
 ## Independent source checks
 
 ```bash

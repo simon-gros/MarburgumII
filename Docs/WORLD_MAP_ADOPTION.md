@@ -79,7 +79,11 @@ Record exact SHA/build, UE 5.8.3 version, map source revision, tested scenarios,
 
 No original generated base-city import is a default prerequisite. The original's authored source data remains a strategic asset, and its original world mesh/placement pipeline is preserved as **reference/fallback**, not silently deleted.
 
-## 8. References
+## 8. Optional supporting image-to-3D production
+
+The owner's locally installed Hunyuan3D-2.1 can be evaluated as a source of **distinctive props, period details, vegetation/fish geometry and PBR material candidates**, not a wholesale replacement for the planned licensed Maribor city source. The [asset-production workflow](ASSET_GENERATION_HUNYUAN3D.md) and rights check apply independently to both the generator's license and each input photograph. **The published generator community license excludes EU territory**, so generated assets cannot enter the production map until applicable use rights are resolved. Never infer accurate dimensions, GIS coordinates, period identity, botanical species or Unreal-ready collision from an image-generated shape. Review native mesh quality, lighting, PBR materials, LODs, scale, sources, streaming, and owner playtests.
+
+## 9. References
 
 - [TurboSquid model listing](https://www.turbosquid.com/3d-models/3d-city-area-building-model/1639711)
 - [TurboSquid 3D Model License](https://blog.turbosquid.com/turbosquid-3d-model-license/)

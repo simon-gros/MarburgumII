@@ -23,6 +23,10 @@ Thumbs.db
 /Content/Licensed/
 /Content/ThirdPartyLicensed/
 /PrivateAssets/
+# Local generator inputs, outputs and checkpoints are not public game source.
+/AssetGeneration/
+/Models/LocalCheckpoints/
+/LocalGenerators/
 .env
 .env.*
 !.env.example

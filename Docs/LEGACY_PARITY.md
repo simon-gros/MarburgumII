@@ -47,6 +47,10 @@ The preservation principle does **not** apply to everything: the original **want
 
 The original HUD's *interaction, place, condition, objective, notification, skills, inventory and journal semantics* remain in scope, but their visual assets and architecture must be freshly designed, cohesive and high quality from the first public-facing builds. The migration and presentation semantic contract is now [UI_HUD_ONTOLOGY.md](UI_HUD_ONTOLOGY.md), with staged implementation and proof in [UI_HUD_ROADMAP.md](UI_HUD_ROADMAP.md).
 
+## Image-generated visual supplements (conditionally permitted)
+
+The original plant and fish **species IDs and ecological semantics remain authoritative** even when their presentation meshes are newly authored. A local Hunyuan3D-2.1 image-to-geometry/PBR pipeline may be considered for individual visual variants after resolving its explicit EU license restriction, checking each input image's rights, retopology, material/import checks, accurate species identification and mandatory owner playtest. This workflow is distinct from transferring the original catalogues and is never a replacement for approved environmental data. See [ASSET_GENERATION_HUNYUAN3D.md](ASSET_GENERATION_HUNYUAN3D.md).
+
 ## High-value original references
 
 - Original [general framework](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/GENERAL_FRAMEWORK.md): design identity and urban RPG model.

@@ -105,10 +105,18 @@ UnrealBuildTool was checked using the engine's own bundled .NET host.
 **Validation boundary:** the earlier prerequisite audit passed, but the new client/shared/server modules have **not** been compiled. The prior audit did not build `MarburgumIIEditor`, launch the editor, validate a packaged executable, or run an in-editor gameplay smoke test. No packages were installed
 and no persistent shell configuration was changed.
 
+## Local generated assets and freshness
+
+The owner reports **Hunyuan3D-2.1** already installed for potential local image-to-3D geometry and PBR texture generation. Its [official community license](https://github.com/Tencent-Hunyuan/Hunyuan3D-2.1/blob/main/LICENSE) excludes EU territory; **MarburgumII production use is gated on applicable rights clearance**. It is an offline authoring option rather than an engine/server dependency. Approved game-ready assets must pass manual quality, provenance, Unreal Engine **5.8.3** import and owner playtest requirements.
+
+A [freshness guard](Docs/PLAYTEST_FRESHNESS.md) is present to prevent owner acceptance against old source or cooked geometry/textures. The current generic launcher and profile are **not yet qualified by an actual UE 5.8.3 cook/package session**; its local configuration must be validated before use.
+
 ## Documentation
 
 - [Game scope and design constraints](Docs/VISION.md)
 - [Foundational game ontology (v0.1.0)](Docs/ONTOLOGY.md) and [machine-readable vocabulary](Data/Ontology/core.v0.1.json)
+- [Conditional local Hunyuan3D-2.1 image-to-model / PBR texture production](Docs/ASSET_GENERATION_HUNYUAN3D.md)
+- [Playtest source/build/cooked asset freshness gate](Docs/PLAYTEST_FRESHNESS.md)
 - [Default map acquisition, licensing, import and owner-qualification plan](Docs/WORLD_MAP_ADOPTION.md) and [source selection manifest](Data/World/source-selection.v0.1.json)
 - [Original Marburgum design parity register](Docs/LEGACY_PARITY.md) and [machine-readable source matrix](Data/Parity/source-matrix.v0.1.json)
 - [Architecture and language boundaries](Docs/ARCHITECTURE.md)

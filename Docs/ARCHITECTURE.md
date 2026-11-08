@@ -39,6 +39,10 @@ No starter map, login, durable persistence service, UI or client/server network 
 
 The primary **planned** map source is [TurboSquid Maribor city model 1639711](WORLD_MAP_ADOPTION.md), contingent upon purchase/license verification, coordinate/format inspection, 1990s historical correction, Unreal 5.8.3 import/playtest and explicit owner approval. It replaces the prior generated 121-window city as the default geometry production path. The old pipeline remains reference/fallback; original district, mission, vegetation, fish and authored world identities remain engine-neutral. Paid assets must never be committed to public source or public build artifacts; see the ignored `ThirdParty/Licensed/` and `Content/Licensed/` paths.
 
+## Optional local image-to-3D authoring
+
+The project owner reports a local **Hunyuan3D-2.1** installation for image-conditioned 3D mesh and PBR material creation. This is an **offline development tool**, not a UE runtime subsystem, server dependency, or city geometry replacement. Its official community license excludes EU territory; production use remains **blocked pending applicable rights review**. The workflow and legal gate are recorded in [ASSET_GENERATION_HUNYUAN3D.md](ASSET_GENERATION_HUNYUAN3D.md). Approved outputs must be retopologized, textured/material-verified, optimized, imported and owner-tested before use.
+
 ## Future runtime principles
 
 1. **Server authority from Stage 0:** every consequential game-state transition is server-owned even when a single player is testing locally; clients request, predict or display but cannot directly grant rewards, currency or progression.

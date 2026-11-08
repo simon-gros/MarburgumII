@@ -28,6 +28,12 @@ The planned **primary source for MarburgumII city geometry** is a purchased [Mar
 
 **Gate:** purchase/license checked, file inventory and coordinate evaluation recorded, first local Unreal 5.8.3 area imported and reviewed. Source-only manifest and successful import logs are **not** owner-approved gameplay.
 
+## Stage 0E — Image-to-3D asset production readiness (parallel, conditional)
+
+Owner-reported local Hunyuan3D-2.1 installation is a **potential** mesh/PBR texture pipeline for period urban props, vegetation and fish variants. Follow [ASSET_GENERATION_HUNYUAN3D.md](ASSET_GENERATION_HUNYUAN3D.md): the published community license excludes the EU, so **production generation/integration is blocked until applicable authorization is established**. Then inventory installation/checkpoints, validate source-image rights and test one generated asset through scale/retopology/UV/PBR optimization and UE 5.8.3 import. The source map remains the licensed Maribor geometry, subject to its own rights checks. Do not make core networking/UI work depend on this optional asset generator.
+
+**Gate:** license cleared, verified local environment and one owner-approved in-game result. No generated model is presently implemented.
+
 ## Stage 1 — Networked playable district and showcase-quality UI
 
 Provenance-reviewed compact urban district **preferably using an approved purchased Maribor Lent/Drava geometry slice** (with an independent test-level fallback while purchase is pending), player movement/camera, **high-quality visually finished initial graphical HUD**, interactable item and NPC, authoritative event/feedback, and a save/restart round trip. The original HUD's interaction/location/objective/condition/notification vocabulary and its Character/Skills/Inventory/Journal screens are carried into newly designed graphical interfaces rather than exposed as clumped debug text. Verify two clients cannot duplicate a limited item or gain unauthorized progress. Record a player-facing 1440p/4K gameplay capture after the networked loop works.
@@ -59,6 +65,10 @@ Production-ready authentication/admission, anti-abuse/rate limiting, operational
 Grow a finished **3–6-hour MMO-architected vertical slice** toward the original's ambitious ~75-hour authored campaign, more professions/skills, missions and city content. Maintain solo accessibility and small-group cooperation without fragmenting authoritative gameplay rules.
 
 ## Working rules
+
+- Every personal playtest must use a **freshness-verified UE 5.8.3 client/server archive containing the latest approved cooked assets**, with its SHA and asset digest recorded; see [PLAYTEST_FRESHNESS.md](PLAYTEST_FRESHNESS.md). Unverified previous builds are not valid acceptance evidence.
+- Hunyuan3D-2.1 is a **conditional, legally gated local asset-production tool**; the official community license excludes the EU, so do not integrate generated outputs before applicable rights are established.
+
 
 - A stage is not complete until it builds and executes under **UE 5.8.3** with its acceptance gate.
 - **Every major playable feature requires the project owner's own in-game playtest and explicit recorded approval; automated checks are necessary but insufficient.**
