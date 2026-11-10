@@ -167,7 +167,7 @@ The initial product policy is one character per account (expandable only by a la
 - **Third-person camera:** a 350 cm spring arm, 50 cm above the capsule centre, follows the control rotation; the mouse orbits it. The body no longer follows the controller's yaw; it turns toward its movement at 540°/s. WASD stays relative to the camera's yaw. Interaction already picks the nearest object in range, not the one in view, so it is unchanged.
 - **Bodies nobody sees skip their animation** (`OnlyTickPoseWhenRendered`). A dedicated server renders nothing and nothing on it reads bone poses, so it never animates. This must change when a montage with root motion or bone-based hit tests arrives.
 
-**Not covered.** Owner playtest. Rendered evidence of how another player's body animates on a remote client (the smokes render one client at a time). Camera collision tuning in tight interiors, camera settings in the Settings screen, and a first-person option. Hands and texture licence remain open under ADR-021.
+**Not covered.** Owner playtest. Rendered evidence of how another player's body animates on a remote client (the smokes render one client at a time). Camera collision tuning in tight interiors, camera settings in the Settings screen, and a first-person option. The texture licence remains open under ADR-021; hands are ADR-028.
 
 ## ADR-024 — Authored Lent streetscape, still not the licensed city (accepted 2026-11-10)
 
@@ -190,6 +190,14 @@ The owner rejected the generated LiDAR shells. Those commits are reverted. The m
 The opening-route pass (`-FictionLent`) does not move those meshes, the landscape, the Drava or Stari most. It adds late-afternoon sun, sky, a light valley fog and a restrained grade; player starts and the riverside angler seated on the Lent bank beside the bridge; and F1 names only: the street reads Obreška pot, and three riverfront signs read Kavarna Pri Toku, Ribarnica Na Bregu and Pekarna Pri Mostu.
 
 `-RebuildFacades` then rebuilt all 133 Lent façades in place. Footprints, eaves and roofs stayed. Each wall plane that was a blank plaster shell now has a cornice, a window on every floor, and one door on the building's longest wall. Frames are dark painted wood and the glass is a dark low-roughness instance of the building material. The pitched roof was a rectangle laid over the footprint, so on a complex plan it did not meet the walls. Roofs are rebuilt from the footprint. A plan that is nearly rectangular becomes that rectangle, and the pitch sits on those four walls. A complex plan keeps its outline: the eaves are the wall tops, and the ridge rises from the middle instead of a loose box. Eight footprints under 30 m², including the one triangle, are removed from the level. Windows sit on the outside of a solid wall instead of being cut through it. Each roof is a slab that shares the wall-top edge, overhangs it, and has an underside, so the join is not a see-through crack. It is not the final art, but after the `0c06ce8` playtest the owner made this level the standing default: the game, the editor and the dedicated server open `/Game/World/lent` from now on. `/Game/Maps/Lent` is no longer a launch map. It remains only as the map the older mission and condition smokes name explicitly.
+
+## ADR-028 — Characters wear the mannequin's hands (accepted 2026-11-10)
+
+**Problem.** TRELLIS fuses the fingers into one lump, so the protagonist's finger bones smeared the hand whenever a hand animation curled or relaxed it. The fitting step also left Manny's elbows bent from his bind pose, so the hand and finger joints sat about 16 cm in front of the generated hands and pulled the wrong vertices.
+
+**Decision.** At the owner's choice, the pipeline replaces generated hands with the template mannequin's (`SKM_Manny`) hands. They are on the same skeleton and already weighted per finger, and they are Epic content already committed under ADR-021. Before transferring weights, the pipeline straightens Manny's elbows and aims each arm at the generated hand. It cuts the generated forearm at the wrist joint, centres and widens the mannequin wrist over it, and gives the hand one forearm-skin texel of the generated texture, so the mesh keeps a single material. Mannequin hands are decimated to 30% (about 2k vertices each).
+
+**Not covered.** Hand skin detail and an exact tone match with the baked body; a small step where the low-poly forearm meets the hand. Retopology and a final texture bake, which would replace both.
 
 ## Open decisions
 

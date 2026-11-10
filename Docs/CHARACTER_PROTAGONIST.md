@@ -22,7 +22,7 @@ SHA-256 of the source files:
 ```text
 a45317dbc8578e8f7a185f1b4dbd070a70c7ad247688420b34e1b54de0c8e957  concept.png
 d4200ac4f613ae759f9d24926f8a2e9d3617187a6949353076db538d2c1b3fe0  protagonist_trellis.glb
-8babb8e15bea2b6381bbaa5e91e1660941132e45d2cf4ff3b9460a8b442e9220  SKM_Protagonist.fbx
+7bfbe9db60512991526f1a9285a70fe1e67bb9ec7000ee632c60ae7a1c319774  SKM_Protagonist.fbx
 ```
 
 ## Provenance and rights
@@ -36,7 +36,7 @@ d4200ac4f613ae759f9d24926f8a2e9d3617187a6949353076db538d2c1b3fe0  protagonist_tr
 The pipeline runs outside this repository because its steps are Blender and Unreal editor Python, which ADR-018 keeps out of the tree:
 
 1. TRELLIS turns `concept.png` into a textured GLB.
-2. Blender imports `SKM_Manny_Simple` and `MF_Unarmed_Walk_Fwd` (exported from this project's mannequin), fits the GLB to the mannequin, transfers Manny's skin weights to it, and renders rest and walk previews.
+2. Blender imports `SKM_Manny_Simple` and `MF_Unarmed_Walk_Fwd` (exported from this project's mannequin) and fits the GLB to the mannequin. It straightens Manny's elbows and aims each arm at the generated hand, so the wrist and finger joints sit inside it; Manny's bind pose bends the elbows and holds the hands about 16 cm forward. It transfers Manny's skin weights, replaces the hands with Manny's, and renders rest, walk, open-hand and fist previews.
 3. Blender exports the FBX with the data physically in centimetres (`scale_length` 0.01, `FBX_SCALE_NONE`, Z-up, `axis_forward` Y), because UE's FBX importer ignores `UnitScaleFactor`. The raw FBX is checked for unit scale 1, Z-up, about 180 cm of geometry and the pelvis at (0, −2.28, 95.90), as in Manny.
 4. The UE 5.8.3 editor imports the FBX with the legacy importer onto `SK_Mannequin`, creating the physics asset, material and texture.
 
@@ -44,8 +44,8 @@ The pipeline runs outside this repository because its steps are Blender and Unre
 
 ## Known limits
 
-- **Hands:** TRELLIS does not separate fingers, so hand and finger animation deforms poorly. The fix is a modelled or swapped hand mesh.
-- **Detail:** about 4.5k vertices with a 1024² texture is enough for a prototype. A hero asset needs retopology and a proper texture bake.
+- **Hands (ADR-028):** TRELLIS fuses the fingers, so its hands are replaced with the template mannequin's hands, which are already weighted to every finger bone. Cut at the wrist joint, the mannequin wrist is centred on and widened over the generated forearm, and the hand takes one forearm-skin texel of the generated texture, so it stays one material. They are smooth and untextured next to the baked body, and a small step is visible at the wrist up close. [Rig check: open, left fist, right fist](Captures/character-protagonist/hands_rig_preview.jpg); [in game](Captures/character-protagonist/lent-hands-500x500.jpg).
+- **Detail:** about 8.4k vertices (4.2k generated body, 4.2k mannequin hands) with a 1024² texture is enough for a prototype. A hero asset needs retopology and a proper texture bake.
 - **Bind pose:** on import, UE warns about the bind pose and recalculates it. This is harmless.
 - **In the game:** `AMarburgumCharacter` uses the mesh with `ABP_Unarmed` and a third-person camera (ADR-023). [Walking](Captures/character-protagonist/lent-winded-walking-1920x1080.jpg) and [running](Captures/character-protagonist/lent-running-1920x1080.jpg) on the Lent promenade are frames from the packaged client in the condition smoke; the smoke runs east while the camera still faces the spawn direction, so he runs toward the camera.
 - **Blend-space speeds:** the template blend space was authored for the template's walk and run speeds, not 2.2 and 4.4 m/s, so the feet may slide; this has not been measured.
