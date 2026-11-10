@@ -2,7 +2,7 @@
 # Regenerate the generated maps with the C++ editor commandlet (MarburgumIIEditorTools):
 #   Content/Maps/FrontEnd.umap  (client offline front-end, no gameplay authority)
 #   Content/Maps/NetSmoke.umap  (Stage 0B network test map)
-#   Content/Maps/Lent.umap      (Stage 1 fallback blockout district, plus Content/Blockout/Materials)
+#   Content/Maps/Lent.umap      (Stage 1 authored Lent district, plus Content/Blockout/Materials)
 # Usage: scripts/create-maps.sh [frontend|netsmoke|lent|all]   (default: all)
 # The commandlet and the maps' classes live in the Editor target, so build MarburgumIIEditor first.
 set -euo pipefail

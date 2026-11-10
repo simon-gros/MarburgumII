@@ -6,11 +6,15 @@
 #include "Components/ExponentialHeightFogComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/PointLightComponent.h"
+#include "Components/TextRenderComponent.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/ExponentialHeightFog.h"
+#include "Engine/PointLight.h"
 #include "Engine/SkyLight.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
+#include "Engine/TextRenderActor.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Components/LightComponent.h"
@@ -89,7 +93,7 @@ namespace MarburgumMaps
     }
 
     /** Movable lights need no baked lighting, so packaged builds show no "lighting needs to be rebuilt". */
-    void Lighting(UWorld* World, const FVector& At, const FRotator& SunRotation, bool bFog)
+    void Lighting(UWorld* World, const FVector& At, const FRotator& SunRotation, bool bFog, float FogDensity = 0.01f)
     {
         ADirectionalLight* Sun = Spawn<ADirectionalLight>(World, At, SunRotation, TEXT("Sun"));
         Sun->GetRootComponent()->SetMobility(EComponentMobility::Movable);
@@ -103,7 +107,7 @@ namespace MarburgumMaps
         if (bFog)
         {
             AExponentialHeightFog* Fog = Spawn<AExponentialHeightFog>(World, FVector::ZeroVector, FRotator::ZeroRotator, TEXT("HeightFog"));
-            Fog->GetComponent()->SetFogDensity(0.01f);
+            Fog->GetComponent()->SetFogDensity(FogDensity);
         }
     }
 
@@ -183,9 +187,10 @@ namespace MarburgumMaps
 
     // ---- /Game/Maps/Lent ----------------------------------------------------------------------------
     //
-    // The deliberate fallback blockout of the Lent riverside (ADR-016): NOT the licensed Maribor model
-    // and not the original game's generated geometry, but independently authored massing of engine
-    // shapes so a public checkout has a playable district.
+    // The authored Lent district (ADR-016, detailed by ADR-024): NOT the licensed Maribor model,
+    // not a survey of the real Lent, and not TRELLIS-generated city geometry. The TRELLIS map
+    // roadmap keeps image-to-3D off the terrain, the river and ordinary building shells. Those
+    // shells are modular engine shapes with invented shop names. Gameplay anchors are unchanged.
     //
     // Layout follows the original Marburgum coordinates (project/data, metres: x east and z south of the
     // middle of Stari most, y up), mapped to Unreal centimetres as X = x, Y = z, Z = y. Carried forward:
@@ -194,8 +199,8 @@ namespace MarburgumMaps
     //   interactions.json         `lent_angler` at (-127, -58) with its range (4 m) and dialogue line
     //   npc_visual_profiles.json  the angler's parka colours
     //
-    // Everything else (quay line, railing, bridge deck, building row, lamps, trees) is placeholder
-    // massing, not a survey of the real Lent. Player starts carry PlayerStartTag values the game mode
+    // The promenade, quay, bridge, jetty, building shells, lamps and trees are authored massing,
+    // not a survey of the real Lent. Player starts carry PlayerStartTag values the game mode
     // selects with ?MB2Start=: `arrival` (default, on the promenade 30 m east of the angler), `angler`
     // (within reach of him) and `bridge` (on Stari most, outside the Lent area).
 
@@ -216,6 +221,11 @@ namespace MarburgumMaps
         { TEXT("Canopy"), TEXT("4f6b3a") }, { TEXT("Plinth"), TEXT("5d564e") }, { TEXT("Cornice"), TEXT("4a4440") },
         { TEXT("Ochre"), TEXT("c49a5a") }, { TEXT("Cream"), TEXT("d8cdb2") }, { TEXT("Grey"), TEXT("a39d94") },
         { TEXT("Rose"), TEXT("b98a7a") }, { TEXT("Sage"), TEXT("9fa58a") }, { TEXT("Umber"), TEXT("8f6f52") },
+        { TEXT("Glass"), TEXT("1a242c") }, { TEXT("Door"), TEXT("3a2a22") }, { TEXT("Roof"), TEXT("6e3b34") },
+        { TEXT("Ridge"), TEXT("4a302c") }, { TEXT("Shop"), TEXT("6d5344") }, { TEXT("Awning"), TEXT("8c3a3a") },
+        { TEXT("Sign"), TEXT("e6d7b0") }, { TEXT("Cobble"), TEXT("6e6860") }, { TEXT("Bench"), TEXT("5c4632") },
+        { TEXT("Metal"), TEXT("3c4044") }, { TEXT("Shrub"), TEXT("3d5a34") }, { TEXT("Far"), TEXT("8a847c") },
+        { TEXT("Spire"), TEXT("8d8f86") }, { TEXT("Foam"), TEXT("8e9ea4") },
     };
 
     struct FBuilding
@@ -233,6 +243,17 @@ namespace MarburgumMaps
         { 30, 12, TEXT("Cream") }, { 26, 14, TEXT("Rose") }, { 34, 13, TEXT("Umber") },
         { 24, 15, TEXT("Grey") }, { 28, 11, TEXT("Ochre") },
     };
+
+    // Invented 1990s names. nullptr is a house with no shop. ASCII only: the engine debug font
+    // is not guaranteed to draw Slovenian diacritics. These are not real Lent businesses.
+    constexpr const TCHAR* Shops[] = {
+        TEXT("Kavarna Ob Toku"), TEXT("Foto 1994"), nullptr,
+        TEXT("Trgovina Pri Mostu"), TEXT("Ribarnica"), nullptr,
+        TEXT("Gostilna Pri Vodi"), TEXT("Krojac Lent"), nullptr,
+        TEXT("Pekarna Na Bregu"), TEXT("Cvetlicarna"), nullptr,
+        TEXT("Knjigarna Obrezje"), TEXT("Delavska menza"),
+    };
+    static_assert(UE_ARRAY_COUNT(Shops) == UE_ARRAY_COUNT(Buildings), "one shop slot per promenade building");
 
     FLinearColor Linear(const TCHAR* Hex)
     {
@@ -300,6 +321,7 @@ namespace MarburgumMaps
             Meshes.Add(TEXT("cube"), Shape(TEXT("Cube")));
             Meshes.Add(TEXT("cylinder"), Shape(TEXT("Cylinder")));
             Meshes.Add(TEXT("sphere"), Shape(TEXT("Sphere")));
+            Meshes.Add(TEXT("cone"), Shape(TEXT("Cone")));
         }
 
         /** A shape centred at Centre (original metres) with full Size (x, y, z metres). */
@@ -318,6 +340,81 @@ namespace MarburgumMaps
             }
             ++Count;
             return Actor;
+        }
+
+        /** Shop lettering faces the river. FacingZ > 0 looks south (+Y in Unreal). */
+        void Sign(const FString& Label, const FString& Text, double X, double Y, double Z, double FacingZ)
+        {
+            const FRotator Rotation(0.0, FacingZ > 0.0 ? 90.0 : -90.0, 0.0);
+            ATextRenderActor* Actor = Spawn<ATextRenderActor>(World, Ue(X, Y, Z), Rotation, *Label, TEXT("Blockout/Signs"));
+            UTextRenderComponent* Render = Actor->GetTextRender();
+            Render->SetText(FText::FromString(Text));
+            Render->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
+            Render->SetVerticalAlignment(EVRTA_TextCenter);
+            Render->SetWorldSize(36.f);
+            Render->SetTextRenderColor(FColor(42, 28, 18));
+            ++Count;
+        }
+
+        void LampGlow(const FString& Label, double X, double Y, double Z)
+        {
+            APointLight* Lamp = Spawn<APointLight>(World, Ue(X, Y, Z), FRotator::ZeroRotator, *Label, TEXT("Blockout/Lamps"));
+            Lamp->GetRootComponent()->SetMobility(EComponentMobility::Movable);
+            UPointLightComponent* Light = CastChecked<UPointLightComponent>(Lamp->GetLightComponent());
+            Light->SetMobility(EComponentMobility::Movable);
+            Light->SetIntensity(2200.f);
+            Light->SetAttenuationRadius(650.f);
+            Light->SetLightColor(Linear(TEXT("e8dcb8")));
+            Light->SetCastShadows(false);
+            ++Count;
+        }
+
+        /**
+         * One riverside shell. The mass is the collision. Windows, doors and signs are proud of the
+         * river face and do not collide, so a player walking the promenade cannot snag on them.
+         * ShopName nullptr is a plain house. Depth runs along z; FacingZ +1 dresses the south face.
+         */
+        void House(const TCHAR* Prefix, int32 Index, double CentreX, double Width, double Height, const TCHAR* Colour, const TCHAR* ShopName,
+            double CentreZ, double Depth, double FacingZ, const TCHAR* Folder)
+        {
+            const double FrontZ = CentreZ + FacingZ * Depth * 0.5;
+            const auto Out = [FacingZ](double Metres) { return FacingZ * Metres; };
+            const FString Id = FString::Printf(TEXT("%s%02d"), Prefix, Index);
+            Block(FString::Printf(TEXT("Building%s"), *Id), FVector(CentreX, Height / 2.0, CentreZ), FVector(Width, Height, Depth), Colour, TEXT("cube"), true, Folder);
+            Block(FString::Printf(TEXT("Plinth%s"), *Id), FVector(CentreX, 0.55, FrontZ + Out(0.12)), FVector(Width + 0.15, 1.1, 0.28), TEXT("Plinth"), TEXT("cube"), true, Folder);
+            Block(FString::Printf(TEXT("Cornice%s"), *Id), FVector(CentreX, Height + 0.15, CentreZ), FVector(Width + 0.7, 0.4, Depth + 0.7), TEXT("Cornice"), TEXT("cube"), true, Folder);
+            Block(FString::Printf(TEXT("Roof%s"), *Id), FVector(CentreX, Height + 0.55, CentreZ), FVector(Width + 0.5, 0.7, Depth + 0.5), TEXT("Roof"), TEXT("cube"), true, Folder);
+            Block(FString::Printf(TEXT("Ridge%s"), *Id), FVector(CentreX, Height + 1.15, CentreZ), FVector(Width * 0.92, 0.55, 1.05), TEXT("Ridge"), TEXT("cube"), true, Folder);
+            for (const int32 Chimney : { 0, 1 })
+            {
+                const double ChimneyX = CentreX + (Chimney == 0 ? -0.28 : 0.28) * Width;
+                Block(FString::Printf(TEXT("Chimney%s_%d"), *Id, Chimney), FVector(ChimneyX, Height + 1.7, CentreZ), FVector(0.7, 1.5, 0.7), TEXT("Plinth"), TEXT("cube"), true, Folder);
+            }
+
+            const double FloorStart = ShopName ? 5.0 : 3.4;
+            for (double FloorY = FloorStart; FloorY + 1.4 < Height - 0.5; FloorY += 3.0)
+            {
+                Block(FString::Printf(TEXT("Windows%s_%.0f"), *Id, FloorY), FVector(CentreX, FloorY, FrontZ + Out(0.16)),
+                    FVector(Width * 0.78, 1.35, 0.1), TEXT("Glass"), TEXT("cube"), false, Folder);
+            }
+            const int32 Bays = FMath::Clamp(static_cast<int32>(Width / 4.2), 2, 7);
+            for (int32 Bay = 0; Bay < Bays; ++Bay)
+            {
+                const double MullionX = CentreX - Width * 0.36 + Bay * (Width * 0.72 / static_cast<double>(Bays - 1));
+                Block(FString::Printf(TEXT("Mullion%s_%d"), *Id, Bay), FVector(MullionX, (FloorStart + Height) / 2.0, FrontZ + Out(0.2)),
+                    FVector(0.16, FMath::Max(1.0, Height - FloorStart - 0.4), 0.08), Colour, TEXT("cube"), false, Folder);
+            }
+
+            const double DoorX = CentreX + (Index % 2 == 0 ? -0.18 : 0.18) * Width;
+            Block(FString::Printf(TEXT("Door%s"), *Id), FVector(DoorX, 1.25, FrontZ + Out(0.18)), FVector(1.25, 2.5, 0.1), TEXT("Door"), TEXT("cube"), false, Folder);
+            if (ShopName)
+            {
+                Block(FString::Printf(TEXT("Shop%s"), *Id), FVector(CentreX, 1.7, FrontZ + Out(0.14)), FVector(Width * 0.9, 3.0, 0.12), TEXT("Shop"), TEXT("cube"), false, Folder);
+                Block(FString::Printf(TEXT("Awning%s"), *Id), FVector(CentreX, 3.25, FrontZ + Out(0.7)), FVector(FMath::Min(Width * 0.62, 9.0), 0.12, 1.15), TEXT("Awning"), TEXT("cube"), false, Folder);
+                const double SignWidth = FMath::Clamp(static_cast<double>(FCString::Strlen(ShopName)) * 0.42, 3.2, Width * 0.8);
+                Block(FString::Printf(TEXT("SignBoard%s"), *Id), FVector(CentreX, 3.85, FrontZ + Out(0.22)), FVector(SignWidth, 0.7, 0.08), TEXT("Sign"), TEXT("cube"), false, Folder);
+                Sign(FString::Printf(TEXT("Sign%s"), *Id), ShopName, CentreX, 3.85, FrontZ + Out(0.32), FacingZ);
+            }
         }
 
         void Start(const TCHAR* Tag, double X, double Z, double FacingX, double FacingZ, int32 Index)
@@ -340,67 +437,146 @@ namespace MarburgumMaps
         FBlockout B(World);
 
         // Ground: north bank (Lent), river, south bank. Walking surfaces are at y = 0.
-        B.Block(TEXT("LentPromenade"), FVector(0.0, -1.5, (QuayZ - 130.0) / 2.0), FVector(440.0, 3.0, 130.0 + QuayZ), TEXT("Paving"));
-        B.Block(TEXT("SouthBank"), FVector(0.0, -1.5, 92.5), FVector(440.0, 3.0, 35.0), TEXT("Paving"));
+        // The north quay wall has a gap at the fishing jetty (x -164 to -146); the jetty covers it.
+        B.Block(TEXT("LentPromenade"), FVector(0.0, -1.5, (QuayZ - 130.0) / 2.0), FVector(540.0, 3.0, 130.0 + QuayZ), TEXT("Paving"));
+        B.Block(TEXT("SouthBank"), FVector(0.0, -1.5, 92.5), FVector(540.0, 3.0, 35.0), TEXT("Paving"));
         B.Block(TEXT("Riverbed"), FVector(0.0, -5.5, 10.5), FVector(520.0, 1.0, 129.0), TEXT("Riverbed"));
-        B.Block(TEXT("Drava"), FVector(0.0, -1.6, 10.5), FVector(520.0, 0.1, 129.0), TEXT("Water"), TEXT("cube"), false);
-        B.Block(TEXT("QuayFaceNorth"), FVector(0.0, -3.0, QuayZ + 0.25), FVector(440.0, 6.0, 0.5), TEXT("Quay"));
+        B.Block(TEXT("Drava"), FVector(0.0, -1.55, 10.5), FVector(520.0, 0.15, 129.0), TEXT("Water"), TEXT("cube"), false);
+        B.Block(TEXT("DravaEdge"), FVector(0.0, -1.35, -46.0), FVector(520.0, 0.06, 8.0), TEXT("Foam"), TEXT("cube"), false);
+        B.Block(TEXT("QuayFaceWest"), FVector(-196.0, -3.0, QuayZ + 0.25), FVector(48.0, 6.0, 0.5), TEXT("Quay"));
+        B.Block(TEXT("QuayFaceEast"), FVector(66.0, -3.0, QuayZ + 0.25), FVector(408.0, 6.0, 0.5), TEXT("Quay"));
         B.Block(TEXT("QuayFaceSouth"), FVector(0.0, -3.0, 74.75), FVector(440.0, 6.0, 0.5), TEXT("Quay"));
+        // Cobble bands sit a centimetre above the promenade and do not collide, so they cannot bump the capsule.
+        for (const int32 Band : { 0, 1, 2 })
+        {
+            B.Block(FString::Printf(TEXT("Cobble%d"), Band), FVector(0.0, 0.02, -60.0 - Band * 6.0), FVector(520.0, 0.02, 1.4), Band % 2 == 0 ? TEXT("Cobble") : TEXT("Paving"), TEXT("cube"), false, TEXT("Blockout/Ground"));
+        }
 
-        // Stari most: a flush deck with railings, so the bridge is outside the Lent area box.
+        // Stari most: a flush deck with railings. The deck stays outside the Lent area box.
         B.Block(TEXT("StariMostDeck"), FVector(0.0, -0.3, 10.5), FVector(14.0, 0.6, 129.0), TEXT("Bridge"));
         for (const int32 Side : { -1, 1 })
         {
             B.Block(FString::Printf(TEXT("StariMostRailing%+d"), Side), FVector(Side * 6.85, 0.55, 10.5), FVector(0.3, 1.1, 129.0), TEXT("Railing"));
         }
-        for (const double PierZ : { -10.0, 30.0 })
+        for (const double PierZ : { -30.0, -10.0, 30.0, 55.0 })
         {
-            B.Block(FString::Printf(TEXT("StariMostPier%d"), static_cast<int32>(PierZ)), FVector(0.0, -3.4, PierZ), FVector(12.0, 5.0, 4.0), TEXT("Bridge"));
+            B.Block(FString::Printf(TEXT("StariMostPier%d"), static_cast<int32>(PierZ)), FVector(0.0, -3.2, PierZ), FVector(12.0, 4.6, 3.2), TEXT("Bridge"));
+            B.Block(FString::Printf(TEXT("StariMostArch%d"), static_cast<int32>(PierZ)), FVector(0.0, -2.2, PierZ), FVector(10.0, 1.2, 8.0), TEXT("Quay"), TEXT("cube"), false);
+        }
+        for (const double LampZ : { -40.0, 20.0, 60.0 })
+        {
+            for (const int32 Side : { -1, 1 })
+            {
+                const double LampX = Side * 5.2;
+                const FString LampId = FString::Printf(TEXT("%d_%d"), static_cast<int32>(LampZ), Side);
+                B.Block(FString::Printf(TEXT("BridgeLamp%s"), *LampId), FVector(LampX, 1.8, LampZ), FVector(0.16, 3.6, 0.16), TEXT("Lamp"), TEXT("cylinder"), true, TEXT("Blockout/Lamps"));
+                B.Block(FString::Printf(TEXT("BridgeLampGlass%s"), *LampId), FVector(LampX, 3.75, LampZ), FVector(0.4, 0.4, 0.4), TEXT("LampGlass"), TEXT("sphere"), false, TEXT("Blockout/Lamps"));
+                B.LampGlow(FString::Printf(TEXT("BridgeLampGlow%s"), *LampId), LampX, 3.75, LampZ);
+            }
         }
 
-        // Quay railing along the promenade edge, open where the bridge lands; 1.1 m stops a jump over it.
-        for (const int32 Side : { -1, 1 })
-        {
-            B.Block(FString::Printf(TEXT("QuayRailing%+d"), Side), FVector(Side * 111.0, 0.55, QuayZ - 0.15), FVector(208.0, 1.1, 0.3), TEXT("Railing"));
-        }
+        // Quay railing, open at the bridge mouth (x -7 to 7) and at the jetty (x -164 to -146).
+        B.Block(TEXT("QuayRailingFarWest"), FVector(-193.5, 0.55, QuayZ - 0.15), FVector(43.0, 1.1, 0.3), TEXT("Railing"));
+        B.Block(TEXT("QuayRailingWest"), FVector(-72.5, 0.55, QuayZ - 0.15), FVector(131.0, 1.1, 0.3), TEXT("Railing"));
+        B.Block(TEXT("QuayRailingEast"), FVector(133.5, 0.55, QuayZ - 0.15), FVector(253.0, 1.1, 0.3), TEXT("Railing"));
 
-        // Lamps along the quay and plane trees between them.
-        for (int32 X = -195; X <= 195; X += 30)
+        // Fishing jetty west of the angler. Rails on three sides; the promenade side is open.
+        B.Block(TEXT("JettyDeck"), FVector(-155.0, -0.1, -48.0), FVector(38.0, 0.2, 16.0), TEXT("Bridge"), TEXT("cube"), true, TEXT("Blockout/Jetty"));
+        B.Block(TEXT("JettyRailWest"), FVector(-173.2, 0.5, -46.0), FVector(0.25, 1.0, 12.0), TEXT("Railing"), TEXT("cube"), true, TEXT("Blockout/Jetty"));
+        B.Block(TEXT("JettyRailEast"), FVector(-136.8, 0.5, -46.0), FVector(0.25, 1.0, 12.0), TEXT("Railing"), TEXT("cube"), true, TEXT("Blockout/Jetty"));
+        B.Block(TEXT("JettyRailEnd"), FVector(-155.0, 0.45, -41.0), FVector(36.0, 0.9, 0.25), TEXT("Railing"), TEXT("cube"), true, TEXT("Blockout/Jetty"));
+
+        // Lamps along the quay and plane trees between them. Skip the bridge mouth and the jetty.
+        for (int32 LampX = -195; LampX <= 195; LampX += 30)
         {
-            if (FMath::Abs(X) < 12)
+            if (FMath::Abs(LampX) < 12 || (LampX > -176 && LampX < -134))
             {
                 continue;
             }
-            B.Block(FString::Printf(TEXT("LampPost%d"), X), FVector(X, 2.1, QuayZ - 1.5), FVector(0.16, 4.2, 0.16), TEXT("Lamp"), TEXT("cylinder"), true, TEXT("Blockout/Lamps"));
-            B.Block(FString::Printf(TEXT("LampGlass%d"), X), FVector(X, 4.35, QuayZ - 1.5), FVector(0.45, 0.45, 0.45), TEXT("LampGlass"), TEXT("sphere"), false, TEXT("Blockout/Lamps"));
+            B.Block(FString::Printf(TEXT("LampPost%d"), LampX), FVector(LampX, 2.1, QuayZ - 1.5), FVector(0.16, 4.2, 0.16), TEXT("Lamp"), TEXT("cylinder"), true, TEXT("Blockout/Lamps"));
+            B.Block(FString::Printf(TEXT("LampGlass%d"), LampX), FVector(LampX, 4.35, QuayZ - 1.5), FVector(0.45, 0.45, 0.45), TEXT("LampGlass"), TEXT("sphere"), false, TEXT("Blockout/Lamps"));
+            B.LampGlow(FString::Printf(TEXT("LampGlow%d"), LampX), LampX, 4.35, QuayZ - 1.5);
         }
-        for (const int32 X : { -180, -150, -90, -60, 45, 75, 135, 165 })
+        for (const int32 TreeX : { -180, -90, -60, 45, 75, 135, 165 })
         {
-            B.Block(FString::Printf(TEXT("TreeTrunk%d"), X), FVector(X, 1.75, -71.0), FVector(0.45, 3.5, 0.45), TEXT("Trunk"), TEXT("cylinder"), true, TEXT("Blockout/Trees"));
-            B.Block(FString::Printf(TEXT("TreeCanopy%d"), X), FVector(X, 5.5, -71.0), FVector(6.0, 4.5, 6.0), TEXT("Canopy"), TEXT("sphere"), false, TEXT("Blockout/Trees"));
+            B.Block(FString::Printf(TEXT("TreeTrunk%d"), TreeX), FVector(TreeX, 1.75, -71.0), FVector(0.45, 3.5, 0.45), TEXT("Trunk"), TEXT("cylinder"), true, TEXT("Blockout/Trees"));
+            B.Block(FString::Printf(TEXT("TreeCanopy%d"), TreeX), FVector(TreeX, 5.5, -71.0), FVector(6.0, 4.5, 6.0), TEXT("Canopy"), TEXT("sphere"), false, TEXT("Blockout/Trees"));
+            B.Block(FString::Printf(TEXT("Shrub%d"), TreeX), FVector(TreeX + 4.0, 0.45, -63.0), FVector(1.6, 0.9, 1.6), TEXT("Shrub"), TEXT("sphere"), false, TEXT("Blockout/Trees"));
         }
+        for (const int32 BenchX : { -180, -60, -30, 40, 80, 120, 170 })
+        {
+            const FString BenchId = FString::Printf(TEXT("%d"), BenchX);
+            B.Block(FString::Printf(TEXT("BenchSeat%s"), *BenchId), FVector(BenchX, 0.48, -66.5), FVector(1.8, 0.1, 0.45), TEXT("Bench"), TEXT("cube"), true, TEXT("Blockout/Street"));
+            B.Block(FString::Printf(TEXT("BenchBack%s"), *BenchId), FVector(BenchX, 0.85, -66.75), FVector(1.8, 0.55, 0.08), TEXT("Bench"), TEXT("cube"), true, TEXT("Blockout/Street"));
+            for (const int32 Leg : { -1, 1 })
+            {
+                B.Block(FString::Printf(TEXT("BenchLeg%s_%d"), *BenchId, Leg), FVector(BenchX + Leg * 0.7, 0.22, -66.5), FVector(0.08, 0.44, 0.08), TEXT("Metal"), TEXT("cylinder"), true, TEXT("Blockout/Street"));
+            }
+        }
+        B.Block(TEXT("StreetSignPole"), FVector(9.2, 1.3, -61.0), FVector(0.1, 2.6, 0.1), TEXT("Metal"), TEXT("cylinder"), true, TEXT("Blockout/Street"));
+        B.Block(TEXT("StreetSignBoard"), FVector(9.2, 2.45, -61.0), FVector(0.08, 0.4, 2.4), TEXT("Sign"), TEXT("cube"), false, TEXT("Blockout/Street"));
+        B.Sign(TEXT("StreetSign"), TEXT("Obrezna pot"), 9.35, 2.45, -61.0, 1.0);
 
-        // Building row: facades on the line z = -78, 22 m deep, with a darker plinth and a cornice.
-        double X = -212.0;
+        // Promenade row: facades toward the river (south). A 6 m street after every third house,
+        // and the bridge street at x = 0 stays open. Depth 16 m, front face near z = -79.
+        double RowX = -212.0;
         for (int32 Index = 0; Index < UE_ARRAY_COUNT(Buildings); ++Index)
         {
             const FBuilding& Building = Buildings[Index];
-            if (X < StreetHalfWidth && X + Building.Width > -StreetHalfWidth)
+            if (RowX < StreetHalfWidth && RowX + Building.Width > -StreetHalfWidth)
             {
-                X = StreetHalfWidth; // keep the street that leads off the bridge open
+                RowX = StreetHalfWidth;
             }
-            const double CentreX = X + Building.Width / 2.0;
-            const TCHAR* Folder = TEXT("Blockout/Buildings");
-            B.Block(FString::Printf(TEXT("Building%02d"), Index), FVector(CentreX, Building.Height / 2.0, -89.0), FVector(Building.Width, Building.Height, 22.0), Building.Colour, TEXT("cube"), true, Folder);
-            B.Block(FString::Printf(TEXT("Plinth%02d"), Index), FVector(CentreX, 1.75, -78.1), FVector(Building.Width, 3.5, 0.4), TEXT("Plinth"), TEXT("cube"), true, Folder);
-            B.Block(FString::Printf(TEXT("Cornice%02d"), Index), FVector(CentreX, Building.Height + 0.3, -88.8), FVector(Building.Width + 0.6, 0.6, 22.8), TEXT("Cornice"), TEXT("cube"), true, Folder);
-            X += Building.Width + (Index % 3 == 2 ? 6.0 : 0.0);
+            const double CentreX = RowX + Building.Width / 2.0;
+            B.House(TEXT("F"), Index, CentreX, Building.Width, Building.Height, Building.Colour, Shops[Index], -87.0, 16.0, 1.0, TEXT("Blockout/Buildings"));
+            RowX += Building.Width + (Index % 3 == 2 ? 6.0 : 0.0);
         }
+
+        // Lane and a plainer back row, plus a water tower for the west silhouette.
+        // The tower sits on the promenade slab, clear of the bridge street and of the front row.
+        B.Block(TEXT("WaterTower"), FVector(-208.0, 12.0, -114.0), FVector(8.0, 24.0, 8.0), TEXT("Grey"), TEXT("cube"), true, TEXT("Blockout/Buildings"));
+        B.Block(TEXT("WaterTowerBand"), FVector(-208.0, 20.5, -114.0), FVector(8.6, 1.2, 8.6), TEXT("Cornice"), TEXT("cube"), true, TEXT("Blockout/Buildings"));
+        B.Block(TEXT("WaterTowerSpire"), FVector(-208.0, 27.0, -114.0), FVector(6.0, 6.0, 6.0), TEXT("Spire"), TEXT("cone"), false, TEXT("Blockout/Buildings"));
+        constexpr FBuilding BackRow[] = {
+            { 22, 9, TEXT("Cream") }, { 18, 11, TEXT("Grey") }, { 26, 8, TEXT("Umber") },
+            { 20, 10, TEXT("Sage") }, { 24, 9, TEXT("Rose") }, { 18, 12, TEXT("Ochre") },
+            { 22, 8, TEXT("Grey") }, { 16, 10, TEXT("Cream") },
+        };
+        double BackX = -190.0;
+        for (int32 Index = 0; Index < UE_ARRAY_COUNT(BackRow); ++Index)
+        {
+            const FBuilding& Building = BackRow[Index];
+            if (BackX < StreetHalfWidth && BackX + Building.Width > -StreetHalfWidth)
+            {
+                BackX = StreetHalfWidth;
+            }
+            B.House(TEXT("B"), Index, BackX + Building.Width / 2.0, Building.Width, Building.Height, Building.Colour, nullptr, -114.0, 12.0, 1.0, TEXT("Blockout/BackRow"));
+            BackX += Building.Width + 3.0;
+        }
+
+        // Far bank: enough mass that the view across the Drava is not an empty slab. Faces the river.
+        constexpr FBuilding FarBank[] = {
+            { 28, 12, TEXT("Far") }, { 22, 16, TEXT("Grey") }, { 34, 11, TEXT("Cream") }, { 18, 20, TEXT("Umber") },
+            { 30, 13, TEXT("Far") }, { 24, 10, TEXT("Rose") }, { 26, 15, TEXT("Grey") }, { 20, 9, TEXT("Cream") },
+        };
+        double FarX = -200.0;
+        for (int32 Index = 0; Index < UE_ARRAY_COUNT(FarBank); ++Index)
+        {
+            const FBuilding& Building = FarBank[Index];
+            if (FarX < 12.0 && FarX + Building.Width > -12.0)
+            {
+                FarX = 12.0; // keep the south landing of the bridge clear
+            }
+            B.House(TEXT("S"), Index, FarX + Building.Width / 2.0, Building.Width, Building.Height, Building.Colour, nullptr, 102.0, 14.0, -1.0, TEXT("Blockout/FarBank"));
+            FarX += Building.Width + 4.0;
+        }
+        B.Block(TEXT("SouthTower"), FVector(130.0, 11.0, 98.0), FVector(9.0, 22.0, 9.0), TEXT("Grey"), TEXT("cube"), true, TEXT("Blockout/FarBank"));
+        B.Block(TEXT("SouthTowerSpire"), FVector(130.0, 25.0, 98.0), FVector(7.0, 6.0, 7.0), TEXT("Spire"), TEXT("cone"), false, TEXT("Blockout/FarBank"));
 
         // The named area from areas.json; the server derives each player's location from it.
         AMarburgumArea* Area = Spawn<AMarburgumArea>(World, Ue(0.0, 5.0, -78.0), FRotator::ZeroRotator, TEXT("Area_lent"), TEXT("Areas"));
         Area->AreaId = FName(TEXT("lent"));
-        Area->Note = FText::FromString(TEXT("Maribor  ·  1990s  ·  fallback blockout, not the licensed city model"));
+        Area->Note = FText::FromString(TEXT("Marburgum  ·  1990s  ·  authored Lent, not the licensed city model"));
         Area->FindComponentByClass<UBoxComponent>()->SetBoxExtent(FVector(420.0 * 50.0, 54.0 * 50.0, 12.0 * 50.0));
 
         // The riverside angler (interactions.json `lent_angler`), facing the Drava.
@@ -434,7 +610,7 @@ namespace MarburgumMaps
         }
 
         // Late-afternoon sun from the south-west, so the riverside facades are lit.
-        Lighting(World, Ue(0.0, 30.0, 0.0), FRotator(-32.0, -60.0, 0.0), true);
+        Lighting(World, Ue(0.0, 30.0, 0.0), FRotator(-32.0, -60.0, 0.0), true, 0.006f);
         Save(World, TEXT("/Game/Maps/Lent"), B.Count);
     }
 }

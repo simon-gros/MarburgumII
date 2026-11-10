@@ -11,7 +11,7 @@
  *
  *   frontend  /Game/Maps/FrontEnd  the client's offline front-end (ADR-013)
  *   netsmoke  /Game/Maps/NetSmoke  network and Gate 1 test map with labeled fixtures
- *   lent      /Game/Maps/Lent      the Lent fallback blockout district (ADR-016), plus its flat-colour
+ *   lent      /Game/Maps/Lent      the authored Lent district (ADR-016, ADR-024), plus its flat-colour
  *                                  material instances under /Game/Blockout/Materials
  *
  * Each map is rebuilt from scratch and saved; "MB2MAP saved <path>" is logged per map. Returns nonzero
