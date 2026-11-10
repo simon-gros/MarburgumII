@@ -34,6 +34,17 @@ namespace
         bool bTerrain = false;
         FString Roof;
         bool bSimplify = false;
+        struct FSection
+        {
+            double Angle = 0.0;
+            double U0 = 0.0;
+            double U1 = 0.0;
+            double V0 = 0.0;
+            double V1 = 0.0;
+            double Ridge = 0.0;
+            bool bHip = false;
+        };
+        TArray<FSection> Sections;
     };
 
     struct FOpening
@@ -428,6 +439,35 @@ namespace
             Plan.Angle = Object->TryGetNumberField(TEXT("ridge_angle"), Number) ? Number : 0.0;
             Plan.Area = Object->TryGetNumberField(TEXT("area"), Number) ? Number : 0.0;
             Plan.Roof = Object->GetStringField(TEXT("roof"));
+            const TArray<TSharedPtr<FJsonValue>>* Sections = nullptr;
+            if (Object->TryGetArrayField(TEXT("roof_sections"), Sections))
+            {
+                for (const TSharedPtr<FJsonValue>& SectionValue : *Sections)
+                {
+                    const TSharedPtr<FJsonObject> SectionObject = SectionValue->AsObject();
+                    if (!SectionObject.IsValid())
+                    {
+                        continue;
+                    }
+                    const TArray<TSharedPtr<FJsonValue>>* URange = nullptr;
+                    const TArray<TSharedPtr<FJsonValue>>* VRange = nullptr;
+                    if (!SectionObject->TryGetArrayField(TEXT("u"), URange) || !SectionObject->TryGetArrayField(TEXT("v"), VRange)
+                        || !URange || !VRange || URange->Num() < 2 || VRange->Num() < 2)
+                    {
+                        continue;
+                    }
+                    FPlan::FSection Section;
+                    Section.Angle = SectionObject->TryGetNumberField(TEXT("angle"), Number) ? Number : Plan.Angle;
+                    Section.U0 = (*URange)[0]->AsNumber();
+                    Section.U1 = (*URange)[1]->AsNumber();
+                    Section.V0 = (*VRange)[0]->AsNumber();
+                    Section.V1 = (*VRange)[1]->AsNumber();
+                    Section.Ridge = SectionObject->TryGetNumberField(TEXT("ridge"), Number) ? Number : Plan.Ridge;
+                    const FString Shape = SectionObject->GetStringField(TEXT("shape"));
+                    Section.bHip = Shape == TEXT("hipped") || Shape == TEXT("pyramidal");
+                    Plan.Sections.Add(Section);
+                }
+            }
             const TSharedPtr<FJsonObject>* Contact = nullptr;
             if (Object->TryGetObjectField(TEXT("ground_contact"), Contact) && Contact && (*Contact)->TryGetNumberField(TEXT("terrain_min"), Number))
             {
@@ -547,33 +587,43 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
             EmitWall(Shell, A, B, Base, Plan.Eaves, Index == Longest);
         }
         Lid(Shell, Plan.Outline, Plan.Eaves);
-        if (!bFlat && Plan.Outline.Num() == 4)
+        if (!bFlat && Plan.Outline.Num() == 4 && Plan.Sections.Num() == 0)
         {
             Pitched(Shell, Plan.Outline, Plan.Eaves, Plan.Ridge, Base, Plan.Roof == TEXT("hipped") || Plan.Roof == TEXT("pyramidal"));
+        }
+        else if (Plan.Sections.Num() > 0)
+        {
+            ++ComplexRoofs;
+            for (const FPlan::FSection& Section : Plan.Sections)
+            {
+                const FVector2D Along(FMath::Cos(Section.Angle), FMath::Sin(Section.Angle));
+                const FVector2D Across(-Along.Y, Along.X);
+                const auto At = [&](double U, double V) { return Along * U + Across * V; };
+                const FVector2D C00 = At(Section.U0, Section.V0);
+                const FVector2D C10 = At(Section.U1, Section.V0);
+                const FVector2D C11 = At(Section.U1, Section.V1);
+                const FVector2D C01 = At(Section.U0, Section.V1);
+                if (!Inside(Plan.Outline, (C00 + C10 + C11 + C01) * 0.25))
+                {
+                    continue;
+                }
+                const double Middle = (Section.V0 + Section.V1) * 0.5;
+                const double AlongSpan = FMath::Abs(Section.U1 - Section.U0);
+                const double Inset = Section.bHip ? FMath::Min(FMath::Abs(Section.V1 - Section.V0), AlongSpan) * 0.5 : 0.0;
+                const FVector2D RidgeA = At(FMath::Min(Section.U0, Section.U1) + Inset, Middle);
+                const FVector2D RidgeB = At(FMath::Max(Section.U0, Section.U1) - Inset, Middle);
+                const double Ridge = FMath::Max(Section.Ridge, Plan.Eaves + 0.15);
+                AddRoof(Shell, Ue(C00, Plan.Eaves), Ue(C10, Plan.Eaves), Ue(RidgeB, Ridge));
+                AddRoof(Shell, Ue(C00, Plan.Eaves), Ue(RidgeB, Ridge), Ue(RidgeA, Ridge));
+                AddRoof(Shell, Ue(C11, Plan.Eaves), Ue(C01, Plan.Eaves), Ue(RidgeA, Ridge));
+                AddRoof(Shell, Ue(C11, Plan.Eaves), Ue(RidgeA, Ridge), Ue(RidgeB, Ridge));
+                AddRoof(Shell, Ue(C00, Plan.Eaves), Ue(C01, Plan.Eaves), Ue(RidgeA, Ridge));
+                AddRoof(Shell, Ue(C10, Plan.Eaves), Ue(RidgeB, Ridge), Ue(C11, Plan.Eaves));
+            }
         }
         else
         {
             ++ComplexRoofs;
-        }
-        const FVector2D Centroid = [&]()
-        {
-            FVector2D Sum = FVector2D::ZeroVector;
-            for (const FVector2D& Point : Plan.Outline)
-            {
-                Sum += Point;
-            }
-            return Sum / Plan.Outline.Num();
-        }();
-        if (bFlat && Inside(Plan.Outline, Centroid) && Plan.Ridge - Plan.Eaves > 0.3)
-        {
-            const FVector Peak = Ue(Centroid, Plan.Ridge);
-            for (int32 Index = 0; Index < Plan.Outline.Num(); ++Index)
-            {
-                const FVector2D& From = Plan.Outline[Index];
-                const FVector2D& To = Plan.Outline[(Index + 1) % Plan.Outline.Num()];
-                const FVector2D Out = Outward(From, To, 0.45);
-                AddRoof(Shell, Ue(From + Out, Plan.Eaves), Ue(To + Out, Plan.Eaves), Peak);
-            }
         }
 
         UPackage* Package = CreatePackage(*FString::Printf(TEXT("/Game/World/Buildings/lent/%s"), *Plan.Id));
