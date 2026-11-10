@@ -1,9 +1,9 @@
-# Default World Map — Licensed Maribor 3D City Model
+# World map strategy — current Unreal Lent and future licensed candidate
 
-**Decision status:** User-selected **planned default source**; **purchase pending, no files received/imported, not yet qualified**.  
+**Actual current map (11 November 2026):** The owner-selected original Unreal `/Game/World/lent` is the default (ADR-027), with later façade/roof refinements needing fresh personal review. **This TurboSquid model is a future, unpurchased and unimported candidate**, not a currently running level. [Development-day audit](DAILY_CHANGE_REVIEW_2026-11-10.md).  
 **Engine:** Unreal Engine **5.8.3**.  
 **Asset:** [TurboSquid product 1639711 — Maribor Slovenia](https://www.turbosquid.com/3d-models/3d-city-area-building-model/1639711).  
-**Development intent:** Adopt this third-party Maribor city model as the **primary geometric foundation** of MarburgumII, **replacing the original Marburgum generated-map workflow as the default map source** after the purchased deliverable passes the intake and owner's visual/playable acceptance gates. Original Marburgum remains the source of authored gameplay, interactions, storyline, fictionalized identities, period corrections, fish and vegetation ecology; it is not the default base-mesh importer.
+**Development intent:** Evaluate this city model as a potential later wider-city geometry source, *only* after license/file inspection, 1990s corrections, coordinate/mission reconciliation, UE tests and a new explicit owner decision. The generated LiDAR shell replacement was tried and reverted; it is not the current map or the fallback default. Original Marburgum remains the source of authored gameplay, interactions, storyline, fictionalized identities, period corrections, fish and vegetation ecology; it is not the default base-mesh importer.
 
 ## 1. Product listing facts and limits
 
@@ -35,6 +35,12 @@ The intended priority is:
 A first geospatial benchmark should record exact source file, import units, coordinate frame, material/image source, scene origin and at least 5–8 named fixed landmarks covering different areas (e.g., Old Bridge, Lent, Tabor, Melje, Drava bridges, prominent city crossings), fit one documented transform and report spatial residuals. Any unknown coordinate system is an open problem, **not** a basis to invent an EPSG code. Unreal's optional Georeferencing plugin can help once the supplied coordinates are actually known. Keep source geometry IDs and any crosswalk to canonical district/landmark IDs stable.
 
 **Crucial distinction:** replacing the base map does **not** replace the period social geography or gameplay ontology. We are remapping Marburgum's existing stories, jobs, services, contacts, skills, fish, vegetation and other city semantics into a new geometric realization.
+
+### Current-world baseline and explicit replacement gate
+
+**Do not conflate three distinct assets:** (1) the active original Unreal `/Game/World/lent` map (ADR-027); (2) the older `/Game/Maps/Lent` independent blockout for mission/condition smoke tests; and (3) the rejected/reverted LiDAR shell experiment (ADR-026). The active world contains later repaired façades and closed roof shells (ADR-034) but has not thereby gained final historical/material or gameplay owner approval.
+
+A map-source replacement must demonstrate a before-and-after crosswalk of Stari most/riverbank roads, `lent_angler`, `lent_first_catch` stage interaction, `lent_hatchback` parking/door/drive/exit positions, swimming/wading depth and recovery, server-owned area bounds, correct collision, navigation and period state. Verify the same current-build server/client/cooked asset digest on each map plus render/streaming performance and explicit owner approval; protect the commercial source from the public repository.
 
 ## 4. Acquisition and intake gate (WORLD-001)
 
@@ -73,7 +79,7 @@ Record exact SHA/build, UE 5.8.3 version, map source revision, tested scenarios,
 
 - **Stage 0B network smoke:** continue using a free/minimal empty test map. No paid asset dependency.
 - **Stage 0C UI design:** can use internally labeled prototype screenshots; do not require paid map purchase to build widgets.
-- **Stage 1 early district:** once purchased/qualified, use licensed Maribor **Lent/Drava** slice as the default showcase district instead of building the old 121-window mesh pipeline. If purchase is pending, a clean fallback prevents blocking other milestones.
+- **Stage 1 early district:** the real launch map is already `/Game/World/lent`, imported from the original Unreal project with Drava, Stari most, original building/road frame, player/angler starts, new water volumes and the parked original hatchback. `/Game/Maps/Lent` is a **separate older test/smoke map**. No paid model purchase is required to keep developing this slice, and no purchase automatically switches the level.
 - **Stage 2:** first real gameplay interactions/fishing/missions reuse original semantic data mapped to the selected geometry.
 - **Stage 3:** progressively extend licensed geometry across city, applying 1990s corrections and streaming, collision and ecological review. Full world-scale import only after representative slice earns personal approval.
 
