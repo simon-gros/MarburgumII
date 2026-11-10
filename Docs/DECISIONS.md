@@ -187,7 +187,9 @@ The owner rejected the generated LiDAR shells. Those commits are reverted. The m
 
 `GameDefaultMap`, `EditorStartupMap` and `ServerDefaultMap` are `/Game/World/lent`. `/Game/Maps/Lent` stays so the older mission smokes still have their own actors. Building meshes derived from OpenStreetMap stay under ODbL, © OpenStreetMap contributors.
 
-The opening-route pass (`-FictionLent`) does not move those meshes, the landscape, the Drava or Stari most. It adds late-afternoon sun, sky, a light valley fog and a restrained grade; player starts and the riverside angler seated on the Lent bank beside the bridge; and F1 names only: the street reads Obreška pot, and three riverfront signs read Kavarna Pri Toku, Ribarnica Na Bregu and Pekarna Pri Mostu. Plaster roughness was already 0.93, so the materials were left alone. This is not a whole-district art pass and not an accepted production map.
+The opening-route pass (`-FictionLent`) does not move those meshes, the landscape, the Drava or Stari most. It adds late-afternoon sun, sky, a light valley fog and a restrained grade; player starts and the riverside angler seated on the Lent bank beside the bridge; and F1 names only: the street reads Obreška pot, and three riverfront signs read Kavarna Pri Toku, Ribarnica Na Bregu and Pekarna Pri Mostu.
+
+`-RebuildFacades` then rebuilt all 133 Lent façades in place. Footprints, eaves and roofs stayed. Each wall plane that was a blank plaster shell now has a cornice, a window on every floor, and one door on the building's longest wall. Frames are dark painted wood and the glass is a dark low-roughness instance of the building material. 1,110 wall planes, 16,480 openings. This is a systematic 1990s façade, not a hand-authored copy of each real front, and not an accepted production map.
 
 ## Open decisions
 
