@@ -1,0 +1,88 @@
+MarburgumII Stage 1 Lent slice smoke
+result: PASS
+date_utc: 2026-11-10T13:35:41Z
+git_sha: df2e04f7b8256694fcf37c77b651adc76be1d5ba
+mode: staged
+map: /Game/Maps/Lent
+host: Linux 6.18.60-2-cachyos-lts x86_64
+store_after_phase1: revision=1 stage=catch_first_fish sha256=ecb881be9152a305107e45c0c43b0b2b63c8d392cfd35b19df32751da6c21571
+store_after_phase2_sha256: ecb881be9152a305107e45c0c43b0b2b63c8d392cfd35b19df32751da6c21571
+server_phase1: applied=1 commit_failed=1 walker_entered_lent=1
+server_phase2: store_loaded=1 applied=0
+
+MB2LENT role=client tag=K event=start op=9DDC4BC31223492B98A06C8B99E90EA2 shot=0
+MB2LENT role=client tag=K event=ready player=256 character=0 area=lent rods=0 missions=0 distance_m=3.7
+MB2LENT role=client tag=K event=submit kind=keyless op=01A1C5AB4A2B7152913178289D2380CA
+MB2LENT role=client tag=K event=receipt op=01A1C5AB4A2B7152913178289D2380CA outcome=rejected reason=no_character effect=none mission=None stage=None item=None quantity=0 revision=0
+MB2LENT role=client tag=K event=pass
+MB2LENT role=client tag=M2 event=start op=9DDC4BC31223492B98A06C8B99E90EA2 shot=1
+MB2LENT role=client tag=M2 event=ready player=256 character=1 area=lent rods=1 missions=1 distance_m=31.3
+MB2LENT role=client tag=M2 event=restored rods=1 stage=catch_first_fish
+MB2LENT role=client tag=M2 event=submit kind=replay_after_restart op=9DDC4BC31223492B98A06C8B99E90EA2
+MB2LENT role=client tag=M2 event=receipt op=9DDC4BC31223492B98A06C8B99E90EA2 outcome=duplicate reason=none effect=mission_started mission=lent_first_catch stage=catch_first_fish item=fishing_rod quantity=1 revision=1
+MB2LENT role=client tag=M2 event=shot file=lent-m2-restored.png saved=1
+MB2LENT role=client tag=M2 event=pass
+MB2LENT role=client tag=M event=start op=9DDC4BC31223492B98A06C8B99E90EA2 shot=1
+MB2LENT role=client tag=M event=ready player=258 character=1 area=lent rods=0 missions=0 distance_m=3.7
+MB2LENT role=client tag=M event=shot file=lent-m-arrival.png saved=1
+MB2LENT role=client tag=M event=submit kind=fault op=01A1C5AB57C27FBDA163089B08F00223
+MB2LENT role=client tag=M event=receipt op=01A1C5AB57C27FBDA163089B08F00223 outcome=rejected reason=store_write_failed effect=none mission=lent_first_catch stage=catch_first_fish item=None quantity=0 revision=0
+MB2LENT role=client tag=M event=submit kind=accept op=9DDC4BC31223492B98A06C8B99E90EA2
+MB2LENT role=client tag=M event=receipt op=9DDC4BC31223492B98A06C8B99E90EA2 outcome=applied reason=none effect=mission_started mission=lent_first_catch stage=catch_first_fish item=fishing_rod quantity=1 revision=1
+MB2LENT role=client tag=M event=shot file=lent-m-mission-started.png saved=1
+MB2LENT role=client tag=M event=submit kind=replay op=9DDC4BC31223492B98A06C8B99E90EA2
+MB2LENT role=client tag=M event=receipt op=9DDC4BC31223492B98A06C8B99E90EA2 outcome=duplicate reason=none effect=mission_started mission=lent_first_catch stage=catch_first_fish item=fishing_rod quantity=1 revision=1
+MB2LENT role=client tag=M event=submit kind=show_catch op=01A1C5AB5FC47177A47B6A1442CA3651
+MB2LENT role=client tag=M event=receipt op=01A1C5AB5FC47177A47B6A1442CA3651 outcome=rejected reason=requirement_not_met effect=none mission=lent_first_catch stage=catch_first_fish item=None quantity=0 revision=0
+MB2LENT role=client tag=M event=shot file=lent-m-not-yet.png saved=1
+MB2LENT role=client tag=M event=holding rods=1 stage=catch_first_fish
+MB2LENT role=client tag=M event=shot file=lent-m-journal.png saved=1
+MB2LENT role=client tag=M event=pass
+MB2LENT role=client tag=T event=start op=9DDC4BC31223492B98A06C8B99E90EA2 shot=1
+MB2LENT role=client tag=T event=ready player=257 character=1 area=None rods=0 missions=0 distance_m=126.3
+MB2LENT role=client tag=T event=walk_start area=None
+MB2LENT role=client tag=T event=walk_arrived area=lent walked_m=11.1 seconds=2.4 world_seconds=2.6
+MB2LENT role=client tag=T event=shot file=lent-t-entering-lent.png saved=1
+MB2LENT role=client tag=T event=pass
+MB2LENT role=client tag=W event=start op=9DDC4BC31223492B98A06C8B99E90EA2 shot=0
+MB2LENT role=client tag=W event=ready player=257 character=1 area=None rods=0 missions=0 distance_m=126.3
+MB2LENT role=client tag=W event=submit kind=from_bridge op=01A1C5AB4A2B7882939F1109D7051C57
+MB2LENT role=client tag=W event=receipt op=01A1C5AB4A2B7882939F1109D7051C57 outcome=rejected reason=out_of_range effect=none mission=None stage=None item=None quantity=0 revision=0
+MB2LENT role=client tag=W event=privacy_checked others=1
+MB2LENT role=client tag=W event=walk_start area=None
+MB2LENT role=client tag=W event=walk_arrived area=lent walked_m=13.2 seconds=1.2 world_seconds=3.0
+MB2LENT role=client tag=W event=pass
+MB2SMOKE role=server event=ready map=Lent port=7777 contract=1
+MB2INTERACT role=server event=store_loaded path="/mnt/data/MarburgumII/Saved/LentSmoke/20261110T133458Z/world-store.json" schema=0 revision=0 characters=0 missions=0 receipts=0
+MB2INTERACT role=server event=inventory_restored player=256 character=- stacks=0 missions=0
+MB2SMOKE role=server event=login player=256 players=1
+MB2INTERACT role=server event=inventory_restored player=257 character=mb2w-t179431769818606 stacks=0 missions=0
+MB2SMOKE role=server event=login player=257 players=2
+MB2INTERACT role=server event=area player=256 character=- area=Lent
+MB2INTERACT role=server event=area player=257 character=mb2w-t179431769818606 area=-
+MB2INTERACT role=server event=interaction player=257 character=mb2w-t179431769818606 op=01A1C5AB4A2B7882939F1109D7051C57 target=lent_angler outcome=rejected reason=out_of_range effect=none mission=- stage=- item=- quantity=0 stock=-1 revision=0
+MB2INTERACT role=server event=interaction player=256 character=- op=01A1C5AB4A2B7152913178289D2380CA target=- outcome=rejected reason=no_character effect=none mission=- stage=- item=- quantity=0 stock=-1 revision=0
+MB2SMOKE role=server event=logout player=256 players=1
+MB2INTERACT role=server event=inventory_restored player=258 character=mb2m-t179431769818606 stacks=0 missions=0
+MB2SMOKE role=server event=login player=258 players=2
+MB2INTERACT role=server event=area player=258 character=mb2m-t179431769818606 area=Lent
+MB2INTERACT role=server event=commit_failed op=01A1C5AB57C27FBDA163089B08F00223 error="injected write fault"
+MB2INTERACT role=server event=interaction player=258 character=mb2m-t179431769818606 op=01A1C5AB57C27FBDA163089B08F00223 target=lent_angler outcome=rejected reason=store_write_failed effect=none mission=lent_first_catch stage=catch_first_fish item=- quantity=0 stock=-1 revision=0
+MB2INTERACT role=server event=interaction player=258 character=mb2m-t179431769818606 op=9DDC4BC31223492B98A06C8B99E90EA2 target=lent_angler outcome=applied reason=none effect=mission_started mission=lent_first_catch stage=catch_first_fish item=fishing_rod quantity=1 stock=-1 revision=1
+MB2INTERACT role=server event=interaction player=258 character=mb2m-t179431769818606 op=9DDC4BC31223492B98A06C8B99E90EA2 target=lent_angler outcome=duplicate reason=none effect=mission_started mission=lent_first_catch stage=catch_first_fish item=fishing_rod quantity=1 stock=-1 revision=1
+MB2INTERACT role=server event=area player=257 character=mb2w-t179431769818606 area=Lent
+MB2SMOKE role=server event=logout player=257 players=1
+MB2INTERACT role=server event=interaction player=258 character=mb2m-t179431769818606 op=01A1C5AB5FC47177A47B6A1442CA3651 target=lent_angler outcome=rejected reason=requirement_not_met effect=none mission=lent_first_catch stage=catch_first_fish item=- quantity=0 stock=-1 revision=0
+MB2SMOKE role=server event=logout player=258 players=0
+MB2SMOKE role=server event=ready map=Lent port=7777 contract=1
+MB2INTERACT role=server event=store_loaded path="/mnt/data/MarburgumII/Saved/LentSmoke/20261110T133458Z/world-store.json" schema=2 revision=1 characters=1 missions=1 receipts=1
+MB2INTERACT role=server event=inventory_restored player=256 character=mb2m-t179431769818606 stacks=1 missions=1
+MB2SMOKE role=server event=login player=256 players=1
+MB2INTERACT role=server event=area player=256 character=mb2m-t179431769818606 area=Lent
+MB2INTERACT role=server event=interaction player=256 character=mb2m-t179431769818606 op=9DDC4BC31223492B98A06C8B99E90EA2 target=lent_angler outcome=duplicate reason=none effect=mission_started mission=lent_first_catch stage=catch_first_fish item=fishing_rod quantity=1 stock=-1 revision=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2INTERACT role=server event=inventory_restored player=257 character=mb2t-t179431769818606 stacks=0 missions=0
+MB2SMOKE role=server event=login player=257 players=1
+MB2INTERACT role=server event=area player=257 character=mb2t-t179431769818606 area=-
+MB2INTERACT role=server event=area player=257 character=mb2t-t179431769818606 area=Lent
+MB2SMOKE role=server event=logout player=257 players=0

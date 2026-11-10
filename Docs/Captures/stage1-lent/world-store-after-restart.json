@@ -1,0 +1,41 @@
+{
+	"format": "marburgumii.world_store",
+	"schema_version": 2,
+	"revision": 1,
+	"stocks":
+	{
+	},
+	"inventories":
+	{
+		"mb2m-t179431769818606":
+		{
+			"fishing_rod": 1
+		}
+	},
+	"missions":
+	{
+		"mb2m-t179431769818606":
+		{
+			"lent_first_catch":
+			{
+				"stage": "catch_first_fish",
+				"started_revision": 1
+			}
+		}
+	},
+	"receipts":
+	{
+		"9DDC4BC31223492B98A06C8B99E90EA2":
+		{
+			"character": "mb2m-t179431769818606",
+			"kind": "mission_started",
+			"interactable": "lent_angler",
+			"item": "fishing_rod",
+			"quantity": 1,
+			"mission": "lent_first_catch",
+			"stage": "catch_first_fish",
+			"revision": 1,
+			"committed_utc": "2026-11-10T13:35:03.172Z"
+		}
+	}
+}
