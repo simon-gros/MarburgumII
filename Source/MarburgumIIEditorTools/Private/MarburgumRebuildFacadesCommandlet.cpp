@@ -4,11 +4,13 @@
 #include "AssetToolsModule.h"
 #include "Engine/StaticMesh.h"
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
+#include "EngineUtils.h"
 #include "FileHelpers.h"
 #include "IAssetTools.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "MeshDescription.h"
+#include "LandscapeProxy.h"
 #include "MeshDescriptionBuilder.h"
 #include "PhysicsEngine/BodySetup.h"
 #include "StaticMeshAttributes.h"
@@ -26,6 +28,10 @@ namespace
         FVector AxisU = FVector::ForwardVector;
         double Width = 0.0;
         double Height = 0.0;
+        /** Original floor, after the plinth has been added below it. Windows start here. */
+        double Floor = 0.0;
+        /** Top of the rectangular storeys. The gable above this stays plain. */
+        double Eave = 0.0;
     };
 
     struct FOpening
@@ -129,59 +135,66 @@ namespace
         FMeshDescriptionBuilder Builder;
     };
 
-    void OpeningsFor(const FWall& Wall, bool bDoorWall, uint32 Hash, TArray<FOpening>& OutOpenings)
+    void OpeningsFor(const FWall& Wall, bool bDoorWall, TArray<FOpening>& OutOpenings)
     {
-        const float FloorHeight = Wall.Height < 420.0 ? static_cast<float>(Wall.Height) : 340.0f;
-        const int32 Floors = FMath::Clamp(FMath::FloorToInt(static_cast<float>(Wall.Height - 24.0) / FloorHeight), 1, 6);
-        const float Band = static_cast<float>(Wall.Height - 22.0) / Floors;
-        const float WindowWidth = 96.0f + static_cast<float>(Hash % 3) * 14.0f;
-        const float Step = WindowWidth + 78.0f + static_cast<float>((Hash / 3) % 4) * 12.0f;
-        for (int32 Floor = 0; Floor < Floors; ++Floor)
+        const float Floor = static_cast<float>(Wall.Floor);
+        const float Eave = static_cast<float>(Wall.Eave);
+        const float Body = Eave - Floor;
+        if (Body < 220.0f || Wall.Width < 180.0)
         {
-            const float BandBottom = Band * Floor;
-            if (Floor == 0 && bDoorWall && Wall.Width > 180.0)
+            return;
+        }
+        const int32 Storeys = FMath::Clamp(FMath::RoundToInt(Body / 320.0f), 1, 5);
+        const float Storey = Body / Storeys;
+        const float WindowWidth = 110.0f;
+        const float WindowHeight = 140.0f;
+        const float Spacing = 250.0f;
+        const int32 Count = FMath::Clamp(FMath::FloorToInt(static_cast<float>(Wall.Width) / Spacing), 1, 4);
+        auto AddWindow = [&](float CenterU, float Sill)
+        {
+            if (CenterU - WindowWidth * 0.5f < 70.0f || CenterU + WindowWidth * 0.5f > Wall.Width - 70.0f)
             {
-                const float DoorWidth = 120.0f;
-                const float Center = static_cast<float>(Wall.Width) * 0.5f;
+                return;
+            }
+            if (Sill < Floor + 50.0f || Sill + WindowHeight > Eave - 36.0f)
+            {
+                return;
+            }
+            FOpening Window;
+            Window.U0 = CenterU - WindowWidth * 0.5f;
+            Window.U1 = CenterU + WindowWidth * 0.5f;
+            Window.V0 = Sill;
+            Window.V1 = Sill + WindowHeight;
+            OutOpenings.Add(Window);
+        };
+        const float RowWidth = Count * Spacing;
+        const float First = (static_cast<float>(Wall.Width) - RowWidth) * 0.5f + Spacing * 0.5f;
+        for (int32 StoreyIndex = 0; StoreyIndex < Storeys; ++StoreyIndex)
+        {
+            const float BandBottom = Floor + Storey * StoreyIndex;
+            if (StoreyIndex == 0 && bDoorWall)
+            {
                 FOpening Door;
-                Door.U0 = Center - DoorWidth * 0.5f;
-                Door.U1 = Center + DoorWidth * 0.5f;
-                Door.V0 = 0.0f;
-                Door.V1 = FMath::Min(230.0f, Band - 30.0f);
                 Door.bDoor = true;
-                if (Door.V1 > 160.0f)
+                Door.U0 = static_cast<float>(Wall.Width) * 0.5f - 55.0f;
+                Door.U1 = static_cast<float>(Wall.Width) * 0.5f + 55.0f;
+                Door.V0 = Floor;
+                Door.V1 = FMath::Min(Floor + 215.0f, Eave - 40.0f);
+                if (Door.V1 - Door.V0 > 170.0f)
                 {
                     OutOpenings.Add(Door);
                 }
-            }
-            const float WindowHeight = Floor == 0 ? 150.0f : 146.0f;
-            const float Sill = BandBottom + (Floor == 0 ? 78.0f : 62.0f);
-            if (Sill + WindowHeight > BandBottom + Band - 16.0f)
-            {
+                if (Count >= 3)
+                {
+                    AddWindow(First, Floor + 85.0f);
+                    AddWindow(First + (Count - 1) * Spacing, Floor + 85.0f);
+                }
                 continue;
             }
-            for (float U = 48.0f; U + WindowWidth < Wall.Width - 36.0; U += Step)
+            const float Sill = BandBottom + (Storey - WindowHeight) * 0.42f;
+            for (int32 WindowIndex = 0; WindowIndex < Count; ++WindowIndex)
             {
-                const float Center = U + WindowWidth * 0.5f;
-                bool bBlocked = false;
-                for (const FOpening& Opening : OutOpenings)
-                {
-                    if (Opening.bDoor && Center > Opening.U0 - 20.0f && Center < Opening.U1 + 20.0f && Sill < Opening.V1)
-                    {
-                        bBlocked = true;
-                        break;
-                    }
-                }
-                if (bBlocked)
-                {
-                    continue;
-                }
-                FOpening Window;
-                Window.U0 = U;
-                Window.U1 = U + WindowWidth;
-                Window.V0 = Sill;
-                Window.V1 = Sill + WindowHeight;
-                OutOpenings.Add(Window);
+                AddWindow(First + WindowIndex * Spacing, Sill);
             }
         }
     }
@@ -189,7 +202,7 @@ namespace
     void EmitWall(FFacadeMesh& Mesh, const FWall& Wall, const TArray<FOpening>& Openings)
     {
         TArray<float> Us = { 0.0f, static_cast<float>(Wall.Width) };
-        TArray<float> Vs = { 0.0f, static_cast<float>(Wall.Height), static_cast<float>(Wall.Height - 22.0) };
+        TArray<float> Vs = { 0.0f, static_cast<float>(Wall.Height), static_cast<float>(Wall.Eave), static_cast<float>(Wall.Eave - 18.0) };
         for (const FOpening& Opening : Openings)
         {
             Us.Add(Opening.U0 - 8.0f);
@@ -294,7 +307,7 @@ namespace
                     Group = Mesh.Glass;
                     Inset = 14.0f;
                 }
-                else if (bFrame || Center.Y > Wall.Height - 22.0)
+                else if (bFrame || (Center.Y > Wall.Eave - 18.0 && Center.Y <= Wall.Eave + 1.0))
                 {
                     Group = Mesh.Frame;
                     Inset = bFrame ? 2.0f : 0.0f;
@@ -358,6 +371,18 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
         return 1;
     }
     UEditorLoadingAndSavingUtils::SavePackages({ Frame->GetOutermost(), Glass->GetOutermost() }, false);
+
+    UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(TEXT("/Game/World/lent"));
+    ALandscapeProxy* Landscape = nullptr;
+    if (World)
+    {
+        TActorIterator<ALandscapeProxy> It(World);
+        if (It)
+        {
+            Landscape = *It;
+        }
+    }
+    UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE landscape=%s"), Landscape ? *Landscape->GetActorLabel() : TEXT("none"));
 
     FAssetRegistryModule& Registry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
     TArray<FAssetData> Assets;
@@ -482,7 +507,7 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
                 Point.X -= MinU;
                 Point.Y -= MinZ;
             }
-            if (Walls[Index].Width < 80.0 || Walls[Index].Height < 180.0 || Walls[Index].Coverage.Num() < 3)
+            if (Walls[Index].Width < 120.0 || Walls[Index].Height < 200.0 || Walls[Index].Coverage.Num() < 3)
             {
                 for (int32 TriangleIndex = 0; TriangleIndex < Triangles.Num(); ++TriangleIndex)
                 {
@@ -492,6 +517,56 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
                     }
                 }
                 Walls.RemoveAt(Index);
+                continue;
+            }
+            float BestSpan = 0.0f;
+            float Eave = static_cast<float>(Walls[Index].Height);
+            for (float Height = 180.0f; Height <= Walls[Index].Height; Height += 15.0f)
+            {
+                float SpanMin = TNumericLimits<float>::Max();
+                float SpanMax = TNumericLimits<float>::Lowest();
+                for (const FVector2D& Point : Walls[Index].Coverage)
+                {
+                    if (FMath::Abs(Point.Y - Height) <= 20.0f)
+                    {
+                        SpanMin = FMath::Min(SpanMin, static_cast<float>(Point.X));
+                        SpanMax = FMath::Max(SpanMax, static_cast<float>(Point.X));
+                    }
+                }
+                const float Span = SpanMax > SpanMin ? SpanMax - SpanMin : 0.0f;
+                if (Span >= BestSpan - 15.0f)
+                {
+                    BestSpan = FMath::Max(BestSpan, Span);
+                    Eave = Height;
+                }
+            }
+            Walls[Index].Eave = Eave;
+            Walls[Index].Floor = 0.0;
+            float Ground = static_cast<float>(Walls[Index].Origin.Z);
+            if (Landscape)
+            {
+                for (float U : { 0.0f, static_cast<float>(Walls[Index].Width * 0.5), static_cast<float>(Walls[Index].Width) })
+                {
+                    const FVector At = Walls[Index].Origin + Walls[Index].AxisU * U;
+                    if (const TOptional<float> Height = Landscape->GetHeightAtLocation(At))
+                    {
+                        Ground = FMath::Min(Ground, *Height - 15.0f);
+                    }
+                }
+            }
+            const float Drop = FMath::Clamp(static_cast<float>(Walls[Index].Origin.Z) - Ground, 0.0f, 800.0f);
+            if (Drop > 8.0f)
+            {
+                for (FVector2D& Point : Walls[Index].Coverage)
+                {
+                    Point.Y += Drop;
+                }
+                const float Width = static_cast<float>(Walls[Index].Width);
+                Walls[Index].Coverage.Append({ FVector2D(0.0, 0.0), FVector2D(Width, 0.0), FVector2D(Width, Drop), FVector2D(0.0, 0.0), FVector2D(Width, Drop), FVector2D(0.0, Drop) });
+                Walls[Index].Origin.Z -= Drop;
+                Walls[Index].Height += Drop;
+                Walls[Index].Eave += Drop;
+                Walls[Index].Floor = Drop;
             }
         }
         if (Walls.Num() == 0)
@@ -517,21 +592,14 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
             const bool bRoof = !NearlyVertical(Triangle.Normal);
             Facade.Triangle(Triangle.A, Triangle.B, Triangle.C, bRoof ? Facade.Roof : Facade.Plaster, Triangle.Normal);
         }
-        const uint32 Hash = FCrc::StrCrc32(*Mesh->GetName());
         int32 OpeningCount = 0;
         for (int32 Index = 0; Index < Walls.Num(); ++Index)
         {
             TArray<FOpening> Openings;
-            OpeningsFor(Walls[Index], Index == DoorWall, Hash ^ static_cast<uint32>(Index * 17), Openings);
+            OpeningsFor(Walls[Index], Index == DoorWall, Openings);
             OpeningCount += Openings.Num();
             EmitWall(Facade, Walls[Index], Openings);
         }
-        // One triangle in every slot so section indices stay plaster, roof, frame, glass.
-        const FVector Marker = Walls[0].Origin + Walls[0].Normal * 0.2;
-        Facade.Triangle(Marker, Marker + FVector(0.4, 0.0, 0.0), Marker + FVector(0.0, 0.0, 0.4), Facade.Roof, Walls[0].Normal);
-        Facade.Triangle(Marker, Marker + FVector(0.4, 0.0, 0.0), Marker + FVector(0.0, 0.0, 0.4), Facade.Frame, Walls[0].Normal);
-        Facade.Triangle(Marker, Marker + FVector(0.4, 0.0, 0.0), Marker + FVector(0.0, 0.0, 0.4), Facade.Glass, Walls[0].Normal);
-
         UMaterialInterface* Plaster = Mesh->GetStaticMaterials().IsValidIndex(0) ? Mesh->GetStaticMaterials()[0].MaterialInterface.Get() : nullptr;
         UMaterialInterface* RoofMaterial = Mesh->GetStaticMaterials().IsValidIndex(1) ? Mesh->GetStaticMaterials()[1].MaterialInterface.Get() : Plaster;
         Mesh->SetNumSourceModels(1);
