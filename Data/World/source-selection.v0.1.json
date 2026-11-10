@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
   "format": "marburgumii.world_source_decision",
-  "status": "planned_purchase_pending_qualification",
+  "status": "current_original_unreal_lent_active_commercial_candidate_unpurchased",
   "primary_map_source": {
     "id": "turbosquid_maribor_1639711",
     "url": "https://www.turbosquid.com/3d-models/3d-city-area-building-model/1639711",
@@ -39,7 +39,7 @@
     "repository": "simon-gros/magna-raedarum-marburgum",
     "default_base_geometry": false,
     "role": "reference_fallback_authoritative_gameplay_semantics_historical_and_geospatial_evidence",
-    "current_status": "not_imported_in_MarburgumII"
+    "current_status": "original Unreal Lent map is active; generated LiDAR pipeline is not active"
   },
   "ecology_references": [
     "Data/Ecology/fish.v0.1.json",
@@ -61,6 +61,17 @@
     "The product metadata is not verified geometry or a proven playable city.",
     "No purchased file or purchased license has been provided or imported in this repository.",
     "1990s corrections are mandatory over 2022 GIS portrayal.",
-    "Never commit protected model data to public GitHub; local proprietary assets are ignored."
-  ]
+    "Never commit protected model data to public GitHub; local proprietary assets are ignored.",
+    "TurboSquid purchase candidate is not the current default and cannot automatically replace /Game/World/lent."
+  ],
+  "current_launch_world": {
+    "map": "/Game/World/lent",
+    "source": "original Unreal Marburgum level",
+    "role": "default game/editor/dedicated-server world",
+    "decision": "ADR-027 and owner confirmation after first facade review",
+    "later_changes": "ADR-034 sealed shell/roof improvements awaiting personal owner review",
+    "test_fallback_map": "/Game/Maps/Lent",
+    "reverted_candidate": "ADR-026 generated LiDAR shell replacement",
+    "switch_gate": "license and intake plus landmark/mission/swim/vehicle path crosswalk, server/client current asset testing, explicit owner approval"
+  }
 }
