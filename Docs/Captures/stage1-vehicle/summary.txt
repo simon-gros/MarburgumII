@@ -1,0 +1,58 @@
+MarburgumII vehicle smoke
+result: PASS
+date_utc: 2026-11-10T22:39:11Z
+git_sha: e7248d86a4f4a19b17ed33e98169deb42b32302b
+mode: staged
+map: /Game/World/lent
+host: Linux 6.18.60-2-cachyos-lts x86_64
+
+MB2VSMOKE role=client tag=D event=start shot=1
+MB2VSMOKE role=client tag=D event=ready player=256 at=7134,-12483,251 car=city_hatchback_a car_at=X=7397.400 Y=-12399.980 Z=262.090 door_cm=118
+MB2VSMOKE role=client tag=D event=parked step_s=2.00 pos=7134,-12483,251 seat=None shown=1 car=7397,-12400,262 yaw=-90.0 pitch=0.0 roll=-1.5 speed=0.00 steer=0.00 wheels_ground=4 occupants=0 impacts=0 hud=""
+MB2VSMOKE role=client tag=D event=parked_after step_s=2.00 pos=7134,-12483,251 seat=None shown=1 car=7397,-12400,262 yaw=-90.0 pitch=0.0 roll=-1.5 speed=0.00 steer=0.00 wheels_ground=4 occupants=0 impacts=0 hud=""
+MB2VSMOKE role=client tag=D event=shot file=vehicle-d-parked.png saved=1
+MB2VEHICLE role=client event=Enter ok=1 reason=-
+MB2VSMOKE role=client tag=D event=answer action=Enter ok=1 reason=-
+MB2VSMOKE role=client tag=D event=entered step_s=0.18 pos=7365,-12425,246 seat=driver shown=1 car=7397,-12400,262 yaw=-90.0 pitch=0.0 roll=-1.5 speed=0.00 steer=0.00 wheels_ground=4 occupants=1 impacts=0 hud="0 km/h"
+MB2VSMOKE role=client tag=D event=hidden_in_seat step_s=1.02 pos=7365,-12425,246 seat=driver shown=0 car=7397,-12400,262 yaw=-90.0 pitch=0.0 roll=-1.5 speed=0.00 steer=0.00 wheels_ground=4 occupants=1 impacts=0 hud="0 km/h"
+MB2VSMOKE role=client tag=D event=shot file=vehicle-d-seated.png saved=1
+MB2VSMOKE role=client tag=D event=passenger_aboard step_s=1.22 pos=7365,-12425,246 seat=driver shown=0 car=7397,-12400,262 yaw=-90.0 pitch=0.0 roll=-1.5 speed=0.00 steer=0.00 wheels_ground=4 occupants=2 impacts=0 hud="0 km/h"
+MB2VSMOKE role=client tag=D event=throttle step_s=3.50 pos=7353,-13747,251 seat=driver shown=0 car=7385,-13722,267 yaw=-90.0 pitch=0.3 roll=-0.9 speed=7.54 steer=0.00 wheels_ground=4 occupants=2 impacts=0 hud="27 km/h"
+MB2VSMOKE role=client tag=D event=shot file=vehicle-d-driving.png saved=1
+MB2VSMOKE role=client tag=D event=steered step_s=2.50 pos=8585,-14763,207 seat=driver shown=0 car=8549,-14742,223 yaw=23.9 pitch=-3.9 roll=0.7 speed=8.33 steer=0.33 wheels_ground=4 occupants=2 impacts=0 hud="30 km/h"
+MB2VSMOKE role=client tag=D event=braked step_s=1.78 pos=9061,-14371,207 seat=driver shown=0 car=9020,-14365,221 yaw=44.5 pitch=0.5 roll=0.6 speed=-0.00 steer=0.00 wheels_ground=4 occupants=2 impacts=0 hud="0 km/h"
+MB2VSMOKE role=client tag=D event=reversing step_s=2.50 pos=8648,-14772,211 seat=driver shown=0 car=8607,-14765,226 yaw=44.5 pitch=-1.9 roll=1.2 speed=-4.24 steer=0.00 wheels_ground=4 occupants=2 impacts=0 hud="REV · 15 km/h"
+MB2VSMOKE role=client tag=D event=shot file=vehicle-d-reversing.png saved=1
+MB2VSMOKE role=client tag=D event=stopped step_s=2.11 pos=8526,-14883,224 seat=driver shown=0 car=8486,-14875,240 yaw=44.3 pitch=-6.7 roll=2.9 speed=0.00 steer=0.00 wheels_ground=4 occupants=2 impacts=0 hud="0 km/h"
+MB2VSMOKE role=client tag=D event=passenger_left step_s=0.04 pos=8526,-14883,224 seat=driver shown=0 car=8486,-14875,240 yaw=44.3 pitch=-6.7 roll=2.9 speed=-0.00 steer=0.00 wheels_ground=4 occupants=1 impacts=0 hud="0 km/h"
+MB2VEHICLE role=client event=Exit ok=1 reason=-
+MB2VSMOKE role=client tag=D event=answer action=Exit ok=1 reason=-
+MB2VSMOKE role=client tag=D event=exited step_s=0.03 pos=8629,-14946,232 seat=None shown=1 car=8486,-14875,240 yaw=44.3 pitch=-6.7 roll=2.9 speed=-0.00 steer=0.00 wheels_ground=4 occupants=1 impacts=0 hud=""
+MB2VSMOKE role=client tag=D event=shot file=vehicle-d-exited.png saved=1
+MB2VSMOKE role=client tag=D event=walked step_s=2.00 pos=9014,-15136,275 seat=None shown=1 car=8486,-14875,240 yaw=44.3 pitch=-6.7 roll=2.9 speed=-0.00 steer=0.00 wheels_ground=4 occupants=0 impacts=0 hud=""
+MB2VSMOKE role=client tag=D event=pass
+MB2VSMOKE role=client tag=P event=start shot=0
+MB2VSMOKE role=client tag=P event=ready player=257 at=7134,-12483,251 car=city_hatchback_a car_at=X=7397.400 Y=-12399.980 Z=262.090 door_cm=118
+MB2VSMOKE role=client tag=P event=driver_seated step_s=2.00 pos=7134,-12483,251 seat=None shown=1 car=7397,-12400,262 yaw=-90.0 pitch=0.0 roll=-1.5 speed=0.00 steer=0.00 wheels_ground=4 occupants=1 impacts=0 hud="-"
+MB2VEHICLE role=client event=Enter ok=0 reason=seat_taken
+MB2VSMOKE role=client tag=P event=answer action=Enter ok=0 reason=seat_taken
+MB2VSMOKE role=client tag=P event=asking_passenger_seat step_s=0.00 pos=7134,-12483,251 seat=None shown=1 car=7397,-12400,262 yaw=-90.0 pitch=0.0 roll=-1.5 speed=0.00 steer=0.00 wheels_ground=4 occupants=1 impacts=0 hud="-"
+MB2VEHICLE role=client event=Enter ok=1 reason=-
+MB2VSMOKE role=client tag=P event=answer action=Enter ok=1 reason=-
+MB2VSMOKE role=client tag=P event=passenger_seated step_s=0.03 pos=7365,-12335,246 seat=rear_left shown=1 car=7397,-12400,262 yaw=-90.0 pitch=0.0 roll=-1.5 speed=0.00 steer=0.00 wheels_ground=4 occupants=2 impacts=0 hud="-"
+MB2VSMOKE role=client tag=P event=ride_over step_s=12.40 pos=8462,-14946,234 seat=rear_left shown=0 car=8486,-14875,240 yaw=44.3 pitch=-6.6 roll=2.9 speed=0.00 steer=0.00 wheels_ground=4 occupants=2 impacts=0 hud="-"
+MB2VEHICLE role=client event=Exit ok=1 reason=-
+MB2VSMOKE role=client tag=P event=answer action=Exit ok=1 reason=-
+MB2VSMOKE role=client tag=P event=passenger_exited step_s=0.00 pos=8486,-15063,258 seat=None shown=1 car=8486,-14875,240 yaw=44.3 pitch=-6.6 roll=2.9 speed=0.00 steer=0.00 wheels_ground=4 occupants=2 impacts=0 hud="-"
+MB2VSMOKE role=client tag=P event=pass
+MB2SMOKE role=server event=ready map=lent port=7777 contract=1
+MB2VEHICLE role=server event=vehicle_ready vehicle=lent_hatchback definition=city_hatchback_a location=X=7400.000 Y=-12400.000 Z=272.615 water_volumes=82
+MB2SMOKE role=server event=login player=256 players=1
+MB2VEHICLE role=server event=entered vehicle=lent_hatchback player=256 seat=driver reason=- location=X=7397.403 Y=-12399.976 Z=262.090 speed=0.00
+MB2SMOKE role=server event=login player=257 players=2
+MB2VEHICLE role=server event=enter_refused vehicle=lent_hatchback player=257 seat=driver reason=seat_taken location=X=7397.405 Y=-12399.976 Z=262.090 speed=0.00
+MB2VEHICLE role=server event=entered vehicle=lent_hatchback player=257 seat=rear_left reason=- location=X=7397.405 Y=-12399.976 Z=262.090 speed=0.00
+MB2VEHICLE role=server event=exited vehicle=lent_hatchback player=257 seat=rear_left reason=- location=X=8486.114 Y=-14875.382 Z=239.717 speed=0.00
+MB2VEHICLE role=server event=exited vehicle=lent_hatchback player=256 seat=driver reason=- location=X=8486.114 Y=-14875.382 Z=239.717 speed=-0.00
+MB2SMOKE role=server event=logout player=257 players=1
+MB2SMOKE role=server event=logout player=256 players=0
