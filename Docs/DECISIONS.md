@@ -365,3 +365,13 @@ Of 125 placed footprints, 124 are rebuilt: 74 gabled, 30 hipped and 20 flat, 360
 
 **Not covered.** Owner playtest of the flank in game.
 
+## ADR-038 — The protagonist's material is matte (accepted 2026-11-10)
+
+**Problem.** In game the protagonist's shirt, jeans and skin had a grey, plastic sheen. `M_Protagonist` is created by the legacy FBX importer, which wires base colour and normal but not Blender's roughness (0.8 in `retopo_bake.py`), so roughness, specular and metallic were unconnected and fell back to UE's defaults (roughness 0.5, specular 0.5).
+
+**Decision.** `fix_protagonist_material.py` runs after every import and connects constants: roughness 0.85, specular 0.25, metallic 0. One value covers cloth and skin because the character is a single material with no roughness map; the base colour still carries the lighting TRELLIS baked into its vertex colours, so light streaks on the jeans remain and are not specular.
+
+**Evidence.** Before the change the material's metallic, specular and roughness inputs were unconnected; after it they are the constants above. The packaged client in the condition smoke (PASS) on the Lent promenade, before and after: `Docs/Captures/character-protagonist/gloss_before_after.jpg`.
+
+**Not covered.** Owner playtest of the look in game; a separate roughness value or map for skin.
+

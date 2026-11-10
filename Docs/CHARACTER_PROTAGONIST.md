@@ -1,6 +1,6 @@
 # Protagonist character prototype
 
-**Status (2026-11-10):** retopologised and rebaked (ADR-031): about 11.8k quads, with 2048² colour and normal maps baked without any research-licensed rasterizer. The generated back of the shirt is calmed (ADR-035), because the third-person camera looks at it most of the time, and the arm's skin no longer lands on the left flank of the shirt (ADR-037). Imported into UE 5.8.3 on the template mannequin skeleton. It is the player's body in third person, animated by the template's `ABP_Unarmed` (ADR-023). Not owner-playtested.
+**Status (2026-11-10):** retopologised and rebaked (ADR-031): about 11.8k quads, with 2048² colour and normal maps baked without any research-licensed rasterizer. The generated back of the shirt is calmed (ADR-035), because the third-person camera looks at it most of the time, the arm's skin no longer lands on the left flank of the shirt (ADR-037), and the material is matte instead of plastic-shiny (ADR-038). Imported into UE 5.8.3 on the template mannequin skeleton. It is the player's body in third person, animated by the template's `ABP_Unarmed` (ADR-023). Not owner-playtested.
 
 ![Retopologised body: front, side and face](Captures/character-protagonist/retopo_preview.jpg)
 
@@ -9,6 +9,8 @@
 ![After ADR-035: front unchanged, both flanks](Captures/character-protagonist/back_calm_front_flanks.jpg)
 
 ![Left flank under the arm before and after ADR-037 (Blender)](Captures/character-protagonist/flank_before_after.jpg)
+
+![Packaged client on the Lent promenade, before and after the matte material (ADR-038)](Captures/character-protagonist/gloss_before_after.jpg)
 
 ![Quad topology](Captures/character-protagonist/retopo_wire.jpg)
 
@@ -27,7 +29,7 @@ The first prototype (before ADR-031) is kept for comparison: [TRELLIS turntable]
 | `SourceArt/Characters/Protagonist/protagonist_retopo.glb` | The retopologised body: 11,880 quads (23,760 triangles), one UV set, embedded 2048² base colour and tangent-space normal maps |
 | `SourceArt/Characters/Protagonist/SKM_Protagonist.fbx` | The retopologised body skinned to the UE5 mannequin skeleton in Blender 5.2.3, with the mannequin's hands (ADR-028); 15,591 vertices; centimetres, Z-up, identity node transforms |
 | `Content/Characters/Protagonist/SKM_Protagonist` | Imported skeletal mesh on `/Game/Characters/Mannequins/Meshes/SK_Mannequin`; 180.5 cm tall, bounds extent (54.7, 18.6, 90.3) |
-| `Content/Characters/Protagonist/M_Protagonist`, `Protagonist_BaseColor`, `Protagonist_Normal`, `SKM_Protagonist_PhysicsAsset` | Imported material (base colour and normal map wired), its two textures (the normal map with `flip_green_channel`, because Blender bakes OpenGL-style normals) and the generated physics asset |
+| `Content/Characters/Protagonist/M_Protagonist`, `Protagonist_BaseColor`, `Protagonist_Normal`, `SKM_Protagonist_PhysicsAsset` | Imported material (base colour and normal map wired; constant roughness 0.85, specular 0.25, metallic 0, ADR-038), its two textures (the normal map with `flip_green_channel`, because Blender bakes OpenGL-style normals) and the generated physics asset |
 | `Content/Characters/Mannequins/` | Epic's UE5 template mannequin (skeleton, Manny/Quinn meshes, rigs, materials, animations), byte-identical to the engine's `Templates/TemplateResources/High/Characters/Content/Mannequins` |
 
 SHA-256 of the source files:
@@ -54,6 +56,7 @@ The pipeline runs outside this repository because its steps are Blender and Unre
 3. Blender imports `SKM_Manny_Simple` and `MF_Unarmed_Walk_Fwd` (exported from this project's mannequin) and fits the GLB to the mannequin. It straightens Manny's elbows and aims each arm at the generated hand, so the wrist and finger joints sit inside it; Manny's bind pose bends the elbows and holds the hands about 16 cm forward. It transfers Manny's skin weights, replaces the hands with Manny's, and renders rest, walk, open-hand and fist previews.
 4. Blender exports the FBX with the data physically in centimetres (`scale_length` 0.01, `FBX_SCALE_NONE`, Z-up, `axis_forward` Y), because UE's FBX importer ignores `UnitScaleFactor`. The raw FBX is checked for unit scale 1, Z-up, about 180 cm of geometry and the pelvis at (0, −2.28, 95.90), as in Manny.
 5. The UE 5.8.3 editor imports the FBX with the legacy importer onto `SK_Mannequin`, creating the physics asset, material and both textures, and sets `flip_green_channel` on the normal map.
+6. `fix_protagonist_material.py` (UE editor Python) wires constants into `M_Protagonist`: roughness 0.85, specular 0.25, metallic 0 (ADR-038). The legacy FBX importer does not carry Blender's roughness, so without this step the material renders with UE's defaults (roughness 0.5) and looks wet.
 
 **Verification:** with `PythonScriptPlugin` enabled for that run only, the editor loaded all 133 assets under `/Game/Characters` with no load failures. The protagonist resolves to `SK_Mannequin`, `M_Protagonist` and its physics asset; the material samples `Protagonist_BaseColor` (sRGB) as base colour and `Protagonist_Normal` (normal-map compression) as normal. Twelve editor-only references in Epic's mannequin animations point to assets that the engine template itself does not ship: `SKM_Manny`, `Heroes/Mannequin/Meshes/SKM_Quinn` and `Animations/EditableAnimations/LS_*`. They are inherited unchanged and do not affect loading.
 
