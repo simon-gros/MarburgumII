@@ -24,10 +24,11 @@ namespace
     constexpr float SwimBlendSeconds = 0.25f;
     // Enough loops of the 1.2 s cycle for any swim; the clip is restarted if it ever runs out.
     constexpr int32 SwimLoops = 100000;
-    // The swim pose leans the chest onto the water, which puts the head about 17 cm under where the
-    // original drew the surface. The body is drawn this much higher while it swims, so the face is
-    // out; the mouth rule (MouthHeightCm) is the movement's and does not move.
-    constexpr float SwimLiftCm = 20.f;
+    // The swim pose lies along the water (ADR-033): the pelvis 96 cm and the head joint 115 cm above
+    // the feet, against a surface 140 cm up while the swimmer steers. The body is drawn this much higher
+    // while it swims, so the back is just under the surface and the face is out; the mouth rule
+    // (MouthHeightCm) is the movement's and does not move.
+    constexpr float SwimLiftCm = 32.f;
     constexpr float SwimLiftCmPerSecond = 60.f;
 }
 

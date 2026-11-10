@@ -26,7 +26,7 @@ Per [ADR-008](DECISIONS.md) the status is `implemented_awaiting_owner_playtest`.
 - **Rule** (`MarburgumGameplayContract.h`, checked against `Data/Gameplay/gameplay.v0.1.json` and its provenance by `mb2 validate gameplay`): swim 1.1 m/s; mouth 1.55 m above the feet, held 15 cm over the surface while steering and rising at 1.2 m/s; sinking at 0.45 m/s to 35 cm under when not; a fall puts the mouth 40 cm under; 45 m of fall into water is lethal; held breath drains the bar in 60 s; recovery after 60 s.
 - **Movement** (`UMarburgumCharacterMovement::PhysSwimming`, client-predicted, server-checked like ADR-020): the original `tick_water` in place of the engine's buoyancy; climbing out onto a low bank; drowning; a correction also carries the down state; a body that is down takes no input.
 - **Recovery** (server): to the start tagged `recovery`, else the arrival start (this map), for 60 s; `recovery_s` is saved with a down body only.
-- **Client:** `A_Swim` through `ABP_Unarmed`'s `DefaultSlot`, paced by speed as the original paced it, the body drawn 20 cm higher while it swims. The `player_condition` pill shows the most urgent state.
+- **Client:** `A_Swim` through `ABP_Unarmed`'s `DefaultSlot`, paced by speed as the original paced it, the body drawn 20 cm higher while it swims (32 cm and a prone pose since ADR-033). The `player_condition` pill shows the most urgent state.
 - **Driver** (`UMarburgumSwimSmokeSubsystem`, `-MB2SwimSmoke`): holds a world direction like WASD, measures speed from the client's own pawn, reads the server's condition from the owner-only player state, and reads the HUD pill.
 
 ## Results ([summary](Captures/stage1-swim/summary.txt), store after [phase 1](Captures/stage1-swim/world-store-after-phase-1.json) and [phase 2](Captures/stage1-swim/world-store-after-phase-2.json))
@@ -57,6 +57,8 @@ Per [ADR-008](DECISIONS.md) the status is `implemented_awaiting_owner_playtest`.
 | Saved rested | `vitality=100 stamina=100 winded=0 revision=2 recovery_s=0`; the store's `conditions` is empty | PASS |
 
 ## Captures
+
+The two swimming captures are from the ADR-033 rerun (`scripts/swim-smoke-linux.sh editor`, 2026-11-10, PASS): the prone pose with the body lifted 32 cm. The others are from the packaged run above.
 
 | | |
 | --- | --- |

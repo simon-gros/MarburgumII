@@ -82,11 +82,15 @@ namespace
     TArray<FGodotTrack> SwimTracks()
     {
         TArray<FGodotTrack> Tracks;
-        Tracks.Add({ TEXT("Hips"), { FVector(-0.85, 0.06, 0), FVector(-0.85, -0.06, 0), FVector(-0.85, 0.06, 0) } });
-        Tracks.Add({ TEXT("Spine"), { FVector(-0.28, -0.05, 0), FVector(-0.28, 0.05, 0), FVector(-0.28, -0.05, 0) } });
-        Tracks.Add({ TEXT("UpperChest"), { FVector(-0.1, 0, 0), FVector(-0.1, 0, 0), FVector(-0.1, 0, 0) } });
-        // The chest pitches onto the water. The head comes back up so the face is not in it.
-        Tracks.Add({ TEXT("Head"), { FVector(0.45, 0.08, 0), FVector(0.45, -0.08, 0), FVector(0.45, 0.08, 0) } });
+        // ADR-033: the original pitched the hips 49 degrees and swung both thighs forward together, so the
+        // legs hung under the body and the swimmer looked as if it were drowning. The body now lies along
+        // the water: the hips pitch 77 degrees and the chest arches 3 degrees back up, so the chest sits
+        // where the original's did (74 degrees against 70) and the original arm stroke below still fits it.
+        Tracks.Add({ TEXT("Hips"), { FVector(-1.35, 0.06, 0), FVector(-1.35, -0.06, 0), FVector(-1.35, 0.06, 0) } });
+        Tracks.Add({ TEXT("Spine"), { FVector(0.05, -0.05, 0), FVector(0.05, 0.05, 0), FVector(0.05, -0.05, 0) } });
+        Tracks.Add({ TEXT("UpperChest"), { FVector(0, 0, 0), FVector(0, 0, 0), FVector(0, 0, 0) } });
+        // The head comes back up so the face looks ahead, not into the water.
+        Tracks.Add({ TEXT("Head"), { FVector(0.8, 0.08, 0), FVector(0.8, -0.08, 0), FVector(0.8, 0.08, 0) } });
 
         // Reach, catch, pull, recover. The other arm is half a cycle behind.
         const TArray<FVector> UpperArm = {
@@ -100,12 +104,15 @@ namespace
         Tracks.Add({ TEXT("RightUpperArm"), Mirror(Shift(UpperArm, 2)) });
         Tracks.Add({ TEXT("RightLowerArm"), Mirror(Shift(LowerArm, 2)) });
 
-        const TArray<FVector> Thigh = Cycle({ 0.35, -0.15, 0.35, -0.15 });
-        const TArray<FVector> Knee = Cycle({ -0.55, -0.15, -0.55, -0.15 });
+        // Flutter kick (ADR-033): the legs stay in line with the body, a little past straight, and kick
+        // twice a cycle, the other leg half a kick behind. The knee bends on the up beat and straightens
+        // on the down beat.
+        const TArray<FVector> Thigh = Cycle({ 0.05, -0.25, 0.05, -0.25 });
+        const TArray<FVector> Knee = Cycle({ -0.1, -0.4, -0.1, -0.4 });
         Tracks.Add({ TEXT("LeftUpperLeg"), Thigh });
         Tracks.Add({ TEXT("LeftLowerLeg"), Knee });
-        Tracks.Add({ TEXT("RightUpperLeg"), Shift(Thigh, 2) });
-        Tracks.Add({ TEXT("RightLowerLeg"), Shift(Knee, 2) });
+        Tracks.Add({ TEXT("RightUpperLeg"), Shift(Thigh, 1) });
+        Tracks.Add({ TEXT("RightLowerLeg"), Shift(Knee, 1) });
         return Tracks;
     }
 
@@ -413,9 +420,16 @@ namespace
             const FVector ArmL = Direction(Pose, Index(TEXT("upperarm_l")), Index(TEXT("hand_l")));
             const FVector ArmR = Direction(Pose, Index(TEXT("upperarm_r")), Index(TEXT("hand_r")));
             const FVector LegL = Direction(Pose, Index(TEXT("thigh_l")), Index(TEXT("foot_l")));
+            const FVector LegR = Direction(Pose, Index(TEXT("thigh_r")), Index(TEXT("foot_r")));
             UE_LOG(LogMarburgumSwim, Display,
-                TEXT("MB2SWIM check t=%.1f torso=(%.2f,%.2f,%.2f) arm_l=(%.2f,%.2f,%.2f) arm_r=(%.2f,%.2f,%.2f) leg_l=(%.2f,%.2f,%.2f)"), T,
-                Torso.X, Torso.Y, Torso.Z, ArmL.X, ArmL.Y, ArmL.Z, ArmR.X, ArmR.Y, ArmR.Z, LegL.X, LegL.Y, LegL.Z);
+                TEXT("MB2SWIM check t=%.1f torso=(%.2f,%.2f,%.2f) arm_l=(%.2f,%.2f,%.2f) arm_r=(%.2f,%.2f,%.2f) leg_l=(%.2f,%.2f,%.2f) leg_r=(%.2f,%.2f,%.2f)"), T,
+                Torso.X, Torso.Y, Torso.Z, ArmL.X, ArmL.Y, ArmL.Z, ArmR.X, ArmR.Y, ArmR.Z, LegL.X, LegL.Y, LegL.Z, LegR.X, LegR.Y, LegR.Z);
+            // Heights above the feet, for the swim lift (AMarburgumCharacter::SwimLiftCm) and the mouth rule.
+            const auto Height = [&Pose, &Index](const TCHAR* Name) { return Pose[Index(Name)].GetLocation().Z; };
+            UE_LOG(LogMarburgumSwim, Display,
+                TEXT("MB2SWIM height t=%.1f pelvis=%.1f spine_04=%.1f head=%.1f thigh_l=%.1f foot_l=%.1f foot_r=%.1f hand_l=%.1f"), T,
+                Height(TEXT("pelvis")), Height(TEXT("spine_04")), Height(TEXT("head")), Height(TEXT("thigh_l")), Height(TEXT("foot_l")),
+                Height(TEXT("foot_r")), Height(TEXT("hand_l")));
         }
         return true;
     }
