@@ -9,9 +9,10 @@
  *
  *   UnrealEditor-Cmd MarburgumII.uproject -run=MarburgumRebuildFacades
  *
- * The original wall and roof triangles stay a closed shell. Windows and the door are recesses
- * with jambs and glass, so they do not open a hole through the building. A wall whose base is
- * above the landscape is extended down to it along the same bottom edge.
+ * Rebuilds every Lent building from its footprint. A nearly rectangular plan keeps a pitched
+ * roof on that rectangle. A complex plan gets a roof whose eaves are the wall tops, instead of
+ * a loose box roof. Footprints under 30 square metres, or with fewer than four corners, are
+ * removed from the level.
  */
 UCLASS()
 class UMarburgumRebuildFacadesCommandlet : public UCommandlet
