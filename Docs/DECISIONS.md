@@ -323,3 +323,18 @@ Of 125 placed footprints, 124 are rebuilt: 74 gabled, 30 hipped and 20 flat, 360
 - Geospatial/historical data provenance and acceptable licensing.
 - Run and profile DLSS on a Windows build (ADR-029); whether DLSS is offered on Linux depends on NVIDIA adding Linux support to its plugin.
 - A DLSS 5 runtime the project is licensed to use, or an official NVIDIA DLSS 5 package for UE 5.8 (ADR-030).
+
+## ADR-035 — The protagonist's generated back is calmed (accepted 2026-11-10)
+
+**Problem.** The owner found the back of the shirt bothersome: meant to be wrinkly, it read as deep, excessive folds, and the third-person camera shows the back most of the time. The concept (ADR-021) is a single front view, so TRELLIS invents the back. Separating the material showed three sources: deep rolls and a spine groove in the geometry, the same folds painted again as dark vertex colours, and a normal map that added creases plus hard dark blotches where bake rays reached the inside of the hollow cloth.
+
+**Decision.** `retopo_bake.py` calms the back before retopology and in the bake (strength `BACK_CALM`, default 0.8; 0 reproduces ADR-031):
+
+- **Where:** dense-mesh vertices below the neck whose broadly smoothed normal faces away from the concept, on the torso and legs only (per height slice, out to the first empty column, so the A-pose arms keep their shape). The front, head, arms and open borders are untouched.
+- **Geometry:** thin-plate fairing of that region with shapes under about 12 cm ironed out, then 20% of the generated relief added back, so the shirt still reads as cloth. The low mesh follows through the voxel shell; a light relax removes any fold-over.
+- **Colour:** the vertex-colour luminance is pulled to 20% of its deviation from an edge-aware local mean (shirt and trousers do not bleed), which lifts the painted fold shadows without changing the hue.
+- **Normal map:** back texels keep 60% of their tilt; texels tilted more than about 60° are flat.
+- **Concept projection guard:** below the head, a concept texel whose colour clashes with the dense mesh's own colour there is not projected; the stronger back calm otherwise let the arm drawn beside the flank land on the shirt.
+
+**Not covered.** The back is still invented, now quieter, not drawn; a back-view concept or hand sculpt would replace it. Owner sign-off on the look in game.
+
