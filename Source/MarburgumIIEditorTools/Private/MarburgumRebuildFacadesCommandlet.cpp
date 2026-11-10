@@ -247,77 +247,84 @@ namespace
         }
     }
 
+    FVector2D Outward(const FVector2D& From, const FVector2D& To, double Metres);
+
     void EmitWall(FShell& Shell, const FVector2D& A, const FVector2D& B, double Base, double Eaves, bool bDoor)
     {
         const FVector Bottom0 = Ue(A, Base);
         const FVector Bottom1 = Ue(B, Base);
         const FVector Top0 = Ue(A, Eaves);
         const FVector Top1 = Ue(B, Eaves);
+        Shell.Quad(Bottom0, Bottom1, Top1, Top0, Shell.Plaster);
+        Shell.Quad(Bottom0, Top0, Top1, Bottom1, Shell.Plaster);
         const float Width = static_cast<float>(FVector::Dist(Bottom0, Bottom1));
         const float Height = static_cast<float>(FMath::Max(Top0.Z, Top1.Z) - FMath::Min(Bottom0.Z, Bottom1.Z));
-        const FVector Inward = FVector::CrossProduct(Bottom1 - Bottom0, Top0 - Bottom0).GetSafeNormal() * -12.0;
+        const FVector2D Out = Outward(A, B, 0.08);
+        const FVector Shift = Ue(A + Out, Base) - Bottom0;
         TArray<FOpening> Holes;
         AddOpenings(Width, Height, bDoor, Holes);
-        TArray<float> Us = { 0.0f, Width };
-        TArray<float> Vs = { 0.0f, Height };
         for (const FOpening& Hole : Holes)
         {
-            Us.Append({ Hole.U0, Hole.U1 });
-            Vs.Append({ Hole.V0, Hole.V1 });
+            const FVector O00 = OnWall(Bottom0, Bottom1, Top0, Top1, Hole.U0, Hole.V0, Width, Height, FVector::ZeroVector) + Shift;
+            const FVector O10 = OnWall(Bottom0, Bottom1, Top0, Top1, Hole.U1, Hole.V0, Width, Height, FVector::ZeroVector) + Shift;
+            const FVector O11 = OnWall(Bottom0, Bottom1, Top0, Top1, Hole.U1, Hole.V1, Width, Height, FVector::ZeroVector) + Shift;
+            const FVector O01 = OnWall(Bottom0, Bottom1, Top0, Top1, Hole.U0, Hole.V1, Width, Height, FVector::ZeroVector) + Shift;
+            const FVector Face = Shift.GetSafeNormal() * 6.0;
+            Shell.Quad(O00, O10, O10 + Face, O00 + Face, Shell.Frame);
+            Shell.Quad(O10, O11, O11 + Face, O10 + Face, Shell.Frame);
+            Shell.Quad(O11, O01, O01 + Face, O11 + Face, Shell.Frame);
+            Shell.Quad(O01, O00, O00 + Face, O01 + Face, Shell.Frame);
+            Shell.Quad(O00 + Face, O10 + Face, O11 + Face, O01 + Face, Hole.bDoor ? Shell.Frame : Shell.Glass);
         }
-        Us.Sort();
-        Vs.Sort();
-        for (int32 U = 0; U + 1 < Us.Num(); ++U)
+    }
+
+    FVector2D Outward(const FVector2D& From, const FVector2D& To, double Metres)
+    {
+        const FVector2D Edge = To - From;
+        const double Length = Edge.Size();
+        if (Length < 1.0e-4)
         {
-            for (int32 V = 0; V + 1 < Vs.Num(); ++V)
-            {
-                const float U0 = Us[U];
-                const float U1 = Us[U + 1];
-                const float V0 = Vs[V];
-                const float V1 = Vs[V + 1];
-                if (U1 - U0 < 0.4f || V1 - V0 < 0.4f)
-                {
-                    continue;
-                }
-                const float Cx = (U0 + U1) * 0.5f;
-                const float Cy = (V0 + V1) * 0.5f;
-                bool bHole = false;
-                for (const FOpening& Hole : Holes)
-                {
-                    if (Cx > Hole.U0 && Cx < Hole.U1 && Cy > Hole.V0 && Cy < Hole.V1)
-                    {
-                        bHole = true;
-                        break;
-                    }
-                }
-                if (bHole)
-                {
-                    continue;
-                }
-                Shell.Quad(
-                    OnWall(Bottom0, Bottom1, Top0, Top1, U0, V0, Width, Height, FVector::ZeroVector),
-                    OnWall(Bottom0, Bottom1, Top0, Top1, U1, V0, Width, Height, FVector::ZeroVector),
-                    OnWall(Bottom0, Bottom1, Top0, Top1, U1, V1, Width, Height, FVector::ZeroVector),
-                    OnWall(Bottom0, Bottom1, Top0, Top1, U0, V1, Width, Height, FVector::ZeroVector),
-                    Shell.Plaster);
-            }
+            return FVector2D::ZeroVector;
         }
-        for (const FOpening& Hole : Holes)
+        return FVector2D(Edge.Y, -Edge.X) * (Metres / Length);
+    }
+
+    void AddRoof(FShell& Shell, FVector A, FVector B, FVector C)
+    {
+        FVector Normal = FVector::CrossProduct(B - A, C - A);
+        if (Normal.Z < 0.0)
         {
-            const FVector O00 = OnWall(Bottom0, Bottom1, Top0, Top1, Hole.U0, Hole.V0, Width, Height, FVector::ZeroVector);
-            const FVector O10 = OnWall(Bottom0, Bottom1, Top0, Top1, Hole.U1, Hole.V0, Width, Height, FVector::ZeroVector);
-            const FVector O11 = OnWall(Bottom0, Bottom1, Top0, Top1, Hole.U1, Hole.V1, Width, Height, FVector::ZeroVector);
-            const FVector O01 = OnWall(Bottom0, Bottom1, Top0, Top1, Hole.U0, Hole.V1, Width, Height, FVector::ZeroVector);
-            const FVector I00 = O00 + Inward;
-            const FVector I10 = O10 + Inward;
-            const FVector I11 = O11 + Inward;
-            const FVector I01 = O01 + Inward;
-            Shell.Quad(O00, O10, I10, I00, Shell.Frame);
-            Shell.Quad(O10, O11, I11, I10, Shell.Frame);
-            Shell.Quad(O11, O01, I01, I11, Shell.Frame);
-            Shell.Quad(O01, O00, I00, I01, Shell.Frame);
-            Shell.Quad(I00, I10, I11, I01, Hole.bDoor ? Shell.Frame : Shell.Glass);
+            Swap(B, C);
+            Normal *= -1.0;
         }
+        Normal = Normal.GetSafeNormal();
+        const FVector Thick = Normal * -18.0;
+        Shell.Triangle(A, B, C, Shell.Roof);
+        Shell.Triangle(A + Thick, C + Thick, B + Thick, Shell.Roof);
+        Shell.Quad(A, B, B + Thick, A + Thick, Shell.Roof);
+        Shell.Quad(B, C, C + Thick, B + Thick, Shell.Roof);
+        Shell.Quad(C, A, A + Thick, C + Thick, Shell.Roof);
+    }
+
+    void Eave(FShell& Shell, const FVector2D& A, const FVector2D& B, double Height)
+    {
+        const FVector2D Out = Outward(A, B, 0.45);
+        if (Out.IsNearlyZero())
+        {
+            return;
+        }
+        const FVector TopA = Ue(A, Height);
+        const FVector TopB = Ue(B, Height);
+        const FVector OutA = Ue(A + Out, Height);
+        const FVector OutB = Ue(B + Out, Height);
+        const FVector SkirtA = Ue(A + Out, Height - 0.28);
+        const FVector SkirtB = Ue(B + Out, Height - 0.28);
+        const FVector LipA = Ue(A, Height - 0.28);
+        const FVector LipB = Ue(B, Height - 0.28);
+        AddRoof(Shell, TopA, TopB, OutB);
+        AddRoof(Shell, TopA, OutB, OutA);
+        Shell.Quad(OutA, OutB, SkirtB, SkirtA, Shell.Roof);
+        Shell.Quad(SkirtA, SkirtB, LipB, LipA, Shell.Roof);
     }
 
     void Lid(FShell& Shell, const TArray<FVector2D>& Outline, double Height)
@@ -329,7 +336,11 @@ namespace
         }
         for (int32 Index = 0; Index + 2 < Triangles.Num(); Index += 3)
         {
-            Shell.Triangle(Ue(Outline[Triangles[Index]], Height), Ue(Outline[Triangles[Index + 1]], Height), Ue(Outline[Triangles[Index + 2]], Height), Shell.Roof);
+            AddRoof(Shell, Ue(Outline[Triangles[Index]], Height), Ue(Outline[Triangles[Index + 1]], Height), Ue(Outline[Triangles[Index + 2]], Height));
+        }
+        for (int32 Index = 0; Index < Outline.Num(); ++Index)
+        {
+            Eave(Shell, Outline[Index], Outline[(Index + 1) % Outline.Num()], Height);
         }
     }
 
@@ -343,17 +354,23 @@ namespace
         const double Inset = bHip ? FMath::Min(Span * 0.5, Length * 0.5) : 0.0;
         const FVector2D RidgeA = Rect[0] + Unit * Inset + Across * 0.5;
         const FVector2D RidgeB = Rect[1] - Unit * Inset + Across * 0.5;
-        Shell.Quad(Ue(Rect[0], Eaves), Ue(Rect[1], Eaves), Ue(RidgeB, Ridge), Ue(RidgeA, Ridge), Shell.Roof);
-        Shell.Quad(Ue(Rect[2], Eaves), Ue(Rect[3], Eaves), Ue(RidgeA, Ridge), Ue(RidgeB, Ridge), Shell.Roof);
+        const FVector2D Over0 = Rect[0] + Outward(Rect[0], Rect[1], 0.45);
+        const FVector2D Over1 = Rect[1] + Outward(Rect[0], Rect[1], 0.45);
+        const FVector2D Over2 = Rect[2] + Outward(Rect[3], Rect[2], 0.45);
+        const FVector2D Over3 = Rect[3] + Outward(Rect[3], Rect[2], 0.45);
+        AddRoof(Shell, Ue(Over0, Eaves), Ue(Over1, Eaves), Ue(RidgeB, Ridge));
+        AddRoof(Shell, Ue(Over0, Eaves), Ue(RidgeB, Ridge), Ue(RidgeA, Ridge));
+        AddRoof(Shell, Ue(Over2, Eaves), Ue(Over3, Eaves), Ue(RidgeA, Ridge));
+        AddRoof(Shell, Ue(Over2, Eaves), Ue(RidgeA, Ridge), Ue(RidgeB, Ridge));
         if (!bHip)
         {
-            Shell.Triangle(Ue(Rect[0], Eaves), Ue(Rect[3], Eaves), Ue(RidgeA, Ridge), Shell.Plaster);
-            Shell.Triangle(Ue(Rect[1], Eaves), Ue(RidgeB, Ridge), Ue(Rect[2], Eaves), Shell.Plaster);
+            AddRoof(Shell, Ue(Rect[0], Eaves), Ue(Rect[3], Eaves), Ue(RidgeA, Ridge));
+            AddRoof(Shell, Ue(Rect[1], Eaves), Ue(RidgeB, Ridge), Ue(Rect[2], Eaves));
         }
         else
         {
-            Shell.Triangle(Ue(Rect[0], Eaves), Ue(Rect[3], Eaves), Ue(RidgeA, Ridge), Shell.Roof);
-            Shell.Triangle(Ue(Rect[1], Eaves), Ue(RidgeB, Ridge), Ue(Rect[2], Eaves), Shell.Roof);
+            AddRoof(Shell, Ue(Over0, Eaves), Ue(Over3, Eaves), Ue(RidgeA, Ridge));
+            AddRoof(Shell, Ue(Over1, Eaves), Ue(RidgeB, Ridge), Ue(Over2, Eaves));
         }
         (void)Base;
     }
@@ -523,7 +540,7 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
         {
             const FVector2D& A = Plan.Outline[Index];
             const FVector2D& B = Plan.Outline[(Index + 1) % Plan.Outline.Num()];
-            if (FVector2D::Distance(A, B) < 0.4)
+            if (FVector2D::Distance(A, B) < 0.05)
             {
                 continue;
             }
@@ -552,7 +569,10 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
             const FVector Peak = Ue(Centroid, Plan.Ridge);
             for (int32 Index = 0; Index < Plan.Outline.Num(); ++Index)
             {
-                Shell.Triangle(Ue(Plan.Outline[Index], Plan.Eaves), Ue(Plan.Outline[(Index + 1) % Plan.Outline.Num()], Plan.Eaves), Peak, Shell.Roof);
+                const FVector2D& From = Plan.Outline[Index];
+                const FVector2D& To = Plan.Outline[(Index + 1) % Plan.Outline.Num()];
+                const FVector2D Out = Outward(From, To, 0.45);
+                AddRoof(Shell, Ue(From + Out, Plan.Eaves), Ue(To + Out, Plan.Eaves), Peak);
             }
         }
 
