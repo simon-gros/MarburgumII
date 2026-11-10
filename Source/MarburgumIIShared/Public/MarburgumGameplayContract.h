@@ -159,6 +159,26 @@ namespace MarburgumII::Gameplay
         return nullptr;
     }
 
+    // ---- Player condition (original src/shared/combat.h and protocol.h) ----
+
+    // Walking is a brisk walk; running is exactly twice that, a run rather than a sprint.
+    inline constexpr float WalkSpeedCm = 220.f;
+    inline constexpr float RunSpeedCm = 2.f * WalkSpeedCm;
+
+    // Vitality and stamina of an ordinary person.
+    inline constexpr float DefaultVitality = 100.f;
+    inline constexpr float DefaultStamina = 100.f;
+
+    // Running spends breath: a full bar is ten seconds of running. Breath comes back at a steady rate
+    // whenever the body is not running. A run that empties the bar leaves the body winded, and a winded
+    // body walks until a little breath has come back, so it does not flicker between walking and running.
+    inline constexpr float RunStaminaDrainPerSecond = 10.f;
+    inline constexpr float StaminaRecoveryPerSecond = 11.f;
+    inline constexpr float RunResumeStamina = 15.f;
+
+    // The server corrects a client whose predicted stamina differs from its own by more than this.
+    inline constexpr float StaminaCorrectionTolerance = 1.f;
+
     // The server accepts an interaction when the pawn is within the target's range plus this
     // allowance for movement that replicated after the client chose the target.
     inline constexpr float RangeToleranceCm = 50.f;
@@ -201,9 +221,9 @@ namespace MarburgumII::Gameplay
 
     // Durable world-store record format written by the server (MarburgumIIServer).
     inline constexpr const TCHAR* WorldStoreFormat = TEXT("marburgumii.world_store");
-    // Schema 2 adds per-character missions and typed receipts; schema 1 documents load and are
-    // rewritten as schema 2 by the next commit.
-    inline constexpr int32 WorldStoreSchemaVersion = 2;
+    // Schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition.
+    // Older documents load and are rewritten at the current schema by the next commit.
+    inline constexpr int32 WorldStoreSchemaVersion = 3;
     inline constexpr int32 WorldStoreOldestReadableSchema = 1;
 
     // Prefix for machine-parsed interaction evidence lines (scripts/interaction-smoke-linux.sh).

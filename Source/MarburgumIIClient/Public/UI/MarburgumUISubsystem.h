@@ -12,7 +12,9 @@ class UMarburgumConnectionScreen;
 class UMarburgumInteractionPrompt;
 class UMarburgumInventoryPanel;
 class UMarburgumJournalPanel;
+class UMarburgumCharacterPanel;
 class UMarburgumLocationBanner;
+class UMarburgumPlayerCondition;
 class UMarburgumPinnedObjective;
 class UMarburgumNotificationFeed;
 struct FMarburgumInteractionReceipt;
@@ -46,13 +48,19 @@ public:
     bool ToggleInventory();
     bool IsInventoryOpen() const;
 
-    /** Show or hide the journal_panel (J key). Opening one management screen closes the other. */
+    /** Show or hide the journal_panel (J key). Opening one management screen closes the others. */
     bool ToggleJournal();
     bool IsJournalOpen() const;
+
+    /** Show or hide the character_panel (C key). */
+    bool ToggleCharacter();
+    bool IsCharacterOpen() const;
 
     /** Mounted HUD modules, for evidence capture; null until the session is admitted. */
     const UMarburgumLocationBanner* GetLocationBanner() const { return Banner; }
     const UMarburgumPinnedObjective* GetPinnedObjective() const { return Objective; }
+    const UMarburgumPlayerCondition* GetPlayerCondition() const { return Condition; }
+    const UMarburgumCharacterPanel* GetCharacterPanel() const { return CharacterPanel; }
 
     /** Independent UI scale on top of DPI scaling (0.5 - 3.0). */
     static void SetInterfaceScale(float Scale);
@@ -69,6 +77,8 @@ private:
     void HandleRequestResult(const FGuid& OperationId, EMarburgumRequestOutcome Outcome);
     void HandleInteractionReceipt(const FMarburgumInteractionReceipt& Receipt);
     void MountGameplayHud(APlayerController* Player);
+    /** Closes every open management screen except Keep (nullptr closes all). */
+    void CloseScreensExcept(const UObject* Keep);
 
     UPROPERTY(Transient) TObjectPtr<UMarburgumUIRoot> Root;
     UPROPERTY(Transient) TObjectPtr<UMarburgumConnectionScreen> ConnectionScreen;
@@ -79,6 +89,8 @@ private:
     UPROPERTY(Transient) TObjectPtr<UMarburgumJournalPanel> Journal;
     UPROPERTY(Transient) TObjectPtr<UMarburgumLocationBanner> Banner;
     UPROPERTY(Transient) TObjectPtr<UMarburgumPinnedObjective> Objective;
+    UPROPERTY(Transient) TObjectPtr<UMarburgumPlayerCondition> Condition;
+    UPROPERTY(Transient) TObjectPtr<UMarburgumCharacterPanel> CharacterPanel;
 
     TWeakObjectPtr<APlayerController> PendingChatOwner;
     TWeakObjectPtr<class AMarburgumPlayerController> ReceiptController;

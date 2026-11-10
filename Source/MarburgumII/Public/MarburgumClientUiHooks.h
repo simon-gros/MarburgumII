@@ -14,4 +14,5 @@ public:
     static FMarburgumLocalPlayerUiEvent& OnChatFocusRequested();
     static FMarburgumLocalPlayerUiEvent& OnInventoryToggleRequested();
     static FMarburgumLocalPlayerUiEvent& OnJournalToggleRequested();
+    static FMarburgumLocalPlayerUiEvent& OnCharacterToggleRequested();
 };

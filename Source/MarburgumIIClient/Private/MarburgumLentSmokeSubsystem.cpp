@@ -535,9 +535,10 @@ bool UMarburgumLentSmokeSubsystem::WalkIntoLent()
         WalkStartWorldSeconds = Body->GetWorld()->GetTimeSeconds();
         WalkStart = Body->GetActorLocation();
         const ACharacter* Walker = Cast<ACharacter>(Body);
-        MB2_LENT_LOG("event=walk_start area=%s x_m=%.2f y_m=%.2f max_walk_mps=%.2f clock_rate=%.2f", *Area().ToString(),
+        MB2_LENT_LOG("event=walk_start area=%s x_m=%.2f y_m=%.2f max_walk_mps=%.2f max_run_mps=%.2f clock_rate=%.2f", *Area().ToString(),
             WalkStart.X / 100.f, WalkStart.Y / 100.f,
-            Walker && Walker->GetCharacterMovement() ? Walker->GetCharacterMovement()->MaxWalkSpeed / 100.f : 0.f, ClockRate);
+            Walker && Walker->GetCharacterMovement() ? Walker->GetCharacterMovement()->MaxWalkSpeed / 100.f : 0.f,
+            MarburgumII::Gameplay::RunSpeedCm / 100.f, ClockRate);
     }
     if (Area() == Lent)
     {

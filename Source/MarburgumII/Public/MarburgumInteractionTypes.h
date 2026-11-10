@@ -50,6 +50,43 @@ struct FMarburgumMissionState
     int64 StartedRevision = 0;
 };
 
+/**
+ * What a character's body has left (ontology signal `player_condition`); replicated to its owner only.
+ * Whole points: the movement component keeps the exact running value, this is what the HUD, the
+ * Character panel and the world store see. Nothing in this build changes vitality yet.
+ */
+USTRUCT(BlueprintType)
+struct FMarburgumCondition
+{
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Condition")
+    uint8 Vitality = 100;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Condition")
+    uint8 MaxVitality = 100;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Condition")
+    uint8 Stamina = 100;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Condition")
+    uint8 MaxStamina = 100;
+
+    /** Emptied by a run; cannot run again until stamina is back to RunResumeStamina. */
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Condition")
+    bool bWinded = false;
+
+    /** Running right now, as the server simulated the last move. */
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Condition")
+    bool bRunning = false;
+
+    bool operator==(const FMarburgumCondition& Other) const
+    {
+        return Vitality == Other.Vitality && MaxVitality == Other.MaxVitality && Stamina == Other.Stamina
+            && MaxStamina == Other.MaxStamina && bWinded == Other.bWinded && bRunning == Other.bRunning;
+    }
+};
+
 /** A validated stack of one item definition in a character's custody (ontology `Inventory`). */
 USTRUCT(BlueprintType)
 struct FMarburgumItemStack

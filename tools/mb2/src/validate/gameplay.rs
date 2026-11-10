@@ -1,7 +1,7 @@
 //! Gate 1 and Lent gameplay slices: the gameplay catalogue, the shared C++ contract and the map
-//! generator commandlet agree (items, areas, interactables, NPCs, missions); the authoritative domain
-//! logic and store live only in the ServerOnly module; custody, missions and location replicate to
-//! their owner only; every refusal reason and effect has a wire name.
+//! generator commandlet agree (items, areas, interactables, NPCs, missions, condition rules); the
+//! authoritative domain logic and store live only in the ServerOnly module; custody, missions, location
+//! and condition replicate to their owner only; every refusal reason and effect has a wire name.
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -146,6 +146,23 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     problems.expect(contract.contains(&format!("WorldStoreSchemaVersion = {schema};")),
         "world store schema version differs between catalogue and contract");
 
+    // Condition: the contract's speeds and breath rules are the catalogue's (original combat.h/protocol.h).
+    let condition = &catalogue["condition"];
+    problems.expect(condition.get("provenance").is_some(), "condition without provenance");
+    let number = |key: &str| condition[key].as_f64().unwrap_or(f64::NAN);
+    let constant = |name: &str| -> f64 {
+        let pattern = Regex::new(&format!(r"inline constexpr float {name} = ([0-9.]+)f;")).unwrap();
+        pattern.captures(&contract).and_then(|c| c[1].parse().ok()).unwrap_or(f64::NAN)
+    };
+    problems.expect((constant("WalkSpeedCm") - number("walk_speed_mps") * 100.0).abs() < 1e-6, "walk speed differs from the catalogue");
+    problems.expect(contract.contains("RunSpeedCm = 2.f * WalkSpeedCm;") && (number("run_speed_mps") - 2.0 * number("walk_speed_mps")).abs() < 1e-6,
+        "run speed is not twice the walk speed");
+    for (name, key) in [("DefaultVitality", "default_vitality"), ("DefaultStamina", "default_stamina"),
+        ("RunStaminaDrainPerSecond", "run_stamina_drain_per_second"), ("StaminaRecoveryPerSecond", "stamina_recovery_per_second"),
+        ("RunResumeStamina", "run_resume_stamina")] {
+        problems.expect(constant(name) == number(key), format!("{name} differs from the catalogue {key}"));
+    }
+
     // Missions: registry entries match the catalogue's names, offer targets, start items and registered stages.
     for mission in missions {
         let id = text(&mission["id"]);
@@ -188,7 +205,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
 
     // Privacy: custody, mission progress and location replicate to their owner only.
     let player_state = read(root, "Source/MarburgumII/Private/MarburgumPlayerState.cpp", problems);
-    for property in ["Inventory", "bInventoryKnown", "bHasCharacter", "Missions", "bMissionsKnown", "AreaId", "bLocationKnown"] {
+    for property in ["Inventory", "bInventoryKnown", "bHasCharacter", "Missions", "bMissionsKnown", "AreaId", "bLocationKnown", "Condition"] {
         problems.expect(player_state.contains(&format!("DOREPLIFETIME_CONDITION(AMarburgumPlayerState, {property}, COND_OwnerOnly)")),
             format!("{property} is not replicated COND_OwnerOnly"));
     }
@@ -219,6 +236,6 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
 
     vec![format!(
         "Gameplay contract check passed: {} item(s), {} area(s), {} interactable(s), {} mission(s), {reasons} refusal reasons, \
-         server-only authority and owner-only custody, progress and location.",
+         server-only authority and owner-only custody, progress, location and condition.",
         json_items.len(), json_areas.len(), list(&catalogue, "interactables").len(), missions.len())]
 }

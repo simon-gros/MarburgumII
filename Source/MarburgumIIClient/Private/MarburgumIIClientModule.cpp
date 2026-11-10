@@ -23,6 +23,8 @@ public:
             this, &FMarburgumIIClientModule::HandleInventory);
         JournalHandle = FMarburgumClientUiHooks::OnJournalToggleRequested().AddRaw(
             this, &FMarburgumIIClientModule::HandleJournal);
+        CharacterHandle = FMarburgumClientUiHooks::OnCharacterToggleRequested().AddRaw(
+            this, &FMarburgumIIClientModule::HandleCharacter);
     }
 
     virtual void ShutdownModule() override
@@ -31,6 +33,7 @@ public:
         FMarburgumClientUiHooks::OnChatFocusRequested().Remove(FocusHandle);
         FMarburgumClientUiHooks::OnInventoryToggleRequested().Remove(InventoryHandle);
         FMarburgumClientUiHooks::OnJournalToggleRequested().Remove(JournalHandle);
+        FMarburgumClientUiHooks::OnCharacterToggleRequested().Remove(CharacterHandle);
     }
 
 private:
@@ -38,6 +41,7 @@ private:
     FDelegateHandle FocusHandle;
     FDelegateHandle InventoryHandle;
     FDelegateHandle JournalHandle;
+    FDelegateHandle CharacterHandle;
 
     static UMarburgumUISubsystem* GetUI(APlayerController* Player)
     {
@@ -80,6 +84,14 @@ private:
         if (UMarburgumUISubsystem* UI = GetUI(Player))
         {
             UI->ToggleJournal();
+        }
+    }
+
+    void HandleCharacter(APlayerController* Player)
+    {
+        if (UMarburgumUISubsystem* UI = GetUI(Player))
+        {
+            UI->ToggleCharacter();
         }
     }
 };

@@ -785,7 +785,7 @@
         "player_condition"
       ],
       "description": "Compact vitality/stamina module, with meaningful absence/unknown state.",
-      "status": "planned"
+      "status": "implemented_awaiting_owner_playtest"
     },
     {
       "id": "location_banner",
@@ -901,7 +901,7 @@
         "reputation_state"
       ],
       "description": "Polished identity/condition/stats/equipment; empty states are honest.",
-      "status": "planned"
+      "status": "first_shell_implemented_awaiting_owner_playtest"
     },
     {
       "id": "skills_panel",

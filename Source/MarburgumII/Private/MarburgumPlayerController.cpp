@@ -45,6 +45,7 @@ void AMarburgumPlayerController::SetupInputComponent()
         InputComponent->BindKey(EKeys::E, IE_Pressed, this, &AMarburgumPlayerController::RequestInteract);
         InputComponent->BindKey(EKeys::I, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleInventory);
         InputComponent->BindKey(EKeys::J, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleJournal);
+        InputComponent->BindKey(EKeys::C, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleCharacter);
     }
 }
 
@@ -61,6 +62,14 @@ void AMarburgumPlayerController::RequestToggleJournal()
     if (IsLocalController())
     {
         FMarburgumClientUiHooks::OnJournalToggleRequested().Broadcast(this);
+    }
+}
+
+void AMarburgumPlayerController::RequestToggleCharacter()
+{
+    if (IsLocalController())
+    {
+        FMarburgumClientUiHooks::OnCharacterToggleRequested().Broadcast(this);
     }
 }
 

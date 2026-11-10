@@ -15,7 +15,6 @@ AMarburgumCharacter::AMarburgumCharacter(const FObjectInitializer& ObjectInitial
 {
     GetCapsuleComponent()->InitCapsuleSize(34.f, 88.f);
     bUseControllerRotationYaw = true;
-    GetCharacterMovement()->MaxWalkSpeed = 450.f;
 
     Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     Camera->SetupAttachment(GetCapsuleComponent());
@@ -47,6 +46,24 @@ void AMarburgumCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
     PlayerInputComponent->BindAxisKey(EKeys::MouseY, this, &AMarburgumCharacter::LookUp);
     PlayerInputComponent->BindKey(EKeys::SpaceBar, IE_Pressed, this, &ACharacter::Jump);
     PlayerInputComponent->BindKey(EKeys::SpaceBar, IE_Released, this, &ACharacter::StopJumping);
+    PlayerInputComponent->BindKey(EKeys::LeftShift, IE_Pressed, this, &AMarburgumCharacter::StartRunning);
+    PlayerInputComponent->BindKey(EKeys::LeftShift, IE_Released, this, &AMarburgumCharacter::StopRunning);
+}
+
+void AMarburgumCharacter::StartRunning()
+{
+    if (UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(GetCharacterMovement()))
+    {
+        Movement->SetWantsToRun(true);
+    }
+}
+
+void AMarburgumCharacter::StopRunning()
+{
+    if (UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(GetCharacterMovement()))
+    {
+        Movement->SetWantsToRun(false);
+    }
 }
 
 void AMarburgumCharacter::MoveForward(float Value)

@@ -27,7 +27,20 @@ struct FMarburgumStoredMission
     int64 StartedRevision = 0;
 };
 
-/** Durable authoritative world state for one map (schema `marburgumii.world_store` v2). */
+/** A character's saved condition (ADR-020). Absent from the record means a full, rested body. */
+struct FMarburgumStoredCondition
+{
+    int32 Vitality = 100;
+    int32 Stamina = 100;
+    bool bWinded = false;
+
+    bool operator==(const FMarburgumStoredCondition& Other) const
+    {
+        return Vitality == Other.Vitality && Stamina == Other.Stamina && bWinded == Other.bWinded;
+    }
+};
+
+/** Durable authoritative world state for one map (schema `marburgumii.world_store` v3). */
 struct FMarburgumWorldRecord
 {
     int64 Revision = 0;
@@ -37,6 +50,8 @@ struct FMarburgumWorldRecord
     TMap<FString, TMap<FString, int32>> Inventories;
     /** Character key -> mission id -> progress. */
     TMap<FString, TMap<FString, FMarburgumStoredMission>> Missions;
+    /** Character key -> condition, for characters whose body is not full and rested. */
+    TMap<FString, FMarburgumStoredCondition> Conditions;
     /** Operation id (32 hex digits) -> committed operation. */
     TMap<FString, FMarburgumStoredReceipt> Receipts;
 };
@@ -54,7 +69,8 @@ public:
 
     /**
      * A missing file is an empty world. A present but unreadable file is an error, never overwritten.
-     * A schema 1 document loads as-is (it has no missions) and the next commit rewrites it as schema 2.
+     * Older documents load as-is (schema 1 has no missions, schema 2 no conditions) and the next commit
+     * rewrites them at the current schema.
      */
     bool Load(FString& OutError);
 

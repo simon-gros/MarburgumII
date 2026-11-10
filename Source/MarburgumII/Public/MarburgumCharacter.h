@@ -10,8 +10,9 @@ class UStaticMeshComponent;
 /**
  * Minimal first-person test character for the Stage 1 interaction loop. Movement uses the engine's
  * networked CharacterMovementComponent, so the server knows the real pawn position it validates
- * interaction range against; UMarburgumCharacterMovement reports clients whose move timestamps run
- * ahead of server time (ADR-019). The body is a placeholder primitive; no character art exists yet.
+ * interaction range against. UMarburgumCharacterMovement adds running (hold Shift) with the original
+ * breath rules (ADR-020) and reports clients whose move timestamps run ahead of server time (ADR-019).
+ * The body is a placeholder primitive; no character art exists yet.
  */
 UCLASS()
 class MARBURGUMII_API AMarburgumCharacter : public ACharacter
@@ -30,6 +31,8 @@ private:
     void MoveLeft(float Value);
     void Turn(float Value);
     void LookUp(float Value);
+    void StartRunning();
+    void StopRunning();
 
     UPROPERTY(VisibleAnywhere, Category = "Marburgum|Character")
     TObjectPtr<UCameraComponent> Camera;

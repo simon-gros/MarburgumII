@@ -23,6 +23,11 @@ class FMarburgumWorldStore;
  * It also derives each player's named area (AMarburgumArea) from the pawn position four times a
  * second; location is never persisted.
  *
+ * Condition (ADR-020): at login it restores the character's saved condition into the player state,
+ * where the pawn's movement adopts it; at logout, and for everyone still connected when the world
+ * tears down, it saves the condition if it differs from what the store holds. A full, rested body is
+ * stored as no entry, so characters that never ran never cause a commit.
+ *
  * Nothing becomes visible to any client before it is on disk; a refusal or failed write changes
  * nothing. Options: -MB2WorldStore=<file> (default Saved/MarburgumII/WorldStore/<Map>.json),
  * -MB2StoreFaultInjection (test-only write faults, see FMarburgumWorldStore).
@@ -42,6 +47,10 @@ public:
 
 private:
     void HandlePostLogin(AGameModeBase* GameMode, APlayerController* NewPlayer);
+    void HandleLogout(AGameModeBase* GameMode, AController* Exiting);
+    void HandleWorldTearDown(UWorld* World);
+    void RestoreCondition(AMarburgumPlayerState& State) const;
+    void SaveCondition(const AMarburgumPlayerState& State, const TCHAR* Why);
     void ApplyInventory(AMarburgumPlayerState& State) const;
     void ApplyStocks() const;
     void UpdateLocations();
@@ -55,5 +64,7 @@ private:
     bool bActive = false;
     bool bStoreAvailable = false;
     FDelegateHandle PostLoginHandle;
+    FDelegateHandle LogoutHandle;
+    FDelegateHandle TearDownHandle;
     FTimerHandle LocationTimer;
 };

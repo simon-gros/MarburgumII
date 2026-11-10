@@ -16,10 +16,12 @@
 #include "UI/MarburgumInteractionPrompt.h"
 #include "MarburgumInteractable.h"
 #include "MarburgumNpc.h"
+#include "UI/MarburgumCharacterPanel.h"
 #include "UI/MarburgumInventoryPanel.h"
 #include "UI/MarburgumJournalPanel.h"
 #include "UI/MarburgumLocationBanner.h"
 #include "UI/MarburgumPinnedObjective.h"
+#include "UI/MarburgumPlayerCondition.h"
 #include "EngineUtils.h"
 #include "UI/MarburgumNotificationFeed.h"
 #include "UI/MarburgumUIGallery.h"
@@ -112,6 +114,8 @@ void UMarburgumUISubsystem::TearDown()
     Journal = nullptr;
     Banner = nullptr;
     Objective = nullptr;
+    Condition = nullptr;
+    CharacterPanel = nullptr;
 }
 
 void UMarburgumUISubsystem::MountChat(APlayerController* Player)
@@ -197,6 +201,8 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
     Release(Journal);
     Release(Banner);
     Release(Objective);
+    Release(Condition);
+    Release(CharacterPanel);
     if (!Banner)
     {
         Banner = CreateWidget<UMarburgumLocationBanner>(Player, UMarburgumLocationBanner::StaticClass());
@@ -206,6 +212,11 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
     {
         Objective = CreateWidget<UMarburgumPinnedObjective>(Player, UMarburgumPinnedObjective::StaticClass());
         Root->AddToLayer(EMarburgumUILayer::Hud, Objective);
+    }
+    if (!Condition)
+    {
+        Condition = CreateWidget<UMarburgumPlayerCondition>(Player, UMarburgumPlayerCondition::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Hud, Condition);
     }
     if (!Prompt)
     {
@@ -222,6 +233,11 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
         Journal = CreateWidget<UMarburgumJournalPanel>(Player, UMarburgumJournalPanel::StaticClass());
         Root->AddToLayer(EMarburgumUILayer::Screens, Journal);
     }
+    if (!CharacterPanel)
+    {
+        CharacterPanel = CreateWidget<UMarburgumCharacterPanel>(Player, UMarburgumCharacterPanel::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Screens, CharacterPanel);
+    }
 }
 
 bool UMarburgumUISubsystem::ToggleInventory()
@@ -230,10 +246,7 @@ bool UMarburgumUISubsystem::ToggleInventory()
     {
         return false;
     }
-    if (Journal && Journal->IsOpen())
-    {
-        Journal->Toggle();
-    }
+    CloseScreensExcept(Inventory);
     Inventory->Toggle();
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=inventory_view open=%d"),
         MarburgumII::Session::UiLogPrefix, Inventory->IsOpen() ? 1 : 0);
@@ -251,10 +264,7 @@ bool UMarburgumUISubsystem::ToggleJournal()
     {
         return false;
     }
-    if (Inventory && Inventory->IsOpen())
-    {
-        Inventory->Toggle();
-    }
+    CloseScreensExcept(Journal);
     Journal->Toggle();
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=journal_view open=%d"),
         MarburgumII::Session::UiLogPrefix, Journal->IsOpen() ? 1 : 0);
@@ -264,6 +274,41 @@ bool UMarburgumUISubsystem::ToggleJournal()
 bool UMarburgumUISubsystem::IsJournalOpen() const
 {
     return Journal && Journal->IsOpen();
+}
+
+bool UMarburgumUISubsystem::ToggleCharacter()
+{
+    if (!CharacterPanel || LastPhase != EPhase::Ready)
+    {
+        return false;
+    }
+    CloseScreensExcept(CharacterPanel);
+    CharacterPanel->Toggle();
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=character_view open=%d"),
+        MarburgumII::Session::UiLogPrefix, CharacterPanel->IsOpen() ? 1 : 0);
+    return true;
+}
+
+bool UMarburgumUISubsystem::IsCharacterOpen() const
+{
+    return CharacterPanel && CharacterPanel->IsOpen();
+}
+
+void UMarburgumUISubsystem::CloseScreensExcept(const UObject* Keep)
+{
+    // One management screen at a time.
+    if (Inventory && Inventory.Get() != Keep && Inventory->IsOpen())
+    {
+        Inventory->Toggle();
+    }
+    if (Journal && Journal.Get() != Keep && Journal->IsOpen())
+    {
+        Journal->Toggle();
+    }
+    if (CharacterPanel && CharacterPanel.Get() != Keep && CharacterPanel->IsOpen())
+    {
+        CharacterPanel->Toggle();
+    }
 }
 
 namespace
@@ -509,13 +554,9 @@ void UMarburgumUISubsystem::HandleSessionChanged(const FMarburgumSessionView& Vi
     {
         return;
     }
-    if (View.Phase != EPhase::Ready && Inventory && Inventory->IsOpen())
+    if (View.Phase != EPhase::Ready)
     {
-        Inventory->Toggle(); // No stale custody view once the session is gone.
-    }
-    if (View.Phase != EPhase::Ready && Journal && Journal->IsOpen())
-    {
-        Journal->Toggle();
+        CloseScreensExcept(nullptr); // No stale custody or condition view once the session is gone.
     }
     ConnectionScreen->ApplyView(View);
     const bool bShowScreen = View.Phase != EPhase::Ready;

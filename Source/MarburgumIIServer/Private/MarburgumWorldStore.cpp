@@ -66,6 +66,18 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
     }
     Root->SetObjectField(TEXT("missions"), Missions);
 
+    TSharedRef<FJsonObject> Conditions = MakeShared<FJsonObject>();
+    for (const FString& Character : SortedKeys(Source.Conditions))
+    {
+        const FMarburgumStoredCondition& Condition = Source.Conditions[Character];
+        TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+        Entry->SetNumberField(TEXT("stamina"), Condition.Stamina);
+        Entry->SetNumberField(TEXT("vitality"), Condition.Vitality);
+        Entry->SetBoolField(TEXT("winded"), Condition.bWinded);
+        Conditions->SetObjectField(Character, Entry);
+    }
+    Root->SetObjectField(TEXT("conditions"), Conditions);
+
     TSharedRef<FJsonObject> Receipts = MakeShared<FJsonObject>();
     for (const FString& Operation : SortedKeys(Source.Receipts))
     {
@@ -165,6 +177,31 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
                 State.StartedRevision = static_cast<int64>(Entry->GetNumberField(TEXT("started_revision")));
                 Owned.Add(FString(*Mission.Key), MoveTemp(State));
             }
+        }
+    }
+    const TSharedPtr<FJsonObject>* Conditions = nullptr;
+    if (Root->TryGetObjectField(TEXT("conditions"), Conditions))
+    {
+        for (const auto& Character : (*Conditions)->Values)
+        {
+            const TSharedPtr<FJsonObject> Entry = Character.Value->AsObject();
+            if (!Entry.IsValid())
+            {
+                continue;
+            }
+            // Values outside the body's range are clamped rather than trusted (as the original did).
+            FMarburgumStoredCondition Condition;
+            double Number = 0.0;
+            if (Entry->TryGetNumberField(TEXT("vitality"), Number) && FMath::IsFinite(Number))
+            {
+                Condition.Vitality = FMath::Clamp(static_cast<int32>(Number), 0, 100);
+            }
+            if (Entry->TryGetNumberField(TEXT("stamina"), Number) && FMath::IsFinite(Number))
+            {
+                Condition.Stamina = FMath::Clamp(static_cast<int32>(Number), 0, 100);
+            }
+            Entry->TryGetBoolField(TEXT("winded"), Condition.bWinded);
+            Parsed.Conditions.Add(FString(*Character.Key), Condition);
         }
     }
     const TSharedPtr<FJsonObject>* Receipts = nullptr;

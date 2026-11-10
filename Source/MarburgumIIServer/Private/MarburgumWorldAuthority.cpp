@@ -2,11 +2,13 @@
 
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumArea.h"
+#include "MarburgumCharacterMovement.h"
 #include "MarburgumInteractable.h"
 #include "MarburgumMissionRules.h"
 #include "MarburgumNetworkContract.h"
@@ -67,6 +69,18 @@ namespace
         return States;
     }
 
+    FMarburgumStoredCondition ToStored(const FMarburgumCondition& Condition)
+    {
+        FMarburgumStoredCondition Stored;
+        Stored.Vitality = Condition.Vitality;
+        Stored.Stamina = Condition.Stamina;
+        Stored.bWinded = Condition.bWinded;
+        return Stored;
+    }
+
+    // Condition evidence lines share the movement component's prefix (scripts/condition-smoke-linux.sh).
+    constexpr const TCHAR* ConditionLogPrefix = TEXT("MB2COND");
+
     EMarburgumInteractionEffect EffectFromKind(const FString& Kind)
     {
         for (const EMarburgumInteractionEffect Effect : { EMarburgumInteractionEffect::ItemGranted,
@@ -117,6 +131,10 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
 
     FString Error;
     bStoreAvailable = Store->Load(Error);
+    // Players get a condition even without a store (a rested body that is never saved), so they can move.
+    PostLoginHandle = FGameModeEvents::GameModePostLoginEvent.AddUObject(this, &UMarburgumWorldAuthority::HandlePostLogin);
+    LogoutHandle = FGameModeEvents::GameModeLogoutEvent.AddUObject(this, &UMarburgumWorldAuthority::HandleLogout);
+    TearDownHandle = FWorldDelegates::OnWorldBeginTearDown.AddUObject(this, &UMarburgumWorldAuthority::HandleWorldTearDown);
     if (!bStoreAvailable)
     {
         // Never overwrite a store we cannot read: interactions are refused until an operator fixes it.
@@ -126,19 +144,20 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
     }
 
     ApplyStocks();
-    PostLoginHandle = FGameModeEvents::GameModePostLoginEvent.AddUObject(this, &UMarburgumWorldAuthority::HandlePostLogin);
     // A listen-server host has already logged in by now.
     for (FConstPlayerControllerIterator It = InWorld.GetPlayerControllerIterator(); It; ++It)
     {
         if (AMarburgumPlayerState* State = It->Get() ? It->Get()->GetPlayerState<AMarburgumPlayerState>() : nullptr)
         {
             ApplyInventory(*State);
+            RestoreCondition(*State);
         }
     }
 
     const FMarburgumWorldRecord& Record = Store->Get();
-    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=store_loaded path=\"%s\" schema=%d revision=%lld characters=%d missions=%d receipts=%d"),
-        InteractLogPrefix, *Path, Store->GetLoadedSchema(), Record.Revision, Record.Inventories.Num(), Record.Missions.Num(), Record.Receipts.Num());
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=store_loaded path=\"%s\" schema=%d revision=%lld characters=%d missions=%d conditions=%d receipts=%d"),
+        InteractLogPrefix, *Path, Store->GetLoadedSchema(), Record.Revision, Record.Inventories.Num(), Record.Missions.Num(),
+        Record.Conditions.Num(), Record.Receipts.Num());
     for (TActorIterator<AMarburgumInteractable> It(&InWorld); It; ++It)
     {
         if (!It->IsItemSource())
@@ -158,6 +177,8 @@ void UMarburgumWorldAuthority::Deinitialize()
         World->GetTimerManager().ClearTimer(LocationTimer);
     }
     FGameModeEvents::GameModePostLoginEvent.Remove(PostLoginHandle);
+    FGameModeEvents::GameModeLogoutEvent.Remove(LogoutHandle);
+    FWorldDelegates::OnWorldBeginTearDown.Remove(TearDownHandle);
     Store.Reset();
     Super::Deinitialize();
 }
@@ -168,7 +189,13 @@ void UMarburgumWorldAuthority::HandlePostLogin(AGameModeBase* GameMode, APlayerC
     {
         return;
     }
-    if (AMarburgumPlayerState* State = NewPlayer->GetPlayerState<AMarburgumPlayerState>())
+    AMarburgumPlayerState* State = NewPlayer->GetPlayerState<AMarburgumPlayerState>();
+    if (!State)
+    {
+        return;
+    }
+    RestoreCondition(*State);
+    if (bStoreAvailable)
     {
         ApplyInventory(*State);
         UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=inventory_restored player=%d character=%s stacks=%d missions=%d"),
@@ -176,6 +203,92 @@ void UMarburgumWorldAuthority::HandlePostLogin(AGameModeBase* GameMode, APlayerC
             State->GetCharacterKey().IsEmpty() ? TEXT("-") : *State->GetCharacterKey(), State->GetInventory().Num(),
             State->GetMissions().Num());
     }
+}
+
+void UMarburgumWorldAuthority::HandleLogout(AGameModeBase* GameMode, AController* Exiting)
+{
+    if (!GameMode || GameMode->GetWorld() != GetWorld() || !Exiting)
+    {
+        return;
+    }
+    // The pawn is already gone at logout; the player state holds the last simulated condition.
+    if (const AMarburgumPlayerState* State = Exiting->GetPlayerState<AMarburgumPlayerState>())
+    {
+        SaveCondition(*State, TEXT("logout"));
+    }
+}
+
+void UMarburgumWorldAuthority::HandleWorldTearDown(UWorld* World)
+{
+    if (World != GetWorld())
+    {
+        return;
+    }
+    // A server shutting down with players still connected saves them as a logout would.
+    for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+    {
+        if (const AMarburgumPlayerState* State = It->Get() ? It->Get()->GetPlayerState<AMarburgumPlayerState>() : nullptr)
+        {
+            SaveCondition(*State, TEXT("shutdown"));
+        }
+    }
+}
+
+void UMarburgumWorldAuthority::RestoreCondition(AMarburgumPlayerState& State) const
+{
+    using namespace MarburgumII::Gameplay;
+    const FString& Key = State.GetCharacterKey();
+    const FMarburgumStoredCondition* Saved =
+        bStoreAvailable && Store && !Key.IsEmpty() ? Store->Get().Conditions.Find(Key) : nullptr;
+    FMarburgumCondition Condition;
+    if (Saved)
+    {
+        Condition.Vitality = static_cast<uint8>(Saved->Vitality);
+        Condition.Stamina = static_cast<uint8>(Saved->Stamina);
+        // Winded only means something below the breath a run resumes at.
+        Condition.bWinded = Saved->bWinded && Saved->Stamina < RunResumeStamina;
+    }
+    State.RestoreConditionAuthority(Condition);
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=condition_restored player=%d character=%s source=%s vitality=%d stamina=%d winded=%d"),
+        ConditionLogPrefix, State.GetPlayerId(), Key.IsEmpty() ? TEXT("-") : *Key, Saved ? TEXT("store") : TEXT("rested"),
+        Condition.Vitality, Condition.Stamina, Condition.bWinded ? 1 : 0);
+}
+
+void UMarburgumWorldAuthority::SaveCondition(const AMarburgumPlayerState& State, const TCHAR* Why)
+{
+    const FString& Key = State.GetCharacterKey();
+    if (!bStoreAvailable || !Store || Key.IsEmpty() || !State.IsConditionKnown())
+    {
+        return;
+    }
+    const FMarburgumStoredCondition Next = ToStored(State.GetCondition());
+    const FMarburgumStoredCondition* Prior = Store->Get().Conditions.Find(Key);
+    if (Next == (Prior ? *Prior : FMarburgumStoredCondition()))
+    {
+        // Nothing to record: a character that never ran (or has its breath back) causes no commit.
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=condition_unchanged why=%s character=%s stamina=%d winded=%d"),
+            ConditionLogPrefix, Why, *Key, Next.Stamina, Next.bWinded ? 1 : 0);
+        return;
+    }
+    FMarburgumWorldRecord Record = Store->Get();
+    ++Record.Revision;
+    if (Next == FMarburgumStoredCondition())
+    {
+        Record.Conditions.Remove(Key);
+    }
+    else
+    {
+        Record.Conditions.Add(Key, Next);
+    }
+    FString Error;
+    if (!Store->Commit(Record, Error))
+    {
+        UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=condition_save_failed why=%s character=%s error=\"%s\""),
+            ConditionLogPrefix, Why, *Key, *Error);
+        return;
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=condition_saved why=%s character=%s vitality=%d stamina=%d winded=%d revision=%lld"),
+        ConditionLogPrefix, Why, *Key, Next.Vitality, Next.Stamina, Next.bWinded ? 1 : 0, Record.Revision);
 }
 
 void UMarburgumWorldAuthority::ApplyInventory(AMarburgumPlayerState& State) const
@@ -217,12 +330,16 @@ void UMarburgumWorldAuthority::UpdateLocations()
         if (!State->IsLocationKnown() || State->GetAreaId() != Area)
         {
             State->SetAreaAuthority(Area);
-            // The server's pawn position (metres) lets the Lent smoke bound how fast a client moved (ADR-019).
+            // The server's pawn position (metres) and running time let the Lent smoke bound how fast a
+            // client moved (ADR-019, ADR-020).
             const FVector Where = Body->GetActorLocation() / 100.f;
-            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=area player=%d character=%s area=%s x_m=%.2f y_m=%.2f"),
+            const ACharacter* Walker = Cast<ACharacter>(Body);
+            const UMarburgumCharacterMovement* Movement =
+                Walker ? Cast<UMarburgumCharacterMovement>(Walker->GetCharacterMovement()) : nullptr;
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=area player=%d character=%s area=%s x_m=%.2f y_m=%.2f run_s=%.2f"),
                 InteractLogPrefix, State->GetPlayerId(),
                 State->GetCharacterKey().IsEmpty() ? TEXT("-") : *State->GetCharacterKey(),
-                Area.IsNone() ? TEXT("-") : *Area.ToString(), Where.X, Where.Y);
+                Area.IsNone() ? TEXT("-") : *Area.ToString(), Where.X, Where.Y, Movement ? Movement->GetServerRunSeconds() : 0.0);
         }
     }
 }

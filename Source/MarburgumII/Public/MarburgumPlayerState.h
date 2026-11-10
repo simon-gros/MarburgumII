@@ -9,9 +9,9 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumInventoryChanged, class AMarburgum
 DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumPlayerStateChanged, class AMarburgumPlayerState*);
 
 /**
- * Network-visible per-player state. The development character key, inventory, missions and current
- * area are server-owned and replicate to their owner only (custody and progress are private), never to
- * other players.
+ * Network-visible per-player state. The development character key, inventory, missions, current area
+ * and condition are server-owned and replicate to their owner only (custody and progress are private),
+ * never to other players.
  * Account identity is not implemented: the key is an unauthenticated development identity (ADR-014).
  */
 UCLASS()
@@ -65,6 +65,27 @@ public:
     /** Fired on the owning client when the replicated area changes, and on the server when set. */
     static FMarburgumPlayerStateChanged& OnAreaChanged();
 
+    /**
+     * Owner-visible: the body's condition in whole points. Only meaningful once IsConditionKnown(),
+     * which the server sets after restoring the character's saved condition (ADR-020).
+     */
+    const FMarburgumCondition& GetCondition() const { return Condition; }
+    bool IsConditionKnown() const { return bConditionKnown; }
+
+    /**
+     * Authority only. RestoreConditionAuthority installs the saved condition (the pawn's movement adopts
+     * it); UpdateConditionAuthority mirrors the movement component's simulation. Both are no-ops when
+     * nothing visible changed.
+     */
+    void RestoreConditionAuthority(const FMarburgumCondition& Restored);
+    void UpdateConditionAuthority(const FMarburgumCondition& Simulated);
+
+    /** Fired on the owning client when the replicated condition changes, and on the server when set. */
+    static FMarburgumPlayerStateChanged& OnConditionChanged();
+
+    /** Server only: increments on every RestoreConditionAuthority, so a pawn knows to adopt it again. */
+    int32 GetConditionRestoreCount() const { return ConditionRestoreCount; }
+
 protected:
     UFUNCTION()
     void OnRep_Inventory();
@@ -74,6 +95,9 @@ protected:
 
     UFUNCTION()
     void OnRep_Area();
+
+    UFUNCTION()
+    void OnRep_Condition();
 
 private:
     FString CharacterKey;
@@ -98,4 +122,12 @@ private:
 
     UPROPERTY(ReplicatedUsing = OnRep_Area)
     FName AreaId;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Condition)
+    bool bConditionKnown = false;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Condition)
+    FMarburgumCondition Condition;
+
+    int32 ConditionRestoreCount = 0;
 };

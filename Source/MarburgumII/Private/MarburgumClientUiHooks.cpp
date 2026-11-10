@@ -23,3 +23,9 @@ FMarburgumLocalPlayerUiEvent& FMarburgumClientUiHooks::OnJournalToggleRequested(
     static FMarburgumLocalPlayerUiEvent Event;
     return Event;
 }
+
+FMarburgumLocalPlayerUiEvent& FMarburgumClientUiHooks::OnCharacterToggleRequested()
+{
+    static FMarburgumLocalPlayerUiEvent Event;
+    return Event;
+}

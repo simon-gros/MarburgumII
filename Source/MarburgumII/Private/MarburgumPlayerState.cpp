@@ -13,6 +13,8 @@ void AMarburgumPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Missions, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, bLocationKnown, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, AreaId, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, bConditionKnown, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Condition, COND_OwnerOnly);
 }
 
 void AMarburgumPlayerState::SetCharacterKeyAuthority(const FString& Key)
@@ -97,6 +99,45 @@ void AMarburgumPlayerState::OnRep_Area()
 }
 
 FMarburgumPlayerStateChanged& AMarburgumPlayerState::OnAreaChanged()
+{
+    static FMarburgumPlayerStateChanged Event;
+    return Event;
+}
+
+void AMarburgumPlayerState::RestoreConditionAuthority(const FMarburgumCondition& Restored)
+{
+    check(HasAuthority());
+    Condition = Restored;
+    bConditionKnown = true;
+    ++ConditionRestoreCount;
+    ForceNetUpdate();
+    OnConditionChanged().Broadcast(this);
+}
+
+void AMarburgumPlayerState::UpdateConditionAuthority(const FMarburgumCondition& Simulated)
+{
+    check(HasAuthority());
+    if (!bConditionKnown || Condition == Simulated)
+    {
+        return;
+    }
+    // A whole point of stamina changes ten times a second while running; that rides the normal update
+    // rate. The states the player acts on (running, winded) go out at once.
+    const bool bStateChanged = Condition.bWinded != Simulated.bWinded || Condition.bRunning != Simulated.bRunning;
+    Condition = Simulated;
+    if (bStateChanged)
+    {
+        ForceNetUpdate();
+    }
+    OnConditionChanged().Broadcast(this);
+}
+
+void AMarburgumPlayerState::OnRep_Condition()
+{
+    OnConditionChanged().Broadcast(this);
+}
+
+FMarburgumPlayerStateChanged& AMarburgumPlayerState::OnConditionChanged()
 {
     static FMarburgumPlayerStateChanged Event;
     return Event;

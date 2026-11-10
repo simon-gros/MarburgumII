@@ -97,6 +97,7 @@ private:
     void RequestChatFocus();
     void RequestToggleInventory();
     void RequestToggleJournal();
+    void RequestToggleCharacter();
 
     FGuid PendingOperationId;
     TWeakObjectPtr<AMarburgumInteractable> PendingTarget;

@@ -24,7 +24,8 @@ Usage: mb2 <command>
   new-op                 Print a fresh operation id (32 upper-case hex digits).
   store-check interaction <store> <key_a> <key_b> <first_op>
   store-check lent <store> <key_m> <key_w> <first_op>
-                         Check a world-store file after phase 1 of a smoke test.
+  store-check condition <store> <key_r> <key_c> <key_s> <1|2>
+                         Check a world-store file after a phase of a smoke test.
   movement-check <server log> <client log> <role> <character key> <honest|adversary> <DefaultGame.ini>
                          ADR-019 bound on how far a Lent smoke walker moved on the server.";
 
@@ -41,6 +42,7 @@ fn main() -> ExitCode {
         }
         ["store-check", "interaction", store, a, b, op] => store_check::interaction(store, a, b, op),
         ["store-check", "lent", store, m, w, op] => store_check::lent(store, m, w, op),
+        ["store-check", "condition", store, r, c, s, phase] => store_check::condition(store, r, c, s, phase),
         ["movement-check", server, client, role, key, kind, ini] => movement_check::run(server, client, role, key, kind, ini),
         _ => {
             eprintln!("{USAGE}");

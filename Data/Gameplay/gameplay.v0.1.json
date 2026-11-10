@@ -113,9 +113,23 @@
   ],
   "world_store": {
     "format": "marburgumii.world_store",
-    "schema_version": 2,
+    "schema_version": 3,
     "oldest_readable_schema": 1,
-    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts"
+    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition (ADR-020)"
+  },
+  "condition": {
+    "walk_speed_mps": 2.2,
+    "run_speed_mps": 4.4,
+    "default_vitality": 100,
+    "default_stamina": 100,
+    "run_stamina_drain_per_second": 10,
+    "stamina_recovery_per_second": 11,
+    "run_resume_stamina": 15,
+    "persisted": ["vitality", "stamina", "winded"],
+    "provenance": {
+      "source": "original Marburgum src/shared/combat.h (DEFAULT_VITALITY, DEFAULT_STAMINA, RUN_DRAIN_PER_SECOND, STAMINA_RECOVERY_PER_SECOND, RUN_RESUME_STAMINA) and src/shared/protocol.h (WALK_SPEED, RUN_SPEED); body save/restore in src/server/world_simulation.cpp",
+      "review": "Running and its breath cost carried forward; vitality is stored and shown but nothing in this build changes it yet (falls, drowning and fights are not implemented)."
+    }
   },
   "areas": {
     "outside": {
