@@ -9,35 +9,24 @@ permissions:
 
 jobs:
   managed-tools:
-    name: C# manifest validation (.NET 8)
+    name: C# manifest validation (.NET 10)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          global-json-file: global.json
       - run: dotnet run --project tools/MarburgumII.Tools -- verify
 
-  ui-ontology:
-    name: UI/HUD ontology graph consistency
+  repository-tools:
+    name: Rust repository tooling and source contracts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: python3 scripts/validate-ui-ontology.py
-
-  chat-contract:
-    name: General/private chat source consistency
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: python3 scripts/validate-chat-contract.py
-
-  gameplay-contract:
-    name: Gate 1 gameplay contract consistency
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: python3 scripts/validate-gameplay-contract.py
+      - run: rustc --version && cargo --version
+      - run: cargo test --manifest-path tools/mb2/Cargo.toml
+      # UI/HUD ontology graph, chat source contract, gameplay contract, Python-free tooling.
+      - run: cargo run --release --manifest-path tools/mb2/Cargo.toml -- validate all
 
   rust-core:
     name: Rust native simulation unit tests

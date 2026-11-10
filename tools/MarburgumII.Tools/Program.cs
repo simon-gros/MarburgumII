@@ -35,7 +35,8 @@ var requiredModules = new Dictionary<string, string>
     ["MarburgumII"] = "Runtime",
     ["MarburgumIIShared"] = "Runtime",
     ["MarburgumIIClient"] = "ClientOnly",
-    ["MarburgumIIServer"] = "ServerOnly"
+    ["MarburgumIIServer"] = "ServerOnly",
+    ["MarburgumIIEditorTools"] = "Editor"
 };
 using (var doc = JsonDocument.Parse(Read("MarburgumII.uproject")))
 {
@@ -94,7 +95,10 @@ string[] requiredFiles =
     "scripts/package-linux.sh",
     "scripts/net-smoke-linux.sh",
     "native/marburgum-sim-core/Cargo.toml",
-    "native/marburgum-sim-core/include/marburgum_sim_core.h"
+    "native/marburgum-sim-core/include/marburgum_sim_core.h",
+    "tools/mb2/Cargo.toml",
+    "Source/MarburgumIIEditorTools/MarburgumIIEditorTools.Build.cs",
+    "Source/MarburgumIIEditorTools/Private/MarburgumCreateMapsCommandlet.cpp"
 };
 foreach (string path in requiredFiles) RequireFile(path);
 
@@ -109,6 +113,9 @@ for (int i = 0; i < targetNames.Length; i++)
         errors.Add($"{path} must be TargetType.{targetTypes[i]}.");
     if (!content.Contains("\"MarburgumII\"") || !content.Contains("\"MarburgumIIShared\""))
         errors.Add($"{path} must include core and shared modules.");
+    // Content tooling is editor-only; shipped game, client and server binaries never contain it.
+    if (content.Contains("\"MarburgumIIEditorTools\"") != (targetTypes[i] == "Editor"))
+        errors.Add($"{path}: MarburgumIIEditorTools belongs to the Editor target only.");
 }
 string clientTargetPath = "Source/MarburgumIIClient.Target.cs";
 string serverTargetPath = "Source/MarburgumIIServer.Target.cs";
@@ -125,7 +132,7 @@ if (File.Exists(Path.Combine(root, serverTargetPath)))
         errors.Add("Server target must include server and exclude client module.");
 }
 // Side modules may consume core and shared modules; core and shared never depend on a side.
-foreach (string module in new[] { "MarburgumII", "MarburgumIIShared", "MarburgumIIClient", "MarburgumIIServer" })
+foreach (string module in new[] { "MarburgumII", "MarburgumIIShared", "MarburgumIIClient", "MarburgumIIServer", "MarburgumIIEditorTools" })
 {
     string path = $"Source/{module}/{module}.Build.cs";
     if (!File.Exists(Path.Combine(root, path))) continue;
@@ -141,6 +148,6 @@ if (File.Exists(Path.Combine(root, sharedBuildPath)) && Read(sharedBuildPath).Co
 foreach (string error in errors) Console.Error.WriteLine($"ERROR: {error}");
 if (errors.Count > 0) return 1;
 
-Console.WriteLine("Marburgum II manifests valid — UE 5.8.3, separated shared/client/server modules and targets.");
+Console.WriteLine("Marburgum II manifests valid — UE 5.8.3, separated shared/client/server modules and targets, editor-only tooling.");
 Console.WriteLine("NOTE: This is a source-only check. It does not compile Unreal or prove network connectivity.");
 return 0;

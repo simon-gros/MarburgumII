@@ -15,18 +15,4 @@ if [[ ! -f "$version_file" ]]; then
     exit 1
 fi
 
-python3 - "$version_file" "$repo_root/.unreal-engine-version" <<'PY'
-import json
-import pathlib
-import sys
-
-build_file = pathlib.Path(sys.argv[1])
-pin_file = pathlib.Path(sys.argv[2])
-required = pin_file.read_text(encoding="utf-8").strip()
-data = json.loads(build_file.read_text(encoding="utf-8"))
-actual = ".".join(str(data[key]) for key in ("MajorVersion", "MinorVersion", "PatchVersion"))
-if actual != required:
-    print(f"ERROR: Unreal Engine {actual} installed; Marburgum II requires {required}.", file=sys.stderr)
-    sys.exit(1)
-print(f"Verified Unreal Engine {actual} from {build_file}")
-PY
+"$repo_root/scripts/mb2.sh" engine-version "$ue_root"

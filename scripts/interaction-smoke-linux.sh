@@ -29,7 +29,7 @@ out_dir="$repo_root/Saved/InteractSmoke/$(date -u +%Y%m%dT%H%M%SZ)"
 token="t$(date +%s)$RANDOM"
 key_a="mb2a-$token"
 key_b="mb2b-$token"
-first_op="$(python3 -c 'import uuid; print(uuid.uuid4().hex.upper())')"
+first_op="$("$repo_root/scripts/mb2.sh" new-op)"
 
 case "$mode" in
     staged)
@@ -162,26 +162,7 @@ stop_server
 
 # The durable record after phase 1: three grants in total, nothing else.
 store_check=0
-python3 -I - "$store" "$key_a" "$key_b" "$first_op" > "$out_dir/store-check.txt" <<'EOF' || store_check=$?
-import json, sys
-path, key_a, key_b, first_op = sys.argv[1:5]
-doc = json.load(open(path))
-inv = doc["inventories"]
-a = inv.get(key_a, {}).get("fishing_rod", 0)
-b = inv.get(key_b, {}).get("fishing_rod", 0)
-problems = []
-if doc["format"] != "marburgumii.world_store" or doc["schema_version"] != 2: problems.append("format")
-if doc["revision"] != 3: problems.append("revision=%s" % doc["revision"])
-if doc["stocks"].get("dev_supply_crate") != 0: problems.append("stock=%s" % doc["stocks"].get("dev_supply_crate"))
-if "dev_supply_crate_far" in doc["stocks"]: problems.append("far_stock_written")
-if a + b != 3: problems.append("granted=%d" % (a + b))
-if len(doc["receipts"]) != 3: problems.append("receipts=%d" % len(doc["receipts"]))
-if doc["receipts"].get(first_op, {}).get("character") != key_a: problems.append("first_op_receipt")
-if problems:
-    print("store check FAILED: " + ",".join(problems), file=sys.stderr)
-print(a, b, doc["revision"])
-sys.exit(1 if problems else 0)
-EOF
+"$repo_root/scripts/mb2.sh" store-check interaction "$store" "$key_a" "$key_b" "$first_op" > "$out_dir/store-check.txt" || store_check=$?
 [[ "$store_check" -eq 0 ]] || status=1
 read -r items_a items_b revision < "$out_dir/store-check.txt" || true
 items_a="${items_a:-0}"; items_b="${items_b:-0}"; revision="${revision:-none}"

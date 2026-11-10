@@ -2,7 +2,7 @@
 
 ## Required toolchains
 
-Unreal Engine **5.8.3 exactly**, its corresponding platform-native C++ toolchain, Git and Git LFS, Python 3, .NET SDK 8 and Rust stable.
+Unreal Engine **5.8.3 exactly**, its corresponding platform-native C++ toolchain, Git and Git LFS, .NET SDK 10 (pinned by `global.json`) and Rust stable. Python is not used (ADR-018).
 
 No Unreal binaries are distributed here. You must separately install the engine and satisfy its license and platform-specific dependencies.
 
@@ -41,7 +41,7 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ## Test map, packaging and network smoke (Linux)
 
 ```bash
-./scripts/create-maps.sh              # regenerate Content/Maps/FrontEnd, NetSmoke and Lent (+ Content/Blockout/Materials) with the editor Python commandlet; build the Editor first
+./scripts/create-maps.sh              # regenerate Content/Maps/FrontEnd, NetSmoke and Lent (+ Content/Blockout/Materials) with the C++ commandlet `-run=MarburgumCreateMaps`; build the Editor first
 ./scripts/package-linux.sh            # BuildCookRun: Saved/StagedBuilds/LinuxServer and LinuxClient
 ./scripts/net-smoke-linux.sh          # Gate 0B against the packaged builds
 ./scripts/net-smoke-linux.sh editor   # same test with uncooked UnrealEditor -server / -game processes
@@ -51,7 +51,7 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ./scripts/lent-smoke-linux.sh         # Lent slice: location, NPC, saved mission, objective/journal, restart, privacy
 ```
 
-The smoke script starts one headless dedicated server on port 7777 (override with `MB2_SMOKE_PORT`). It runs one client through a refused mutation, an idempotent operation and a disconnect/reconnect, then two concurrent clients. Logs and `summary.txt` go to `Saved/NetSmoke/<UTC timestamp>/`. A nonzero exit means a failed expectation. The PythonScriptPlugin and EditorScriptingUtilities plugins are enabled only for the Editor target.
+The smoke script starts one headless dedicated server on port 7777 (override with `MB2_SMOKE_PORT`). It runs one client through a refused mutation, an idempotent operation and a disconnect/reconnect, then two concurrent clients. Logs and `summary.txt` go to `Saved/NetSmoke/<UTC timestamp>/`. A nonzero exit means a failed expectation. Map generation is the editor-only C++ commandlet in `MarburgumIIEditorTools`; the PythonScriptPlugin and EditorScriptingUtilities plugins are disabled.
 
 The UI capture script runs real `MarburgumIIClient` processes with `-RenderOffScreen -ForceRes` (a GPU is required; no display is needed) and screenshots the composited window, UMG included, whenever the session settles in a new phase. It captures the front-end at four resolutions, the UI-01 component gallery, a connection failure against an unused port (`MB2_CAPTURE_DEAD_PORT`, default 7790), and a server-loss scenario: the client joins a packaged dedicated server, the script stops the server, waits for the client to show reconnecting, restarts the server and expects automatic recovery. PNGs, logs and `summary.txt` go to `Saved/UICapture/<UTC timestamp>/`.
 
@@ -94,7 +94,7 @@ The project owner reports **Hunyuan3D-2.1** installed locally. The [local genera
 
 ## Fresh owner playtests
 
-Use [PLAYTEST_FRESHNESS.md](PLAYTEST_FRESHNESS.md) and the guard `scripts/playtest-freshness.py`, with a privately configured `Saved/PlaytestProfile/profile.json`. It validates Git/source revision, hashes tracked and locally licensed asset inputs, rebuilds and recooks into a new client/server package and verifies exact archives before launch. The example profile has not been qualified with real UAT output paths and **does not** prove that a native Unreal playtest exists. Always validate that generator outputs, custom import intermediate steps and local purchased assets are included in the actual profile.
+Use [PLAYTEST_FRESHNESS.md](PLAYTEST_FRESHNESS.md) and the guard `scripts/mb2.sh playtest`, with a privately configured `Saved/PlaytestProfile/profile.json`. It validates Git/source revision, hashes tracked and locally licensed asset inputs, rebuilds and recooks into a new client/server package and verifies exact archives before launch. The example profile has not been qualified with real UAT output paths and **does not** prove that a native Unreal playtest exists. Always validate that generator outputs, custom import intermediate steps and local purchased assets are included in the actual profile.
 
 ## Messaging validation (CHAT-001)
 
@@ -103,12 +103,14 @@ General and private text chat source resides in `AMarburgumPlayerController`; cl
 ## Independent source checks
 
 ```bash
-dotnet run --project tools/MarburgumII.Tools -- verify
+dotnet run --project tools/MarburgumII.Tools -- verify   # .NET 10: modules, targets, side boundaries
+scripts/mb2.sh validate all                            # Rust: UI ontology, chat, gameplay contract, no Python
+cargo test --manifest-path tools/mb2/Cargo.toml
 cargo test --manifest-path native/marburgum-sim-core/Cargo.toml
 cargo build --release --manifest-path native/marburgum-sim-core/Cargo.toml
 ```
 
-The C# program checks repository manifest contracts, but does not inspect the local Unreal installation. The Rust library is an unlinked and independently testable experimental component.
+The C# program checks repository manifest contracts, but does not inspect the local Unreal installation. `scripts/mb2.sh` builds and runs the Rust repository tool (`tools/mb2`); it also provides the engine-version check, operation ids and world-store checks the smoke scripts use, and the playtest freshness guard. The Rust simulation library is an unlinked and independently testable experimental component.
 
 ## Required acceptance evidence
 

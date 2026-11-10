@@ -13,7 +13,9 @@
 | Unreal client module | C++ | Presentation, input and client-only adapters; session, UI and test drivers | Builds; Stage 0C UI and Gate 1 HUD modules |
 | Unreal server module | C++ | Interaction authority and the development world store (ADR-014/015); admission telemetry | Builds; Gate 1 smoke passes |
 | UnrealBuildTool | C# | Engine's `.Target.cs` and `.Build.cs` build rules | Configured |
-| External tools | C# / .NET 8 | Manifest checks, future data pipelines and tooling | First validator |
+| External tools | C# / .NET 10 | Project manifest checks, future data pipelines | Manifest validator |
+| Repository tooling | Rust (`tools/mb2`) | Source-contract validators, playtest freshness guard, smoke-test helpers (ADR-018) | Validators, guard and helpers with unit tests |
+| Editor content tooling | C++ (`MarburgumIIEditorTools`, Editor target only) | Map generator commandlet for FrontEnd, NetSmoke and Lent | Generates all three maps |
 | Simulation library | Rust | Pure deterministic native operations through stable C ABI | Crate and tests; not linked to UE |
 | World/levels | Unreal Content | Planned licensed Maribor GIS geometry, independently authored test map, World Partition and reviewed historical/semantic overlays | No licensed map purchased/imported or tested |
 | Authoritative state/persistence | C++ and future reviewed services | State ownership, missions, economies and networking | Gate 1 interaction on a development JSON store; production engine undecided |

@@ -66,7 +66,7 @@
       "role": "server",
       "command": [
         "{run_dir}/server/LinuxServer/MarburgumIIServer.sh",
-        "/Game/Maps/NetworkSmoke",
+        "/Game/Maps/Lent",
         "-port=7777",
         "-log",
         "-abslog={run_dir}/logs/ue-server.log"

@@ -1,0 +1,20 @@
+[package]
+name = "mb2-tools"
+version = "0.1.0"
+edition = "2021"
+description = "Marburgum II repository tooling: source contract validators, playtest freshness guard and test-script helpers"
+publish = false
+
+[[bin]]
+name = "mb2"
+path = "src/main.rs"
+
+[dependencies]
+libc = "0.2"
+regex = "1"
+serde_json = { version = "1", features = ["preserve_order"] }
+sha2 = "0.10"
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+tempfile = "3"

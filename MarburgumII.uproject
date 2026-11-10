@@ -23,18 +23,21 @@
       "Name": "MarburgumIIServer",
       "Type": "ServerOnly",
       "LoadingPhase": "Default"
+    },
+    {
+      "Name": "MarburgumIIEditorTools",
+      "Type": "Editor",
+      "LoadingPhase": "Default"
     }
   ],
   "Plugins": [
     {
       "Name": "PythonScriptPlugin",
-      "Enabled": true,
-      "TargetAllowList": [ "Editor" ]
+      "Enabled": false
     },
     {
       "Name": "EditorScriptingUtilities",
-      "Enabled": true,
-      "TargetAllowList": [ "Editor" ]
+      "Enabled": false
     },
     {
       "Name": "AndroidFileServer",

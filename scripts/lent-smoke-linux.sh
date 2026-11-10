@@ -32,7 +32,7 @@ token="t$(date +%s)$RANDOM"
 key_m="mb2m-$token"
 key_w="mb2w-$token"
 key_t="mb2t-$token"
-first_op="$(python3 -c 'import uuid; print(uuid.uuid4().hex.upper())')"
+first_op="$("$repo_root/scripts/mb2.sh" new-op)"
 
 case "$mode" in
     staged)
@@ -165,26 +165,7 @@ sleep 1
 stop_server
 
 store_check=0
-python3 -I - "$store" "$key_m" "$key_w" "$first_op" > "$out_dir/store-check.txt" <<'EOF' || store_check=$?
-import json, sys
-path, key_m, key_w, first_op = sys.argv[1:5]
-doc = json.load(open(path))
-problems = []
-if doc["format"] != "marburgumii.world_store" or doc["schema_version"] != 2: problems.append("format")
-if doc["revision"] != 1: problems.append("revision=%s" % doc["revision"])
-mission = doc.get("missions", {}).get(key_m, {}).get("lent_first_catch", {})
-if mission.get("stage") != "catch_first_fish" or mission.get("started_revision") != 1: problems.append("mission=%s" % mission)
-if doc["inventories"].get(key_m, {}).get("fishing_rod") != 1: problems.append("rods=%s" % doc["inventories"].get(key_m))
-if key_w in doc["inventories"] or key_w in doc.get("missions", {}): problems.append("walker_written")
-receipt = doc["receipts"].get(first_op, {})
-if len(doc["receipts"]) != 1 or receipt.get("kind") != "mission_started" or receipt.get("character") != key_m \
-        or receipt.get("item") != "fishing_rod" or receipt.get("mission") != "lent_first_catch":
-    problems.append("receipts=%s" % doc["receipts"])
-if problems:
-    print("store check FAILED: " + ",".join(problems), file=sys.stderr)
-print(doc["revision"], mission.get("stage", "-"))
-sys.exit(1 if problems else 0)
-EOF
+"$repo_root/scripts/mb2.sh" store-check lent "$store" "$key_m" "$key_w" "$first_op" > "$out_dir/store-check.txt" || store_check=$?
 [[ "$store_check" -eq 0 ]] || status=1
 read -r revision stage < "$out_dir/store-check.txt" || true
 store_hash="$(sha256sum "$store" 2>/dev/null | cut -d' ' -f1 || true)"

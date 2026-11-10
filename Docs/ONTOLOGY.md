@@ -145,7 +145,7 @@ The example adapts concepts and identifiers from the original **“Something in 
 - Each persisted record should carry `schema_version`, `id`, owner/authority, references and appropriate creation/update event IDs. Version the **type vocabulary** independently from record schemas and network protocols.
 - Prefer authored, engine-neutral source catalogues. Unreal Data Assets, Gameplay Tags, Data Layers and World Partition are **adapters or projections**, not a second independent set of game rules.
 - Keep `SourceRecord` and `HistoricalAssertion` provenance linked to licensing, temporal confidence and any authored fictionalization decision before generating production assets.
-- C++ owns eventual Unreal runtime and authority adapters. C#/.NET 8 may validate/generate data offline. Rust may implement pure deterministic rules behind a reviewed, versioned C ABI; it is **not presently linked** to Unreal.
+- C++ owns eventual Unreal runtime and authority adapters. C#/.NET 10 and the Rust repository tool may validate/generate data offline; editor content tooling is C++. Rust may implement pure deterministic rules behind a reviewed, versioned C ABI; it is **not presently linked** to Unreal.
 - The [JSON vocabulary](../Data/Ontology/core.v0.1.json) is **descriptive design data**, not yet a JSON Schema validator, compiled game catalogue, runtime wire format or persistent database contract. Any promotion to those roles requires tests and a separate decision.
 
 ## 8. Source traceability and scope
