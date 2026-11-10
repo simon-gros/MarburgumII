@@ -16,6 +16,9 @@
  *
  * Each map is rebuilt from scratch and saved; "MB2MAP saved <path>" is logged per map. Returns nonzero
  * if any requested map could not be built.
+ *
+ *   -Describe=/Game/Maps/Lent   read-only: log each actor's class, transform and light settings
+ *                               ("MB2DESCRIBE ..."), to compare a regenerated map with an earlier one.
  */
 UCLASS()
 class UMarburgumCreateMapsCommandlet : public UCommandlet

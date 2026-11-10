@@ -12,6 +12,8 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
+#include "Components/LightComponent.h"
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "FileHelpers.h"
 #include "Components/SkyAtmosphereComponent.h"
@@ -91,6 +93,9 @@ namespace MarburgumMaps
     {
         ADirectionalLight* Sun = Spawn<ADirectionalLight>(World, At, SunRotation, TEXT("Sun"));
         Sun->GetRootComponent()->SetMobility(EComponentMobility::Movable);
+        // A directional light spawned through SpawnActor kept the yaw but not the pitch (-78 instead of
+        // -32 on the Lent map); set the rotation again once the actor exists.
+        Sun->SetActorRotation(SunRotation);
         ASkyLight* Sky = Spawn<ASkyLight>(World, At, FRotator::ZeroRotator, TEXT("SkyLight"));
         Sky->GetRootComponent()->SetMobility(EComponentMobility::Movable);
         Sky->GetLightComponent()->bRealTimeCapture = true;
@@ -442,8 +447,41 @@ UMarburgumCreateMapsCommandlet::UMarburgumCreateMapsCommandlet()
     LogToConsole = true;
 }
 
+namespace MarburgumMaps
+{
+    /** Read-only: log every actor of a saved map with its class, transform and light settings. */
+    int32 Describe(const FString& MapPath)
+    {
+        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(MapPath);
+        if (!World)
+        {
+            UE_LOG(LogMarburgumMaps, Error, TEXT("MB2MAP cannot load %s"), *MapPath);
+            return 1;
+        }
+        for (TActorIterator<AActor> It(World); It; ++It)
+        {
+            const FTransform Transform = It->GetActorTransform();
+            FString Extra;
+            if (const ULightComponent* Light = It->FindComponentByClass<ULightComponent>())
+            {
+                Extra = FString::Printf(TEXT(" light_dir=%s intensity=%.2f mobility=%d"),
+                    *Light->GetDirection().ToString(), Light->Intensity, static_cast<int32>(Light->Mobility.GetValue()));
+            }
+            UE_LOG(LogMarburgumMaps, Display, TEXT("MB2DESCRIBE %s class=%s loc=%s rot=%s scale=%s%s"), *It->GetActorLabel(),
+                *It->GetClass()->GetName(), *Transform.GetLocation().ToString(), *Transform.Rotator().ToString(),
+                *Transform.GetScale3D().ToString(), *Extra);
+        }
+        return 0;
+    }
+}
+
 int32 UMarburgumCreateMapsCommandlet::Main(const FString& Params)
 {
+    FString DescribePath;
+    if (FParse::Value(*Params, TEXT("Describe="), DescribePath))
+    {
+        return MarburgumMaps::Describe(DescribePath);
+    }
     FString Selection = TEXT("frontend,netsmoke,lent");
     FParse::Value(*Params, TEXT("Maps="), Selection, /*bShouldStopOnSeparator=*/false);
     TArray<FString> Requested;
