@@ -179,7 +179,13 @@ The TRELLIS map roadmap (`marburgum-trellis-roadmap`, 10 November 2026) says ima
 
 The owner asked that the authored Lent streetscape replace the previous launch map. `GameDefaultMap`, `EditorStartupMap` and `ServerDefaultMap` are `/Game/Maps/Lent`. NetSmoke stays the explicit map for the network and Gate 1 tests. `/Game/Maps/FrontEnd` still exists for the connection shell (ADR-013); the UI capture opens it by name instead of relying on the default.
 
-**Temporary.** A client started with no server address now loads Lent under the local game mode, which is the offline-authority case ADR-013 avoided. The front-end returns as the client default when login is the way into the world. This does not recook the build that is already running.
+**Temporary.** A client started with no server address now loads Lent under the local game mode, which is the offline-authority case ADR-013 avoided. The front-end returns as the client default when login is the way into the world. This does not recook the build that is already running. Superseded as the launch map by ADR-027.
+
+## ADR-027 — The launch map is the original Unreal Lent level (accepted 2026-11-10)
+
+The owner rejected the generated LiDAR shells. Those commits are reverted. The map to upgrade is the Lent level already used by Unreal Marburgum, copied from `magna-raedarum-marburgum` into this project: `/Game/World/lent`, with its landscape, the 133 Lent building meshes, the road mesh, the water mesh, Stari most and the shared plaster and clay-tile materials. The editor loaded that level with map check 0 errors and 0 warnings.
+
+`GameDefaultMap`, `EditorStartupMap` and `ServerDefaultMap` are `/Game/World/lent`. `/Game/Maps/Lent` stays only because the angler, the area and the player starts still live there for the existing mission smokes. They are not on the original level yet. This copy is the survey-derived original. It is not fictionalized, not a TRELLIS rebuild, and not an accepted production map. Building meshes derived from OpenStreetMap stay under ODbL, © OpenStreetMap contributors.
 
 ## Open decisions
 
