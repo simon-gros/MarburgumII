@@ -1,0 +1,27 @@
+{
+	"format": "marburgumii.world_store",
+	"schema_version": 3,
+	"revision": 1,
+	"stocks":
+	{
+	},
+	"inventories":
+	{
+	},
+	"missions":
+	{
+	},
+	"conditions":
+	{
+		"mb2w-t179434395819681":
+		{
+			"stamina": 88,
+			"vitality": 0,
+			"winded": false,
+			"recovery_s": 52
+		}
+	},
+	"receipts":
+	{
+	}
+}

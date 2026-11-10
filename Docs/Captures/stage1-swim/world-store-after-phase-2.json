@@ -1,0 +1,20 @@
+{
+	"format": "marburgumii.world_store",
+	"schema_version": 3,
+	"revision": 2,
+	"stocks":
+	{
+	},
+	"inventories":
+	{
+	},
+	"missions":
+	{
+	},
+	"conditions":
+	{
+	},
+	"receipts":
+	{
+	}
+}

@@ -1,0 +1,64 @@
+MarburgumII swimming smoke
+result: PASS
+date_utc: 2026-11-10T20:55:50Z
+git_sha: fd6a67a294d2484be002e76a9ce5ff46842a6f00
+mode: staged
+map: /Game/World/lent
+host: Linux 6.18.60-2-cachyos-lts x86_64
+saved_down: why=logout character=mb2w-t179434395819681 vitality=0 stamina=88 winded=0 revision=1 recovery_s=52
+
+MB2SWIM role=client tag=O event=start shot=0
+MB2SWIM role=client tag=O event=remote_swimming pos=4790,3833,6
+MB2SWIM role=client tag=O event=remote_swim_clip after_s=0.00
+MB2SWIM role=client tag=O event=pass
+MB2SWIM role=client tag=W2 event=start shot=1
+MB2SWIM role=client tag=W2 event=ready player=256 vitality=0 stamina=96 down=1 recovery_s=51 at=7041,4014,245
+MB2SWIM role=client tag=W2 event=restored step_s=1.00 mps=0.00 pos=7041,4013,245 predicted_water=0 predicted_under=0 predicted_stamina=100.0 server_swimming=0 server_under=0 server_stamina=100 server_vitality=0 recovery_s=50 clip=0 hud="DROWNED · 50 s"
+MB2SWIM role=client tag=W2 event=restored_pushing step_s=3.00 mps=0.00 pos=7041,4013,245 predicted_water=0 predicted_under=0 predicted_stamina=100.0 server_swimming=0 server_under=0 server_stamina=100 server_vitality=0 recovery_s=47 clip=0 hud="DROWNED · 47 s"
+MB2SWIM role=client tag=W2 event=recovered step_s=46.41 mps=0.00 pos=7041,4013,245 predicted_water=0 predicted_under=0 predicted_stamina=100.0 server_swimming=0 server_under=0 server_stamina=100 server_vitality=100 recovery_s=0 clip=0 hud=""
+MB2SWIM role=client tag=W2 event=walking_again step_s=3.00 mps=2.20 pos=6392,4013,230 predicted_water=0 predicted_under=0 predicted_stamina=100.0 server_swimming=0 server_under=0 server_stamina=100 server_vitality=100 recovery_s=0 clip=0 hud=""
+MB2SWIM role=client tag=W2 event=shot file=swim-w2-recovered.png saved=1
+MB2SWIM role=client tag=W2 event=pass
+MB2SWIM role=client tag=W event=start shot=1
+MB2SWIM role=client tag=W event=ready player=257 vitality=100 stamina=100 down=0 recovery_s=0 at=7042,3834,245
+MB2SWIM role=client tag=W event=in_water step_s=10.29 mps=2.20 pos=4788,3834,6 predicted_water=1 predicted_under=0 predicted_stamina=100.0 server_swimming=0 server_under=0 server_stamina=100 server_vitality=100 recovery_s=0 clip=1 hud="SWIMMING"
+MB2SWIM role=client tag=W event=swimming step_s=5.00 mps=1.10 pos=4207,3833,-46 predicted_water=1 predicted_under=0 predicted_stamina=100.0 server_swimming=1 server_under=0 server_stamina=100 server_vitality=100 recovery_s=0 clip=1 hud="SWIMMING"
+MB2SWIM role=client tag=W event=shot file=swim-w-swimming.png saved=1
+MB2SWIM role=client tag=W event=shot file=swim-w-swimming-side.png saved=1
+MB2SWIM role=client tag=W event=under step_s=0.93 mps=0.64 pos=4084,3833,-65 predicted_water=1 predicted_under=1 predicted_stamina=99.9 server_swimming=1 server_under=1 server_stamina=99 server_vitality=100 recovery_s=0 clip=1 hud="HOLDING BREATH"
+MB2SWIM role=client tag=W event=held_breath step_s=10.00 mps=0.00 pos=4084,3833,-96 predicted_water=1 predicted_under=1 predicted_stamina=83.2 server_swimming=1 server_under=1 server_stamina=84 server_vitality=100 recovery_s=0 clip=1 hud="HOLDING BREATH"
+MB2SWIM role=client tag=W event=shot file=swim-w-under.png saved=1
+MB2SWIM role=client tag=W event=surfaced step_s=0.31 mps=0.34 pos=4119,3833,-59 predicted_water=1 predicted_under=0 predicted_stamina=83.3 server_swimming=1 server_under=0 server_stamina=83 server_vitality=100 recovery_s=0 clip=1 hud="SWIMMING"
+MB2SWIM role=client tag=W event=ashore step_s=7.09 mps=0.79 pos=4805,3833,10 predicted_water=0 predicted_under=0 predicted_stamina=100.0 server_swimming=0 server_under=0 server_stamina=100 server_vitality=100 recovery_s=0 clip=0 hud=""
+MB2SWIM role=client tag=W event=shot file=swim-w-ashore.png saved=1
+MB2SWIM role=client tag=W event=letting_go step_s=3.00 mps=1.10 pos=4437,3832,-46 predicted_water=1 predicted_under=0 predicted_stamina=100.0 server_swimming=1 server_under=0 server_stamina=100 server_vitality=100 recovery_s=0 clip=1 hud="SWIMMING"
+MB2SWIM role=client tag=W event=drowned step_s=60.41 mps=0.00 pos=4391,3832,-96 predicted_water=1 predicted_under=1 predicted_stamina=0.0 server_swimming=0 server_under=1 server_stamina=0 server_vitality=0 recovery_s=60 clip=1 hud="DROWNED · 60 s"
+MB2SWIM role=client tag=W event=at_recovery_point step_s=0.03 mps=26.57 pos=7041,4013,245 predicted_water=0 predicted_under=0 predicted_stamina=1.0 server_swimming=0 server_under=0 server_stamina=0 server_vitality=0 recovery_s=60 clip=0 hud="DROWNED · 60 s"
+MB2SWIM role=client tag=W event=down_pushing step_s=3.00 mps=0.00 pos=7041,4013,245 predicted_water=0 predicted_under=0 predicted_stamina=33.9 server_swimming=0 server_under=0 server_stamina=26 server_vitality=0 recovery_s=58 clip=0 hud="DROWNED · 58 s"
+MB2SWIM role=client tag=W event=shot file=swim-w-down.png saved=1
+MB2SWIM role=client tag=W event=leaving_down step_s=5.00 mps=0.00 pos=7041,4013,245 predicted_water=0 predicted_under=0 predicted_stamina=88.0 server_swimming=0 server_under=0 server_stamina=83 server_vitality=0 recovery_s=53 clip=0 hud="DROWNED · 53 s"
+MB2SWIM role=client tag=W event=pass
+MB2SMOKE role=server event=ready map=lent port=7791 contract=1
+MB2COND role=server event=condition_restored player=256 character=mb2o-t179434395819681 source=rested vitality=100 stamina=100 winded=0
+MB2SMOKE role=server event=login player=256 players=1
+MB2COND role=server event=condition_restored player=257 character=mb2w-t179434395819681 source=rested vitality=100 stamina=100 winded=0
+MB2SMOKE role=server event=login player=257 players=2
+MB2COND role=server event=in_water player=257 character=mb2w-t179434395819681 stamina=100.0 run_s=0.00 vitality=100 pos=4788,3833,6 mode=4
+MB2COND role=server event=condition_unchanged why=logout character=mb2o-t179434395819681 stamina=100 winded=0
+MB2SMOKE role=server event=logout player=256 players=1
+MB2COND role=server event=under player=257 character=mb2w-t179434395819681 stamina=100.0 run_s=0.00 vitality=100 pos=4084,3833,-64 mode=4
+MB2COND role=server event=surfaced player=257 character=mb2w-t179434395819681 stamina=83.0 run_s=0.00 vitality=100 pos=4116,3833,-62 mode=4
+MB2COND role=server event=left_water player=257 character=mb2w-t179434395819681 stamina=100.0 run_s=0.00 vitality=100 pos=4798,3833,6 mode=3
+MB2COND role=server event=in_water player=257 character=mb2w-t179434395819681 stamina=100.0 run_s=0.00 vitality=100 pos=4777,3833,3 mode=4
+MB2COND role=server event=under player=257 character=mb2w-t179434395819681 stamina=100.0 run_s=0.00 vitality=100 pos=4437,3832,-64 mode=4
+MB2COND role=server event=drowned player=257 character=mb2w-t179434395819681 stamina=0.0 run_s=0.00 vitality=0 pos=4391,3832,-96 mode=4
+MB2COND role=server event=recovery_point player=257 character=mb2w-t179434395819681 stamina=0.3 run_s=0.00 vitality=0 pos=7042,4013,237 mode=3
+MB2COND role=server event=condition_saved why=logout character=mb2w-t179434395819681 vitality=0 stamina=88 winded=0 revision=1 recovery_s=52
+MB2SMOKE role=server event=logout player=257 players=0
+MB2SMOKE role=server event=ready map=lent port=7791 contract=1
+MB2COND role=server event=condition_restored player=256 character=mb2w-t179434395819681 source=store vitality=0 stamina=88 winded=0
+MB2SMOKE role=server event=login player=256 players=1
+MB2COND role=server event=recovery_point player=256 character=mb2w-t179434395819681 stamina=88.0 run_s=0.00 vitality=0 pos=7042,4013,237 mode=3
+MB2COND role=server event=recovered player=256 character=mb2w-t179434395819681 stamina=100.0 run_s=0.00 vitality=100 pos=7041,4013,245 mode=1
+MB2COND role=server event=condition_saved why=logout character=mb2w-t179434395819681 vitality=100 stamina=100 winded=0 revision=2 recovery_s=0
+MB2SMOKE role=server event=logout player=256 players=0
