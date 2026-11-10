@@ -40,6 +40,8 @@ Source/MarburgumIIShared/   Shared gameplay/network contracts
 Source/MarburgumIIClient/   ClientOnly input/UI/presentation foundation
 Source/MarburgumIIServer/   ServerOnly interaction and mission authority, development world store
 Source/*.Target.cs          Client, dedicated Server, Editor and dev Game build targets
+Content/Characters/         UE5 template mannequin (Epic, unchanged) and the protagonist prototype
+SourceArt/                  Source art behind imported assets (concepts, generator output, rigged FBX)
 Config/                     Unreal project settings
 native/marburgum-sim-core/   Rust native library and C ABI header (not yet linked)
 tools/MarburgumII.Tools/    .NET 10 project manifest validator
@@ -129,6 +131,7 @@ A [freshness guard](Docs/PLAYTEST_FRESHNESS.md) is present to prevent owner acce
 - [Foundational game ontology (v0.1.0)](Docs/ONTOLOGY.md) and [machine-readable vocabulary](Data/Ontology/core.v0.1.json)
 - [Conditional local Hunyuan3D-2.1 image-to-model / PBR texture production](Docs/ASSET_GENERATION_HUNYUAN3D.md)
 - [Playtest source/build/cooked asset freshness gate](Docs/PLAYTEST_FRESHNESS.md)
+- [Protagonist character prototype: files, provenance and pipeline](Docs/CHARACTER_PROTAGONIST.md)
 - [Default map acquisition, licensing, import and owner-qualification plan](Docs/WORLD_MAP_ADOPTION.md) and [source selection manifest](Data/World/source-selection.v0.1.json)
 - [Original Marburgum design parity register](Docs/LEGACY_PARITY.md) and [machine-readable source matrix](Data/Parity/source-matrix.v0.1.json)
 - [Architecture and language boundaries](Docs/ARCHITECTURE.md)
@@ -144,5 +147,7 @@ A [freshness guard](Docs/PLAYTEST_FRESHNESS.md) is present to prevent owner acce
 ## Licensing
 
 **Commercial map exception:** any purchased map and extractable derived geometry/textures are **not** eligible for inclusion in the public GitHub repository or public Git LFS/CI artifacts. Those sources stay in ignored local-only directories, subject to their own third-party license. 
+
+**Epic content:** `Content/Characters/Mannequins/` is Epic Games' UE5 template mannequin, included unchanged under the Unreal Engine EULA (ADR-021). It is not covered by any license this project later selects.
 
 **No project-wide license has yet been selected.** Publication of this repository does not, by itself, grant permission to reuse source or assets. Do not add third-party content without verifying provenance and license compatibility.

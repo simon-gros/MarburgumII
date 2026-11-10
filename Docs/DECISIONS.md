@@ -137,8 +137,22 @@ Evidence: [STAGE1_CONDITION_EVIDENCE.md](STAGE1_CONDITION_EVIDENCE.md).
 
 **Not covered.** Crash-safety of condition between logouts: a server killed with SIGKILL loses the breath spent since the last save, which is acceptable for breath and must be revisited when vitality can fall. Drowning, falls, swimming, guarding and combat stamina costs (the rest of `combat.h`). Stamina for skills or work. Sprint animation and camera feedback. Re-measuring the one-point correction tolerance under real latency and packet loss.
 
+## ADR-021 — Characters use the UE5 mannequin skeleton; the template mannequin is committed (accepted 2026-11-10)
+
+**Problem.** The project had no character art. A first protagonist prototype was made outside the tree: an owner-supplied concept image, TRELLIS image-to-3D, skin weights transferred from Manny in Blender, then an FBX import into UE 5.8.3. Its skeletal mesh needs a skeleton asset in the project.
+
+**Decision.**
+
+- **One skeleton for human characters: `/Game/Characters/Mannequins/Meshes/SK_Mannequin`.** The template locomotion animations, Control Rig and IK Rig then work on every character without retargeting.
+- **Epic's template mannequin is committed** under `Content/Characters/Mannequins/`, byte-identical to the engine's `Templates/TemplateResources/High/Characters/Content/Mannequins`, at the owner's direction, under the Unreal Engine EULA.
+- **Source art lives in `SourceArt/`** (concept, generator output, rigged FBX); the imported assets live in `Content/`. `*.glb` joins the Git LFS patterns.
+- **The authoring pipeline stays outside the repository.** Its steps are Blender and Unreal editor Python, which ADR-018 keeps out of the tree. Its procedure and checks are recorded in [CHARACTER_PROTAGONIST.md](CHARACTER_PROTAGONIST.md).
+
+**Not covered.** Whether the research-only licences of the rasterizers used for TRELLIS's texture bake reach the baked texture in a commercial game. Hands, retopology and the final texture. A pawn, Animation Blueprint or map that uses the mesh.
+
 ## Open decisions
 
+- Clear the TRELLIS texture-bake rasterizer licences (nvdiffrast, Inria) for shipped textures, or rebake characters with vertex colours (ADR-021).
 - Verify production rights for the locally installed Hunyuan3D-2.1 version, specifically use within Slovenia/EU, generated outputs and subsequent game distribution.
 - Public license and rules for distributing source/art; no license has been selected.
 - Minimum shipping platforms and tested build matrix.
