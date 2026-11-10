@@ -109,7 +109,7 @@ The packaged-build checks below ran first on `df2e04f`, the Lent commit. Its edi
 - **Real key presses:** the driver calls the same controller entry point as E and J, but doesn't press keys.
 - **The rest of the mission:** fishing (Stage 2) is needed for stage 1. The stage 2 debris, Petra Kralj, the service room and Vera Horvat are not placed. Stage completion is covered only by the `Marburgum.Server.MissionRules` unit test.
 - **Pinning:** players cannot pin or unpin yet; the earliest mission is pinned.
-- **Screens:** no `player_condition` module, no dialogue panel (the line appears as a notification), and no Character, Skills or Settings screens yet.
+- **Screens:** no dialogue panel (the line appears as a notification), and no Skills or Settings screens yet. The `player_condition` module and a first Character panel came later, with the player condition ([evidence](STAGE1_CONDITION_EVIDENCE.md)).
 - **Capture coverage:** 1080p only; no focus or interface-scale matrix, and no 1440p/4K capture.
 - **Content:** the angler is a placeholder figure from engine shapes. The district is massing only, with no period detail, signage, water surface or NPC population.
 - **Ownership:** no owner playtest.

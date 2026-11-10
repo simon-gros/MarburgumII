@@ -1,0 +1,70 @@
+MarburgumII Stage 1 player-condition smoke
+result: PASS
+date_utc: 2026-11-10T15:44:32Z
+git_sha: 4b288110d83cfe5a0b0cfb84cfbd61571f0329f3
+mode: staged
+map: /Game/Maps/Lent
+host: Linux 6.18.60-2-cachyos-lts x86_64
+store_after_phase1: revision=2 runner_stamina=0 runner_winded=1
+store_after_phase2: revision=4 sha256=6d04866cd768770a53629e7cbd482c2fa0596f3a9e35df9633d1c3bd98bfdd86
+server_args_extra: none
+
+MB2COND role=client tag=C event=start shot=0
+MB2COND role=client tag=C event=ready player=257 character=1 vitality=100 stamina=100 winded=0 predicted_stamina=100.0 predicted_winded=0 cheat=1
+MB2COND role=client tag=C event=run_start cheat=1
+MB2COND role=client tag=C event=server_winded after_s=10.04 predicted_stamina=100.0 corrections=99
+MB2COND role=client tag=C event=speed what=cheater_held_to_walking window_s=0.70 mps=2.19 min=0.50 max=2.90 running=1 predicted_stamina=100.0 server_stamina=0 server_winded=1
+MB2COND role=client tag=C event=leaving server_stamina=0 server_winded=1 corrections=128
+MB2COND role=client tag=C event=pass
+MB2COND role=client tag=R2 event=start shot=1
+MB2COND role=client tag=R2 event=ready player=256 character=1 vitality=100 stamina=0 winded=1 predicted_stamina=0.9 predicted_winded=1 cheat=0
+MB2COND role=client tag=R2 event=breath_back_predicted after_bind_s=0.83 stamina=15.0
+MB2COND role=client tag=R2 event=speed what=restored_running_again window_s=0.60 mps=4.40 min=3.60 max=4.90 running=1 predicted_stamina=5.0 server_stamina=14 server_winded=0
+MB2COND role=client tag=R2 event=shot file=condition-r2-rested-again.png saved=1
+MB2COND role=client tag=R2 event=leaving server_stamina=100 corrections=1
+MB2COND role=client tag=R2 event=pass
+MB2COND role=client tag=R event=start shot=1
+MB2COND role=client tag=R event=ready player=256 character=1 vitality=100 stamina=100 winded=0 predicted_stamina=100.0 predicted_winded=0 cheat=0
+MB2COND role=client tag=R event=shot file=condition-r-rested.png saved=1
+MB2COND role=client tag=R event=shot file=condition-r-character.png saved=1
+MB2COND role=client tag=R event=run_start
+MB2COND role=client tag=R event=speed what=running window_s=2.00 mps=4.40 min=3.60 max=4.90 running=1 predicted_stamina=70.0 server_stamina=79 server_winded=0
+MB2COND role=client tag=R event=shot file=condition-r-running.png saved=1
+MB2COND role=client tag=R event=winded_predicted after_s=10.00
+MB2COND role=client tag=R event=speed what=winded_walk window_s=0.70 mps=2.20 min=1.20 max=2.75 running=0 predicted_stamina=11.0 server_stamina=0 server_winded=1
+MB2COND role=client tag=R event=shot file=condition-r-winded.png saved=1
+MB2COND role=client tag=R event=breath_back_predicted after_winded_s=1.35 stamina=15.0
+MB2COND role=client tag=R event=speed what=running_again window_s=0.60 mps=4.39 min=3.60 max=4.90 running=1 predicted_stamina=5.0 server_stamina=14 server_winded=0
+MB2COND role=client tag=R event=leaving predicted_stamina=0.5 server_stamina=0 corrections=0
+MB2COND role=client tag=R event=pass
+MB2COND role=client tag=S event=start shot=0
+MB2COND role=client tag=S event=ready player=257 character=1 vitality=100 stamina=100 winded=0 predicted_stamina=100.0 predicted_winded=0 cheat=0
+MB2COND role=client tag=S event=signalled server_stamina=89
+MB2COND role=client tag=S event=session_lost
+MB2COND role=client tag=S event=pass
+MB2SMOKE role=server event=ready map=Lent port=7777 contract=1
+MB2INTERACT role=server event=store_loaded path="/mnt/data/MarburgumII/Saved/ConditionSmoke/20261110T154317Z/world-store.json" schema=0 revision=0 characters=0 missions=0 conditions=0 receipts=0
+MB2COND role=server event=condition_restored player=256 character=mb2r-t17943253976134 source=rested vitality=100 stamina=100 winded=0
+MB2SMOKE role=server event=login player=256 players=1
+MB2COND role=server event=winded player=256 character=mb2r-t17943253976134 stamina=0.0 run_s=10.00
+MB2COND role=server event=breath_back player=256 character=mb2r-t17943253976134 stamina=15.0 run_s=10.00
+MB2COND role=server event=winded player=256 character=mb2r-t17943253976134 stamina=0.0 run_s=11.51
+MB2COND role=server event=condition_saved why=logout character=mb2r-t17943253976134 vitality=100 stamina=0 winded=1 revision=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2COND role=server event=condition_restored player=257 character=mb2c-t17943253976134 source=rested vitality=100 stamina=100 winded=0
+MB2SMOKE role=server event=login player=257 players=1
+MB2COND role=server event=winded player=257 character=mb2c-t17943253976134 stamina=0.0 run_s=10.00
+MB2COND role=server event=breath_back player=257 character=mb2c-t17943253976134 stamina=15.1 run_s=10.00
+MB2COND role=server event=winded player=257 character=mb2c-t17943253976134 stamina=0.0 run_s=11.52
+MB2COND role=server event=condition_saved why=logout character=mb2c-t17943253976134 vitality=100 stamina=1 winded=1 revision=2
+MB2SMOKE role=server event=logout player=257 players=0
+MB2SMOKE role=server event=ready map=Lent port=7777 contract=1
+MB2INTERACT role=server event=store_loaded path="/mnt/data/MarburgumII/Saved/ConditionSmoke/20261110T154317Z/world-store.json" schema=3 revision=2 characters=0 missions=0 conditions=2 receipts=0
+MB2COND role=server event=condition_restored player=256 character=mb2r-t17943253976134 source=store vitality=100 stamina=0 winded=1
+MB2SMOKE role=server event=login player=256 players=1
+MB2COND role=server event=breath_back player=256 character=mb2r-t17943253976134 stamina=15.0 run_s=0.00
+MB2COND role=server event=condition_saved why=logout character=mb2r-t17943253976134 vitality=100 stamina=100 winded=0 revision=3
+MB2SMOKE role=server event=logout player=256 players=0
+MB2COND role=server event=condition_restored player=257 character=mb2s-t17943253976134 source=rested vitality=100 stamina=100 winded=0
+MB2SMOKE role=server event=login player=257 players=1
+MB2COND role=server event=condition_saved why=shutdown character=mb2s-t17943253976134 vitality=100 stamina=78 winded=0 revision=4
