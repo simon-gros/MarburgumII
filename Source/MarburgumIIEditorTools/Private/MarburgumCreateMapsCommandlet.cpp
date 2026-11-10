@@ -11,6 +11,7 @@
 #include "Engine/DirectionalLight.h"
 #include "Engine/ExponentialHeightFog.h"
 #include "Engine/PointLight.h"
+#include "Engine/PostProcessVolume.h"
 #include "Engine/SkyLight.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
@@ -28,6 +29,7 @@
 #include "Materials/MaterialInstanceConstant.h"
 #include "MarburgumArea.h"
 #include "MarburgumFrontEndGameMode.h"
+#include "MarburgumGameMode.h"
 #include "MarburgumInteractable.h"
 #include "MarburgumNpc.h"
 #include "Misc/Parse.h"
@@ -625,6 +627,279 @@ UMarburgumCreateMapsCommandlet::UMarburgumCreateMapsCommandlet()
 
 namespace MarburgumMaps
 {
+    int32 FictionLent()
+    {
+        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(TEXT("/Game/World/lent"));
+        if (!World)
+        {
+            UE_LOG(LogMarburgumMaps, Error, TEXT("MB2FICTION cannot load /Game/World/lent"));
+            return 1;
+        }
+
+        TArray<AActor*> Previous;
+        for (TActorIterator<AActor> It(World); It; ++It)
+        {
+            if (It->GetFolderPath() == FName(TEXT("Marburgum/Opening")))
+            {
+                Previous.Add(*It);
+            }
+        }
+        for (AActor* Actor : Previous)
+        {
+            Actor->Destroy();
+        }
+
+        auto BoundsOf = [World](const TCHAR* Label, FVector& Origin, FVector& Extent) -> bool
+        {
+            for (TActorIterator<AStaticMeshActor> It(World); It; ++It)
+            {
+                if (It->GetActorLabel() == Label)
+                {
+                    It->GetActorBounds(false, Origin, Extent);
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        FVector RiverOrigin = FVector::ZeroVector;
+        FVector RiverExtent = FVector::ZeroVector;
+        FVector BridgeOrigin = FVector::ZeroVector;
+        FVector BridgeExtent = FVector::ZeroVector;
+        if (!BoundsOf(TEXT("Drava"), RiverOrigin, RiverExtent) || !BoundsOf(TEXT("Bridge_stari"), BridgeOrigin, BridgeExtent))
+        {
+            UE_LOG(LogMarburgumMaps, Error, TEXT("MB2FICTION missing Drava or Bridge_stari bounds"));
+            return 1;
+        }
+        const bool bAlongX = RiverExtent.X >= RiverExtent.Y;
+        const FVector Along = bAlongX ? FVector(1.0, 0.0, 0.0) : FVector(0.0, 1.0, 0.0);
+        const FVector Across = bAlongX ? FVector(0.0, 1.0, 0.0) : FVector(1.0, 0.0, 0.0);
+
+        struct FBuilding
+        {
+            FVector Origin = FVector::ZeroVector;
+            FVector Extent = FVector::ZeroVector;
+            double Side = 0.0;
+            double AlongPos = 0.0;
+        };
+        TArray<FBuilding> LentBuildings;
+        double Positive = 0.0;
+        double Negative = 0.0;
+        for (TActorIterator<AStaticMeshActor> It(World); It; ++It)
+        {
+            const FString Label = It->GetActorLabel();
+            if (Label.Len() < 2 || (Label[0] != TCHAR('w') && Label[0] != TCHAR('r')))
+            {
+                continue;
+            }
+            bool bDigits = true;
+            for (int32 Index = 1; Index < Label.Len(); ++Index)
+            {
+                if (!FChar::IsDigit(Label[Index]))
+                {
+                    bDigits = false;
+                    break;
+                }
+            }
+            if (!bDigits)
+            {
+                continue;
+            }
+            FBuilding Building;
+            It->GetActorBounds(false, Building.Origin, Building.Extent);
+            const FVector Delta = Building.Origin - RiverOrigin;
+            Building.Side = FVector::DotProduct(Delta, Across);
+            Building.AlongPos = FVector::DotProduct(Delta, Along);
+            if (Building.Side >= 0.0)
+            {
+                Positive += 1.0;
+            }
+            else
+            {
+                Negative += 1.0;
+            }
+            LentBuildings.Add(Building);
+        }
+        if (LentBuildings.Num() == 0)
+        {
+            UE_LOG(LogMarburgumMaps, Error, TEXT("MB2FICTION found no Lent building meshes"));
+            return 1;
+        }
+        const double LentSign = Positive >= Negative ? 1.0 : -1.0;
+        const FVector Inland = Across * LentSign;
+        const FVector Riverward = Across * -LentSign;
+        const FBuilding* Landing = nullptr;
+        double Nearest = TNumericLimits<double>::Max();
+        for (const FBuilding& Building : LentBuildings)
+        {
+            if (Building.Side * LentSign <= 0.0)
+            {
+                continue;
+            }
+            const double Dist = FVector::Dist2D(Building.Origin, BridgeOrigin);
+            if (Dist < Nearest)
+            {
+                Nearest = Dist;
+                Landing = &Building;
+            }
+        }
+        if (!Landing)
+        {
+            UE_LOG(LogMarburgumMaps, Error, TEXT("MB2FICTION found no buildings on the Lent bank"));
+            return 1;
+        }
+        const float Ground = static_cast<float>(Landing->Origin.Z - Landing->Extent.Z);
+        const float WalkZ = Ground + 96.0f;
+        const double FaceAcross = FMath::Abs(FVector::DotProduct(Landing->Extent, Across));
+        const FVector Arrival = Landing->Origin + Riverward * (FaceAcross + 250.0) + FVector(0.0, 0.0, -Landing->Extent.Z + 96.0);
+        const double West = (FMath::Abs(Along.X) >= FMath::Abs(Along.Y)) ? -FMath::Sign(Along.X) : -1.0;
+        const FVector TowardWest = Along * (West == 0.0 ? -1.0 : West);
+        const FVector AnglerAt = Arrival + TowardWest * 2200.0;
+        const double BridgeHalf = FMath::Abs(FVector::DotProduct(BridgeExtent, Across));
+        const FVector BridgeAt = FVector(BridgeOrigin.X, BridgeOrigin.Y, 0.0) + Inland * BridgeHalf * 0.72 + FVector(0.0, 0.0, WalkZ);
+        FVector BuildingMin = LentBuildings[0].Origin;
+        FVector BuildingMax = LentBuildings[0].Origin;
+        for (const FBuilding& Building : LentBuildings)
+        {
+            BuildingMin = BuildingMin.ComponentMin(Building.Origin);
+            BuildingMax = BuildingMax.ComponentMax(Building.Origin);
+        }
+        UE_LOG(LogMarburgumMaps, Display, TEXT("MB2FICTION river=%s extent=%s bridge=%s bextent=%s along=%s lent_sign=%.0f buildings=%d ground=%.0f..%.0f buildings_xy=%s..%s"),
+            *RiverOrigin.ToString(), *RiverExtent.ToString(), *BridgeOrigin.ToString(), *BridgeExtent.ToString(),
+            bAlongX ? TEXT("X") : TEXT("Y"), LentSign, LentBuildings.Num(), Ground, Ground,
+            *BuildingMin.ToString(), *BuildingMax.ToString());
+
+        World->GetWorldSettings()->DefaultGameMode = AMarburgumGameMode::StaticClass();
+
+        const FRotator SunRotation(-28.0, FMath::RadiansToDegrees(FMath::Atan2(Inland.Y, Inland.X)), 0.0);
+        ADirectionalLight* Sun = Spawn<ADirectionalLight>(World, Arrival + FVector(0.0, 0.0, 2000.0), SunRotation, TEXT("MB2Sun"), TEXT("Marburgum/Opening"));
+        Sun->SetActorRotation(SunRotation);
+        Sun->GetRootComponent()->SetMobility(EComponentMobility::Movable);
+        UDirectionalLightComponent* SunLight = CastChecked<UDirectionalLightComponent>(Sun->GetLightComponent());
+        SunLight->SetMobility(EComponentMobility::Movable);
+        SunLight->SetIntensity(8.0f);
+        SunLight->SetUseTemperature(true);
+        SunLight->SetTemperature(4800.0f);
+
+        ASkyLight* Sky = Spawn<ASkyLight>(World, Arrival, FRotator::ZeroRotator, TEXT("MB2SkyLight"), TEXT("Marburgum/Opening"));
+        Sky->GetRootComponent()->SetMobility(EComponentMobility::Movable);
+        Sky->GetLightComponent()->SetMobility(EComponentMobility::Movable);
+        Sky->GetLightComponent()->bRealTimeCapture = true;
+        Spawn<ASkyAtmosphere>(World, FVector::ZeroVector, FRotator::ZeroRotator, TEXT("MB2Sky"), TEXT("Marburgum/Opening"));
+
+        AExponentialHeightFog* Fog = Spawn<AExponentialHeightFog>(World, FVector::ZeroVector, FRotator::ZeroRotator, TEXT("MB2Fog"), TEXT("Marburgum/Opening"));
+        Fog->GetComponent()->SetFogDensity(0.004f);
+        Fog->GetComponent()->SetFogHeightFalloff(0.15f);
+        Fog->GetComponent()->SetFogInscatteringColor(FLinearColor(0.72f, 0.68f, 0.58f));
+
+        APostProcessVolume* Grade = Spawn<APostProcessVolume>(World, FVector::ZeroVector, FRotator::ZeroRotator, TEXT("MB2Grade"), TEXT("Marburgum/Opening"));
+        Grade->bUnbound = true;
+        Grade->Settings.bOverride_AutoExposureBias = true;
+        Grade->Settings.AutoExposureBias = 0.4f;
+        Grade->Settings.bOverride_WhiteTemp = true;
+        Grade->Settings.WhiteTemp = 5800.0f;
+        Grade->Settings.bOverride_BloomIntensity = true;
+        Grade->Settings.BloomIntensity = 0.15f;
+
+        auto PlaceStart = [&](const TCHAR* Tag, const FVector& At, const FVector& LookAt, int32 Index)
+        {
+            const FVector Flat = LookAt - At;
+            const float Yaw = FMath::RadiansToDegrees(FMath::Atan2(Flat.Y, Flat.X));
+            APlayerStart* Start = Spawn<APlayerStart>(World, At, FRotator(0.0, Yaw, 0.0),
+                *FString::Printf(TEXT("MB2Start_%s_%d"), Tag, Index), TEXT("Marburgum/Opening"));
+            Start->PlayerStartTag = FName(Tag);
+        };
+        PlaceStart(TEXT("arrival"), Arrival, BridgeAt, 0);
+        PlaceStart(TEXT("arrival"), Arrival + TowardWest * 180.0, BridgeAt, 1);
+        PlaceStart(TEXT("bridge"), BridgeAt, Arrival, 0);
+        PlaceStart(TEXT("angler"), AnglerAt + Inland * 200.0, AnglerAt, 0);
+
+        FVector AreaMin = Arrival;
+        FVector AreaMax = Arrival;
+        for (const FBuilding& Building : LentBuildings)
+        {
+            AreaMin = AreaMin.ComponentMin(Building.Origin - Building.Extent);
+            AreaMax = AreaMax.ComponentMax(Building.Origin + Building.Extent);
+        }
+        const FVector AreaCenter = (AreaMin + AreaMax) * 0.5;
+        const FVector AreaExtent = (AreaMax - AreaMin) * 0.5 + FVector(400.0, 400.0, 1500.0);
+        AMarburgumArea* Area = Spawn<AMarburgumArea>(World, FVector(AreaCenter.X, AreaCenter.Y, WalkZ), FRotator::ZeroRotator, TEXT("MB2Area_lent"), TEXT("Marburgum/Opening"));
+        Area->AreaId = FName(TEXT("lent"));
+        Area->Note = FText::FromString(TEXT("Marburgum  \u00b7  1990s  \u00b7  original Lent geometry, fictional opening-route names"));
+        if (UBoxComponent* Box = Area->FindComponentByClass<UBoxComponent>())
+        {
+            Box->SetBoxExtent(AreaExtent);
+        }
+
+        const float SignYaw = FMath::RadiansToDegrees(FMath::Atan2(Riverward.Y, Riverward.X));
+        auto PlaceSign = [&](const TCHAR* Label, const TCHAR* Text, const FVector& At)
+        {
+            ATextRenderActor* Sign = Spawn<ATextRenderActor>(World, At, FRotator(0.0, SignYaw, 0.0), Label, TEXT("Marburgum/Opening"));
+            UTextRenderComponent* Render = Sign->GetTextRender();
+            Render->SetText(FText::FromString(Text));
+            Render->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
+            Render->SetVerticalAlignment(EVRTA_TextCenter);
+            Render->SetWorldSize(42.0f);
+            Render->SetTextRenderColor(FColor(48, 32, 20));
+        };
+        PlaceSign(TEXT("MB2Sign_street"), TEXT("Obre\u0161ka pot"), Arrival + FVector(0.0, 0.0, 140.0));
+
+        TArray<FBuilding> Frontage;
+        for (const FBuilding& Building : LentBuildings)
+        {
+            if (Building.Side * LentSign > 0.0 && FMath::Abs(Building.Side - Landing->Side) < 8000.0)
+            {
+                Frontage.Add(Building);
+            }
+        }
+        Frontage.Sort([](const FBuilding& A, const FBuilding& B) { return A.AlongPos < B.AlongPos; });
+        const TCHAR* ShopNames[] = { TEXT("Kavarna Pri Toku"), TEXT("Ribarnica Na Bregu"), TEXT("Pekarna Pri Mostu") };
+        const int32 ShopCount = FMath::Min(3, Frontage.Num());
+        for (int32 Shop = 0; Shop < ShopCount; ++Shop)
+        {
+            const int32 Index = FMath::Clamp(Frontage.Num() * (Shop + 1) / (ShopCount + 1), 0, Frontage.Num() - 1);
+            const FBuilding& Building = Frontage[Index];
+            const double Face = bAlongX ? Building.Extent.Y : Building.Extent.X;
+            const FVector At = Building.Origin + Riverward * Face + FVector(0.0, 0.0, -Building.Extent.Z + 340.0);
+            PlaceSign(*FString::Printf(TEXT("MB2Sign_shop_%d"), Shop), ShopNames[Shop], At);
+        }
+
+        AMarburgumNpc* Angler = Spawn<AMarburgumNpc>(World, AnglerAt, FRotator(0.0, SignYaw, 0.0), TEXT("MB2Npc_lent_angler"), TEXT("Marburgum/Opening"));
+        Angler->InteractableId = FName(TEXT("lent_angler"));
+        Angler->DisplayName = FText::FromString(TEXT("Riverside angler"));
+        Angler->Verb = FText::FromString(TEXT("Talk"));
+        Angler->InteractionRange = 400.0;
+        Angler->bTestFixture = false;
+        Angler->Dialogue = FText::FromString(TEXT("The Drava looks calm from here, but the current does the real work. Keep your first casts close to the bank."));
+        Angler->PrimaryColor = FLinearColor(0.349f, 0.392f, 0.333f);
+        Angler->SecondaryColor = FLinearColor(0.208f, 0.227f, 0.204f);
+        Angler->bHoldsRod = true;
+        Angler->RerunConstructionScripts();
+
+        if (UMaterialInstanceConstant* Plaster = LoadObject<UMaterialInstanceConstant>(nullptr,
+            TEXT("/Game/Marburgum/Materials/Instances/building_envelope/MI_plaster_mineral.MI_plaster_mineral")))
+        {
+            float Roughness = 1.0f;
+            Plaster->GetScalarParameterValue(FMaterialParameterInfo(TEXT("RoughnessDefault")), Roughness);
+            UE_LOG(LogMarburgumMaps, Display, TEXT("MB2FICTION plaster roughness %.2f"), Roughness);
+            if (Roughness < 0.6f)
+            {
+                Plaster->SetScalarParameterValueEditorOnly(FMaterialParameterInfo(TEXT("RoughnessDefault")), 0.72f);
+                Plaster->PostEditChange();
+                Plaster->MarkPackageDirty();
+                UEditorLoadingAndSavingUtils::SavePackages({ Plaster->GetOutermost() }, false);
+            }
+        }
+
+        if (!UEditorLoadingAndSavingUtils::SaveMap(World, TEXT("/Game/World/lent")))
+        {
+            UE_LOG(LogMarburgumMaps, Error, TEXT("MB2FICTION could not save /Game/World/lent"));
+            return 1;
+        }
+        UE_LOG(LogMarburgumMaps, Display, TEXT("MB2FICTION saved /Game/World/lent arrival=%s angler=%s"), *Arrival.ToString(), *AnglerAt.ToString());
+        return 0;
+    }
+
     /** Read-only: log every actor of a saved map with its class, transform and light settings. */
     int32 Describe(const FString& MapPath)
     {
@@ -657,6 +932,10 @@ int32 UMarburgumCreateMapsCommandlet::Main(const FString& Params)
     if (FParse::Value(*Params, TEXT("Describe="), DescribePath))
     {
         return MarburgumMaps::Describe(DescribePath);
+    }
+    if (FParse::Param(*Params, TEXT("FictionLent")))
+    {
+        return MarburgumMaps::FictionLent();
     }
     FString Selection = TEXT("frontend,netsmoke,lent");
     FParse::Value(*Params, TEXT("Maps="), Selection, /*bShouldStopOnSeparator=*/false);

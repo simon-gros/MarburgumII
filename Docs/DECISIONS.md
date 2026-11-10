@@ -185,7 +185,9 @@ The owner asked that the authored Lent streetscape replace the previous launch m
 
 The owner rejected the generated LiDAR shells. Those commits are reverted. The map to upgrade is the Lent level already used by Unreal Marburgum, copied from `magna-raedarum-marburgum` into this project: `/Game/World/lent`, with its landscape, the 133 Lent building meshes, the road mesh, the water mesh, Stari most and the shared plaster and clay-tile materials. The editor loaded that level with map check 0 errors and 0 warnings.
 
-`GameDefaultMap`, `EditorStartupMap` and `ServerDefaultMap` are `/Game/World/lent`. `/Game/Maps/Lent` stays only because the angler, the area and the player starts still live there for the existing mission smokes. They are not on the original level yet. This copy is the survey-derived original. It is not fictionalized, not a TRELLIS rebuild, and not an accepted production map. Building meshes derived from OpenStreetMap stay under ODbL, © OpenStreetMap contributors.
+`GameDefaultMap`, `EditorStartupMap` and `ServerDefaultMap` are `/Game/World/lent`. `/Game/Maps/Lent` stays so the older mission smokes still have their own actors. Building meshes derived from OpenStreetMap stay under ODbL, © OpenStreetMap contributors.
+
+The opening-route pass (`-FictionLent`) does not move those meshes, the landscape, the Drava or Stari most. It adds late-afternoon sun, sky, a light valley fog and a restrained grade; player starts and the riverside angler seated on the Lent bank beside the bridge; and F1 names only: the street reads Obreška pot, and three riverfront signs read Kavarna Pri Toku, Ribarnica Na Bregu and Pekarna Pri Mostu. Plaster roughness was already 0.93, so the materials were left alone. This is not a whole-district art pass and not an accepted production map.
 
 ## Open decisions
 
