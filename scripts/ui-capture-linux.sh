@@ -98,7 +98,8 @@ start_server() {
 run_client() {
     local name="$1" width="$2" height="$3" script="$4"
     shift 4
-    "${client_cmd[@]}" "${common_args[@]}" -RenderOffScreen -windowed -ForceRes -ResX="$width" -ResY="$height" \
+    # Front-end is no longer the game default (ADR-025). These captures still open it by name.
+    "${client_cmd[@]}" /Game/Maps/FrontEnd "${common_args[@]}" -RenderOffScreen -windowed -ForceRes -ResX="$width" -ResY="$height" \
         -MB2UICapture="$out_dir" -MB2UICaptureScript="$script" "$@" \
         > "$out_dir/client-$name.log" 2>&1
 }
