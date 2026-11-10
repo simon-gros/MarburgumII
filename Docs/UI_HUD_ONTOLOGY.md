@@ -7,6 +7,8 @@
 **Implementation plan:** [`UI_HUD_ROADMAP.md`](UI_HUD_ROADMAP.md); [existing visual contract](UI_HUD_DESIGN.md).  
 **Technical foundation:** Unreal Engine **5.8.3**, `MarburgumIIClient` (ClientOnly), `MarburgumIIShared` (common contracts), `MarburgumII` (replicated game state) and `MarburgumIIServer` (authority).
 
+**Pre-world companion (10 November 2026):** [FIRST_LAUNCH_ONTOLOGY.md](FIRST_LAUNCH_ONTOLOGY.md) and [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json) formally specify login, email confirmation, character creation and world admission. These are full-screen identity surfaces distinct from the in-world HUD. Existing UI-02 connection states cannot claim account authentication; UI-02A adds that feature before any public player entry.
+
 ## 1. Fundamental conception
 
 The interface is a **semantic projection of the game world, player capabilities and current activity**, constrained by what the server has confirmed, what the character knows, what the user needs to decide next, and what the display can comfortably communicate. It is not a decorative overlay glued onto a standalone game. The HUD is one **low-interruption presentation mode** within a broader modular, accessible, persistent MMORPG interface.

@@ -150,6 +150,12 @@ Evidence: [STAGE1_CONDITION_EVIDENCE.md](STAGE1_CONDITION_EVIDENCE.md).
 
 **Not covered.** Whether the research-only licences of the rasterizers used for TRELLIS's texture bake reach the baked texture in a commercial game. Hands, retopology and the final texture. A pawn, Animation Blueprint or map that uses the mesh.
 
+## ADR-022 — Email-confirmed account, first character and server-gated world entry (product direction accepted 2026-11-10; implementation pending)
+
+The player's first launch must start at a login/title screen. Like the original Marburgum in user-facing design, a new account requires **email confirmation** before it can obtain usable username/password credentials; passwords must be created/set via a secure verification-bound flow, never emailed or stored as plaintext. The player signs in with username/password. If that account has no character, **First name, Last name and a selected approved character model are mandatory** on a dedicated full-screen character creator. The server durably creates and binds that character to the authenticated account before enabling Enter World. A returning user resumes the existing owned character. No playable pawn/world authority may be granted to an unauthenticated, unverified, characterless or mismatched account.
+
+The initial product policy is one character per account (expandable only by a later explicit decision), opaque account and character IDs, and distinct login username vs in-world first/last names. UI-02A and Stage 0F are added as a **public Stage 1 entry prerequisite**; Stage 4 remains responsible for operational hardening, scale and production deployment. The ADR-014 MB2Character test key remains a development-only compatibility path, not production login or an account ownership guarantee. Do not treat this accepted direction as an implemented or owner-playtested service. The credential provider, storage/email provider, exact naming policy and approved character model roster remain open implementation choices. Design and acceptance are specified by [FIRST_LAUNCH_ONTOLOGY.md](FIRST_LAUNCH_ONTOLOGY.md) and [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json); see [ROADMAP.md](ROADMAP.md) and [UI_HUD_ROADMAP.md](UI_HUD_ROADMAP.md).
+
 ## Open decisions
 
 - Clear the TRELLIS texture-bake rasterizer licences (nvdiffrast, Inria) for shipped textures, or rebake characters with vertex colours (ADR-021).

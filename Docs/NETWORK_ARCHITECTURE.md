@@ -66,6 +66,8 @@ Evidence lines share the `LogMarburgumNet` category and the `MB2SMOKE` prefix. T
 
 Outcomes: `Applied` (durable, then replicated), `Duplicate` (same operation id and character as a stored receipt; nothing changes, survives restarts) or `Rejected` with a reason (`out_of_range`, `out_of_stock`, `no_character`, `store_write_failed`, `operation_conflict`, ...). Evidence lines use the `MB2INTERACT` prefix; `scripts/interaction-smoke-linux.sh` drives the qualification.
 
+**Planned shipping admission prerequisite (ADR-022, not implemented):** accounts are verified out of world by email, username/password login yields an authenticated revocable account session, and the server durably binds a created First name/Last name/model character to that account. Every production world join must validate account session, character ownership and complete persistence *before* pawn spawn. Existing MB2Character is an explicitly development-only test identity (ADR-014). See [FIRST_LAUNCH_ONTOLOGY.md](FIRST_LAUNCH_ONTOLOGY.md) and Stage 0F/UI-02A. This planned identity/authentication barrier is distinct from Stage 0B transport connection and existing UI-02 "ready" semantics.
+
 ## 4. Authority and lifecycle
 
 ```text

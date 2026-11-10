@@ -47,6 +47,7 @@ Preserve Marburgum's recognizable experience: transient district names; concise 
 | **UI-00: Semantic baseline and parity** | Stage 0C entry | Approved ontology, naming, signal ownership, modules, visual references and explicit exclusions | Original Marburgum HUD review | Versioned ontology and traceability, no unresolved concept IDs |
 | **UI-01: Visual design system and shell** | Stage 0C | Cohesive UMG theme, responsive layout primitives, icon/type system and widget gallery | UE 5.8.3 Editor/Client builds for runtime acceptance | Actual UMG screenshots, contrast/readability review, reusable theme tokens |
 | **UI-02: Session, focus and navigation** | Stage 0B–0C | Branded launch/connect/retry/refusal state and keyboard/controller navigation shell | UI-01; actual session semantics for "ready" | Correct connect/reconnect/error states against NET-001 where available |
+| **UI-02A: Verified accounts and first character** | Stage 0F–1 public entry | Email-confirmed registration, real username/password login, mandatory First/Last/model creation and server-approved world entry | UI-01, UI-02, account service, authoritative character persistence | FL-01–FL-12; secure account admission and owner-approved full-screen captures |
 | **UI-03: Live modular exploration HUD and basic communications** | Stage 0C–1 | Location, condition, context prompt, objective, subject cue, notifications and general/private chat | UI-01, UI-02, NET-001 for live status, CHAT-001 for messaging | Real general/private recipient routing, graphical display and no privacy leaks |
 | **UI-04: Information-rich management screens** | Stage 1 | Visual Character, Skills, Inventory, Journal and Settings with unified navigation | UI-01 and signal/view-model contracts | Nonempty/empty/error/stale state matrix; screenshot-backed UI review |
 | **UI-05: Context and cooperative overlays** | Stage 2–3 | Fishing/work/trading/dialogue/driving/group presentation as systems become real | Real corresponding authoritative gameplay systems | Correct context entry/exit, privacy, no phantom controls |
@@ -91,6 +92,17 @@ Preserve Marburgum's recognizable experience: transient district names; concise 
 - No indefinite spinner on failed network connection, no UI falsely declaring authorization.
 
 **Exit gate:** actual connection-loss and reconnect scenarios yield consistent interface and input state using a real server. Preview-only states are acceptable as development artifacts, but they do not satisfy this gate.
+
+## 5A. UI-02A — Verified login and mandatory first-character creation (Stage 0F → Stage 1)
+
+**Product and semantic authority:** [FIRST_LAUNCH_ONTOLOGY.md](FIRST_LAUNCH_ONTOLOGY.md) and [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json). This is a **new implementation workstream**, not a declaration that UI-02's existing connection shell supports accounts. UI-02 remains valid for network/dev smoke tests; **UI-02A is a blocker for a player-facing Stage 1 entry**. Its first visible screen is a branded **Username / Password / Sign in** interface with Create account. Registration asks for email verification, then provisions username/password securely; the newly authenticated player then sees a **First name / Last name / character model** creator *before* gameplay. Returning players go directly to their saved character and Enter World.
+
+- **UI-02A-1 — Registration and credentials:** dedicated title/login, register-email, verification pending, credential setup, forgot/reset password, authenticating and refused/retry states. An email link/code must be verified by the account service; no plaintext password in email.
+- **UI-02A-2 — Character creation:** full-screen, accessible, visually polished 3D model preview, First name and Last name fields, model selector from a real approved catalogue, validated errors, confirmation/pending/retry and safe cancellation. Keep account username distinct from character display name.
+- **UI-02A-3 — Durable authorization:** only server-committed character ID and authenticated ownership enable Enter World; direct travel, stale session, development character key and spoofed client model/name cannot bypass the shipping world gate. Preserve the existing explicit test-key pathway for development smoke tests only.
+- **UI-02A-4 — Usability and owner validation:** model asset freshness, full input/focus, 720p–4K and ultrawide snapshots, Slovene diacritics, errors/timeouts, logout/reconnect, returning accounts, and two independent authenticated clients. Owner must personally test first-time and returning flows and approve the exact build.
+
+**Exit gate:** FL-01–FL-12 from the first-launch ontology; pass verified-email, denied unverified access, unique credentials, character create/replay/restart, resumed character, no unauthenticated spawn, visual/input matrix and fresh cooked asset manifests. Current implementation status: **design and roadmap only; no production auth or character creation code**.
 
 ## 6. UI-03 — Modular, server-aware exploration HUD
 
@@ -170,7 +182,7 @@ Learn from the advantages of configurable modern online interfaces while preserv
 | Screen size | 1280×720, 1366×768, 1920×1080, 2560×1440, 3440×1440, 3840×2160 |
 | UI scale | 80%, 100%, 125%, 150%, 200%, where supported |
 | HUD states | Empty exploration, location transition, interactable subject, objective pinned/unpinned, notification, critical error, activity/vehicle/group where implemented |
-| Panels | Character, Skills, Inventory, Journal, Settings, connection shell |
+| Panels | Character, Skills, Inventory, Journal, Settings, connection shell, login, email verification, credential setup and first-character creator |
 | Values | Zero, unknown, large valid integers, long Slovene/English titles, invalid item/actions, unauthorized target |
 | Input | Keyboard/mouse, controller-only, focus recovery, device switching |
 | Continuity | Connected, joining, timeout, disconnect, reconnect, server rejection and gameplay resumption |

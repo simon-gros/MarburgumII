@@ -40,6 +40,14 @@ Owner-reported local Hunyuan3D-2.1 installation is a **potential** mesh/PBR text
 
 **Gate:** license cleared, verified local environment and one owner-approved in-game result. No generated model is presently implemented.
 
+## Stage 0F — Email-verified accounts, first character and entry gate (new prerequisite for public Stage 1)
+
+**Planned, not implemented.** Restore the original Marburgum's email-confirmed registration experience in a fresh secure service: new user verifies email, establishes a unique username/password, signs in, then **must create a character by choosing First name, Last name and one approved model**. Only a successful durable save and a dedicated-server entitlement/admission check permits world entry. Returning users authenticate and resume the same character without remaking it. Full specification: [FIRST_LAUNCH_ONTOLOGY.md](FIRST_LAUNCH_ONTOLOGY.md), machine catalogue [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json), and UI-02A in [UI_HUD_ROADMAP.md](UI_HUD_ROADMAP.md).
+
+**Delivery slices:** FL-A account/email/password verification and recovery; FL-B production-quality login/registration screens; FL-C 3D model preview and First name/Last name creator; FL-D idempotent persistent character binding and server-enforced world-admission authorization; FL-E reconnection, abuse/negative tests, packaged-client UI matrix and owner playtest. Protect login credentials, normalize and validate names server-side, and do not permit an invented client-side character or map-travel bypass. The existing ADR-014 development character key and file world store remain strictly named smoke-test adapters and are not substitutes for authentic credentials.
+
+**Gate before first publicly accepted playable Stage 1 experience:** a new user completes FL-01–FL-12, including verification, login, character creation, save/restart/returning-user, unauthorized direct join rejection, rendered-client captures and personally approved owner playtesting on a freshness-verified UE 5.8.3 build. The current Gate 1/Lent/condition test slices can continue as explicitly **development-only tests** while this prerequisite is unbuilt. Stage 4 still owns production scale, anti-abuse operations, backups and service maturity, but **cannot be the first delivery of player-facing login and account-to-character admission**.
+
 ## Stage 1 — Networked playable district and showcase-quality UI
 
 Provenance-reviewed compact urban district **preferably using an approved purchased Maribor Lent/Drava geometry slice** (with an independent test-level fallback while purchase is pending), player movement/camera, **high-quality visually finished initial graphical HUD**, interactable item and NPC, authoritative event/feedback, and a save/restart round trip. The original HUD's interaction/location/objective/condition/notification vocabulary and its Character/Skills/Inventory/Journal screens are carried into newly designed graphical interfaces rather than exposed as clumped debug text. Verify two clients cannot duplicate a limited item or gain unauthorized progress. Record a player-facing 1440p/4K gameplay capture after the networked loop works.
@@ -70,7 +78,7 @@ Advance UI-05 activity, driving and group overlays; evaluate full UI-06 profile 
 
 ## Stage 4 — MMORPG operations and capacity (not first server)
 
-Production-ready authentication/admission, anti-abuse/rate limiting, operational monitoring, schema migrations, backup/recovery and service deployment. Stress-test shard capacity through 1, 8, 32, 64, 128 and 250 players, with optional 300–350 connection headroom; include distant districts and dense crowds. These are original-project **planning targets, not achieved results**.
+Harden and scale the **already required Stage 0F player-facing authentication and character admission** for MMORPG operations: production SLOs, abuse/rate limiting, operational monitoring, schema migrations, backup/recovery and service deployment. Stress-test shard capacity through 1, 8, 32, 64, 128 and 250 players, with optional 300–350 connection headroom; include distant districts and dense crowds. These are original-project **planning targets, not achieved results**.
 
 **Gate:** recorded throughput, latency tails, AOI, bandwidth, persistence, recovery and soak-test evidence at the claimed capacity.
 

@@ -1,0 +1,437 @@
+{
+  "format": "marburgumii.first_launch.descriptive_ontology",
+  "version": "0.1.0",
+  "engine": "Unreal Engine 5.8.3",
+  "status": "planned_not_implemented",
+  "source": "Docs/FIRST_LAUNCH_ONTOLOGY.md",
+  "scope": "Email-confirmed account -> username/password login -> mandatory first-character creation -> server-authorized world entry",
+  "compatibility": [
+    "Data/Ontology/core.v0.1.json",
+    "Data/Ontology/ui_hud.v0.1.json"
+  ],
+  "policies": {
+    "initial_characters_per_account": 1,
+    "allow_multiple_character_slots": false,
+    "username_is_character_name": false,
+    "allow_duplicate_character_display_names": true,
+    "login_requires_verified_email": true,
+    "world_requires_verified_authenticated_account": true,
+    "world_requires_owned_persisted_character": true,
+    "shipping_dev_key_bypass": false,
+    "passwords_ever_emailed_or_logged": false
+  },
+  "types": [
+    {
+      "id": "account",
+      "authority": "account_service",
+      "description": "Durable out-of-world registered identity with opaque account ID and verified-email status"
+    },
+    {
+      "id": "email_verification_challenge",
+      "authority": "account_service",
+      "description": "Short-lived single-use evidence of email control"
+    },
+    {
+      "id": "credential_record",
+      "authority": "account_service",
+      "description": "Unique username and password verifier; no plaintext secret"
+    },
+    {
+      "id": "authenticated_session",
+      "authority": "account_service",
+      "description": "Expiring revocable account authentication distinct from a game connection"
+    },
+    {
+      "id": "character_creation_draft",
+      "authority": "client_local",
+      "description": "Unsaved first name, last name and chosen model ID"
+    },
+    {
+      "id": "character_model_choice",
+      "authority": "catalog_authority",
+      "description": "Approved server-allowlisted model with client preview asset"
+    },
+    {
+      "id": "player_character",
+      "authority": "world_authority",
+      "description": "Durably persisted character ID with first/last names, model ID and starting state"
+    },
+    {
+      "id": "character_creation_receipt",
+      "authority": "world_authority",
+      "description": "Idempotent commit or refusal response"
+    },
+    {
+      "id": "world_admission",
+      "authority": "server_only",
+      "description": "Authorization of a verified account session to play an owned character"
+    },
+    {
+      "id": "first_launch_screen",
+      "authority": "client_presentation",
+      "description": "Named full-screen state with input/focus rules"
+    }
+  ],
+  "relations": [
+    {
+      "id": "account_verified_by",
+      "source": "account",
+      "target": "email_verification_challenge",
+      "cardinality": "0..*",
+      "description": "Only a successful unused valid challenge verifies email"
+    },
+    {
+      "id": "account_issues_credentials",
+      "source": "account",
+      "target": "credential_record",
+      "cardinality": "0..1",
+      "description": "Only after email verification"
+    },
+    {
+      "id": "session_authenticates_account",
+      "source": "authenticated_session",
+      "target": "account",
+      "cardinality": "1",
+      "description": "Server-validated and revocable"
+    },
+    {
+      "id": "account_owns_character",
+      "source": "account",
+      "target": "player_character",
+      "cardinality": "0..1",
+      "description": "Character has precisely one owner in v1"
+    },
+    {
+      "id": "draft_selects_model",
+      "source": "character_creation_draft",
+      "target": "character_model_choice",
+      "cardinality": "1",
+      "description": "Must be in server-approved catalogue"
+    },
+    {
+      "id": "receipt_commits_character",
+      "source": "character_creation_receipt",
+      "target": "player_character",
+      "cardinality": "0..1",
+      "description": "Only accepted persisted receipt establishes a character"
+    },
+    {
+      "id": "admission_authorizes_session",
+      "source": "world_admission",
+      "target": "authenticated_session",
+      "cardinality": "1",
+      "description": "A transport join alone cannot grant world access"
+    },
+    {
+      "id": "admission_controls_character",
+      "source": "world_admission",
+      "target": "player_character",
+      "cardinality": "1",
+      "description": "Character must be owned by authenticated account"
+    }
+  ],
+  "screens": [
+    {
+      "id": "title",
+      "fields": [],
+      "actions": [
+        "sign_in",
+        "create_account",
+        "settings",
+        "exit"
+      ],
+      "world_actor": false
+    },
+    {
+      "id": "registration_email",
+      "fields": [
+        "email"
+      ],
+      "actions": [
+        "submit_email",
+        "back"
+      ],
+      "world_actor": false
+    },
+    {
+      "id": "email_verification_pending",
+      "fields": [],
+      "actions": [
+        "resend",
+        "change_email",
+        "back"
+      ],
+      "world_actor": false
+    },
+    {
+      "id": "credential_setup",
+      "fields": [
+        "username",
+        "password",
+        "confirm_password"
+      ],
+      "actions": [
+        "create_credentials",
+        "back"
+      ],
+      "world_actor": false
+    },
+    {
+      "id": "login",
+      "fields": [
+        "username",
+        "password"
+      ],
+      "actions": [
+        "sign_in",
+        "create_account",
+        "forgot_password",
+        "settings",
+        "exit"
+      ],
+      "world_actor": false
+    },
+    {
+      "id": "authenticating",
+      "fields": [],
+      "actions": [
+        "cancel"
+      ],
+      "world_actor": false
+    },
+    {
+      "id": "character_creation",
+      "fields": [
+        "first_name",
+        "last_name",
+        "approved_character_model_id"
+      ],
+      "actions": [
+        "preview_model",
+        "create_character",
+        "sign_out"
+      ],
+      "world_actor": false
+    },
+    {
+      "id": "character_persisting",
+      "fields": [],
+      "actions": [
+        "retry_on_failure"
+      ],
+      "world_actor": false
+    },
+    {
+      "id": "character_ready",
+      "fields": [
+        "committed_character_id"
+      ],
+      "actions": [
+        "enter_world",
+        "sign_out"
+      ],
+      "world_actor": false
+    },
+    {
+      "id": "world_admitting",
+      "fields": [],
+      "actions": [
+        "cancel"
+      ],
+      "world_actor": false
+    },
+    {
+      "id": "world_loading",
+      "fields": [],
+      "actions": [],
+      "world_actor": false
+    },
+    {
+      "id": "in_world",
+      "fields": [],
+      "actions": [
+        "play",
+        "logout"
+      ],
+      "world_actor": true
+    },
+    {
+      "id": "recovery",
+      "fields": [],
+      "actions": [
+        "retry",
+        "back_to_login"
+      ],
+      "world_actor": false
+    },
+    {
+      "id": "blocked",
+      "fields": [],
+      "actions": [
+        "back_to_login",
+        "support"
+      ],
+      "world_actor": false
+    }
+  ],
+  "transitions": [
+    {
+      "from": "title",
+      "event": "sign_in",
+      "to": "login",
+      "guard": "always"
+    },
+    {
+      "from": "title",
+      "event": "create_account",
+      "to": "registration_email",
+      "guard": "always"
+    },
+    {
+      "from": "registration_email",
+      "event": "email_submitted",
+      "to": "email_verification_pending",
+      "guard": "service_accepts_registration"
+    },
+    {
+      "from": "email_verification_pending",
+      "event": "email_verified",
+      "to": "credential_setup",
+      "guard": "server_valid_single_use_challenge"
+    },
+    {
+      "from": "credential_setup",
+      "event": "credentials_issued",
+      "to": "login",
+      "guard": "verified_account_and_unique_username"
+    },
+    {
+      "from": "login",
+      "event": "sign_in",
+      "to": "authenticating",
+      "guard": "credentials_supplied"
+    },
+    {
+      "from": "authenticating",
+      "event": "authenticated_no_character",
+      "to": "character_creation",
+      "guard": "verified_account_valid_session_no_character"
+    },
+    {
+      "from": "authenticating",
+      "event": "authenticated_character_found",
+      "to": "character_ready",
+      "guard": "verified_account_valid_session_owned_character"
+    },
+    {
+      "from": "character_creation",
+      "event": "create_character",
+      "to": "character_persisting",
+      "guard": "fields_present_and_model_selected"
+    },
+    {
+      "from": "character_persisting",
+      "event": "character_committed",
+      "to": "character_ready",
+      "guard": "server_confirmed_idempotent_durable_commit"
+    },
+    {
+      "from": "character_persisting",
+      "event": "character_rejected",
+      "to": "character_creation",
+      "guard": "server_refusal_keep_draft"
+    },
+    {
+      "from": "character_ready",
+      "event": "enter_world",
+      "to": "world_admitting",
+      "guard": "verified_session_and_persisted_owned_character"
+    },
+    {
+      "from": "world_admitting",
+      "event": "admission_granted",
+      "to": "world_loading",
+      "guard": "server_approves_character_and_world"
+    },
+    {
+      "from": "world_loading",
+      "event": "world_ready",
+      "to": "in_world",
+      "guard": "valid_connection_replicated_owned_character_and_server_ready"
+    },
+    {
+      "from": "world_admitting",
+      "event": "admission_refused",
+      "to": "recovery",
+      "guard": "server_refuses"
+    },
+    {
+      "from": "in_world",
+      "event": "logout",
+      "to": "title",
+      "guard": "session_revoked_and_ui_cleared"
+    },
+    {
+      "from": "recovery",
+      "event": "back_to_login",
+      "to": "login",
+      "guard": "always"
+    }
+  ],
+  "invariants": [
+    {
+      "id": "FL-I01",
+      "rule": "Production map entry never bypasses verified authenticated account and owned persisted character"
+    },
+    {
+      "id": "FL-I02",
+      "rule": "Email validation precedes credential issuance and username/password sign-in"
+    },
+    {
+      "id": "FL-I03",
+      "rule": "Account ID, username, session ID, character ID and display name are distinct"
+    },
+    {
+      "id": "FL-I04",
+      "rule": "No server-side character creation is inferred from client preview or draft"
+    },
+    {
+      "id": "FL-I05",
+      "rule": "Exactly one character per account at v1; idempotent atomic create"
+    },
+    {
+      "id": "FL-I06",
+      "rule": "Credentials, email, reset tokens and drafts are never replicated to other players or logged"
+    },
+    {
+      "id": "FL-I07",
+      "rule": "Server validates normalized first/last fields and allowlisted model ID"
+    },
+    {
+      "id": "FL-I08",
+      "rule": "Returning user resumes owned character without repeated creation"
+    },
+    {
+      "id": "FL-I09",
+      "rule": "Developer MB2Character key is not production login or world authorization"
+    },
+    {
+      "id": "FL-I10",
+      "rule": "First-time and returning onboarding require personal owner playtest and fresh cooked assets"
+    }
+  ],
+  "acceptance_cases": [
+    "FL-01",
+    "FL-02",
+    "FL-03",
+    "FL-04",
+    "FL-05",
+    "FL-06",
+    "FL-07",
+    "FL-08",
+    "FL-09",
+    "FL-10",
+    "FL-11",
+    "FL-12"
+  ]
+}
