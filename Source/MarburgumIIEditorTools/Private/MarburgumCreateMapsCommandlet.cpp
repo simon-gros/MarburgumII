@@ -1,5 +1,4 @@
 #include "MarburgumCreateMapsCommandlet.h"
-#include "MarburgumLentLidar.h"
 
 #include "AssetToolsModule.h"
 #include "Components/BoxComponent.h"
@@ -439,9 +438,8 @@ namespace MarburgumMaps
 
         // Ground: north bank (Lent), river, south bank. Walking surfaces are at y = 0.
         // The north quay wall has a gap at the fishing jetty (x -164 to -146); the jetty covers it.
-        // Pads cover the Lent LiDAR window. Walking surfaces stay at y = 0.
-        B.Block(TEXT("LentPromenade"), FVector(0.0, -1.5, -155.0), FVector(540.0, 3.0, 202.0), TEXT("Paving"));
-        B.Block(TEXT("SouthBank"), FVector(0.0, -1.5, 163.0), FVector(540.0, 3.0, 186.0), TEXT("Paving"));
+        B.Block(TEXT("LentPromenade"), FVector(0.0, -1.5, (QuayZ - 130.0) / 2.0), FVector(540.0, 3.0, 130.0 + QuayZ), TEXT("Paving"));
+        B.Block(TEXT("SouthBank"), FVector(0.0, -1.5, 92.5), FVector(540.0, 3.0, 35.0), TEXT("Paving"));
         B.Block(TEXT("Riverbed"), FVector(0.0, -5.5, 10.5), FVector(520.0, 1.0, 129.0), TEXT("Riverbed"));
         B.Block(TEXT("Drava"), FVector(0.0, -1.55, 10.5), FVector(520.0, 0.15, 129.0), TEXT("Water"), TEXT("cube"), false);
         B.Block(TEXT("DravaEdge"), FVector(0.0, -1.35, -46.0), FVector(520.0, 0.06, 8.0), TEXT("Foam"), TEXT("cube"), false);
@@ -519,21 +517,66 @@ namespace MarburgumMaps
         B.Block(TEXT("StreetSignBoard"), FVector(9.2, 2.45, -61.0), FVector(0.08, 0.4, 2.4), TEXT("Sign"), TEXT("cube"), false, TEXT("Blockout/Street"));
         B.Sign(TEXT("StreetSign"), TEXT("Obrezna pot"), 9.35, 2.45, -61.0, 1.0);
 
-        // Original Lent: OSM footprints and LiDAR eaves/ridge, seated on the promenade (ADR-026).
-        const FLentLidarMesh Lidar = BuildLentLidarMesh();
-        if (!Lidar.Mesh)
+        // Promenade row: facades toward the river (south). A 6 m street after every third house,
+        // and the bridge street at x = 0 stays open. Depth 16 m, front face near z = -79.
+        double RowX = -212.0;
+        for (int32 Index = 0; Index < UE_ARRAY_COUNT(Buildings); ++Index)
         {
-            throw FMapBuildError{ Lidar.Error };
+            const FBuilding& Building = Buildings[Index];
+            if (RowX < StreetHalfWidth && RowX + Building.Width > -StreetHalfWidth)
+            {
+                RowX = StreetHalfWidth;
+            }
+            const double CentreX = RowX + Building.Width / 2.0;
+            B.House(TEXT("F"), Index, CentreX, Building.Width, Building.Height, Building.Colour, Shops[Index], -87.0, 16.0, 1.0, TEXT("Blockout/Buildings"));
+            RowX += Building.Width + (Index % 3 == 2 ? 6.0 : 0.0);
         }
-        AStaticMeshActor* City = Spawn<AStaticMeshActor>(World, FVector::ZeroVector, FRotator::ZeroRotator, TEXT("LentLidar"), TEXT("Blockout/Lidar"));
-        City->GetStaticMeshComponent()->SetStaticMesh(Lidar.Mesh);
-        City->GetStaticMeshComponent()->SetMobility(EComponentMobility::Static);
-        B.Count += Lidar.Buildings;
+
+        // Lane and a plainer back row, plus a water tower for the west silhouette.
+        // The tower sits on the promenade slab, clear of the bridge street and of the front row.
+        B.Block(TEXT("WaterTower"), FVector(-208.0, 12.0, -114.0), FVector(8.0, 24.0, 8.0), TEXT("Grey"), TEXT("cube"), true, TEXT("Blockout/Buildings"));
+        B.Block(TEXT("WaterTowerBand"), FVector(-208.0, 20.5, -114.0), FVector(8.6, 1.2, 8.6), TEXT("Cornice"), TEXT("cube"), true, TEXT("Blockout/Buildings"));
+        B.Block(TEXT("WaterTowerSpire"), FVector(-208.0, 27.0, -114.0), FVector(6.0, 6.0, 6.0), TEXT("Spire"), TEXT("cone"), false, TEXT("Blockout/Buildings"));
+        constexpr FBuilding BackRow[] = {
+            { 22, 9, TEXT("Cream") }, { 18, 11, TEXT("Grey") }, { 26, 8, TEXT("Umber") },
+            { 20, 10, TEXT("Sage") }, { 24, 9, TEXT("Rose") }, { 18, 12, TEXT("Ochre") },
+            { 22, 8, TEXT("Grey") }, { 16, 10, TEXT("Cream") },
+        };
+        double BackX = -190.0;
+        for (int32 Index = 0; Index < UE_ARRAY_COUNT(BackRow); ++Index)
+        {
+            const FBuilding& Building = BackRow[Index];
+            if (BackX < StreetHalfWidth && BackX + Building.Width > -StreetHalfWidth)
+            {
+                BackX = StreetHalfWidth;
+            }
+            B.House(TEXT("B"), Index, BackX + Building.Width / 2.0, Building.Width, Building.Height, Building.Colour, nullptr, -114.0, 12.0, 1.0, TEXT("Blockout/BackRow"));
+            BackX += Building.Width + 3.0;
+        }
+
+        // Far bank: enough mass that the view across the Drava is not an empty slab. Faces the river.
+        constexpr FBuilding FarBank[] = {
+            { 28, 12, TEXT("Far") }, { 22, 16, TEXT("Grey") }, { 34, 11, TEXT("Cream") }, { 18, 20, TEXT("Umber") },
+            { 30, 13, TEXT("Far") }, { 24, 10, TEXT("Rose") }, { 26, 15, TEXT("Grey") }, { 20, 9, TEXT("Cream") },
+        };
+        double FarX = -200.0;
+        for (int32 Index = 0; Index < UE_ARRAY_COUNT(FarBank); ++Index)
+        {
+            const FBuilding& Building = FarBank[Index];
+            if (FarX < 12.0 && FarX + Building.Width > -12.0)
+            {
+                FarX = 12.0; // keep the south landing of the bridge clear
+            }
+            B.House(TEXT("S"), Index, FarX + Building.Width / 2.0, Building.Width, Building.Height, Building.Colour, nullptr, 102.0, 14.0, -1.0, TEXT("Blockout/FarBank"));
+            FarX += Building.Width + 4.0;
+        }
+        B.Block(TEXT("SouthTower"), FVector(130.0, 11.0, 98.0), FVector(9.0, 22.0, 9.0), TEXT("Grey"), TEXT("cube"), true, TEXT("Blockout/FarBank"));
+        B.Block(TEXT("SouthTowerSpire"), FVector(130.0, 25.0, 98.0), FVector(7.0, 6.0, 7.0), TEXT("Spire"), TEXT("cone"), false, TEXT("Blockout/FarBank"));
 
         // The named area from areas.json; the server derives each player's location from it.
         AMarburgumArea* Area = Spawn<AMarburgumArea>(World, Ue(0.0, 5.0, -78.0), FRotator::ZeroRotator, TEXT("Area_lent"), TEXT("Areas"));
         Area->AreaId = FName(TEXT("lent"));
-        Area->Note = FText::FromString(TEXT("Marburgum  ·  1990s  ·  LiDAR Lent footprints, not the licensed city model"));
+        Area->Note = FText::FromString(TEXT("Marburgum  ·  1990s  ·  authored Lent, not the licensed city model"));
         Area->FindComponentByClass<UBoxComponent>()->SetBoxExtent(FVector(420.0 * 50.0, 54.0 * 50.0, 12.0 * 50.0));
 
         // The riverside angler (interactions.json `lent_angler`), facing the Drava.
