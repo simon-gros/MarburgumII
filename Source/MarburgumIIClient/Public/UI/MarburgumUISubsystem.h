@@ -9,7 +9,10 @@
 class APlayerController;
 class UMarburgumChatWidget;
 class UMarburgumConnectionScreen;
+class UMarburgumInteractionPrompt;
+class UMarburgumInventoryPanel;
 class UMarburgumNotificationFeed;
+struct FMarburgumInteractionReceipt;
 class UMarburgumUIRoot;
 
 /**
@@ -36,6 +39,10 @@ public:
     /** Give keyboard focus to the chat composer when the session is admitted. */
     void FocusChat();
 
+    /** Show or hide the inventory_view for the admitted local player (I key). False if not mounted yet. */
+    bool ToggleInventory();
+    bool IsInventoryOpen() const;
+
     /** Independent UI scale on top of DPI scaling (0.5 - 3.0). */
     static void SetInterfaceScale(float Scale);
 
@@ -49,11 +56,15 @@ private:
     void ApplyInputMode(bool bScreenOwnsInput);
     void BindReceipts();
     void HandleRequestResult(const FGuid& OperationId, EMarburgumRequestOutcome Outcome);
+    void HandleInteractionReceipt(const FMarburgumInteractionReceipt& Receipt);
+    void MountGameplayHud(APlayerController* Player);
 
     UPROPERTY(Transient) TObjectPtr<UMarburgumUIRoot> Root;
     UPROPERTY(Transient) TObjectPtr<UMarburgumConnectionScreen> ConnectionScreen;
     UPROPERTY(Transient) TObjectPtr<UMarburgumNotificationFeed> Feed;
     UPROPERTY(Transient) TObjectPtr<UMarburgumChatWidget> Chat;
+    UPROPERTY(Transient) TObjectPtr<UMarburgumInteractionPrompt> Prompt;
+    UPROPERTY(Transient) TObjectPtr<UMarburgumInventoryPanel> Inventory;
 
     TWeakObjectPtr<APlayerController> PendingChatOwner;
     TWeakObjectPtr<class AMarburgumPlayerController> ReceiptController;

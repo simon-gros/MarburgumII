@@ -10,9 +10,12 @@
 #include "GameFramework/PlayerState.h"
 #include "HAL/PlatformTime.h"
 #include "MarburgumGameState.h"
+#include "MarburgumGameplayContract.h"
 #include "MarburgumNetworkContract.h"
 #include "Misc/CommandLine.h"
+#include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
+#include "Misc/Paths.h"
 
 using namespace MarburgumII::Session;
 
@@ -59,7 +62,8 @@ namespace
     {
         switch (FailureType)
         {
-        case ENetworkFailure::PendingConnectionFailure: return EFault::Refused;
+        case ENetworkFailure::PendingConnectionFailure:
+        case ENetworkFailure::FailureReceived: return EFault::Refused;
         case ENetworkFailure::OutdatedClient:
         case ENetworkFailure::OutdatedServer: return EFault::ContractMismatch;
         case ENetworkFailure::ConnectionTimeout: return EFault::Timeout;
@@ -82,6 +86,7 @@ void UMarburgumSessionSubsystem::Initialize(FSubsystemCollectionBase& Collection
 {
     Super::Initialize(Collection);
     View.PhaseStartedSeconds = FPlatformTime::Seconds();
+    CharacterKey = ResolveDefaultCharacterKey();
     if (GEngine)
     {
         NetworkFailureHandle = GEngine->OnNetworkFailure().AddUObject(this, &UMarburgumSessionSubsystem::HandleNetworkFailure);
@@ -110,6 +115,28 @@ FString UMarburgumSessionSubsystem::DefaultAddress()
         return Address;
     }
     return TEXT("127.0.0.1:7777");
+}
+
+FString UMarburgumSessionSubsystem::ResolveDefaultCharacterKey()
+{
+    using namespace MarburgumII::Gameplay;
+    FString Key;
+    if (FParse::Value(FCommandLine::Get(), TEXT("MB2Character="), Key))
+    {
+        return Key; // Sent as given; the server refuses malformed keys with a visible reason.
+    }
+    const FString KeyFile = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("MarburgumII"), TEXT("DevCharacter.txt"));
+    if (FFileHelper::LoadFileToString(Key, *KeyFile))
+    {
+        Key.TrimStartAndEndInline();
+        if (IsValidCharacterKey(Key))
+        {
+            return Key;
+        }
+    }
+    Key = FString::Printf(TEXT("dev-%s"), *FGuid::NewGuid().ToString(EGuidFormats::Digits).Left(10).ToLower());
+    FFileHelper::SaveStringToFile(Key, *KeyFile);
+    return Key;
 }
 
 bool UMarburgumSessionSubsystem::IsAdmitted(const UWorld* World)
@@ -195,7 +222,10 @@ void UMarburgumSessionSubsystem::BeginAttempt(const FString& Address)
     }
     AttemptStartedSeconds = FPlatformTime::Seconds();
     bReconnectScheduled = false;
-    GEngine->SetClientTravel(World, *Address, TRAVEL_Absolute);
+    // The address is validated host[:port]; the only option this client adds is its character key.
+    const FString Url = CharacterKey.IsEmpty() ? Address
+        : FString::Printf(TEXT("%s?%s=%s"), *Address, MarburgumII::Gameplay::CharacterOption, *CharacterKey);
+    GEngine->SetClientTravel(World, *Url, TRAVEL_Absolute);
 }
 
 void UMarburgumSessionSubsystem::AbandonAttempt()
@@ -242,13 +272,16 @@ void UMarburgumSessionSubsystem::ObserveWorld(UWorld* World)
         // A server address on the command line makes the engine connect before any UI exists.
         if (Pending)
         {
+            // Recovery must rejoin as the same character the command-line URL named (or none).
             LastAddress = Pending->URL.GetHostPortString();
+            CharacterKey = Pending->URL.GetOption(TEXT("MB2Character="), TEXT(""));
             AttemptStartedSeconds = Now;
             SetPhase(EPhase::Connecting);
         }
         else if (World && World->GetNetMode() == NM_Client)
         {
             LastAddress = World->URL.GetHostPortString();
+            CharacterKey = World->URL.GetOption(TEXT("MB2Character="), TEXT(""));
             AttemptStartedSeconds = Now;
             SetPhase(EPhase::LoadingWorld);
         }
@@ -361,6 +394,25 @@ void UMarburgumSessionSubsystem::HandleNetworkFailure(UWorld* World, UNetDriver*
         Fail(FaultForNetworkFailure(FailureType), ErrorString);
         return;
 
+    case EPhase::Starting:
+    case EPhase::Idle:
+    {
+        // A command-line connect can be refused before any tick observed it. The engine reports the
+        // failure before it discards the pending game, so the attempted URL is still available.
+        const FWorldContext* Context = GetGameInstance() ? GetGameInstance()->GetWorldContext() : nullptr;
+        if (Context && Context->PendingNetGame)
+        {
+            LastAddress = Context->PendingNetGame->URL.GetHostPortString();
+            CharacterKey = Context->PendingNetGame->URL.GetOption(TEXT("MB2Character="), TEXT(""));
+            Fail(FaultForNetworkFailure(FailureType), ErrorString);
+        }
+        else if (View.Phase == EPhase::Starting)
+        {
+            Fail(FaultForNetworkFailure(FailureType), ErrorString);
+        }
+        return;
+    }
+
     default:
         return;
     }
@@ -375,7 +427,8 @@ void UMarburgumSessionSubsystem::HandleTravelFailure(UWorld* World, ETravelFailu
     {
         HandleNetworkFailure(World, nullptr, ENetworkFailure::ConnectionLost, ErrorString);
     }
-    else if (View.Phase == EPhase::Connecting || View.Phase == EPhase::Joining || View.Phase == EPhase::LoadingWorld)
+    else if (View.Phase == EPhase::Starting || View.Phase == EPhase::Connecting || View.Phase == EPhase::Joining
+        || View.Phase == EPhase::LoadingWorld)
     {
         Fail(EFault::TravelFailed, ErrorString);
     }

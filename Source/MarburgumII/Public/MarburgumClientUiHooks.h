@@ -12,4 +12,5 @@ class MARBURGUMII_API FMarburgumClientUiHooks
 public:
     static FMarburgumLocalPlayerUiEvent& OnLocalPlayerReady();
     static FMarburgumLocalPlayerUiEvent& OnChatFocusRequested();
+    static FMarburgumLocalPlayerUiEvent& OnInventoryToggleRequested();
 };

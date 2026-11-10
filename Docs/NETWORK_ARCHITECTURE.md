@@ -1,6 +1,6 @@
 # MarburgumII — MMORPG-first client/server architecture
 
-**Status:** Accepted foundational direction. Gate 0A builds and the Gate 0B loopback network smoke pass on Linux with UE 5.8.3 ([evidence](STAGE0_EVIDENCE.md)); persistence, login, AOI and scale remain unbuilt.  
+**Status:** Accepted foundational direction. Gate 0A builds and the Gate 0B loopback network smoke pass on Linux with UE 5.8.3 ([evidence](STAGE0_EVIDENCE.md)). Gate 1's first transaction passes with a development identity and file-backed store ([evidence](STAGE1_GATE1_EVIDENCE.md)); production persistence, login, AOI and scale remain unbuilt.  
 **Engine:** Unreal Engine **5.8.3**.  
 **Relationship to original:** The original project separated Unreal `MarburgumClient`, `MarburgumServer` and `MarburgumShared`, and used an authoritative server with a legacy protocol-v3 TCP/JSON contract. MarburgumII preserves the **roles and gameplay semantics**, but rebuilds their implementation. The old protocol is **not** a drop-in compatibility requirement.
 
@@ -50,7 +50,21 @@ export UE_ROOT=/absolute/path/to/UnrealEngine-5.8.3
 | `FMarburgumIIServerModule` | server | Logs authority-side `ready`, `login` and `logout` evidence |
 | `UMarburgumNetSmokeSubsystem` | client | Active only with `-MB2NetSmoke`; drives the request sequence, optional disconnect/reconnect (`-MB2SmokeReconnect`) and peer wait (`-MB2SmokePeers=N`), then exits 0 or 1 |
 
-Evidence lines share the `LogMarburgumNet` category and the `MB2SMOKE` prefix. The idempotency ledger is a placeholder for the durable receipt store Gate 1 requires; it does not survive a server restart.
+Evidence lines share the `LogMarburgumNet` category and the `MB2SMOKE` prefix. This smoke ledger is process-lifetime only; the Gate 1 interaction path below keeps its receipts in the durable world store.
+
+### Gate 1 interaction protocol
+
+| Piece | Module | Role |
+| --- | --- | --- |
+| `AMarburgumInteractable` | core | Map-placed object with a stable `InteractableId`, granted item, authored initial stock and range; replicates `RemainingStock` (-1 until the server has applied its record) |
+| `AMarburgumPlayerState` | core | Server-only development character key; `Inventory`, `bInventoryKnown` and `bHasCharacter` replicate `COND_OwnerOnly` |
+| `AMarburgumPlayerController` | core | `ServerRequestInteraction(FGuid, AMarburgumInteractable*)` with an 8 requests/s cap; answers with `ClientReceiveInteractionReceipt(FMarburgumInteractionReceipt)` |
+| `UMarburgumAuthorityService` | core | Abstract world subsystem the RPC routes to; absent on clients, so they refuse with `authority_unavailable` |
+| `UMarburgumWorldAuthority` | server | Validates operation id → store → character → receipt replay → target → range (+50 cm) → stock, commits stock, custody and receipt together, then replicates |
+| `FMarburgumWorldStore` | server | One JSON document per map, `fsync` + atomic `rename` per commit (ADR-014) |
+| `AMarburgumGameMode` | core | Refuses malformed or already-connected character keys at `PreLogin` and `InitNewPlayer` |
+
+Outcomes: `Applied` (durable, then replicated), `Duplicate` (same operation id and character as a stored receipt; nothing changes, survives restarts) or `Rejected` with a reason (`out_of_range`, `out_of_stock`, `no_character`, `store_write_failed`, `operation_conflict`, ...). Evidence lines use the `MB2INTERACT` prefix; `scripts/interaction-smoke-linux.sh` drives the qualification.
 
 ## 4. Authority and lifecycle
 
@@ -96,7 +110,7 @@ A population of 10,000–20,000 **virtual** inhabitants and 250 concurrent playe
 
 **UI/visual qualification in parallel:** [UI_HUD_ONTOLOGY.md](UI_HUD_ONTOLOGY.md), [UI_HUD_ROADMAP.md](UI_HUD_ROADMAP.md) and [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md) govern the early client-only graphical HUD, including authoritative signals, client-local preferences and labeled fixtures. The UI may be previewed with clearly marked demo fixtures, but public gameplay footage must display honest server-originated/replicated state. The authoritative server does not load UMG. The wanted-star/police-pursuit system is explicitly not being carried forward.
 
-**Gate 1 — first gameplay transaction:** one client requests an interaction, server validates it, commits one change (e.g. an inventory item), replicates the result and survives a save/restart; exercise duplicated requests and two clients attempting the same limited resource. UI reports the committed result; rejected requests have no effects.
+**Gate 1 — first gameplay transaction:** one client requests an interaction, server validates it, commits one change (e.g. an inventory item), replicates the result and survives a save/restart; exercise duplicated requests and two clients attempting the same limited resource. UI reports the committed result; rejected requests have no effects. *Status 2026-11-10: passes on Linux loopback with a test fixture and the ADR-014 development store ([evidence](STAGE1_GATE1_EVIDENCE.md)); owner playtest pending.*
 
 **Gate 2 — representative Marburgum gameplay:** implement fishing + skills + mission objectives + inventory/currency as server-owned, accessible through genuine client UI, including reconnect/load without XP/item duplication. Work in a tiny approved district first.
 

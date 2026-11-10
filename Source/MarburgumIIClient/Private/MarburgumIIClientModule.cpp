@@ -19,17 +19,21 @@ public:
             this, &FMarburgumIIClientModule::HandlePlayerReady);
         FocusHandle = FMarburgumClientUiHooks::OnChatFocusRequested().AddRaw(
             this, &FMarburgumIIClientModule::HandleFocus);
+        InventoryHandle = FMarburgumClientUiHooks::OnInventoryToggleRequested().AddRaw(
+            this, &FMarburgumIIClientModule::HandleInventory);
     }
 
     virtual void ShutdownModule() override
     {
         FMarburgumClientUiHooks::OnLocalPlayerReady().Remove(ReadyHandle);
         FMarburgumClientUiHooks::OnChatFocusRequested().Remove(FocusHandle);
+        FMarburgumClientUiHooks::OnInventoryToggleRequested().Remove(InventoryHandle);
     }
 
 private:
     FDelegateHandle ReadyHandle;
     FDelegateHandle FocusHandle;
+    FDelegateHandle InventoryHandle;
 
     static UMarburgumUISubsystem* GetUI(APlayerController* Player)
     {
@@ -56,6 +60,14 @@ private:
         if (UMarburgumUISubsystem* UI = GetUI(Player))
         {
             UI->FocusChat();
+        }
+    }
+
+    void HandleInventory(APlayerController* Player)
+    {
+        if (UMarburgumUISubsystem* UI = GetUI(Player))
+        {
+            UI->ToggleInventory();
         }
     }
 };

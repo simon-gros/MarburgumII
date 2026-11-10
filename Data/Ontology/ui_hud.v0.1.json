@@ -811,7 +811,7 @@
         "input_device"
       ],
       "description": "Single concise eligible action with device glyph, localized verb, target.",
-      "status": "planned"
+      "status": "implemented_awaiting_owner_playtest"
     },
     {
       "id": "subject_context",
@@ -849,7 +849,7 @@
         "connection_phase"
       ],
       "description": "Deduped priority queue with actionable error persistence.",
-      "status": "planned"
+      "status": "implemented_awaiting_owner_playtest"
     },
     {
       "id": "action_palette",
@@ -926,7 +926,7 @@
         "currency_state"
       ],
       "description": "Graphical item overview with selection/evidence details and legal actions.",
-      "status": "planned"
+      "status": "first_shell_implemented_awaiting_owner_playtest"
     },
     {
       "id": "journal_panel",
@@ -1068,7 +1068,7 @@
         "connection_phase"
       ],
       "description": "Compact general/private messaging panel; private conversation is never a globally replicated display signal.",
-      "status": "source_implementation_unverified_native_and_owner"
+      "status": "implemented_awaiting_owner_playtest"
     }
   ],
   "invariants": [

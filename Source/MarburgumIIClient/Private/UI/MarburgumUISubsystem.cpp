@@ -9,9 +9,12 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "MarburgumChatWidget.h"
+#include "MarburgumGameplayContract.h"
 #include "MarburgumNetworkContract.h"
 #include "MarburgumPlayerController.h"
 #include "UI/MarburgumConnectionScreen.h"
+#include "UI/MarburgumInteractionPrompt.h"
+#include "UI/MarburgumInventoryPanel.h"
 #include "UI/MarburgumNotificationFeed.h"
 #include "UI/MarburgumUIGallery.h"
 #include "UI/MarburgumUIRoot.h"
@@ -87,6 +90,7 @@ void UMarburgumUISubsystem::TearDown()
     if (AMarburgumPlayerController* Controller = ReceiptController.Get())
     {
         Controller->OnRequestResult.RemoveAll(this);
+        Controller->OnInteractionReceipt.RemoveAll(this);
     }
     ReceiptController.Reset();
     if (Root)
@@ -97,6 +101,8 @@ void UMarburgumUISubsystem::TearDown()
     ConnectionScreen = nullptr;
     Feed = nullptr;
     Chat = nullptr;
+    Prompt = nullptr;
+    Inventory = nullptr;
 }
 
 void UMarburgumUISubsystem::MountChat(APlayerController* Player)
@@ -151,9 +157,112 @@ void UMarburgumUISubsystem::BindReceipts()
     if (AMarburgumPlayerController* Previous = ReceiptController.Get())
     {
         Previous->OnRequestResult.RemoveAll(this);
+        Previous->OnInteractionReceipt.RemoveAll(this);
     }
     Controller->OnRequestResult.AddUObject(this, &UMarburgumUISubsystem::HandleRequestResult);
+    Controller->OnInteractionReceipt.AddUObject(this, &UMarburgumUISubsystem::HandleInteractionReceipt);
     ReceiptController = Controller;
+}
+
+void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
+{
+    if (!Root || !Player || !Player->IsLocalController() || !Cast<AMarburgumPlayerController>(Player))
+    {
+        return;
+    }
+    if (Prompt && Prompt->GetOwningPlayer() != Player)
+    {
+        Prompt->RemoveFromParent();
+        Prompt = nullptr;
+    }
+    if (Inventory && Inventory->GetOwningPlayer() != Player)
+    {
+        Inventory->RemoveFromParent();
+        Inventory = nullptr;
+    }
+    if (!Prompt)
+    {
+        Prompt = CreateWidget<UMarburgumInteractionPrompt>(Player, UMarburgumInteractionPrompt::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Hud, Prompt);
+    }
+    if (!Inventory)
+    {
+        Inventory = CreateWidget<UMarburgumInventoryPanel>(Player, UMarburgumInventoryPanel::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Screens, Inventory);
+    }
+}
+
+bool UMarburgumUISubsystem::ToggleInventory()
+{
+    if (!Inventory || LastPhase != EPhase::Ready)
+    {
+        return false;
+    }
+    Inventory->Toggle();
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=inventory_view open=%d"),
+        MarburgumII::Session::UiLogPrefix, Inventory->IsOpen() ? 1 : 0);
+    return true;
+}
+
+bool UMarburgumUISubsystem::IsInventoryOpen() const
+{
+    return Inventory && Inventory->IsOpen();
+}
+
+void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteractionReceipt& Receipt)
+{
+    if (!Feed)
+    {
+        return;
+    }
+    // Keyed by operation: a replayed request replaces its earlier receipt instead of stacking.
+    const FName Key(*FString::Printf(TEXT("interaction.%s"), *Receipt.OperationId.ToString(EGuidFormats::Digits)));
+    const MarburgumII::Gameplay::FItemDefinition* Item = MarburgumII::Gameplay::FindItem(Receipt.ItemId.ToString());
+    const FText ItemName = Item ? FText::FromString(Item->DisplayName) : FText::FromName(Receipt.ItemId);
+
+    if (Receipt.Outcome == EMarburgumRequestOutcome::Applied)
+    {
+        Feed->Push(Key, LOCTEXT("ItemKind", "ITEM RECEIVED"),
+            FText::Format(LOCTEXT("ItemApplied", "{0} \u00D7{1} added to your inventory. Confirmed and saved by the server."),
+                ItemName, FText::AsNumber(Receipt.Quantity)), MarburgumUI::ETone::Success);
+        return;
+    }
+    if (Receipt.Outcome == EMarburgumRequestOutcome::Duplicate)
+    {
+        Feed->Push(Key, LOCTEXT("ReceiptKind", "SERVER RECEIPT"),
+            FText::Format(LOCTEXT("ItemDuplicate", "Already received: {0}. The server ignored the repeat; nothing was added twice."), ItemName),
+            MarburgumUI::ETone::Info);
+        return;
+    }
+
+    FText Message;
+    MarburgumUI::ETone Tone = MarburgumUI::ETone::Warning;
+    switch (Receipt.Reason)
+    {
+    case EMarburgumInteractionReason::OutOfStock:
+        Message = LOCTEXT("OutOfStock", "Nothing left to take. Someone else got there first; nothing was changed.");
+        break;
+    case EMarburgumInteractionReason::OutOfRange:
+        Message = LOCTEXT("OutOfRange", "Too far away. Move closer and try again; nothing was changed.");
+        break;
+    case EMarburgumInteractionReason::NoCharacter:
+        Message = LOCTEXT("NoCharacter", "This connection has no character, so it cannot hold items. Nothing was changed.");
+        break;
+    case EMarburgumInteractionReason::StoreUnavailable:
+    case EMarburgumInteractionReason::StoreWriteFailed:
+        Message = LOCTEXT("StoreFailed", "The server could not save the result, so it did not apply it. Nothing was changed.");
+        Tone = MarburgumUI::ETone::Danger;
+        break;
+    case EMarburgumInteractionReason::AuthorityUnavailable:
+        Message = LOCTEXT("NoAuthority", "No authoritative server handled this request. Nothing was changed.");
+        Tone = MarburgumUI::ETone::Danger;
+        break;
+    default:
+        Message = LOCTEXT("Refused", "The server refused this request. Nothing was changed.");
+        Tone = MarburgumUI::ETone::Danger;
+        break;
+    }
+    Feed->Push(Key, LOCTEXT("RefusedKind", "REFUSED"), Message, Tone);
 }
 
 void UMarburgumUISubsystem::HandleRequestResult(const FGuid& OperationId, EMarburgumRequestOutcome Outcome)
@@ -236,6 +345,10 @@ void UMarburgumUISubsystem::HandleSessionChanged(const FMarburgumSessionView& Vi
     {
         return;
     }
+    if (View.Phase != EPhase::Ready && Inventory && Inventory->IsOpen())
+    {
+        Inventory->Toggle(); // No stale custody view once the session is gone.
+    }
     ConnectionScreen->ApplyView(View);
     const bool bShowScreen = View.Phase != EPhase::Ready;
     ConnectionScreen->SetVisibility(bShowScreen ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
@@ -249,6 +362,7 @@ void UMarburgumUISubsystem::HandleSessionChanged(const FMarburgumSessionView& Vi
         const UGameInstance* GameInstance = GetGameInstance();
         const UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
         MountChat(World ? World->GetFirstPlayerController() : nullptr);
+        MountGameplayHud(World ? World->GetFirstPlayerController() : nullptr);
     }
     if (View.Phase == EPhase::Ready && PreviousPhase != EPhase::Ready && Feed)
     {

@@ -1,10 +1,16 @@
 #include "MarburgumPlayerController.h"
 
+#include "MarburgumAuthorityService.h"
 #include "MarburgumClientUiHooks.h"
 #include "MarburgumChatPolicy.h"
+#include "MarburgumGameplayContract.h"
+#include "MarburgumInteractable.h"
 #include "MarburgumNetworkContract.h"
 #include "Components/InputComponent.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
+#include "GameFramework/Pawn.h"
+#include "HAL/PlatformTime.h"
 #include "GameFramework/PlayerState.h"
 #include "InputCoreTypes.h"
 
@@ -17,13 +23,7 @@ namespace
 
     const TCHAR* OutcomeName(EMarburgumRequestOutcome Outcome)
     {
-        switch (Outcome)
-        {
-        case EMarburgumRequestOutcome::Applied: return TEXT("applied");
-        case EMarburgumRequestOutcome::Duplicate: return TEXT("duplicate");
-        case EMarburgumRequestOutcome::Rejected: return TEXT("rejected");
-        }
-        return TEXT("unknown");
+        return MarburgumII::Gameplay::ToString(Outcome);
     }
 }
 
@@ -42,7 +42,123 @@ void AMarburgumPlayerController::SetupInputComponent()
     if (InputComponent)
     {
         InputComponent->BindKey(EKeys::Enter, IE_Pressed, this, &AMarburgumPlayerController::RequestChatFocus);
+        InputComponent->BindKey(EKeys::E, IE_Pressed, this, &AMarburgumPlayerController::RequestInteract);
+        InputComponent->BindKey(EKeys::I, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleInventory);
     }
+}
+
+void AMarburgumPlayerController::RequestToggleInventory()
+{
+    if (IsLocalController())
+    {
+        FMarburgumClientUiHooks::OnInventoryToggleRequested().Broadcast(this);
+    }
+}
+
+AMarburgumInteractable* AMarburgumPlayerController::FindInteractionCandidate() const
+{
+    const APawn* Body = GetPawn();
+    UWorld* World = GetWorld();
+    if (!Body || !World)
+    {
+        return nullptr;
+    }
+    // A handful of placed objects on the test map; spatial queries arrive with the city (Stage 3).
+    AMarburgumInteractable* Best = nullptr;
+    double BestDistanceSquared = TNumericLimits<double>::Max();
+    for (TActorIterator<AMarburgumInteractable> It(World); It; ++It)
+    {
+        const double DistanceSquared = FVector::DistSquared(Body->GetActorLocation(), It->GetActorLocation());
+        if (DistanceSquared <= FMath::Square(It->InteractionRange) && DistanceSquared < BestDistanceSquared)
+        {
+            Best = *It;
+            BestDistanceSquared = DistanceSquared;
+        }
+    }
+    return Best;
+}
+
+void AMarburgumPlayerController::RequestInteract()
+{
+    FGuid Pending;
+    TWeakObjectPtr<AMarburgumInteractable> PendingObject;
+    if (!IsLocalController() || GetPendingInteraction(Pending, PendingObject))
+    {
+        return; // One request in flight at a time; the prompt shows it as waiting.
+    }
+    if (AMarburgumInteractable* Target = FindInteractionCandidate())
+    {
+        SubmitInteraction(FGuid::NewGuid(), Target);
+    }
+}
+
+void AMarburgumPlayerController::SubmitInteraction(const FGuid& OperationId, AMarburgumInteractable* Target)
+{
+    if (!IsLocalController())
+    {
+        return;
+    }
+    PendingOperationId = OperationId;
+    PendingTarget = Target;
+    PendingSinceSeconds = FPlatformTime::Seconds();
+    ServerRequestInteraction(OperationId, Target);
+}
+
+bool AMarburgumPlayerController::GetPendingInteraction(FGuid& OutOperationId, TWeakObjectPtr<AMarburgumInteractable>& OutTarget) const
+{
+    if (!PendingOperationId.IsValid()
+        || FPlatformTime::Seconds() - PendingSinceSeconds > MarburgumII::Gameplay::ReceiptTimeoutSeconds)
+    {
+        return false;
+    }
+    OutOperationId = PendingOperationId;
+    OutTarget = PendingTarget;
+    return true;
+}
+
+void AMarburgumPlayerController::ServerRequestInteraction_Implementation(FGuid OperationId, AMarburgumInteractable* Target)
+{
+    UWorld* World = GetWorld();
+    if (!World)
+    {
+        return;
+    }
+    // Bounded request rate: floods are dropped without a reliable reply for each one.
+    const double Now = World->GetTimeSeconds();
+    if (Now - RequestWindowStartSeconds >= 1.0)
+    {
+        RequestWindowStartSeconds = Now;
+        RequestsInWindow = 0;
+    }
+    if (++RequestsInWindow > MarburgumII::Gameplay::MaxRequestsPerSecond)
+    {
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=interaction_dropped player=%d reason=rate"),
+            MarburgumII::Gameplay::InteractLogPrefix, PlayerState ? PlayerState->GetPlayerId() : -1);
+        return;
+    }
+
+    FMarburgumInteractionReceipt Receipt;
+    if (UMarburgumAuthorityService* Authority = UMarburgumAuthorityService::Get(World))
+    {
+        Receipt = Authority->HandleInteraction(*this, OperationId, Target);
+    }
+    else
+    {
+        Receipt.OperationId = OperationId;
+        Receipt.Outcome = EMarburgumRequestOutcome::Rejected;
+        Receipt.Reason = EMarburgumInteractionReason::AuthorityUnavailable;
+    }
+    ClientReceiveInteractionReceipt(Receipt);
+}
+
+void AMarburgumPlayerController::ClientReceiveInteractionReceipt_Implementation(const FMarburgumInteractionReceipt& Receipt)
+{
+    if (Receipt.OperationId == PendingOperationId)
+    {
+        PendingOperationId.Invalidate();
+        PendingTarget.Reset();
+    }
+    OnInteractionReceipt.Broadcast(Receipt);
 }
 
 void AMarburgumPlayerController::RequestChatFocus()

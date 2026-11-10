@@ -61,6 +61,13 @@ public:
     /** The default address shown on the front-end: -MB2Server=, else 127.0.0.1:7777. */
     static FString DefaultAddress();
 
+    /**
+     * Development character key sent with every join from this client (ADR-014): the key in a
+     * command-line server URL if the session started from one, else -MB2Character=, else a key generated
+     * once and kept in Saved/MarburgumII/DevCharacter.txt. Not a credential.
+     */
+    const FString& GetCharacterKey() const { return CharacterKey; }
+
     /** True when the world is the client's verified, admitted server session. */
     static bool IsAdmitted(const UWorld* World);
 
@@ -80,8 +87,11 @@ private:
     FDelegateHandle TravelFailureHandle;
     FMarburgumSessionChanged SessionChanged;
 
+    static FString ResolveDefaultCharacterKey();
+
     FMarburgumSessionView View;
     FString LastAddress;
+    FString CharacterKey;
     double AttemptStartedSeconds = 0.0;
     double NextReconnectSeconds = 0.0;
     bool bReconnectScheduled = false;

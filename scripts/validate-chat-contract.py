@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Source consistency checks only; never substitute for native Unreal client/server tests."""
+import re
 import json
 from pathlib import Path
 import sys
@@ -46,7 +47,8 @@ def main():
           "private content must never use NetMulticast RPC")
     check("UPROPERTY(Replicated" not in header, "private history cannot be replicated")
     check("UPROPERTY(Replicated" not in types, "private message struct must not be replicated")
-    check("Message.Text" not in source.split("UE_LOG(", 1)[-1] if "UE_LOG(" in source else True,
+    log_statements = re.findall(r"UE_LOG\((.*?)\);", source, re.S)
+    check(all("Message.Text" not in statement and "RawText" not in statement for statement in log_statements),
           "chat bodies must not appear in log statements")
     for name in ("General", "Private", "System"):
         check(name in types, f"missing chat channel: {name}")

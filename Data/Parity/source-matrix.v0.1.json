@@ -130,7 +130,7 @@
       "intent": "Ordinary goods, equipment and evidence as durable state connected to missions, work and skills.",
       "migration": "Separate definitions/instances; ensure unique ownership and double-spend prevention.",
       "stage": "1",
-      "status": "design_retained_implementation_pending"
+      "status": "first_runtime_slice_gate1_awaiting_owner_playtest"
     },
     {
       "id": "housing",
@@ -178,7 +178,7 @@
       "intent": "Talk, inspect, take, use, work, fish, photograph, trade, drive and other city actions under coherent interaction rules.",
       "migration": "Establish client request → server validation → authoritative result from first gameplay proof.",
       "stage": "1",
-      "status": "design_retained_implementation_pending"
+      "status": "first_runtime_slice_gate1_awaiting_owner_playtest"
     },
     {
       "id": "jobs_opportunity",
@@ -217,7 +217,7 @@
       "intent": "Separate client/shared/server code, persistent world/character state, reconnect, bounded AOI and eventual shared-shard scale.",
       "migration": "New UE 5.8.3 source modules, Unreal-native replication baseline, native server/client proof at Stage 0. Do NOT silently preserve old protocol-v3 wire compatibility.",
       "stage": "0-4",
-      "status": "design_retained_implementation_pending"
+      "status": "dev_persistence_adapter_gate1_awaiting_owner_playtest"
     }
   ],
   "excluded_features": [

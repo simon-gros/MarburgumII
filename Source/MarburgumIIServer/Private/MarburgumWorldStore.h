@@ -1,0 +1,63 @@
+#pragma once
+
+#include "CoreMinimal.h"
+
+/** One committed grant, kept so a replayed operation id is answered without applying it again. */
+struct FMarburgumStoredReceipt
+{
+    FString Character;
+    FString Interactable;
+    FString Item;
+    int32 Quantity = 0;
+    int64 Revision = 0;
+    FString CommittedUtc;
+};
+
+/** Durable authoritative world state for one map (schema `marburgumii.world_store` v1). */
+struct FMarburgumWorldRecord
+{
+    int64 Revision = 0;
+    /** Interactable id -> remaining stock. Absent ids still have their authored initial stock. */
+    TMap<FString, int32> Stocks;
+    /** Character key -> item id -> quantity. */
+    TMap<FString, TMap<FString, int32>> Inventories;
+    /** Operation id (32 hex digits) -> committed grant. */
+    TMap<FString, FMarburgumStoredReceipt> Receipts;
+};
+
+/**
+ * Development persistence adapter (ADR-014): one JSON document per map, replaced atomically on every
+ * commit (write a temporary file, flush it to disk, rename it over the old one). A commit is applied
+ * in memory only after the new document is durable, so a crash or a failed write never exposes state
+ * that a restart would lose. Single-process and synchronous by design; not the production database.
+ */
+class FMarburgumWorldStore
+{
+public:
+    explicit FMarburgumWorldStore(const FString& InPath) : Path(InPath) {}
+
+    /** A missing file is an empty world. A present but unreadable file is an error, never overwritten. */
+    bool Load(FString& OutError);
+
+    /** Make Next durable, then adopt it. On failure the previous record stays current. */
+    bool Commit(const FMarburgumWorldRecord& Next, FString& OutError);
+
+    const FMarburgumWorldRecord& Get() const { return Record; }
+    const FString& GetPath() const { return Path; }
+
+    /**
+     * Test-only (-MB2StoreFaultInjection): while <store>.fail holds a positive count, that many
+     * commits fail as if the disk write had failed. Used to prove a failed write changes nothing.
+     */
+    void EnableFaultInjection() { bFaultInjection = true; }
+
+private:
+    bool ConsumeInjectedFault() const;
+
+    static FString Serialize(const FMarburgumWorldRecord& Source);
+    static bool Deserialize(const FString& Text, FMarburgumWorldRecord& Out, FString& OutError);
+
+    FString Path;
+    FMarburgumWorldRecord Record;
+    bool bFaultInjection = false;
+};

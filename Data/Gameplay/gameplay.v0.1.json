@@ -1,0 +1,47 @@
+{
+  "format": "marburgumii.gameplay_catalogue",
+  "version": "0.1.0",
+  "status": "gate1_runtime_subset",
+  "description": "Item definitions and interactables that the Unreal runtime actually uses. Mirrors MarburgumIIShared/Public/MarburgumGameplayContract.h and scripts/editor/create_net_smoke_map.py; scripts/validate-gameplay-contract.py keeps them in step.",
+  "items": [
+    {
+      "id": "fishing_rod",
+      "name": { "en": "Fishing rod" },
+      "stacking": "fungible_stack",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    }
+  ],
+  "interactables": [
+    {
+      "id": "dev_supply_crate",
+      "kind": "test_fixture",
+      "map": "/Game/Maps/NetSmoke",
+      "display_name": { "en": "Test supply crate" },
+      "verb": "take",
+      "grants": { "item": "fishing_rod", "quantity": 1 },
+      "initial_stock": 3,
+      "range_cm": 300,
+      "note": "Development fixture for Gate 1: a limited, server-owned stock shared by every player. Not authored Marburgum content."
+    },
+    {
+      "id": "dev_supply_crate_far",
+      "kind": "test_fixture",
+      "map": "/Game/Maps/NetSmoke",
+      "display_name": { "en": "Test supply crate (far)" },
+      "verb": "take",
+      "grants": { "item": "fishing_rod", "quantity": 1 },
+      "initial_stock": 1,
+      "range_cm": 300,
+      "note": "Placed 25 m from every player start to prove the server's range check."
+    }
+  ],
+  "world_store": {
+    "format": "marburgumii.world_store",
+    "schema_version": 1,
+    "adapter": "development JSON file per map, atomic replace (ADR-014)"
+  }
+}

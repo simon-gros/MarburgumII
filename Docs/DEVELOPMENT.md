@@ -47,6 +47,7 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ./scripts/net-smoke-linux.sh editor   # same test with uncooked UnrealEditor -server / -game processes
 ./scripts/ui-capture-linux.sh         # Stage 0C rendered-client UI captures against the packaged builds
 ./scripts/chat-smoke-linux.sh         # CHAT-001: dedicated server + sender/recipient/bystander clients
+./scripts/interaction-smoke-linux.sh  # Gate 1: interaction, receipts, race, server restart, admission refusals
 ```
 
 The smoke script starts one headless dedicated server on port 7777 (override with `MB2_SMOKE_PORT`). It runs one client through a refused mutation, an idempotent operation and a disconnect/reconnect, then two concurrent clients. Logs and `summary.txt` go to `Saved/NetSmoke/<UTC timestamp>/`. A nonzero exit means a failed expectation. The PythonScriptPlugin and EditorScriptingUtilities plugins are enabled only for the Editor target.
@@ -54,6 +55,17 @@ The smoke script starts one headless dedicated server on port 7777 (override wit
 The UI capture script runs real `MarburgumIIClient` processes with `-RenderOffScreen -ForceRes` (a GPU is required; no display is needed) and screenshots the composited window, UMG included, whenever the session settles in a new phase. It captures the front-end at four resolutions, the UI-01 component gallery, a connection failure against an unused port (`MB2_CAPTURE_DEAD_PORT`, default 7790), and a server-loss scenario: the client joins a packaged dedicated server, the script stops the server, waits for the client to show reconnecting, restarts the server and expects automatic recovery. PNGs, logs and `summary.txt` go to `Saved/UICapture/<UTC timestamp>/`.
 
 The chat smoke starts a packaged server and three clients: A sends general, private, invalid and burst messages, B replies privately, C is the bystander. Each client checks its own deliveries and exits nonzero on any mismatch; the script also counts server-accepted messages and greps every log for private bodies. A and C render offscreen and save screenshots of their chat panel (`MB2_CHAT_RENDER` selects which roles render). Evidence goes to `Saved/ChatSmoke/<UTC timestamp>/`.
+
+The interaction smoke runs two server sessions on one world store in `Saved/InteractSmoke/<UTC timestamp>/`. Phase 1 starts with one injected write fault (`-MB2StoreFaultInjection` and `world-store.json.fail`) and runs clients A and B: a refused faulty commit, a grant, a replay of the same operation id, an out-of-range request, a second grant and a race for the last unit. The script then checks the store file (3 grants, stock 0, 3 receipts) and restarts the server. Phase 2 checks restored inventories and stock, a replay answered `Duplicate`, a keyless client, a duplicate login and a malformed key (both refused at admission), and a later session of the same character. The store must be byte-identical afterwards. A, D and A3 render offscreen one at a time; on the test host a second offscreen Vulkan client could not create its device while another was rendering, so the script also retries a renderer whose Vulkan device creation fails before connecting.
+
+### Playing the Gate 1 slice by hand
+
+```bash
+Saved/StagedBuilds/LinuxServer/MarburgumIIServer.sh /Game/Maps/NetSmoke -port=7777 -log
+Saved/StagedBuilds/LinuxClient/MarburgumIIClient.sh -MB2Character=simon
+```
+
+Connect from the front-end, walk with **W A S D** and the mouse, press **E** at the test supply crate, **I** for the inventory and **Enter** for chat. The server keeps `Saved/MarburgumII/WorldStore/NetSmoke.json` next to its binary (override with `-MB2WorldStore=<file>`); delete it to reset the crates. Without `-MB2Character=` the client uses a key generated once into its own `Saved/MarburgumII/DevCharacter.txt`, so two clients on one machine need different `-MB2Character=` values: the server refuses a character that is already connected. The key is a test identity, not a login (ADR-014).
 
 Client UI options for manual runs: `-MB2Server=host:port` (front-end default address), `-MB2UIGallery` (component gallery instead of the connection shell), `-MB2UIDiagnostics` (labeled live replicated-state overlay), `-MB2UIScale=<0.5-3.0>` (interface scale on top of DPI scaling).
 

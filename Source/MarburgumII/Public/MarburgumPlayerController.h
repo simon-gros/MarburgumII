@@ -4,9 +4,13 @@
 #include "GameFramework/PlayerController.h"
 #include "MarburgumChatTypes.h"
 #include "MarburgumGameState.h"
+#include "MarburgumInteractionTypes.h"
 #include "MarburgumPlayerController.generated.h"
 
+class AMarburgumInteractable;
+
 DECLARE_MULTICAST_DELEGATE_TwoParams(FMarburgumRequestResultEvent, const FGuid& /*OperationId*/, EMarburgumRequestOutcome /*Outcome*/);
+DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumInteractionReceiptEvent, const FMarburgumInteractionReceipt& /*Receipt*/);
 
 /**
  * Player-owned RPC boundary: the server derives sender identity from PlayerState,
@@ -41,6 +45,27 @@ public:
     /** Client-local notification when the server answers a request. */
     FMarburgumRequestResultEvent OnRequestResult;
 
+    /**
+     * Client: the interactable the prompt offers and E would request — the nearest one whose range
+     * contains this player's pawn. Proximity mirrors the original Marburgum interaction ranges.
+     */
+    AMarburgumInteractable* FindInteractionCandidate() const;
+
+    /** Client: request the current candidate with a fresh operation id (bound to E). */
+    void RequestInteract();
+
+    /**
+     * Client: submit an interaction request with an explicit operation id. Re-submitting the same id
+     * is safe: the server answers Duplicate and changes nothing.
+     */
+    void SubmitInteraction(const FGuid& OperationId, AMarburgumInteractable* Target);
+
+    /** Client: the request awaiting a receipt, if any (expires after ReceiptTimeoutSeconds). */
+    bool GetPendingInteraction(FGuid& OutOperationId, TWeakObjectPtr<AMarburgumInteractable>& OutTarget) const;
+
+    /** Client-local notification when the server answers an interaction request. */
+    FMarburgumInteractionReceiptEvent OnInteractionReceipt;
+
     /** Server-approved deliveries only. Local history is bounded and nonpersistent. */
     UPROPERTY(BlueprintAssignable, Category = "Marburgum|Chat")
     FMarburgumChatMessageEvent OnChatReceived;
@@ -51,6 +76,13 @@ public:
 protected:
     UFUNCTION(Client, Reliable)
     void ClientReceiveRequestResult(FGuid OperationId, EMarburgumRequestOutcome Outcome);
+
+    /** The server decides; the client only names the operation and the target it chose. */
+    UFUNCTION(Server, Reliable)
+    void ServerRequestInteraction(FGuid OperationId, AMarburgumInteractable* Target);
+
+    UFUNCTION(Client, Reliable)
+    void ClientReceiveInteractionReceipt(const FMarburgumInteractionReceipt& Receipt);
 
 private:
     AMarburgumGameState* GetMarburgumGameState() const;
@@ -63,6 +95,14 @@ private:
 
     void SendSystemNotice(const FString& Notice);
     void RequestChatFocus();
+    void RequestToggleInventory();
+
+    FGuid PendingOperationId;
+    TWeakObjectPtr<AMarburgumInteractable> PendingTarget;
+    double PendingSinceSeconds = 0.0;
+
+    double RequestWindowStartSeconds = 0.0;
+    int32 RequestsInWindow = 0;
 
     double LastAcceptedAt = -10000.0;
     double LastSystemNoticeAt = -10000.0;

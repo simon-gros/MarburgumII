@@ -24,14 +24,14 @@ Changes made explicitly in this restart take precedence: **Unreal Engine 5.8.3**
 | `missions_story` | Missions, story and evidence | Stage 2-5 | Legacy design retained; implementation pending |
 | `reputation_social` | Reputation, relationships and organizations | Stage 2-3 | Legacy design retained; implementation pending |
 | `economy_trading` | Economy and trading | Stage 1-2 | Legacy design retained; implementation pending |
-| `inventory_items` | Items, clues and inventory | Stage 1 | Legacy design retained; implementation pending |
+| `inventory_items` | Items, clues and inventory | Stage 1 | First runtime slice: `fishing_rod` (original id) held in owner-only server custody, durable across restarts; awaiting owner playtest |
 | `housing` | Housing and property | Stage 3 | Legacy design retained; implementation pending |
 | `vehicles` | Vehicles and transportation | Stage 3 | Legacy design retained; implementation pending |
 | `weather_time` | City time, seasonal weather and environment | Stage 3 | Legacy design retained; implementation pending |
-| `interactions` | Unified urban interaction verbs | Stage 1 | Legacy design retained; implementation pending |
+| `interactions` | Unified urban interaction verbs | Stage 1 | First runtime slice: proximity prompt, client request → server validation → durable receipt on a test fixture; awaiting owner playtest |
 | `jobs_opportunity` | Employment, opportunity scarcity and fairness | Stage 2-4 | Legacy design retained; implementation pending |
 | `user_interface` | Player-facing UI, HUD and journal (visually rebuilt) | Stage 0C–1 | Legacy interface semantics retained; polished new appearance pending |
-| `network_persistence` | Dedicated authoritative MMORPG world | Stage 0-4 | Legacy design retained; implementation pending |
+| `network_persistence` | Dedicated authoritative MMORPG world | Stage 0-4 | Dedicated server and clients qualified; development file store and test identity only (ADR-014) |
 
 The companion JSON contains the original source paths and explicit migration rules for all 16 areas. This table is **not** a claim that the whole content catalogue, source assets, data imports, maps, or network services have been ported.
 
@@ -69,7 +69,7 @@ For geographically grounded content, retain source IDs and transformation histor
 
 1. Compile Client, Server and Editor targets with **Unreal Engine 5.8.3**.
 2. Prove one dedicated server, one then two separate clients, replicated GameState and reconnect behavior.
-3. Prove one real authoritative interaction → inventory/XP or mission state → replication/UI → save/reload path.
+3. Prove one real authoritative interaction → inventory/XP or mission state → replication/UI → save/reload path. *First automated proof on Linux, 2026-11-10 ([evidence](STAGE1_GATE1_EVIDENCE.md)); owner playtest pending.*
 4. Only then scale content/data import and progressively complete the parity matrix.
 
 A checklist or source file alone cannot close a feature as implemented.
