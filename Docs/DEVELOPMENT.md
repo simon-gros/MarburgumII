@@ -76,7 +76,7 @@ Server-side rules also have an editor automation test:
 ### Playing the Lent slice by hand
 
 ```bash
-Saved/StagedBuilds/LinuxServer/MarburgumIIServer.sh /Game/Maps/Lent -port=7777 -log
+Saved/StagedBuilds/LinuxServer/MarburgumIIServer.sh /Game/World/lent -port=7777 -log
 Saved/StagedBuilds/LinuxClient/MarburgumIIClient.sh -MB2Character=simon
 ```
 
