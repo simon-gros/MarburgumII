@@ -351,3 +351,17 @@ Of 125 placed footprints, 124 are rebuilt: 74 gabled, 30 hipped and 20 flat, 360
 - **Evidence.** Read back from the saved clip at quarter cycles, the torso points 8° forward of vertical and each leg within 6° of straight down. `scripts/swim-smoke-linux.sh editor` now requires the stroke, not treading, while swimming at speed, treading half a second after letting go, and still treading under. It captures `swim-w-treading`. It passes both phases in editor mode.
 
 **Not covered.** Owner playtest. Treading water does not hold the swimmer up: under the original's rule only steering does. Remote bodies are checked as playing a swim clip, not which one. What a stopped swimmer's capsule overlaps every frame is not established; only its effect on the velocity is handled.
+
+## ADR-037 — The protagonist's UV islands do not overlap (accepted 2026-11-10)
+
+**Problem.** In the ADR-035 build the owner saw a skin-coloured "hole" in the shirt on his left side, under the arm. The dense mesh is dark shirt there. Smart UV Project had folded the tight crease between the flank and the inner arm into one island that overlapped itself: 133 faces shared texels with faces far away in 3D, so the bake wrote the flank and then the arm's skin into the same texels and the arm won.
+
+**Decision.** `retopo_bake.py` checks the unwrap for overlap and repairs it before baking:
+
+- **UV overlap:** faces that `select_overlap` reports, with a ring of their neighbours, are projected again as their own islands at a tighter angle limit (40° down to 15° over up to six passes). All islands are then scaled to the same texel density and packed again; without that the re-projected armpit islands take the space and the face loses half of its concept texels. The baked layout has 0 overlapping texels at 1024².
+- **Wrong-surface guard:** after the colour bake, each texel is compared with the dense surface nearest to it that faces the same way. Where the bake disagrees (a ray reached the arm beside the flank instead of the shirt), the texel takes that surface's colour and the normal map is flat there.
+
+**Evidence.** Blender flank renders before and after; `uv_overlap` 0 texels; the concept still projects onto 694k texels (513k in ADR-035), so the face is as sharp as before. The rig, FBX and UE import checks give the same results as ADR-035, and the editor loads all assets under `/Game/Characters`.
+
+**Not covered.** Owner playtest of the flank in game.
+
