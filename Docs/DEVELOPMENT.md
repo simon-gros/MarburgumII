@@ -42,6 +42,7 @@ The unqualified build script invocation defaults to the Editor target. A combine
 
 ```bash
 ./scripts/create-maps.sh              # regenerate Content/Maps/FrontEnd, NetSmoke and Lent (+ Content/Blockout/Materials) with the C++ commandlet `-run=MarburgumCreateMaps`; build the Editor first
+./scripts/create-swim-content.sh      # regenerate A_Swim (the original swim cycle on the mannequin) and the Drava water volumes in /Game/World/lent (`-run=MarburgumSwimContent`, ADR-032)
 ./scripts/package-linux.sh            # BuildCookRun: Saved/StagedBuilds/LinuxServer and LinuxClient
 ./scripts/net-smoke-linux.sh          # Gate 0B against the packaged builds
 ./scripts/net-smoke-linux.sh editor   # same test with uncooked UnrealEditor -server / -game processes
@@ -50,6 +51,7 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ./scripts/interaction-smoke-linux.sh  # Gate 1: interaction, receipts, race, server restart, admission refusals
 ./scripts/lent-smoke-linux.sh         # Lent slice: location, NPC, saved mission, objective/journal, restart, privacy
 ./scripts/condition-smoke-linux.sh    # Player condition: running costs breath, server-decided, saved at logout/stop, restart
+./scripts/swim-smoke-linux.sh         # Swimming (ADR-032): swim, sink, held breath, wade out, drown, recovery, saved wait, restart
 ```
 
 The smoke script starts one headless dedicated server on port 7777 (override with `MB2_SMOKE_PORT`). It runs one client through a refused mutation, an idempotent operation and a disconnect/reconnect, then two concurrent clients. Logs and `summary.txt` go to `Saved/NetSmoke/<UTC timestamp>/`. A nonzero exit means a failed expectation. Map generation is the editor-only C++ commandlet in `MarburgumIIEditorTools`; the PythonScriptPlugin and EditorScriptingUtilities plugins are disabled.

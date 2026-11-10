@@ -74,6 +74,11 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
         Entry->SetNumberField(TEXT("stamina"), Condition.Stamina);
         Entry->SetNumberField(TEXT("vitality"), Condition.Vitality);
         Entry->SetBoolField(TEXT("winded"), Condition.bWinded);
+        // Only a body that is down has a wait; living entries keep their schema-3 shape.
+        if (Condition.RecoverySeconds > 0)
+        {
+            Entry->SetNumberField(TEXT("recovery_s"), Condition.RecoverySeconds);
+        }
         Conditions->SetObjectField(Character, Entry);
     }
     Root->SetObjectField(TEXT("conditions"), Conditions);
@@ -201,6 +206,10 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
                 Condition.Stamina = FMath::Clamp(static_cast<int32>(Number), 0, 100);
             }
             Entry->TryGetBoolField(TEXT("winded"), Condition.bWinded);
+            if (Entry->TryGetNumberField(TEXT("recovery_s"), Number) && FMath::IsFinite(Number) && Condition.Vitality == 0)
+            {
+                Condition.RecoverySeconds = FMath::Clamp(static_cast<int32>(Number), 0, 255);
+            }
             Parsed.Conditions.Add(FString(*Character.Key), Condition);
         }
     }

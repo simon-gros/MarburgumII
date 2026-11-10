@@ -159,9 +159,15 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
         "run speed is not twice the walk speed");
     for (name, key) in [("DefaultVitality", "default_vitality"), ("DefaultStamina", "default_stamina"),
         ("RunStaminaDrainPerSecond", "run_stamina_drain_per_second"), ("StaminaRecoveryPerSecond", "stamina_recovery_per_second"),
-        ("RunResumeStamina", "run_resume_stamina")] {
+        ("RunResumeStamina", "run_resume_stamina"), ("BreathHoldSeconds", "breath_hold_seconds"), ("RecoverySeconds", "recovery_seconds")] {
         problems.expect(constant(name) == number(key), format!("{name} differs from the catalogue {key}"));
     }
+    // Swimming and drowning (ADR-032): the contract keeps centimetres, the catalogue metres.
+    for (name, key) in [("SwimSpeedCm", "swim_speed_mps"), ("MouthHeightCm", "mouth_height_m"), ("LethalWaterImpactCm", "lethal_water_impact_m")] {
+        problems.expect((constant(name) - number(key) * 100.0).abs() < 1e-3, format!("{name} differs from the catalogue {key}"));
+    }
+    problems.expect(contract.contains("BreathDrainPerSecond = DefaultStamina / BreathHoldSeconds;"),
+        "held breath does not drain the whole bar in BreathHoldSeconds");
 
     // Missions: registry entries match the catalogue's names, offer targets, start items and registered stages.
     for mission in missions {

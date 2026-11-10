@@ -117,6 +117,7 @@ void UMarburgumPlayerCondition::Refresh()
         {
             ShownStamina = ShownVitality = -1;
             bShowingWinded = bShowingRunning = false;
+            ShownState.Reset();
             WaitingLabel->SetVisibility(ESlateVisibility::HitTestInvisible);
             Bars->SetVisibility(ESlateVisibility::Collapsed);
             StatePill->SetVisibility(ESlateVisibility::Collapsed);
@@ -160,24 +161,44 @@ void UMarburgumPlayerCondition::Refresh()
         VitalityValue->SetText(FText::AsNumber(Condition.Vitality));
         ShownVitality = Condition.Vitality;
     }
-    if (bWinded != bShowingWinded || bRunning != bShowingRunning)
+    // One state at a time, the most urgent first (ADR-032): text and tone together, never colour alone.
+    const bool bSubmerged = Movement && Movement->IsConditionSynced() ? Movement->IsSubmerged() : Condition.bSubmerged;
+    const bool bSwimming = Movement && Movement->IsConditionSynced() ? Movement->IsInWaterBody() : Condition.bSwimming;
+    FText Text;
+    ETone Tone = ETone::Info;
+    if (Condition.IsDown())
     {
-        bShowingWinded = bWinded;
-        bShowingRunning = bRunning;
-        // Text and tone together: the state never rests on colour alone.
-        if (bWinded)
-        {
-            StateLabel->SetText(LOCTEXT("Winded", "WINDED"));
-            FBuilder::SetPillTone(StatePill, StateLabel, ETone::Warning);
-        }
-        else if (bRunning)
-        {
-            StateLabel->SetText(LOCTEXT("Running", "RUNNING"));
-            FBuilder::SetPillTone(StatePill, StateLabel, ETone::Info);
-        }
-        StatePill->SetVisibility(bWinded || bRunning ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
+        Text = FText::Format(LOCTEXT("Drowned", "DROWNED · {0} s"), FText::AsNumber(Condition.RecoverySeconds));
+        Tone = ETone::Danger;
     }
-    const bool bRested = !bWinded && !bRunning && WholeStamina >= Condition.MaxStamina && Condition.Vitality >= Condition.MaxVitality;
+    else if (bSubmerged)
+    {
+        Text = LOCTEXT("HoldingBreath", "HOLDING BREATH");
+        Tone = ETone::Warning;
+    }
+    else if (bSwimming)
+    {
+        Text = LOCTEXT("Swimming", "SWIMMING");
+    }
+    else if (bWinded)
+    {
+        Text = LOCTEXT("Winded", "WINDED");
+        Tone = ETone::Warning;
+    }
+    else if (bRunning)
+    {
+        Text = LOCTEXT("Running", "RUNNING");
+    }
+    bShowingWinded = bWinded;
+    bShowingRunning = bRunning;
+    if (Text.ToString() != ShownState)
+    {
+        ShownState = Text.ToString();
+        StateLabel->SetText(Text);
+        FBuilder::SetPillTone(StatePill, StateLabel, Tone);
+        StatePill->SetVisibility(ShownState.IsEmpty() ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
+    }
+    const bool bRested = ShownState.IsEmpty() && WholeStamina >= Condition.MaxStamina && Condition.Vitality >= Condition.MaxVitality;
     Card->SetRenderOpacity(bRested ? RestedOpacity : 1.f);
 }
 

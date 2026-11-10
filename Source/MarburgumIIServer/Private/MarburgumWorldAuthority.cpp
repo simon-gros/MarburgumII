@@ -75,6 +75,7 @@ namespace
         Stored.Vitality = Condition.Vitality;
         Stored.Stamina = Condition.Stamina;
         Stored.bWinded = Condition.bWinded;
+        Stored.RecoverySeconds = Condition.IsDown() ? Condition.RecoverySeconds : 0;
         return Stored;
     }
 
@@ -247,6 +248,7 @@ void UMarburgumWorldAuthority::RestoreCondition(AMarburgumPlayerState& State) co
         Condition.Stamina = static_cast<uint8>(Saved->Stamina);
         // Winded only means something below the breath a run resumes at.
         Condition.bWinded = Saved->bWinded && Saved->Stamina < RunResumeStamina;
+        Condition.RecoverySeconds = static_cast<uint8>(Saved->RecoverySeconds);
     }
     State.RestoreConditionAuthority(Condition);
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=condition_restored player=%d character=%s source=%s vitality=%d stamina=%d winded=%d"),
@@ -287,8 +289,8 @@ void UMarburgumWorldAuthority::SaveCondition(const AMarburgumPlayerState& State,
             ConditionLogPrefix, Why, *Key, *Error);
         return;
     }
-    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=condition_saved why=%s character=%s vitality=%d stamina=%d winded=%d revision=%lld"),
-        ConditionLogPrefix, Why, *Key, Next.Vitality, Next.Stamina, Next.bWinded ? 1 : 0, Record.Revision);
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=condition_saved why=%s character=%s vitality=%d stamina=%d winded=%d revision=%lld recovery_s=%d"),
+        ConditionLogPrefix, Why, *Key, Next.Vitality, Next.Stamina, Next.bWinded ? 1 : 0, Record.Revision, Next.RecoverySeconds);
 }
 
 void UMarburgumWorldAuthority::ApplyInventory(AMarburgumPlayerState& State) const

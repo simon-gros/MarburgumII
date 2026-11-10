@@ -53,7 +53,8 @@ struct FMarburgumMissionState
 /**
  * What a character's body has left (ontology signal `player_condition`); replicated to its owner only.
  * Whole points: the movement component keeps the exact running value, this is what the HUD, the
- * Character panel and the world store see. Nothing in this build changes vitality yet.
+ * Character panel and the world store see. Drowning is the only thing that changes vitality yet
+ * (ADR-032): it takes all of it, and the body recovers in full after RecoverySeconds.
  */
 USTRUCT(BlueprintType)
 struct FMarburgumCondition
@@ -80,10 +81,25 @@ struct FMarburgumCondition
     UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Condition")
     bool bRunning = false;
 
+    /** In the water, as the server simulated the last move (ADR-032). */
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Condition")
+    bool bSwimming = false;
+
+    /** The mouth is under: stamina is the breath being held. */
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Condition")
+    bool bSubmerged = false;
+
+    /** Whole seconds until a body with no vitality is alive again; 0 when it is alive. */
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Condition")
+    uint8 RecoverySeconds = 0;
+
+    bool IsDown() const { return Vitality == 0; }
+
     bool operator==(const FMarburgumCondition& Other) const
     {
         return Vitality == Other.Vitality && MaxVitality == Other.MaxVitality && Stamina == Other.Stamina
-            && MaxStamina == Other.MaxStamina && bWinded == Other.bWinded && bRunning == Other.bRunning;
+            && MaxStamina == Other.MaxStamina && bWinded == Other.bWinded && bRunning == Other.bRunning
+            && bSwimming == Other.bSwimming && bSubmerged == Other.bSubmerged && RecoverySeconds == Other.RecoverySeconds;
     }
 };
 

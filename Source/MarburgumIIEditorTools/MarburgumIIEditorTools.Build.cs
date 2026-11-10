@@ -11,7 +11,7 @@ public class MarburgumIIEditorTools : ModuleRules
         bEnableExceptions = true;
         PrivateDependencyModuleNames.AddRange(new[]
         {
-            "Core", "CoreUObject", "Engine", "UnrealEd", "AssetTools", "MeshDescription", "StaticMeshDescription", "MeshConversion", "Landscape", "Json", "MarburgumII"
+            "Core", "CoreUObject", "Engine", "UnrealEd", "AssetTools", "MeshDescription", "StaticMeshDescription", "MeshConversion", "Landscape", "Json", "BSPUtils", "MarburgumII"
         });
     }
 }

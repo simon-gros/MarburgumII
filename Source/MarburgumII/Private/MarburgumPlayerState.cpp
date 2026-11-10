@@ -122,8 +122,10 @@ void AMarburgumPlayerState::UpdateConditionAuthority(const FMarburgumCondition& 
         return;
     }
     // A whole point of stamina changes ten times a second while running; that rides the normal update
-    // rate. The states the player acts on (running, winded) go out at once.
-    const bool bStateChanged = Condition.bWinded != Simulated.bWinded || Condition.bRunning != Simulated.bRunning;
+    // rate. The states the player acts on (running, winded, in the water, under it, down) go out at once.
+    const bool bStateChanged = Condition.bWinded != Simulated.bWinded || Condition.bRunning != Simulated.bRunning
+        || Condition.bSwimming != Simulated.bSwimming || Condition.bSubmerged != Simulated.bSubmerged
+        || Condition.IsDown() != Simulated.IsDown();
     Condition = Simulated;
     if (bStateChanged)
     {

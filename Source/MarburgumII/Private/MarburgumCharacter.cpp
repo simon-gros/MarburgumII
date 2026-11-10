@@ -1,6 +1,8 @@
 #include "MarburgumCharacter.h"
 
 #include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "Animation/AnimSequenceBase.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -10,11 +12,23 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "InputCoreTypes.h"
 #include "MarburgumCharacterMovement.h"
+#include "MarburgumGameplayContract.h"
 #include "UObject/ConstructorHelpers.h"
 
 namespace
 {
     constexpr float CapsuleHalfHeight = 88.f;
+
+    // The swim cycle is played through the template animation blueprint's montage slot.
+    const FName SwimSlot(TEXT("DefaultSlot"));
+    constexpr float SwimBlendSeconds = 0.25f;
+    // Enough loops of the 1.2 s cycle for any swim; the clip is restarted if it ever runs out.
+    constexpr int32 SwimLoops = 100000;
+    // The swim pose leans the chest onto the water, which puts the head about 17 cm under where the
+    // original drew the surface. The body is drawn this much higher while it swims, so the face is
+    // out; the mouth rule (MouthHeightCm) is the movement's and does not move.
+    constexpr float SwimLiftCm = 20.f;
+    constexpr float SwimLiftCmPerSecond = 60.f;
 }
 
 AMarburgumCharacter::AMarburgumCharacter(const FObjectInitializer& ObjectInitializer)
@@ -57,6 +71,63 @@ AMarburgumCharacter::AMarburgumCharacter(const FObjectInitializer& ObjectInitial
     // Nothing reads bone poses on the server and no root motion is used, so a body nobody sees
     // (every body on a dedicated server) skips its animation.
     Body->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+    MeshRestOffset = Body->GetRelativeLocation();
+
+    // The original game's swim cycle, generated onto the mannequin skeleton (ADR-032).
+    static ConstructorHelpers::FObjectFinder<UAnimSequenceBase> Swim(TEXT("/Game/Characters/Animations/A_Swim.A_Swim"));
+    if (Swim.Succeeded())
+    {
+        SwimClip = Swim.Object;
+    }
+}
+
+void AMarburgumCharacter::Tick(float DeltaSeconds)
+{
+    Super::Tick(DeltaSeconds);
+    if (GetNetMode() != NM_DedicatedServer)
+    {
+        UpdateSwimPresentation();
+        const float Target = SwimMontage ? SwimLiftCm : 0.f;
+        SwimLift = FMath::FInterpConstantTo(SwimLift, Target, DeltaSeconds, SwimLiftCmPerSecond);
+        GetMesh()->SetRelativeLocation(MeshRestOffset + FVector(0.f, 0.f, SwimLift));
+    }
+}
+
+void AMarburgumCharacter::UpdateSwimPresentation()
+{
+    UAnimInstance* Anim = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
+    if (!Anim || !SwimClip)
+    {
+        return;
+    }
+    const bool bSwimming = GetCharacterMovement()->IsSwimming();
+    if (!bSwimming)
+    {
+        if (SwimMontage)
+        {
+            Anim->Montage_Stop(SwimBlendSeconds, SwimMontage);
+            SwimMontage = nullptr;
+        }
+        return;
+    }
+    if (!SwimMontage || !Anim->Montage_IsPlaying(SwimMontage))
+    {
+        SwimMontage = Anim->PlaySlotAnimationAsDynamicMontage(SwimClip, SwimSlot, SwimBlendSeconds, SwimBlendSeconds, 1.f, SwimLoops);
+    }
+    if (SwimMontage)
+    {
+        // As the original paced the clip: by the visible speed, or at the stroke's own pace when
+        // treading water.
+        const float Speed = GetVelocity().Size2D();
+        const float Pace = Speed > 15.f ? Speed : MarburgumII::Gameplay::SwimSpeedCm;
+        Anim->Montage_SetPlayRate(SwimMontage, FMath::Clamp(Pace / MarburgumII::Gameplay::SwimSpeedCm, 0.75f, 1.4f));
+    }
+}
+
+bool AMarburgumCharacter::IsSwimClipPlaying() const
+{
+    const UAnimInstance* Anim = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
+    return Anim && SwimMontage && Anim->Montage_IsPlaying(SwimMontage);
 }
 
 void AMarburgumCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

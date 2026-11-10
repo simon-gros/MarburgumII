@@ -44,6 +44,41 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
         }
     }
 
+    // A drowned body keeps the rest of its wait (ADR-032); a living one never writes the field.
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("load before down"), Store.Load(Error));
+        FMarburgumWorldRecord Next = Store.Get();
+        Next.Revision = 2;
+        FMarburgumStoredCondition Down;
+        Down.Vitality = 0;
+        Down.Stamina = 40;
+        Down.RecoverySeconds = 37;
+        Next.Conditions.Add(TEXT("drowned"), Down);
+        TestTrue(TEXT("commit down"), Store.Commit(Next, Error));
+        FString Text;
+        FFileHelper::LoadFileToString(Text, *Path);
+        const int32 First = Text.Find(TEXT("recovery_s"));
+        TestTrue(TEXT("only the down body has a wait"),
+            First != INDEX_NONE && First == Text.Find(TEXT("recovery_s"), ESearchCase::CaseSensitive, ESearchDir::FromEnd));
+    }
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("reload down"), Store.Load(Error));
+        const FMarburgumStoredCondition Down = Store.Get().Conditions.FindRef(TEXT("drowned"));
+        TestEqual(TEXT("down vitality"), Down.Vitality, 0);
+        TestEqual(TEXT("wait kept"), Down.RecoverySeconds, 37);
+        TestEqual(TEXT("living body has no wait"), Store.Get().Conditions.FindRef(TEXT("runner")).RecoverySeconds, 0);
+    }
+    // A wait on a living body is not trusted.
+    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":3,\"revision\":1,")
+        TEXT("\"conditions\":{\"alive\":{\"stamina\":50,\"vitality\":60,\"winded\":false,\"recovery_s\":30}}}"), *Path);
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("alive with a wait loads"), Store.Load(Error));
+        TestEqual(TEXT("no wait while alive"), Store.Get().Conditions.FindRef(TEXT("alive")).RecoverySeconds, 0);
+    }
+
     // A schema 2 document (before conditions) loads with every body rested.
     FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":2,\"revision\":4,")
         TEXT("\"stocks\":{},\"inventories\":{\"simon\":{\"fishing_rod\":1}},\"missions\":{},\"receipts\":{}}"), *Path);

@@ -135,7 +135,7 @@ Evidence: [STAGE1_MOVEMENT_TIME_EVIDENCE.md](STAGE1_MOVEMENT_TIME_EVIDENCE.md).
 
 Evidence: [STAGE1_CONDITION_EVIDENCE.md](STAGE1_CONDITION_EVIDENCE.md).
 
-**Not covered.** Crash-safety of condition between logouts: a server killed with SIGKILL loses the breath spent since the last save, which is acceptable for breath and must be revisited when vitality can fall. Drowning, falls, swimming, guarding and combat stamina costs (the rest of `combat.h`). Stamina for skills or work. Sprint animation and camera feedback. Re-measuring the one-point correction tolerance under real latency and packet loss.
+**Not covered.** Crash-safety of condition between logouts: a server killed with SIGKILL loses the breath spent since the last save, which is acceptable for breath and must be revisited when vitality can fall. Falls, guarding and combat stamina costs (the rest of `combat.h`); swimming and drowning are ADR-032. Stamina for skills or work. Sprint animation and camera feedback. Re-measuring the one-point correction tolerance under real latency and packet loss.
 
 ## ADR-021 — Characters use the UE5 mannequin skeleton; the template mannequin is committed (accepted 2026-11-10)
 
@@ -227,6 +227,27 @@ The opening-route pass (`-FictionLent`) does not move those meshes, the landscap
 This closes the rasterizer-licence question for this character. It stays open for any future asset baked through TRELLIS's textured export.
 
 **Not covered.** The back and sides have only vertex-colour detail; the concept is a single front view. A hand-authored UV layout, a final hand texture, LODs and owner sign-off on the look.
+
+## ADR-032 — Swimming, held breath and drowning from the original game (accepted 2026-11-10)
+
+**Problem.** The owner asked for the original game's swimming in Marburgum II: its animation, sounds, code and whatever else it needs. The launch map has the Drava, but the engine did not know where the water was, the body could not swim, and vitality never changed (ADR-020). The original (`magna-raedarum-marburgum`) has three things to offer, and they do not all have the same standing:
+
+- **Rules** (`src/server/world_simulation.cpp` `tick_water`, `tick_combat`, `send_to_graveyard`; `src/shared/combat.h`, `protocol.h`). Owner's own code.
+- **The swim clip.** Marburgum's own is procedural: `tools/build_character.gd` `_swim_animation`, a 1.2 s cycle keyed as model-space Euler angles on the original Godot humanoid. The better-looking breaststroke in the original's Unreal client, San Andreas DE `Swim_Breast`, is a not-for-shipping GTA placeholder (`docs/PLACEHOLDER_ASSETS.md`).
+- **Sounds.** The original has no water or swimming sounds of its own. Its water footsteps and fishing splashes are GTA III DE / San Andreas DE placeholders, and the Godot-era picks were matched back to GTA III files by waveform.
+
+**Decision.**
+
+- **Water is a set of water physics volumes** generated over the Drava in `/Game/World/lent` by a new C++ commandlet (`-run=MarburgumSwimContent -Steps=water`, `MarburgumIIEditorTools`). Every 1 m cell under the level's `Drava` sheet whose ground is at least 5 cm below the sheet is water. The cells are merged into 82 boxes whose tops are the drawn surface (Z = 6 cm), the 65,000 m² of river in the window, down to 1 m under the bed. The sheet and the landscape are unchanged.
+- **The original's rule replaces the engine's buoyancy.** `UMarburgumCharacterMovement::PhysSwimming` steps the body as `tick_water` did: holding a direction swims at 1.1 m/s and raises the mouth (1.55 m above the feet) to 15 cm over the surface at 1.2 m/s. Letting go, the body sinks at 0.45 m/s until the mouth is 35 cm under, and never lower than 2.6 m. A fall into the river puts the mouth 40 cm under, and from 45 m the water is lethal. Steering near the surface, the swimmer climbs onto standable ground up to 1.6 m ahead, between 25 cm under and 1 m over the surface. Lent's bank is a slope, so a swimmer usually wades out before that rule is needed. Walking down the bank is wading until the capsule centre is under the surface.
+- **Held breath is the stamina bar.** With the mouth under, stamina drains at 100/60 per second. None left, still under, is drowning: all vitality goes. Running, winding and recovery are unchanged from ADR-020. The owning client predicts all of this, and a correction now also carries the down state.
+- **Down and recovery.** The original takes a dead player to the graveyard for 60 s. Here the server takes the body to the start tagged `recovery`, or the arrival start where there is none (this map). The body takes no input there, and after 60 s it is alive with full vitality and breath. The wait is saved with the condition (`recovery_s`, only on a down body; living entries keep their schema-3 shape), so leaving does not shorten it.
+- **Condition and HUD.** `FMarburgumCondition` adds `bSwimming`, `bSubmerged` and `RecoverySeconds`; vitality 0 is down. The `player_condition` pill shows the most urgent state: DROWNED · N s, HOLDING BREATH, SWIMMING, WINDED, RUNNING.
+- **The swim clip is Marburgum's own, carried over key for key.** `-Steps=animation` writes `/Game/Characters/Animations/A_Swim` on the mannequin skeleton. It applies the original model-space turns with the same hierarchy after turning Manny's A-pose limbs onto the original humanoid's rest directions. Read back from the saved clip, every arm and leg direction at the four key times matches the original evaluated on `player_male_a.glb` to within 0.02 (the torso to 0.03, because Manny's spine curves differently). The client plays it through the template `ABP_Unarmed`'s `DefaultSlot`, paced as the original paced it, and lifts the drawn body 20 cm while swimming so the face is out of the water. The mouth rule does not move. A dedicated server never plays it. The San Andreas clip is not imported.
+- **No sounds are imported.** None of the original's water sounds is Marburgum's to ship. Swimming is silent until original or licensed sounds exist.
+- **Evidence.** `scripts/swim-smoke-linux.sh` runs a dedicated server on `/Game/World/lent`, a rendered swimmer, a remote observer, and a restart.
+
+**Not covered.** Owner playtest. A river current (the original had none for bodies). Underwater camera and post-processing. A dive or plunge from a height, and a bank step that needs the climb-out rule: Lent's slope never reached it in the smoke. Falls onto the ground and fights, the other ways to lose vitality. A drowned or down pose: the body stands at the recovery point. Swim, splash and breath sounds. Wading hysteresis at the volume top, where a body walking on the bed with its centre at the surface can alternate between wading and swimming. Remote bodies' swim clip is checked as playing, not rendered.
 
 ## Open decisions
 

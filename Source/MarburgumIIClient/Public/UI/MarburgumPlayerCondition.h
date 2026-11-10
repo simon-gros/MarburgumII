@@ -29,6 +29,8 @@ public:
     int32 GetShownVitality() const { return ShownVitality; }
     bool IsShowingWinded() const { return bShowingWinded; }
     bool IsShowingRunning() const { return bShowingRunning; }
+    /** The state pill's text ("" when hidden): DROWNED, HOLDING BREATH, SWIMMING, WINDED or RUNNING. */
+    FString GetShownState() const { return ShownState; }
 
 protected:
     virtual void NativeOnInitialized() override;
@@ -51,4 +53,5 @@ private:
     int32 ShownVitality = -1;
     bool bShowingWinded = false;
     bool bShowingRunning = false;
+    FString ShownState;
 };

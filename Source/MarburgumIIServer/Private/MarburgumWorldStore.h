@@ -33,10 +33,13 @@ struct FMarburgumStoredCondition
     int32 Vitality = 100;
     int32 Stamina = 100;
     bool bWinded = false;
+    /** Seconds a body with no vitality still had to wait when it was saved (ADR-032); 0 when alive. */
+    int32 RecoverySeconds = 0;
 
     bool operator==(const FMarburgumStoredCondition& Other) const
     {
-        return Vitality == Other.Vitality && Stamina == Other.Stamina && bWinded == Other.bWinded;
+        return Vitality == Other.Vitality && Stamina == Other.Stamina && bWinded == Other.bWinded
+            && RecoverySeconds == Other.RecoverySeconds;
     }
 };
 

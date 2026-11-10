@@ -179,6 +179,47 @@ namespace MarburgumII::Gameplay
     // The server corrects a client whose predicted stamina differs from its own by more than this.
     inline constexpr float StaminaCorrectionTolerance = 1.f;
 
+    // ---- Swimming, breath and drowning (original protocol.h, combat.h, world_simulation.cpp tick_water) ----
+
+    // Swimming is slower than walking: you are pushing water, not ground.
+    inline constexpr float SwimSpeedCm = 110.f;
+    // Mouth of a standing adult above the feet. Under that line there is no air.
+    inline constexpr float MouthHeightCm = 155.f;
+    // Holding a direction keeps the mouth this far above the surface, rising at SwimRiseCmPerSecond.
+    inline constexpr float SwimMouthAboveSurfaceCm = 15.f;
+    inline constexpr float SwimRiseCmPerSecond = 120.f;
+    // Letting go, the body slips under until the mouth is this far below, sinking at SinkCmPerSecond,
+    // and never further than MaxSinkBelowSurfaceCm of feet under the surface.
+    inline constexpr float IdleMouthBelowSurfaceCm = 35.f;
+    inline constexpr float SinkCmPerSecond = 45.f;
+    inline constexpr float MaxSinkBelowSurfaceCm = 260.f;
+    // A fall into the river puts the mouth this far under. Swimming is what brings it back up.
+    inline constexpr float FallInMouthBelowSurfaceCm = 40.f;
+    // The mouth counts as under once it is this far below the surface.
+    inline constexpr float SubmergedMarginCm = 2.f;
+
+    // The bar is also the breath you can hold: an ordinary untrained person lasts about a minute under.
+    // Still under with none left, the body breathes water.
+    inline constexpr float BreathHoldSeconds = 60.f;
+    inline constexpr float BreathDrainPerSecond = DefaultStamina / BreathHoldSeconds;
+
+    // Water gives, until it doesn't: an untrained impact from about forty-five metres meets the river as
+    // a solid. Below that a fall into water does no harm.
+    inline constexpr float LethalWaterImpactCm = 4500.f;
+
+    // Climbing out: steering, with the mouth no deeper than BankReachBelowSurfaceCm, a swimmer pulls up
+    // onto standable ground within BankSearchCm ahead whose top is no lower than ShoreMinBelowSurfaceCm
+    // under the surface and no higher than BankMaxRiseCm above it.
+    inline constexpr float BankReachBelowSurfaceCm = 80.f;
+    inline constexpr float BankSearchCm = 160.f;
+    inline constexpr int32 BankAheadSteps = 4;
+    inline constexpr float ShoreMinBelowSurfaceCm = 25.f;
+    inline constexpr float BankMaxRiseCm = 100.f;
+
+    // A body whose vitality reaches zero is taken to the recovery point and stands there this long
+    // before it is alive again, with full vitality and breath.
+    inline constexpr float RecoverySeconds = 60.f;
+
     // The server accepts an interaction when the pawn is within the target's range plus this
     // allowance for movement that replicated after the client chose the target.
     inline constexpr float RangeToleranceCm = 50.f;
@@ -196,6 +237,8 @@ namespace MarburgumII::Gameplay
     // no start has the tag, the server uses starts tagged DefaultStartTag, then any start.
     inline constexpr const TCHAR* StartOption = TEXT("MB2Start");
     inline constexpr const TCHAR* DefaultStartTag = TEXT("arrival");
+    // A body with no vitality is taken to the start with this tag, else to the arrival start (ADR-032).
+    inline constexpr const TCHAR* RecoveryStartTag = TEXT("recovery");
 
     // Development character identity: a join-URL option (?MB2Character=<key>). It is NOT
     // authentication; see ADR-014. Keys are 3-40 characters of [a-z0-9_-].

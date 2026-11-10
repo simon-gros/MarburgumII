@@ -125,10 +125,15 @@
     "run_stamina_drain_per_second": 10,
     "stamina_recovery_per_second": 11,
     "run_resume_stamina": 15,
-    "persisted": ["vitality", "stamina", "winded"],
+    "swim_speed_mps": 1.1,
+    "mouth_height_m": 1.55,
+    "breath_hold_seconds": 60,
+    "lethal_water_impact_m": 45,
+    "recovery_seconds": 60,
+    "persisted": ["vitality", "stamina", "winded", "recovery_s"],
     "provenance": {
-      "source": "original Marburgum src/shared/combat.h (DEFAULT_VITALITY, DEFAULT_STAMINA, RUN_DRAIN_PER_SECOND, STAMINA_RECOVERY_PER_SECOND, RUN_RESUME_STAMINA) and src/shared/protocol.h (WALK_SPEED, RUN_SPEED); body save/restore in src/server/world_simulation.cpp",
-      "review": "Running and its breath cost carried forward; vitality is stored and shown but nothing in this build changes it yet (falls, drowning and fights are not implemented)."
+      "source": "original Marburgum src/shared/combat.h (DEFAULT_VITALITY, DEFAULT_STAMINA, RUN_DRAIN_PER_SECOND, STAMINA_RECOVERY_PER_SECOND, RUN_RESUME_STAMINA, BREATH_HOLD_SECONDS, MOUTH_HEIGHT, LETHAL_WATER_IMPACT_METRES) and src/shared/protocol.h (WALK_SPEED, RUN_SPEED, SWIM_SPEED, RESPAWN_WAIT_SECONDS); swimming, sinking, climbing out and drowning in src/server/world_simulation.cpp (tick_water, tick_combat, send_to_graveyard); body save/restore in the same file",
+      "review": "Running and its breath cost carried forward (ADR-020). Swimming, held breath and drowning carried forward (ADR-032): drowning is the only thing that changes vitality yet; a drowned body waits at the recovery start instead of the original's graveyard. Falls onto ground and fights are not implemented."
     }
   },
   "areas": {
