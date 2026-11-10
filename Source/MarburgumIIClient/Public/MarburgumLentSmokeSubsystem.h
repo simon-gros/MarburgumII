@@ -25,10 +25,16 @@ class AMarburgumPlayerState;
  *   M2  M's character after a server restart: mission, objective and start item restored; the first
  *       operation replayed is still a Duplicate.
  *   T   a new character on the bridge walks into Lent: the location banner appears.
+ *   F   the fast-clock adversary (with -MB2LentClockRate=, e.g. 2.5): its world clock and so its move
+ *       timestamps run ahead of real time while it walks from the bridge into Lent; the server must not
+ *       let it cover the ground faster than MaxWalkSpeed allows (ADR-019, checked from the server log).
+ *
+ * Walkers (W, T, F) log their start, wall and world seconds; an honest walker fails if its world clock
+ * ran ahead of real time.
  *
  * Options: -MB2LentRole= -MB2LentOp=<32 hex digits, M's replayable operation> -MB2LentSignal=<file M
  * creates once its mission is saved> -MB2LentHoldFile=<file that releases M> -MB2LentShot=<path prefix>
- * -MB2LentTimeout=<s>
+ * -MB2LentTimeout=<s> -MB2LentClockRate=<local world time dilation, default 1>
  */
 UCLASS()
 class MARBURGUMIICLIENT_API UMarburgumLentSmokeSubsystem : public UGameInstanceSubsystem
@@ -48,6 +54,7 @@ private:
     void TickK(double Now);
     void TickM2(double Now);
     void TickT(double Now);
+    void TickF(double Now);
 
     /** Walk north (towards Lent) until the server reports the Lent area; true once it has. */
     bool WalkIntoLent();
@@ -78,12 +85,16 @@ private:
     FString HoldFile;
     FGuid ReplayOperation;
     double TimeoutSeconds = 150.0;
+    double ClockRate = 1.0;
     double StartSeconds = 0.0;
 
     int32 Step = 0;
     double StepSeconds = 0.0;
     double WalkStartSeconds = 0.0;
     double WalkStartWorldSeconds = 0.0;
+    double LastTickSeconds = 0.0;
+    double FrameWallSeconds = 0.0;
+    double LongestWalkFrameSeconds = 0.0;
     FVector WalkStart = FVector::ZeroVector;
     FString PendingShot;
     double ShotRequestedSeconds = 0.0;

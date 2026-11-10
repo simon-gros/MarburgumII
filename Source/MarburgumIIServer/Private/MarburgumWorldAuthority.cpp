@@ -217,10 +217,12 @@ void UMarburgumWorldAuthority::UpdateLocations()
         if (!State->IsLocationKnown() || State->GetAreaId() != Area)
         {
             State->SetAreaAuthority(Area);
-            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=area player=%d character=%s area=%s"),
+            // The server's pawn position (metres) lets the Lent smoke bound how fast a client moved (ADR-019).
+            const FVector Where = Body->GetActorLocation() / 100.f;
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=area player=%d character=%s area=%s x_m=%.2f y_m=%.2f"),
                 InteractLogPrefix, State->GetPlayerId(),
                 State->GetCharacterKey().IsEmpty() ? TEXT("-") : *State->GetCharacterKey(),
-                Area.IsNone() ? TEXT("-") : *Area.ToString());
+                Area.IsNone() ? TEXT("-") : *Area.ToString(), Where.X, Where.Y);
         }
     }
 }

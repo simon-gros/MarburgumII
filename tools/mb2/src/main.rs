@@ -3,6 +3,7 @@
 //! files around the native build. Exit codes: 0 ok, 1 check failed, 2 usage error or blocked.
 
 mod engine;
+mod movement_check;
 mod playtest;
 mod repo;
 mod store_check;
@@ -23,7 +24,9 @@ Usage: mb2 <command>
   new-op                 Print a fresh operation id (32 upper-case hex digits).
   store-check interaction <store> <key_a> <key_b> <first_op>
   store-check lent <store> <key_m> <key_w> <first_op>
-                         Check a world-store file after phase 1 of a smoke test.";
+                         Check a world-store file after phase 1 of a smoke test.
+  movement-check <server log> <client log> <role> <character key> <honest|adversary> <DefaultGame.ini>
+                         ADR-019 bound on how far a Lent smoke walker moved on the server.";
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -38,6 +41,7 @@ fn main() -> ExitCode {
         }
         ["store-check", "interaction", store, a, b, op] => store_check::interaction(store, a, b, op),
         ["store-check", "lent", store, m, w, op] => store_check::lent(store, m, w, op),
+        ["movement-check", server, client, role, key, kind, ini] => movement_check::run(server, client, role, key, kind, ini),
         _ => {
             eprintln!("{USAGE}");
             2

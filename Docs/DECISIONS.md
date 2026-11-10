@@ -97,6 +97,27 @@ The project's tooling languages are C++, C# and Rust (ADR-003). Python had never
 - **.NET 10.** The C# manifest validator targets `net10.0`. A root `global.json` pins SDK 10.0.x with feature-band roll-forward, and CI installs that SDK from it. UnrealBuildTool continues to use the engine's bundled .NET.
 - **CI:** one Rust job runs the tool's tests and `mb2 validate all`, alongside the .NET 10 and simulation-crate jobs. Rust stable and .NET 10 are required; Python 3 is not.
 
+## ADR-019 — The server bounds client movement time; world time follows real time (accepted 2026-11-10)
+
+**Problem.** Character movement is server-authoritative in position but not in time. The engine's `CharacterMovementComponent` simulates each `ServerMove` for the time between the client's own timestamps, and Unreal's movement time-discrepancy checks are off by default. A client whose clock runs fast therefore walks faster than `MaxWalkSpeed` on the server too. Range validation (`UMarburgumWorldAuthority`) and location derivation (ADR-017) both follow that pawn. In the Lent smoke of 2026-11-10 (`df2e04f`), the `-nullrhi` client W covered 12.7 m in 1.1 s of wall time while its world clock advanced 2.9 s, and the server placed it in Lent about a second after it set off.
+
+**Cause of the fast test clock.** It is neither a fixed time step (`-UseFixedTimeStep`/`-benchmark` are not used) nor a frame-rate cap. A `-nullrhi` client has nothing to render and no cap, so it runs at about 5,000 fps. `AWorldSettings::FixupDeltaSeconds` clamps every frame to at least `MinUndilatedFrameTime` (engine default 0.0005 s, "2000 fps"), so each 0.2 ms frame advanced world time by 0.5 ms. Any client above 2,000 fps does the same, including a rendered client in a trivial scene with no frame cap.
+
+**Decision.**
+
+- **Server: detection and resolution on** (`[/Script/Engine.GameNetworkManager]` in `Config/DefaultGame.ini`; the keys carry a `b` prefix: `bMovementTimeDiscrepancyDetection`, `bMovementTimeDiscrepancyResolution`).
+  - `MovementTimeDiscrepancyMaxTimeMargin=0.25`: a client may get 0.25 s ahead before it is detected.
+  - `ResolutionRate=1.0`: once detected, its moves are limited to server time until it has paid back all the time it took.
+  - `MinTimeMargin=-0.25`: a slow or hitching client cannot bank more than 0.25 s to spend later.
+  - `DriftAllowance=0`: any drift allowance is a permanent speed bonus for a fast clock.
+  - `bMovementTimeDiscrepancyForceCorrectionsDuringResolution=True`: the client is corrected while it pays back.
+  - Over any stretch of real time T a client moves for at most T + 0.25 s, so it can be at most `MaxWalkSpeed` × 0.25 s (1.1 m at 4.5 m/s) ahead of an honest client. Every position it reaches is one an honest client could reach too, at most 0.25 s later.
+- **Clients: world time follows real time.** `[/Script/Engine.WorldSettings] MinUndilatedFrameTime=0`. An honest client at any frame rate stamps its moves with real time, so the server never mistakes it for a speed hack and resolution never rubber-bands it. `MaxUndilatedFrameTime` (0.4 s) stays: it can only slow a clock down.
+- **Evidence.** `UMarburgumCharacterMovement` (core module) reports each detection on the server as `MB2INTERACT role=server event=time_discrepancy`, at most once a second per character. The server's `event=area` lines carry the pawn position.
+- **Test clients behave like real clients, and one adversary is kept on purpose.** With the clamp removed, `-nullrhi` test clients keep real time, and an honest walker fails its own run if its world clock ran ahead. The Lent smoke adds a deliberate adversary, F. F dilates only its own world clock to 2.5× real time (`-MB2LentClockRate=2.5`), which is deterministic, unlike relying on a host's frame rate. The smoke then checks, from the server's positions, that no walker covered more than `MaxWalkSpeed` × (elapsed + 0.25 s) + 0.5 m. It also checks that the server detected F and nobody else.
+
+**Not covered.** This bounds movement time only. It does not validate client-claimed velocity modes, teleports beyond the engine's position-error correction, or `ClientAuthorativePosition` (still off). It does not rate-limit `ServerMove` RPCs, and it does not report or penalise a detected client beyond correcting it. Account sanctions, anti-cheat telemetry and lossy-network tuning of the margins are later work. With 250-player shards the 0.25 s margin and the absence of drift allowance need re-measuring under real latency and packet loss.
+
 ## Open decisions
 
 - Verify production rights for the locally installed Hunyuan3D-2.1 version, specifically use within Slovenia/EU, generated outputs and subsequent game distribution.

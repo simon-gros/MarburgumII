@@ -7,9 +7,11 @@
 #include "Engine/StaticMesh.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "InputCoreTypes.h"
+#include "MarburgumCharacterMovement.h"
 #include "UObject/ConstructorHelpers.h"
 
-AMarburgumCharacter::AMarburgumCharacter()
+AMarburgumCharacter::AMarburgumCharacter(const FObjectInitializer& ObjectInitializer)
+    : Super(ObjectInitializer.SetDefaultSubobjectClass<UMarburgumCharacterMovement>(ACharacter::CharacterMovementComponentName))
 {
     GetCapsuleComponent()->InitCapsuleSize(34.f, 88.f);
     bUseControllerRotationYaw = true;

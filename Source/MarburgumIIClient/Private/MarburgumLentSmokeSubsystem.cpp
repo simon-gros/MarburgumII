@@ -3,7 +3,10 @@
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameStateBase.h"
+#include "GameFramework/WorldSettings.h"
 #include "GameFramework/Pawn.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
@@ -59,6 +62,7 @@ void UMarburgumLentSmokeSubsystem::Initialize(FSubsystemCollectionBase& Collecti
     FParse::Value(CommandLine, TEXT("MB2LentSignal="), SignalFile);
     FParse::Value(CommandLine, TEXT("MB2LentHoldFile="), HoldFile);
     FParse::Value(CommandLine, TEXT("MB2LentTimeout="), TimeoutSeconds);
+    FParse::Value(CommandLine, TEXT("MB2LentClockRate="), ClockRate);
     FString OperationText;
     if (FParse::Value(CommandLine, TEXT("MB2LentOp="), OperationText))
     {
@@ -69,7 +73,8 @@ void UMarburgumLentSmokeSubsystem::Initialize(FSubsystemCollectionBase& Collecti
     // Every frame: walking feeds movement input, which the pawn consumes once per frame.
     TickerHandle = FTSTicker::GetCoreTicker().AddTicker(
         FTickerDelegate::CreateUObject(this, &UMarburgumLentSmokeSubsystem::Tick), 0.f);
-    MB2_LENT_LOG("event=start op=%s shot=%d", *ReplayOperation.ToString(EGuidFormats::Digits), ShotPrefix.IsEmpty() ? 0 : 1);
+    MB2_LENT_LOG("event=start op=%s shot=%d clock_rate=%.2f", *ReplayOperation.ToString(EGuidFormats::Digits),
+        ShotPrefix.IsEmpty() ? 0 : 1, ClockRate);
 }
 
 void UMarburgumLentSmokeSubsystem::Deinitialize()
@@ -114,6 +119,13 @@ bool UMarburgumLentSmokeSubsystem::Bind()
         Local->OnInteractionReceipt.AddUObject(this, &UMarburgumLentSmokeSubsystem::HandleReceipt);
         Controller = Local;
         StepSeconds = FPlatformTime::Seconds(); // Settle timers start at admission.
+        if (ClockRate != 1.0 && World->GetWorldSettings())
+        {
+            // The adversary: dilating only this client's world clock makes its ServerMove timestamps run
+            // ahead of real time, like a speed hack on the process clock. The server never sees the
+            // dilation itself, only the timestamps (ADR-019).
+            World->GetWorldSettings()->SetTimeDilation(static_cast<float>(ClockRate));
+        }
         MB2_LENT_LOG("event=ready player=%d character=%d area=%s rods=%d missions=%d distance_m=%.1f",
             State->GetPlayerId(), State->HasCharacter() ? 1 : 0, *Area().ToString(), Rods(), State->GetMissions().Num(),
             FVector::Dist(Local->GetPawn()->GetActorLocation(), Angler->GetActorLocation()) / 100.f);
@@ -220,6 +232,8 @@ bool UMarburgumLentSmokeSubsystem::Tick(float DeltaTime)
         return true;
     }
     const double Now = FPlatformTime::Seconds();
+    FrameWallSeconds = LastTickSeconds > 0.0 ? Now - LastTickSeconds : 0.0;
+    LastTickSeconds = Now;
     if (Now - StartSeconds > TimeoutSeconds)
     {
         Fail(FString::Printf(TEXT("timeout step=%d area=%s rods=%d stage=%s"), Step, *Area().ToString(), Rods(), *Stage().ToString()));
@@ -246,6 +260,7 @@ bool UMarburgumLentSmokeSubsystem::Tick(float DeltaTime)
     else if (Role == TEXT("K")) TickK(Now);
     else if (Role == TEXT("M2")) TickM2(Now);
     else if (Role == TEXT("T")) TickT(Now);
+    else if (Role == TEXT("F")) TickF(Now);
     else Fail(TEXT("unknown_role"));
     return true;
 }
@@ -484,6 +499,25 @@ void UMarburgumLentSmokeSubsystem::TickT(double Now)
     }
 }
 
+void UMarburgumLentSmokeSubsystem::TickF(double Now)
+{
+    switch (Step)
+    {
+    case 0:
+        Expect(Area().IsNone(), FString::Printf(TEXT("bridge_area=%s"), *Area().ToString()));
+        Expect(ClockRate > 1.5, FString::Printf(TEXT("adversary_needs_fast_clock rate=%.2f"), ClockRate));
+        Advance(1, Now);
+        return;
+    case 1:
+        // The server, not this client, decides how far the pawn got; the script checks the server's log.
+        if (!WalkIntoLent()) return;
+        Pass();
+        return;
+    default:
+        return;
+    }
+}
+
 bool UMarburgumLentSmokeSubsystem::WalkIntoLent()
 {
     APawn* Body = Controller.IsValid() ? Controller->GetPawn() : nullptr;
@@ -492,19 +526,39 @@ bool UMarburgumLentSmokeSubsystem::WalkIntoLent()
     {
         return false;
     }
+    // World time is read after the world ticked this frame and wall time later in the same frame, so
+    // the two can differ by up to one frame's length; the honest-clock check allows the longest one.
+    LongestWalkFrameSeconds = FMath::Max(LongestWalkFrameSeconds, FrameWallSeconds);
     if (WalkStartSeconds <= 0.0)
     {
         WalkStartSeconds = Now;
         WalkStartWorldSeconds = Body->GetWorld()->GetTimeSeconds();
         WalkStart = Body->GetActorLocation();
-        MB2_LENT_LOG("event=walk_start area=%s", *Area().ToString());
+        const ACharacter* Walker = Cast<ACharacter>(Body);
+        MB2_LENT_LOG("event=walk_start area=%s x_m=%.2f y_m=%.2f max_walk_mps=%.2f clock_rate=%.2f", *Area().ToString(),
+            WalkStart.X / 100.f, WalkStart.Y / 100.f,
+            Walker && Walker->GetCharacterMovement() ? Walker->GetCharacterMovement()->MaxWalkSpeed / 100.f : 0.f, ClockRate);
     }
     if (Area() == Lent)
     {
-        // World time next to wall time: a client whose clock runs fast walks fast (see the evidence notes).
-        MB2_LENT_LOG("event=walk_arrived area=lent walked_m=%.1f seconds=%.1f world_seconds=%.1f",
-            FVector::Dist2D(WalkStart, Body->GetActorLocation()) / 100.f, Now - WalkStartSeconds,
-            Body->GetWorld()->GetTimeSeconds() - WalkStartWorldSeconds);
+        // World time next to wall time: the clock this client stamped its moves with (ADR-019).
+        const double WallSeconds = Now - WalkStartSeconds;
+        const double WorldSeconds = Body->GetWorld()->GetTimeSeconds() - WalkStartWorldSeconds;
+        MB2_LENT_LOG("event=walk_arrived area=lent walked_m=%.1f seconds=%.2f world_seconds=%.2f longest_frame_s=%.3f",
+            FVector::Dist2D(WalkStart, Body->GetActorLocation()) / 100.f, WallSeconds, WorldSeconds, LongestWalkFrameSeconds);
+        if (ClockRate == 1.0)
+        {
+            // An honest client's clock must not run ahead of real time, whatever its frame rate.
+            Expect(WorldSeconds <= WallSeconds * 1.02 + LongestWalkFrameSeconds + 0.02,
+                FString::Printf(TEXT("clock_runs_fast world_s=%.2f wall_s=%.2f longest_frame_s=%.3f"), WorldSeconds,
+                    WallSeconds, LongestWalkFrameSeconds));
+        }
+        else
+        {
+            // The adversary only proves something if its clock really did run fast.
+            Expect(WorldSeconds >= WallSeconds * ClockRate * 0.9,
+                FString::Printf(TEXT("adversary_clock_not_fast world_s=%.2f wall_s=%.2f"), WorldSeconds, WallSeconds));
+        }
         return true;
     }
     if (Now - WalkStartSeconds > WalkTimeoutSeconds)

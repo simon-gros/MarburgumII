@@ -11,6 +11,12 @@
 #      once M's mission is saved, W's copy of M's player state must carry none of M's progress,
 #      inventory or location; then W walks north until the server places it in Lent.
 #   K  no character key: talking is refused.
+#   F  the fast-clock adversary (ADR-019): its world clock runs 2.5x real time while it walks from the
+#      bridge into Lent, so its move timestamps claim more time than has passed.
+# Movement (ADR-019), from the server's log: every walker (W, F, and T in phase 2) must not have covered
+# more ground than MaxWalkSpeed * (elapsed + MovementTimeDiscrepancyMaxTimeMargin) + 0.5 m between its
+# walk start and the server placing it in Lent; the server must have detected F's clock and no other.
+# Honest walkers also fail on their own if their world clock ran ahead of real time.
 # The server is stopped and the store file checked: schema 2, one commit (the mission start).
 # Phase 2 (same store, server restarted):
 #   M2 M's character: mission, pinned objective and start item restored; the replay is a Duplicate.
@@ -19,6 +25,10 @@
 #
 # M, M2 and T render offscreen one at a time (see interaction-smoke-linux.sh for the Vulkan note).
 # Usage: scripts/lent-smoke-linux.sh [staged|editor]
+# MB2_LENT_SERVER_ARGS adds server arguments, e.g. a negative control that must FAIL the movement check:
+#   MB2_LENT_SERVER_ARGS='-ini:Game:[/Script/Engine.GameNetworkManager]:bMovementTimeDiscrepancyDetection=False'
+# MB2_LENT_CLIENT_ARGS adds arguments to every client; restoring the engine's frame-time floor must FAIL W:
+#   MB2_LENT_CLIENT_ARGS='-ini:Game:[/Script/Engine.WorldSettings]:MinUndilatedFrameTime=0.0005'
 # Evidence is written to Saved/LentSmoke/<UTC timestamp>/.
 set -euo pipefail
 
@@ -32,6 +42,7 @@ token="t$(date +%s)$RANDOM"
 key_m="mb2m-$token"
 key_w="mb2w-$token"
 key_t="mb2t-$token"
+key_f="mb2f-$token"
 first_op="$("$repo_root/scripts/mb2.sh" new-op)"
 
 case "$mode" in
@@ -69,6 +80,8 @@ common_args=(-log -unattended -nosound -nosplash -stdout -FullStdOutLogOutput)
 render_args=(-RenderOffScreen -windowed -ForceRes -ResX=1920 -ResY=1080)
 server_pid=""
 status=0
+read -r -a extra_server_args <<< "${MB2_LENT_SERVER_ARGS:-}"
+read -r -a extra_client_args <<< "${MB2_LENT_CLIENT_ARGS:-}"
 
 stop_server() {
     if [[ -n "$server_pid" ]] && kill -0 "$server_pid" 2>/dev/null; then
@@ -93,7 +106,8 @@ start_server() {
         echo "UDP port $port is already in use; stop the other server or set MB2_LENT_PORT." >&2
         exit 1
     fi
-    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" "${common_args[@]}" "$@" > "$log" 2>&1 &
+    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" "${common_args[@]}" "$@" \
+        ${extra_server_args[@]+"${extra_server_args[@]}"} > "$log" 2>&1 &
     server_pid=$!
     for _ in $(seq 1 240); do
         grep -aq "MB2SMOKE role=server event=ready .* port=$port " "$log" && return 0
@@ -125,7 +139,7 @@ run_client() {
         fi
         "${client_cmd[@]}" "$url" "${common_args[@]}" "$@" \
             -MB2LentSmoke -MB2LentRole="$role" -MB2LentOp="$first_op" -MB2LentTimeout=150 \
-            -MB2LentSignal="$signal_file" -MB2LentHoldFile="$hold_file" \
+            -MB2LentSignal="$signal_file" -MB2LentHoldFile="$hold_file" ${extra_client_args[@]+"${extra_client_args[@]}"} \
             > "$log" 2>&1 || code=$?
     done
     return "$code"
@@ -145,6 +159,16 @@ check_client() {
 
 shot() { echo "${render_args[@]}" "-MB2LentShot=$out_dir/$1"; }
 
+# check_walk <server log> <role> <character key> [adversary]: the ADR-019 movement bound, from the
+# server's own positions. Appends one line to movement.txt; fails the run if the bound is broken.
+check_walk() {
+    local code=0
+    "$repo_root/scripts/mb2.sh" movement-check "$1" "$out_dir/client-$2.log" "$2" "$3" "${4:-honest}" \
+        "$repo_root/Config/DefaultGame.ini" >> "$out_dir/movement.txt" || code=$?
+    tail -n 1 "$out_dir/movement.txt" | sed 's/^/  movement: /'
+    [[ "$code" -eq 0 ]] || status=1
+}
+
 # ---------------------------------------------------------------- phase 1
 echo "Phase 1: dedicated server ($mode) on $map, port $port, fresh store; evidence in $out_dir"
 echo 1 > "$store.fail"
@@ -154,11 +178,14 @@ run_client W "$key_w" bridge -nullrhi &
 pid_w=$!
 run_client K "" angler -nullrhi &
 pid_k=$!
+run_client F "$key_f" bridge -nullrhi -MB2LentClockRate=2.5 &
+pid_f=$!
 # shellcheck disable=SC2046  # word splitting of the argument list is intended
 run_client M "$key_m" angler $(shot lent-m) &
 pid_m=$!
 code=0; wait "$pid_w" || code=$?; check_client W "$code"
 code=0; wait "$pid_k" || code=$?; check_client K "$code"
+code=0; wait "$pid_f" || code=$?; check_client F "$code"
 touch "$hold_file"
 code=0; wait "$pid_m" || code=$?; check_client M "$code"
 sleep 1
@@ -178,6 +205,13 @@ commit_failed=$(grep -ac "MB2INTERACT role=server event=commit_failed" "$out_dir
 entered=$(grep -aci "MB2INTERACT role=server event=area .* character=$key_w area=lent" "$out_dir/server-1.log" || true)
 echo "  server phase 1: applied=$applied_1 (want 1) commit_failed=$commit_failed (want 1) walker_entered_lent=$entered (want 1)"
 [[ "$applied_1" -eq 1 && "$commit_failed" -eq 1 && "$entered" -eq 1 ]] || status=1
+check_walk "$out_dir/server-1.log" W "$key_w"
+check_walk "$out_dir/server-1.log" F "$key_f" adversary
+# Detection must catch the adversary and nobody else (a false positive would rubber-band an honest player).
+detected_f=$(grep -ac "MB2INTERACT role=server event=time_discrepancy .* character=$key_f " "$out_dir/server-1.log" || true)
+detected_other=$(grep -a "MB2INTERACT role=server event=time_discrepancy" "$out_dir/server-1.log" | grep -avc " character=$key_f " || true)
+echo "  server phase 1: time_discrepancy adversary=$detected_f (want >=1) others=$detected_other (want 0)"
+[[ "$detected_f" -ge 1 && "$detected_other" -eq 0 ]] || status=1
 
 # ---------------------------------------------------------------- phase 2
 echo "Phase 2: restart the server on the same store"
@@ -192,6 +226,10 @@ run_client T "$key_t" bridge $(shot lent-t) || code=$?
 check_client T "$code"
 sleep 1
 stop_server
+check_walk "$out_dir/server-2.log" T "$key_t"
+detected_2=$(grep -ac "MB2INTERACT role=server event=time_discrepancy" "$out_dir/server-2.log" || true)
+echo "  server phase 2: time_discrepancy=$detected_2 (want 0)"
+[[ "$detected_2" -eq 0 ]] || status=1
 
 applied_2=$(grep -ac "MB2INTERACT role=server event=interaction .* outcome=applied" "$out_dir/server-2.log" || true)
 loaded=$(grep -ac "MB2INTERACT role=server event=store_loaded .* schema=2 revision=1 " "$out_dir/server-2.log" || true)
@@ -217,6 +255,10 @@ fi
     echo "store_after_phase2_sha256: $store_hash_2"
     echo "server_phase1: applied=$applied_1 commit_failed=$commit_failed walker_entered_lent=$entered"
     echo "server_phase2: store_loaded=$loaded applied=$applied_2"
+    echo "server_args_extra: ${MB2_LENT_SERVER_ARGS:-none}"
+    echo "client_args_extra: ${MB2_LENT_CLIENT_ARGS:-none}"
+    echo "time_discrepancy: phase1 adversary=$detected_f others=$detected_other phase2=$detected_2"
+    sed 's/^/movement: /' "$out_dir/movement.txt"
     echo
     grep -ah "MB2LENT\|MB2INTERACT\|MB2SMOKE role=server event=\(ready\|login\|logout\)" "$out_dir"/*.log \
         | sed 's/^.*\(MB2LENT\|MB2INTERACT\|MB2SMOKE\)/\1/'
