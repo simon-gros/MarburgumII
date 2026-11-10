@@ -100,9 +100,9 @@ The packaged-build checks below ran first on `df2e04f`, the Lent commit. Its edi
 - **Bridge view faced a wall.** The first bridge start looked straight at a facade 26 m away; it now looks up the promenade. A street also opens off the bridge.
 - **Log casing.** `FName` keeps the casing it first saw, so the area id `lent` prints as `Lent` in server logs; the test's log check is case-insensitive.
 
-## Found, not fixed here
+## Found here, fixed by ADR-019
 
-- **The server trusts the client's movement clock.** W, a `-nullrhi` client, covered 13.2 m in 1.2 s of wall time while its world clock advanced 3.0 s. The server accepted those moves because Unreal's movement time-discrepancy detection is off by default. A client with a fast clock therefore moves faster than `MaxWalkSpeed` allows, and range checks follow its pawn. This is recorded as a follow-up: enable and test time-discrepancy detection. The rendered client T walked at the normal 4.6 m/s.
+- **The server trusted the client's movement clock.** W, a `-nullrhi` client, covered 13.2 m in 1.2 s of wall time while its world clock advanced 3.0 s. The server accepted those moves because Unreal's movement time-discrepancy detection is off by default. A client with a fast clock therefore moved faster than `MaxWalkSpeed` allows, and range checks followed its pawn. The rendered client T walked at the normal 4.6 m/s. [ADR-019](DECISIONS.md) now bounds client movement time on the server and removes the engine frame-time floor that made `-nullrhi` clients run fast; the Lent smoke adds a fast-clock adversary F and a server-side speed check. Evidence: [STAGE1_MOVEMENT_TIME_EVIDENCE.md](STAGE1_MOVEMENT_TIME_EVIDENCE.md).
 
 ## Not covered yet
 

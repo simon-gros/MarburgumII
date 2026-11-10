@@ -8,7 +8,7 @@ Found in the Lent smoke of `df2e04f` (`Saved/LentSmoke/20261110T133011Z`). The `
 
 **Why the test client's clock ran fast.** It was neither a fixed time step nor a frame cap: no `-UseFixedTimeStep`, `-benchmark` or `t.MaxFPS` is used, and the frame rate is uncapped. W did ~5,760 frames in 1.13 s (frame counter 411 → 170), about 5,000 fps, because a `-nullrhi` process has nothing to render. `AWorldSettings::FixupDeltaSeconds` clamps each frame to at least `MinUndilatedFrameTime`, whose engine default is 0.0005 s ("2000 fps"). So every ~0.2 ms frame advanced world time by 0.5 ms: 5,760 × 0.5 ms ≈ 2.9 s. The client's `ServerMove` timestamps are its world time, and the server's movement time-discrepancy checks were off by default. The server therefore simulated 2.9 s of walking. Any client above 2,000 fps would do the same, including a rendered one in a trivial scene with no cap.
 
-## Change ([ADR-019](DECISIONS.md), commit `650d6c0`)
+## Change ([ADR-019](DECISIONS.md), commit `1b85a39` on `main`)
 
 - **Server** (`Config/DefaultGame.ini`, `[/Script/Engine.GameNetworkManager]`):
   - `bMovementTimeDiscrepancyDetection=True`, `bMovementTimeDiscrepancyResolution=True`. The UE 5.8.3 keys have a `b` prefix.
@@ -28,7 +28,7 @@ Found in the Lent smoke of `df2e04f` (`Saved/LentSmoke/20261110T133011Z`). The `
 
 | Item | Value |
 | --- | --- |
-| Source | `b01f41a` on branch `adr-018-movement-clock` (git worktree `/mnt/data/MarburgumII-adr018`), clean. The branch is `650d6c0` (the change) on top of `c9d8961` (Rust tooling, ADR-018); this evidence commit adds documentation only |
+| Source | `b01f41a` on branch `adr-018-movement-clock` (git worktree `/mnt/data/MarburgumII-adr018`), clean. That branch was `650d6c0` (the change) on top of `c9d8961` (Rust tooling, ADR-018). It was later rebased onto `e8c82f8` as `1b85a39` + `13e3028` without content changes; see [Merged tree](#merged-tree-main-13e3028) for the rerun on that tree |
 | Engine / host | UE **5.8.3** source build; CachyOS Linux 6.18.60 x86_64 |
 | Build | `UE_ROOT=/mnt/data/unreal/5.8.3 scripts/package-linux.sh` (Development), separate `LinuxServer`/`LinuxClient` stages |
 | Port | 7801 (`MB2_*_PORT`), because another qualification run was using 7777 on the same host |
@@ -64,6 +64,20 @@ Found in the Lent smoke of `df2e04f` (`Saved/LentSmoke/20261110T133011Z`). The `
 | Source checks: `scripts/mb2.sh validate all` (UI ontology, chat, gameplay, Python-free), `cargo test` for `tools/mb2` (19 tests, 6 of them for the movement bound), .NET manifests | — | Pass |
 
 All six runs used one package of the clean `b01f41a` tree. An earlier round of the same runs on the pre-rebase branch (based on `df2e04f`, Python movement check, `Saved/LentSmoke/20261110T141527Z` and neighbours) gave the same outcomes.
+
+### Merged tree (`main`, `13e3028`)
+
+The runs above predate the map-commandlet sun fix `98686e2` and the Lent evidence `e8c82f8`. The rebased tree (`13e3028`, the same tree as the earlier merge commit `76524ae`) was packaged once and rerun on port 7777:
+
+| Smoke | Run | Result |
+| --- | --- | --- |
+| Lent | `Saved/LentSmoke/20261110T143051Z` | PASS. W 11.81 m in 2.73 s (4.32 m/s), F with its clock at 2.5× 11.98 m in 2.77 s (4.32 m/s), T 11.41 m in 2.41 s (4.73 m/s, inside its 12.49 m allowance). The server detected F 3 times and no one else; phase 2 had no detections |
+| Gate 1 interaction | `Saved/InteractSmoke/20261110T143136Z` | PASS, all nine sessions; no `time_discrepancy` |
+| Stage 0B network | `Saved/NetSmoke/20261110T143228Z` | PASS; no `time_discrepancy` |
+| CHAT-001 | `Saved/ChatSmoke/20261110T143619Z` | PASS; accepted 5, no private bodies in logs; no `time_discrepancy` |
+| `scripts/mb2.sh validate all`, `cargo test` for `tools/mb2` (19 tests) | — | Pass |
+
+A first chat run on this build (`Saved/ChatSmoke/20261110T143255Z`) failed with clients A and C crashing (exit 139). A second `package-linux.sh` started in the same checkout restaged `Saved/StagedBuilds` while those clients were loading. The rerun above used the same, unchanged staged build with nothing else running.
 
 ## Defect found and fixed during qualification
 
