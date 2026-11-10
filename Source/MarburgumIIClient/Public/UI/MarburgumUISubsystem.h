@@ -11,6 +11,9 @@ class UMarburgumChatWidget;
 class UMarburgumConnectionScreen;
 class UMarburgumInteractionPrompt;
 class UMarburgumInventoryPanel;
+class UMarburgumJournalPanel;
+class UMarburgumLocationBanner;
+class UMarburgumPinnedObjective;
 class UMarburgumNotificationFeed;
 struct FMarburgumInteractionReceipt;
 class UMarburgumUIRoot;
@@ -43,6 +46,14 @@ public:
     bool ToggleInventory();
     bool IsInventoryOpen() const;
 
+    /** Show or hide the journal_panel (J key). Opening one management screen closes the other. */
+    bool ToggleJournal();
+    bool IsJournalOpen() const;
+
+    /** Mounted HUD modules, for evidence capture; null until the session is admitted. */
+    const UMarburgumLocationBanner* GetLocationBanner() const { return Banner; }
+    const UMarburgumPinnedObjective* GetPinnedObjective() const { return Objective; }
+
     /** Independent UI scale on top of DPI scaling (0.5 - 3.0). */
     static void SetInterfaceScale(float Scale);
 
@@ -65,6 +76,9 @@ private:
     UPROPERTY(Transient) TObjectPtr<UMarburgumChatWidget> Chat;
     UPROPERTY(Transient) TObjectPtr<UMarburgumInteractionPrompt> Prompt;
     UPROPERTY(Transient) TObjectPtr<UMarburgumInventoryPanel> Inventory;
+    UPROPERTY(Transient) TObjectPtr<UMarburgumJournalPanel> Journal;
+    UPROPERTY(Transient) TObjectPtr<UMarburgumLocationBanner> Banner;
+    UPROPERTY(Transient) TObjectPtr<UMarburgumPinnedObjective> Objective;
 
     TWeakObjectPtr<APlayerController> PendingChatOwner;
     TWeakObjectPtr<class AMarburgumPlayerController> ReceiptController;

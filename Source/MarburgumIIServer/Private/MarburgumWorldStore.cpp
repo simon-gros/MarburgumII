@@ -50,15 +50,37 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
     }
     Root->SetObjectField(TEXT("inventories"), Inventories);
 
+    TSharedRef<FJsonObject> Missions = MakeShared<FJsonObject>();
+    for (const FString& Character : SortedKeys(Source.Missions))
+    {
+        TSharedRef<FJsonObject> Progress = MakeShared<FJsonObject>();
+        const TMap<FString, FMarburgumStoredMission>& Owned = Source.Missions[Character];
+        for (const FString& Mission : SortedKeys(Owned))
+        {
+            TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+            Entry->SetStringField(TEXT("stage"), Owned[Mission].Stage);
+            Entry->SetNumberField(TEXT("started_revision"), static_cast<double>(Owned[Mission].StartedRevision));
+            Progress->SetObjectField(Mission, Entry);
+        }
+        Missions->SetObjectField(Character, Progress);
+    }
+    Root->SetObjectField(TEXT("missions"), Missions);
+
     TSharedRef<FJsonObject> Receipts = MakeShared<FJsonObject>();
     for (const FString& Operation : SortedKeys(Source.Receipts))
     {
         const FMarburgumStoredReceipt& Receipt = Source.Receipts[Operation];
         TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
         Entry->SetStringField(TEXT("character"), Receipt.Character);
+        Entry->SetStringField(TEXT("kind"), Receipt.Kind);
         Entry->SetStringField(TEXT("interactable"), Receipt.Interactable);
         Entry->SetStringField(TEXT("item"), Receipt.Item);
         Entry->SetNumberField(TEXT("quantity"), Receipt.Quantity);
+        if (!Receipt.Mission.IsEmpty())
+        {
+            Entry->SetStringField(TEXT("mission"), Receipt.Mission);
+            Entry->SetStringField(TEXT("stage"), Receipt.Stage);
+        }
         Entry->SetNumberField(TEXT("revision"), static_cast<double>(Receipt.Revision));
         Entry->SetStringField(TEXT("committed_utc"), Receipt.CommittedUtc);
         Receipts->SetObjectField(Operation, Entry);
@@ -72,7 +94,7 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
     return Text;
 }
 
-bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecord& Out, FString& OutError)
+bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecord& Out, int32& OutSchema, FString& OutError)
 {
     TSharedPtr<FJsonObject> Root;
     if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) || !Root.IsValid())
@@ -88,9 +110,9 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
         OutError = TEXT("not a marburgumii.world_store document");
         return false;
     }
-    if (Schema != MarburgumII::Gameplay::WorldStoreSchemaVersion)
+    if (Schema < MarburgumII::Gameplay::WorldStoreOldestReadableSchema || Schema > MarburgumII::Gameplay::WorldStoreSchemaVersion)
     {
-        // No migrations exist yet; refusing is safer than reinterpreting an unknown schema.
+        // Refusing is safer than reinterpreting a schema this build does not know.
         OutError = FString::Printf(TEXT("unsupported schema_version %d"), Schema);
         return false;
     }
@@ -120,6 +142,31 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
             }
         }
     }
+    const TSharedPtr<FJsonObject>* Missions = nullptr;
+    if (Root->TryGetObjectField(TEXT("missions"), Missions))
+    {
+        for (const auto& Character : (*Missions)->Values)
+        {
+            const TSharedPtr<FJsonObject> Progress = Character.Value->AsObject();
+            if (!Progress.IsValid())
+            {
+                continue;
+            }
+            TMap<FString, FMarburgumStoredMission>& Owned = Parsed.Missions.Add(FString(*Character.Key));
+            for (const auto& Mission : Progress->Values)
+            {
+                const TSharedPtr<FJsonObject> Entry = Mission.Value->AsObject();
+                if (!Entry.IsValid())
+                {
+                    continue;
+                }
+                FMarburgumStoredMission State;
+                State.Stage = Entry->GetStringField(TEXT("stage"));
+                State.StartedRevision = static_cast<int64>(Entry->GetNumberField(TEXT("started_revision")));
+                Owned.Add(FString(*Mission.Key), MoveTemp(State));
+            }
+        }
+    }
     const TSharedPtr<FJsonObject>* Receipts = nullptr;
     if (Root->TryGetObjectField(TEXT("receipts"), Receipts))
     {
@@ -132,15 +179,23 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
             }
             FMarburgumStoredReceipt Receipt;
             Receipt.Character = Entry->GetStringField(TEXT("character"));
+            // Schema 1 only ever recorded item grants.
+            if (!Entry->TryGetStringField(TEXT("kind"), Receipt.Kind))
+            {
+                Receipt.Kind = TEXT("item_granted");
+            }
             Receipt.Interactable = Entry->GetStringField(TEXT("interactable"));
             Receipt.Item = Entry->GetStringField(TEXT("item"));
             Receipt.Quantity = static_cast<int32>(Entry->GetNumberField(TEXT("quantity")));
+            Entry->TryGetStringField(TEXT("mission"), Receipt.Mission);
+            Entry->TryGetStringField(TEXT("stage"), Receipt.Stage);
             Receipt.Revision = static_cast<int64>(Entry->GetNumberField(TEXT("revision")));
             Receipt.CommittedUtc = Entry->GetStringField(TEXT("committed_utc"));
             Parsed.Receipts.Add(FString(*Pair.Key), MoveTemp(Receipt));
         }
     }
     Out = MoveTemp(Parsed);
+    OutSchema = Schema;
     return true;
 }
 
@@ -168,6 +223,7 @@ bool FMarburgumWorldStore::Load(FString& OutError)
     if (!Files.FileExists(*Path))
     {
         Record = FMarburgumWorldRecord();
+        LoadedSchema = 0;
         return true;
     }
     FString Text;
@@ -176,7 +232,7 @@ bool FMarburgumWorldStore::Load(FString& OutError)
         OutError = TEXT("could not read the store file");
         return false;
     }
-    return Deserialize(Text, Record, OutError);
+    return Deserialize(Text, Record, LoadedSchema, OutError);
 }
 
 bool FMarburgumWorldStore::Commit(const FMarburgumWorldRecord& Next, FString& OutError)

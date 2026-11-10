@@ -1,17 +1,55 @@
 {
   "format": "marburgumii.gameplay_catalogue",
   "version": "0.1.0",
-  "status": "gate1_runtime_subset",
-  "description": "Item definitions and interactables that the Unreal runtime actually uses. Mirrors MarburgumIIShared/Public/MarburgumGameplayContract.h and scripts/editor/create_net_smoke_map.py; scripts/validate-gameplay-contract.py keeps them in step.",
+  "status": "stage1_lent_runtime_subset",
+  "description": "Item, area, NPC and mission definitions and interactables that the Unreal runtime actually uses. Mirrors MarburgumIIShared/Public/MarburgumGameplayContract.h, scripts/editor/create_net_smoke_map.py and scripts/editor/create_lent_map.py; scripts/validate-gameplay-contract.py keeps them in step.",
   "items": [
     {
       "id": "fishing_rod",
-      "name": { "en": "Fishing rod" },
+      "name": {
+        "en": "Fishing rod"
+      },
       "stacking": "fungible_stack",
       "provenance": {
         "source": "original Marburgum project/data/items.json",
         "source_version": 3,
         "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "chub",
+      "name": {
+        "en": "European chub"
+      },
+      "stacking": "fungible_stack",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Registered because lent_first_catch stage 1 requires an ordinary fish; nothing in this build grants one (fishing is Stage 2)."
+      }
+    },
+    {
+      "id": "roach",
+      "name": {
+        "en": "Common roach"
+      },
+      "stacking": "fungible_stack",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "As chub."
+      }
+    },
+    {
+      "id": "perch",
+      "name": {
+        "en": "European perch"
+      },
+      "stacking": "fungible_stack",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "As chub."
       }
     }
   ],
@@ -20,9 +58,14 @@
       "id": "dev_supply_crate",
       "kind": "test_fixture",
       "map": "/Game/Maps/NetSmoke",
-      "display_name": { "en": "Test supply crate" },
+      "display_name": {
+        "en": "Test supply crate"
+      },
       "verb": "take",
-      "grants": { "item": "fishing_rod", "quantity": 1 },
+      "grants": {
+        "item": "fishing_rod",
+        "quantity": 1
+      },
       "initial_stock": 3,
       "range_cm": 300,
       "note": "Development fixture for Gate 1: a limited, server-owned stock shared by every player. Not authored Marburgum content."
@@ -31,17 +74,143 @@
       "id": "dev_supply_crate_far",
       "kind": "test_fixture",
       "map": "/Game/Maps/NetSmoke",
-      "display_name": { "en": "Test supply crate (far)" },
+      "display_name": {
+        "en": "Test supply crate (far)"
+      },
       "verb": "take",
-      "grants": { "item": "fishing_rod", "quantity": 1 },
+      "grants": {
+        "item": "fishing_rod",
+        "quantity": 1
+      },
       "initial_stock": 1,
       "range_cm": 300,
       "note": "Placed 25 m from every player start to prove the server's range check."
+    },
+    {
+      "id": "lent_angler",
+      "kind": "npc",
+      "map": "/Game/Maps/Lent",
+      "display_name": {
+        "en": "Riverside angler"
+      },
+      "verb": "talk",
+      "position_m": [
+        -127.0,
+        0.0,
+        -58.0
+      ],
+      "range_cm": 400,
+      "offers_mission": "lent_first_catch",
+      "dialogue": {
+        "en": "The Drava looks calm from here, but the current does the real work. Keep your first casts close to the bank."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3,
+        "note": "Id, name, position (height levelled to the blockout promenade), range, dialogue and parka colours carried forward; placeholder figure, not a character model."
+      }
     }
   ],
   "world_store": {
     "format": "marburgumii.world_store",
-    "schema_version": 1,
-    "adapter": "development JSON file per map, atomic replace (ADR-014)"
-  }
+    "schema_version": 2,
+    "oldest_readable_schema": 1,
+    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts"
+  },
+  "areas": {
+    "outside": {
+      "name": {
+        "en": "Maribor"
+      }
+    },
+    "entries": [
+      {
+        "id": "lent",
+        "name": {
+          "en": "Lent"
+        },
+        "map": "/Game/Maps/Lent",
+        "center_m": [
+          0.0,
+          5.0,
+          -78.0
+        ],
+        "size_m": [
+          420.0,
+          12.0,
+          54.0
+        ],
+        "provenance": {
+          "source": "original Marburgum project/data/areas.json",
+          "source_version": 1,
+          "note": "Box carried forward in the original coordinate frame (x east, y up, z south of the middle of Stari most); music not carried."
+        }
+      }
+    ]
+  },
+  "missions": [
+    {
+      "id": "lent_first_catch",
+      "name": {
+        "en": "Something in the Water"
+      },
+      "category": "story",
+      "offer_target": "lent_angler",
+      "summary": {
+        "en": "An ordinary Fishing assignment on the Drava has turned into a trail of old records, addresses and people."
+      },
+      "start_items": [
+        {
+          "id": "fishing_rod",
+          "quantity": 1
+        }
+      ],
+      "registered_stages": [
+        {
+          "id": "catch_first_fish",
+          "complete_target": "lent_angler",
+          "action": {
+            "en": "Show the catch"
+          },
+          "objective": {
+            "type": "inventory_any",
+            "items": [
+              "chub",
+              "roach",
+              "perch"
+            ],
+            "quantity": 1,
+            "consume": true
+          },
+          "objective_text": {
+            "en": "Catch one ordinary fish from the nearby Drava spot, then show it to the riverside angler."
+          }
+        },
+        {
+          "id": "recover_cashbox",
+          "complete_target": "drava_cashbox_debris",
+          "action": {
+            "en": "Pull out the cashbox"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "drava_cashbox_debris"
+          },
+          "objective_text": {
+            "en": "Inspect the debris beside the Drava and pull out the battered metal cashbox."
+          }
+        }
+      ],
+      "unregistered_stages": [
+        "identify_address",
+        "open_service_room",
+        "meet_vera"
+      ],
+      "provenance": {
+        "source": "original Marburgum project/data/missions.json",
+        "source_version": 1,
+        "note": "Stages 1-2 of 5 registered. Stage 1 cannot complete until fishing exists; the stage 2 debris is not placed. Stage grant items and the 50-money reward are not carried yet."
+      }
+    }
+  ]
 }

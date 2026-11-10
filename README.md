@@ -2,7 +2,7 @@
 
 **Marburgum II** is a clean-room technical rebuild of *Magna Raedarum: Marburgum*: an authoritative shared-world **MMORPG** set in a fictionalized **1990s Maribor, Slovenia**, preserving the original project's core game design and systems.
 
-> **Status:** Stage 0 network foundation complete on Linux and the first Stage 1 transaction qualified. The Editor, dedicated Server and Client targets build with UE 5.8.3. Packaged server and client processes pass the Stage 0B network smoke ([evidence](Docs/STAGE0_EVIDENCE.md)), the Stage 0C UI foundation and connection shell ([evidence](Docs/STAGE0C_UI_EVIDENCE.md)), the three-client chat test ([evidence](Docs/STAGE0C_CHAT_EVIDENCE.md)) and the Gate 1 interaction test: a walkable test character takes an item from a limited, server-owned crate, the grant is stored to disk before it is replicated, and it survives a server restart without duplication ([evidence](Docs/STAGE1_GATE1_EVIDENCE.md)). All of it awaits the owner's playtest. Persistence is a development file store with a test identity (ADR-014); no imported city map, accounts, production database or mission content exists yet.
+> **Status:** Stage 0 network foundation complete on Linux and the first Stage 1 transaction qualified. The Editor, dedicated Server and Client targets build with UE 5.8.3. Packaged server and client processes pass the Stage 0B network smoke ([evidence](Docs/STAGE0_EVIDENCE.md)), the Stage 0C UI foundation and connection shell ([evidence](Docs/STAGE0C_UI_EVIDENCE.md)), the three-client chat test ([evidence](Docs/STAGE0C_CHAT_EVIDENCE.md)) and the Gate 1 interaction test: a walkable test character takes an item from a limited, server-owned crate, the grant is stored to disk before it is replicated, and it survives a server restart without duplication ([evidence](Docs/STAGE1_GATE1_EVIDENCE.md)). The Lent slice adds a fallback blockout district, a server-derived location banner, the original riverside angler and the first story mission, "Something in the Water". The mission is saved with its pinned objective and journal, and it survives a restart ([evidence](Docs/STAGE1_LENT_EVIDENCE.md)). All of it awaits the owner's playtest. Persistence is a development file store with a test identity (ADR-014). The licensed city model, accounts, a production database, fishing and the rest of the mission do not exist yet.
 
 ## Required engine and languages
 
@@ -36,7 +36,7 @@ MarburgumII.uproject         Unreal Engine project descriptor
 Source/MarburgumII/         Common game module (GameMode, replicated GameState / PlayerState, interactables)
 Source/MarburgumIIShared/   Shared gameplay/network contracts
 Source/MarburgumIIClient/   ClientOnly input/UI/presentation foundation
-Source/MarburgumIIServer/   ServerOnly interaction authority and development world store
+Source/MarburgumIIServer/   ServerOnly interaction and mission authority, development world store
 Source/*.Target.cs          Client, dedicated Server, Editor and dev Game build targets
 Config/                     Unreal project settings
 native/marburgum-sim-core/   Rust native library and C ABI header (not yet linked)
@@ -69,9 +69,10 @@ Package the separate dedicated server and client, then run the Stage 0B network 
 ./scripts/package-linux.sh            # Saved/StagedBuilds/LinuxServer + LinuxClient
 ./scripts/net-smoke-linux.sh          # packaged binaries; 'editor' runs uncooked -server/-game processes
 ./scripts/interaction-smoke-linux.sh  # Gate 1: interaction, receipts, race and server restart
+./scripts/lent-smoke-linux.sh         # Lent slice: location, NPC, saved mission, journal, restart
 ```
 
-To play the Gate 1 slice yourself (W A S D, mouse, **E** interact, **I** inventory, **Enter** chat), see [Docs/DEVELOPMENT.md](Docs/DEVELOPMENT.md#playing-the-gate-1-slice-by-hand).
+To play the Lent slice yourself (W A S D, mouse, **E** interact, **I** inventory, **J** journal, **Enter** chat), see [Docs/DEVELOPMENT.md](Docs/DEVELOPMENT.md#playing-the-lent-slice-by-hand).
 
 Run independent toolchain checks:
 

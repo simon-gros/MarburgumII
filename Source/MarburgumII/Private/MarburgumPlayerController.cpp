@@ -44,6 +44,7 @@ void AMarburgumPlayerController::SetupInputComponent()
         InputComponent->BindKey(EKeys::Enter, IE_Pressed, this, &AMarburgumPlayerController::RequestChatFocus);
         InputComponent->BindKey(EKeys::E, IE_Pressed, this, &AMarburgumPlayerController::RequestInteract);
         InputComponent->BindKey(EKeys::I, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleInventory);
+        InputComponent->BindKey(EKeys::J, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleJournal);
     }
 }
 
@@ -55,6 +56,14 @@ void AMarburgumPlayerController::RequestToggleInventory()
     }
 }
 
+void AMarburgumPlayerController::RequestToggleJournal()
+{
+    if (IsLocalController())
+    {
+        FMarburgumClientUiHooks::OnJournalToggleRequested().Broadcast(this);
+    }
+}
+
 AMarburgumInteractable* AMarburgumPlayerController::FindInteractionCandidate() const
 {
     const APawn* Body = GetPawn();
@@ -63,7 +72,7 @@ AMarburgumInteractable* AMarburgumPlayerController::FindInteractionCandidate() c
     {
         return nullptr;
     }
-    // A handful of placed objects on the test map; spatial queries arrive with the city (Stage 3).
+    // A handful of placed objects per map; spatial queries arrive with the city (Stage 3).
     AMarburgumInteractable* Best = nullptr;
     double BestDistanceSquared = TNumericLimits<double>::Max();
     for (TActorIterator<AMarburgumInteractable> It(World); It; ++It)

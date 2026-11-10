@@ -7,7 +7,9 @@
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
+#include "MarburgumGameplayContract.h"
 #include "MarburgumInteractable.h"
+#include "MarburgumNpc.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
 #include "Session/MarburgumSessionSubsystem.h"
@@ -124,7 +126,6 @@ void UMarburgumInteractionPrompt::Place()
 
 void UMarburgumInteractionPrompt::Refresh()
 {
-    const FTokens& T = Tokens();
     AMarburgumPlayerController* Controller = Cast<AMarburgumPlayerController>(GetOwningPlayer());
     AMarburgumInteractable* Target = Controller && UMarburgumSessionSubsystem::IsAdmitted(Controller->GetWorld())
         ? Controller->FindInteractionCandidate() : nullptr;
@@ -144,6 +145,11 @@ void UMarburgumInteractionPrompt::Refresh()
     const bool bWaiting = Controller->GetPendingInteraction(PendingId, PendingTarget) && PendingTarget.Get() == Target;
     const AMarburgumPlayerState* State = Controller->GetPlayerState<AMarburgumPlayerState>();
     const bool bHasCharacter = State && State->HasCharacter();
+    if (const AMarburgumNpc* Npc = Cast<AMarburgumNpc>(Target))
+    {
+        RefreshNpc(*Npc, State, bWaiting);
+        return;
+    }
     const int32 Stock = Target->GetRemainingStock();
 
     enum class EState : uint8 { Available, Waiting, Empty, Unknown, NoCharacter };
@@ -194,11 +200,121 @@ void UMarburgumInteractionPrompt::Refresh()
         break;
     }
 
+    Apply(*Target, Verb, Detail, Tone, bKeyActive);
+}
+
+void UMarburgumInteractionPrompt::RefreshNpc(const AMarburgumNpc& Npc, const AMarburgumPlayerState* State, bool bWaiting)
+{
+    using namespace MarburgumII::Gameplay;
+    // What the server would decide is mirrored here only to choose words; the server still decides.
+    const FMissionDefinition* Offer = FindMissionOfferedBy(Npc.InteractableId.ToString());
+    const FMissionDefinition* StageMission = nullptr;
+    const FMissionStageDefinition* Stage = nullptr;
+    bool bHasRequired = true;
+    if (State && State->AreMissionsKnown())
+    {
+        for (const FMarburgumMissionState& Progress : State->GetMissions())
+        {
+            const FMissionDefinition* Mission = FindMission(Progress.MissionId.ToString());
+            const FMissionStageDefinition* Current = Mission ? FindStage(*Mission, Progress.StageId.ToString()) : nullptr;
+            if (Current && Npc.InteractableId.ToString() == Current->CompleteTarget)
+            {
+                StageMission = Mission;
+                Stage = Current;
+                break;
+            }
+        }
+        if (Offer && State->FindMission(FName(Offer->Id)))
+        {
+            Offer = nullptr; // Already taken up.
+        }
+    }
+    if (Stage && Stage->RequiredAnyItemCount > 0)
+    {
+        bHasRequired = false;
+        for (int32 Index = 0; Index < Stage->RequiredAnyItemCount && !bHasRequired; ++Index)
+        {
+            bHasRequired = State->CountItem(FName(Stage->RequiredAnyItems[Index])) > 0;
+        }
+    }
+
+    enum class EState : uint8 { Waiting, NoCharacter, Unknown, Offer, Stage, StageBlocked, Idle };
+    const EState Mode = bWaiting ? EState::Waiting
+        : !(State && State->HasCharacter()) ? EState::NoCharacter
+        : !State->AreMissionsKnown() ? EState::Unknown
+        : Offer ? EState::Offer
+        : Stage ? (bHasRequired ? EState::Stage : EState::StageBlocked)
+        : EState::Idle;
+
+    const FString Signature = FString::Printf(TEXT("npc|%s|%d|%s"), *Npc.InteractableId.ToString(),
+        static_cast<int32>(Mode), Stage ? Stage->Id : TEXT("-"));
+    if (Signature == LastSignature)
+    {
+        return;
+    }
+    LastSignature = Signature;
+    Shown = const_cast<AMarburgumNpc*>(&Npc);
+
+    FText Verb = Npc.Verb.IsEmpty() ? LOCTEXT("TalkVerb", "Talk") : Npc.Verb;
+    FText Detail;
+    ETone Tone = ETone::Accent;
+    bool bKeyActive = true;
+    switch (Mode)
+    {
+    case EState::Waiting:
+        Verb = LOCTEXT("WaitingVerb", "Waiting for the server");
+        Detail = LOCTEXT("Waiting", "Request sent. Nothing changes until the server confirms it.");
+        Tone = ETone::Info;
+        bKeyActive = false;
+        break;
+    case EState::NoCharacter:
+        Detail = LOCTEXT("NpcNoCharacter", "No character selected for this connection; the server will refuse.");
+        Tone = ETone::Warning;
+        break;
+    case EState::Unknown:
+        Detail = LOCTEXT("NpcUnknown", "Waiting for the server's record of your missions.");
+        Tone = ETone::Neutral;
+        bKeyActive = false;
+        break;
+    case EState::Offer:
+        Detail = FText::Format(LOCTEXT("Offer", "Has a job for you  \u00B7  {0}"), FText::FromString(Offer->Name));
+        break;
+    case EState::Stage:
+        Verb = FText::FromString(Stage->Action);
+        Detail = FText::Format(LOCTEXT("StageReady", "{0}  \u00B7  next step"), FText::FromString(StageMission->Name));
+        break;
+    case EState::StageBlocked:
+    {
+        Verb = FText::FromString(Stage->Action);
+        TArray<FString> Names;
+        for (int32 Index = 0; Index < Stage->RequiredAnyItemCount; ++Index)
+        {
+            const FItemDefinition* Item = FindItem(Stage->RequiredAnyItems[Index]);
+            Names.Add(Item ? Item->DisplayName : Stage->RequiredAnyItems[Index]);
+        }
+        Detail = FText::Format(LOCTEXT("StageBlocked", "Needs one fish: {0}. Fishing is not in this build yet."),
+            FText::FromString(FString::Join(Names, TEXT(", "))));
+        Tone = ETone::Neutral;
+        bKeyActive = false;
+        break;
+    }
+    case EState::Idle:
+        Detail = LOCTEXT("Idle", "Nothing more to discuss for now.");
+        Tone = ETone::Neutral;
+        bKeyActive = false;
+        break;
+    }
+    Apply(Npc, Verb, Detail, Tone, bKeyActive);
+}
+
+void UMarburgumInteractionPrompt::Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, ETone Tone, bool bKeyActive)
+{
+    const FTokens& T = Tokens();
     VerbLabel->SetText(FText::FromString(Verb.ToString().ToUpper()));
     VerbLabel->SetColorAndOpacity(FSlateColor(Tone == ETone::Neutral ? T.Color.TextSecondary : ToneColor(Tone)));
-    SubjectLabel->SetText(Target->DisplayName.IsEmpty() ? FText::FromName(Target->InteractableId) : Target->DisplayName);
+    SubjectLabel->SetText(Target.DisplayName.IsEmpty() ? FText::FromName(Target.InteractableId) : Target.DisplayName);
     DetailLabel->SetText(Detail);
-    FixturePill->SetVisibility(Target->bTestFixture ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
+    FixturePill->SetVisibility(Target.bTestFixture ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
     KeyCap->SetBrush(RoundedBrush(bKeyActive ? T.Color.Accent : T.Color.Raised, T.Radius.Medium,
         bKeyActive ? T.Color.AccentPressed : T.Color.BorderStrong, T.BorderWidth));
     KeyLabel->SetColorAndOpacity(FSlateColor(bKeyActive ? T.Color.TextOnAccent : T.Color.TextMuted));

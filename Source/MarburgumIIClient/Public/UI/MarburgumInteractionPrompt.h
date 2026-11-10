@@ -2,18 +2,24 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "UI/MarburgumUITheme.h"
 #include "MarburgumInteractionPrompt.generated.h"
 
 class UBorder;
 class UTextBlock;
 class AMarburgumPlayerController;
+class AMarburgumPlayerState;
+class AMarburgumInteractable;
+class AMarburgumNpc;
 
 /**
  * `interaction_prompt` module: one eligible verb, its key and the subject, for the interactable the
  * controller would request. It sits just above the object on screen so it never covers its target, and
- * falls back to the lower_center_context region when the object's top is off screen. Shows the server's replicated stock,
- * a waiting state while a request is unanswered, and an honest empty / no-character state. It never
- * predicts a result: the item appears only through the server receipt and replicated inventory.
+ * falls back to the lower_center_context region when the object's top is off screen. For an item source
+ * it shows the server's replicated stock; for an NPC, the mission step it offers the local character
+ * (from the owner-only mission record), greyed out when a requirement is visibly missing. Also a waiting
+ * state while a request is unanswered and an honest empty / no-character state. It never predicts a
+ * result: items and missions appear only through the server receipt and replicated state.
  * Refreshes at 10 Hz and only touches widgets whose text changed.
  */
 UCLASS()
@@ -27,6 +33,8 @@ protected:
 
 private:
     void Refresh();
+    void RefreshNpc(const AMarburgumNpc& Npc, const AMarburgumPlayerState* State, bool bWaiting);
+    void Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone, bool bKeyActive);
     void Place();
 
     UPROPERTY(Transient) TObjectPtr<UBorder> Card;

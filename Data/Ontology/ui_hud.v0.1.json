@@ -797,7 +797,7 @@
         "location_identity"
       ],
       "description": "Transient district/landmark transition, archive-aware period identity.",
-      "status": "planned"
+      "status": "implemented_awaiting_owner_playtest"
     },
     {
       "id": "interaction_prompt",
@@ -835,7 +835,7 @@
         "mission_pinned"
       ],
       "description": "One brief actionable objective only while pinned.",
-      "status": "planned"
+      "status": "implemented_awaiting_owner_playtest"
     },
     {
       "id": "notification_feed",
@@ -939,7 +939,7 @@
         "mission_pinned"
       ],
       "description": "Mission progress, historical records, evidence, timeline and pinning.",
-      "status": "planned"
+      "status": "first_shell_implemented_awaiting_owner_playtest"
     },
     {
       "id": "dialogue_panel",

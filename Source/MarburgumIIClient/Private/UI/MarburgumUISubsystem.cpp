@@ -14,7 +14,13 @@
 #include "MarburgumPlayerController.h"
 #include "UI/MarburgumConnectionScreen.h"
 #include "UI/MarburgumInteractionPrompt.h"
+#include "MarburgumInteractable.h"
+#include "MarburgumNpc.h"
 #include "UI/MarburgumInventoryPanel.h"
+#include "UI/MarburgumJournalPanel.h"
+#include "UI/MarburgumLocationBanner.h"
+#include "UI/MarburgumPinnedObjective.h"
+#include "EngineUtils.h"
 #include "UI/MarburgumNotificationFeed.h"
 #include "UI/MarburgumUIGallery.h"
 #include "UI/MarburgumUIRoot.h"
@@ -103,6 +109,9 @@ void UMarburgumUISubsystem::TearDown()
     Chat = nullptr;
     Prompt = nullptr;
     Inventory = nullptr;
+    Journal = nullptr;
+    Banner = nullptr;
+    Objective = nullptr;
 }
 
 void UMarburgumUISubsystem::MountChat(APlayerController* Player)
@@ -175,10 +184,28 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
         Prompt->RemoveFromParent();
         Prompt = nullptr;
     }
-    if (Inventory && Inventory->GetOwningPlayer() != Player)
+    // Widgets owned by an earlier controller (a reconnect) are rebuilt for the current one.
+    auto Release = [Player](auto& Widget)
     {
-        Inventory->RemoveFromParent();
-        Inventory = nullptr;
+        if (Widget && Widget->GetOwningPlayer() != Player)
+        {
+            Widget->RemoveFromParent();
+            Widget = nullptr;
+        }
+    };
+    Release(Inventory);
+    Release(Journal);
+    Release(Banner);
+    Release(Objective);
+    if (!Banner)
+    {
+        Banner = CreateWidget<UMarburgumLocationBanner>(Player, UMarburgumLocationBanner::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Hud, Banner);
+    }
+    if (!Objective)
+    {
+        Objective = CreateWidget<UMarburgumPinnedObjective>(Player, UMarburgumPinnedObjective::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Hud, Objective);
     }
     if (!Prompt)
     {
@@ -190,6 +217,11 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
         Inventory = CreateWidget<UMarburgumInventoryPanel>(Player, UMarburgumInventoryPanel::StaticClass());
         Root->AddToLayer(EMarburgumUILayer::Screens, Inventory);
     }
+    if (!Journal)
+    {
+        Journal = CreateWidget<UMarburgumJournalPanel>(Player, UMarburgumJournalPanel::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Screens, Journal);
+    }
 }
 
 bool UMarburgumUISubsystem::ToggleInventory()
@@ -197,6 +229,10 @@ bool UMarburgumUISubsystem::ToggleInventory()
     if (!Inventory || LastPhase != EPhase::Ready)
     {
         return false;
+    }
+    if (Journal && Journal->IsOpen())
+    {
+        Journal->Toggle();
     }
     Inventory->Toggle();
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=inventory_view open=%d"),
@@ -209,6 +245,80 @@ bool UMarburgumUISubsystem::IsInventoryOpen() const
     return Inventory && Inventory->IsOpen();
 }
 
+bool UMarburgumUISubsystem::ToggleJournal()
+{
+    if (!Journal || LastPhase != EPhase::Ready)
+    {
+        return false;
+    }
+    if (Inventory && Inventory->IsOpen())
+    {
+        Inventory->Toggle();
+    }
+    Journal->Toggle();
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=journal_view open=%d"),
+        MarburgumII::Session::UiLogPrefix, Journal->IsOpen() ? 1 : 0);
+    return true;
+}
+
+bool UMarburgumUISubsystem::IsJournalOpen() const
+{
+    return Journal && Journal->IsOpen();
+}
+
+namespace
+{
+    const AMarburgumInteractable* FindPlaced(const UWorld* World, FName Id)
+    {
+        if (World && !Id.IsNone())
+        {
+            for (TActorIterator<AMarburgumInteractable> It(World); It; ++It)
+            {
+                if (It->InteractableId == Id)
+                {
+                    return *It;
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    FText ItemDisplayName(FName ItemId)
+    {
+        const MarburgumII::Gameplay::FItemDefinition* Item = MarburgumII::Gameplay::FindItem(ItemId.ToString());
+        return Item ? FText::FromString(Item->DisplayName) : FText::FromName(ItemId);
+    }
+
+    FText MissionDisplayName(FName MissionId)
+    {
+        const MarburgumII::Gameplay::FMissionDefinition* Mission = MarburgumII::Gameplay::FindMission(MissionId.ToString());
+        return Mission ? FText::FromString(Mission->Name) : FText::FromName(MissionId);
+    }
+
+    /** "European chub, Common roach or European perch" for a stage's inventory_any requirement. */
+    FText RequiredItemsText(FName MissionId, FName StageId)
+    {
+        using namespace MarburgumII::Gameplay;
+        const FMissionDefinition* Mission = FindMission(MissionId.ToString());
+        const FMissionStageDefinition* Stage = Mission ? FindStage(*Mission, StageId.ToString()) : nullptr;
+        if (!Stage || Stage->RequiredAnyItemCount <= 0)
+        {
+            return FText::GetEmpty();
+        }
+        TArray<FString> Names;
+        for (int32 Index = 0; Index < Stage->RequiredAnyItemCount; ++Index)
+        {
+            Names.Add(ItemDisplayName(FName(Stage->RequiredAnyItems[Index])).ToString());
+        }
+        FString Joined = Names.Pop();
+        if (!Names.IsEmpty())
+        {
+            Joined = FString::Join(Names, TEXT(", ")) + TEXT(" or ") + Joined;
+        }
+        return FText::FromString(Joined);
+    }
+}
+
 void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteractionReceipt& Receipt)
 {
     if (!Feed)
@@ -216,9 +326,49 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         return;
     }
     // Keyed by operation: a replayed request replaces its earlier receipt instead of stacking.
-    const FName Key(*FString::Printf(TEXT("interaction.%s"), *Receipt.OperationId.ToString(EGuidFormats::Digits)));
-    const MarburgumII::Gameplay::FItemDefinition* Item = MarburgumII::Gameplay::FindItem(Receipt.ItemId.ToString());
-    const FText ItemName = Item ? FText::FromString(Item->DisplayName) : FText::FromName(Receipt.ItemId);
+    const FString Op = Receipt.OperationId.ToString(EGuidFormats::Digits);
+    const FName Key(*FString::Printf(TEXT("interaction.%s"), *Op));
+    const FText ItemName = ItemDisplayName(Receipt.ItemId);
+    const UGameInstance* GameInstance = GetGameInstance();
+    const AMarburgumInteractable* Subject = FindPlaced(GameInstance ? GameInstance->GetWorld() : nullptr, Receipt.InteractableId);
+    const FText SubjectName = Subject && !Subject->DisplayName.IsEmpty() ? Subject->DisplayName : FText::FromName(Receipt.InteractableId);
+
+    if (Receipt.Outcome == EMarburgumRequestOutcome::Applied && Receipt.Effect == EMarburgumInteractionEffect::MissionStarted)
+    {
+        // Oldest first: the line spoken, the mission it starts, then what it hands over.
+        if (const AMarburgumNpc* Npc = Cast<AMarburgumNpc>(Subject); Npc && !Npc->Dialogue.IsEmpty())
+        {
+            Feed->Push(FName(*(Key.ToString() + TEXT(".said"))), FText::FromString(SubjectName.ToString().ToUpper()),
+                FText::Format(LOCTEXT("Said", "\u201C{0}\u201D"), Npc->Dialogue), MarburgumUI::ETone::Info);
+        }
+        Feed->Push(Key, LOCTEXT("MissionStartedKind", "MISSION STARTED"),
+            FText::Format(LOCTEXT("MissionStarted", "{0}. Saved by the server; your objective is pinned, and [J] opens the journal."),
+                MissionDisplayName(Receipt.MissionId)), MarburgumUI::ETone::Accent);
+        if (!Receipt.ItemId.IsNone())
+        {
+            Feed->Push(FName(*(Key.ToString() + TEXT(".item"))), LOCTEXT("ItemKind", "ITEM RECEIVED"),
+                FText::Format(LOCTEXT("MissionItem", "{0} \u00D7{1}, handed over for the mission."), ItemName, FText::AsNumber(Receipt.Quantity)),
+                MarburgumUI::ETone::Success);
+        }
+        return;
+    }
+    if (Receipt.Outcome == EMarburgumRequestOutcome::Applied && Receipt.Effect == EMarburgumInteractionEffect::StageCompleted)
+    {
+        Feed->Push(Key, LOCTEXT("MissionUpdatedKind", "MISSION UPDATED"),
+            Receipt.ItemId.IsNone()
+                ? FText::Format(LOCTEXT("StageDone", "{0}: step complete. Saved by the server."), MissionDisplayName(Receipt.MissionId))
+                : FText::Format(LOCTEXT("StageDoneItem", "{0}: step complete; {1} \u00D7{2} handed over. Saved by the server."),
+                    MissionDisplayName(Receipt.MissionId), ItemName, FText::AsNumber(Receipt.Quantity)),
+            MarburgumUI::ETone::Success);
+        return;
+    }
+    if (Receipt.Outcome == EMarburgumRequestOutcome::Duplicate && Receipt.Effect != EMarburgumInteractionEffect::ItemGranted)
+    {
+        Feed->Push(Key, LOCTEXT("ReceiptKind", "SERVER RECEIPT"),
+            FText::Format(LOCTEXT("MissionDuplicate", "Already done: {0}. The server ignored the repeat; nothing changed twice."),
+                MissionDisplayName(Receipt.MissionId)), MarburgumUI::ETone::Info);
+        return;
+    }
 
     if (Receipt.Outcome == EMarburgumRequestOutcome::Applied)
     {
@@ -239,6 +389,19 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
     MarburgumUI::ETone Tone = MarburgumUI::ETone::Warning;
     switch (Receipt.Reason)
     {
+    case EMarburgumInteractionReason::RequirementNotMet:
+    {
+        const FText Needed = RequiredItemsText(Receipt.MissionId, Receipt.MissionStage);
+        Message = Needed.IsEmpty()
+            ? FText::Format(LOCTEXT("Requirement", "{0} needs something you do not have yet. Nothing was changed."), SubjectName)
+            : FText::Format(LOCTEXT("RequirementItems", "{0} wants to see one {1} first. You have none, so nothing was changed."), SubjectName, Needed);
+        Tone = MarburgumUI::ETone::Info;
+        break;
+    }
+    case EMarburgumInteractionReason::NothingToDo:
+        Message = FText::Format(LOCTEXT("NothingToDo", "{0} has nothing more for you right now. Nothing was changed."), SubjectName);
+        Tone = MarburgumUI::ETone::Info;
+        break;
     case EMarburgumInteractionReason::OutOfStock:
         Message = LOCTEXT("OutOfStock", "Nothing left to take. Someone else got there first; nothing was changed.");
         break;
@@ -246,7 +409,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         Message = LOCTEXT("OutOfRange", "Too far away. Move closer and try again; nothing was changed.");
         break;
     case EMarburgumInteractionReason::NoCharacter:
-        Message = LOCTEXT("NoCharacter", "This connection has no character, so it cannot hold items. Nothing was changed.");
+        Message = LOCTEXT("NoCharacter", "This connection has no character, so it cannot hold items or take on missions. Nothing was changed.");
         break;
     case EMarburgumInteractionReason::StoreUnavailable:
     case EMarburgumInteractionReason::StoreWriteFailed:
@@ -262,7 +425,8 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         Tone = MarburgumUI::ETone::Danger;
         break;
     }
-    Feed->Push(Key, LOCTEXT("RefusedKind", "REFUSED"), Message, Tone);
+    // A mission step that is not possible yet is guidance, not an error.
+    Feed->Push(Key, Tone == MarburgumUI::ETone::Info ? LOCTEXT("NotYetKind", "NOT YET") : LOCTEXT("RefusedKind", "REFUSED"), Message, Tone);
 }
 
 void UMarburgumUISubsystem::HandleRequestResult(const FGuid& OperationId, EMarburgumRequestOutcome Outcome)
@@ -348,6 +512,10 @@ void UMarburgumUISubsystem::HandleSessionChanged(const FMarburgumSessionView& Vi
     if (View.Phase != EPhase::Ready && Inventory && Inventory->IsOpen())
     {
         Inventory->Toggle(); // No stale custody view once the session is gone.
+    }
+    if (View.Phase != EPhase::Ready && Journal && Journal->IsOpen())
+    {
+        Journal->Toggle();
     }
     ConnectionScreen->ApplyView(View);
     const bool bShowScreen = View.Phase != EPhase::Ready;

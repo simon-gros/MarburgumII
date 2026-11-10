@@ -6,10 +6,12 @@
 #include "MarburgumPlayerState.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumInventoryChanged, class AMarburgumPlayerState*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumPlayerStateChanged, class AMarburgumPlayerState*);
 
 /**
- * Network-visible per-player state. The development character key and inventory are server-owned;
- * the inventory replicates to its owner only (custody is private), never to other players.
+ * Network-visible per-player state. The development character key, inventory, missions and current
+ * area are server-owned and replicate to their owner only (custody and progress are private), never to
+ * other players.
  * Account identity is not implemented: the key is an unauthenticated development identity (ADR-014).
  */
 UCLASS()
@@ -39,9 +41,39 @@ public:
     /** Fired on the owning client when the replicated inventory changes, and on the server when set. */
     static FMarburgumInventoryChanged& OnInventoryChanged();
 
+    /** Owner-visible: false until the server has loaded this character's durable mission record. */
+    bool AreMissionsKnown() const { return bMissionsKnown; }
+    const TArray<FMarburgumMissionState>& GetMissions() const { return Missions; }
+    const FMarburgumMissionState* FindMission(FName MissionId) const;
+
+    /** Authority only: replace the replicated missions with the durable record. */
+    void SetMissionsAuthority(const TArray<FMarburgumMissionState>& InMissions);
+
+    /** Fired on the owning client when replicated missions change, and on the server when set. */
+    static FMarburgumPlayerStateChanged& OnMissionsChanged();
+
+    /**
+     * Owner-visible: the named area the server places this player's pawn in (None = outside every
+     * area). Only meaningful once IsLocationKnown().
+     */
+    FName GetAreaId() const { return AreaId; }
+    bool IsLocationKnown() const { return bLocationKnown; }
+
+    /** Authority only: record the area derived from the pawn position. No-op if unchanged. */
+    void SetAreaAuthority(FName InAreaId);
+
+    /** Fired on the owning client when the replicated area changes, and on the server when set. */
+    static FMarburgumPlayerStateChanged& OnAreaChanged();
+
 protected:
     UFUNCTION()
     void OnRep_Inventory();
+
+    UFUNCTION()
+    void OnRep_Missions();
+
+    UFUNCTION()
+    void OnRep_Area();
 
 private:
     FString CharacterKey;
@@ -54,4 +86,16 @@ private:
 
     UPROPERTY(ReplicatedUsing = OnRep_Inventory)
     TArray<FMarburgumItemStack> Inventory;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Missions)
+    bool bMissionsKnown = false;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Missions)
+    TArray<FMarburgumMissionState> Missions;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Area)
+    bool bLocationKnown = false;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Area)
+    FName AreaId;
 };

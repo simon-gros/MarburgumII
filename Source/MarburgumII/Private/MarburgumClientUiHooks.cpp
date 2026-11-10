@@ -17,3 +17,9 @@ FMarburgumLocalPlayerUiEvent& FMarburgumClientUiHooks::OnInventoryToggleRequeste
     static FMarburgumLocalPlayerUiEvent Event;
     return Event;
 }
+
+FMarburgumLocalPlayerUiEvent& FMarburgumClientUiHooks::OnJournalToggleRequested()
+{
+    static FMarburgumLocalPlayerUiEvent Event;
+    return Event;
+}

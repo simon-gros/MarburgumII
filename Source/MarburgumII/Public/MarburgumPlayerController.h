@@ -96,6 +96,7 @@ private:
     void SendSystemNotice(const FString& Notice);
     void RequestChatFocus();
     void RequestToggleInventory();
+    void RequestToggleJournal();
 
     FGuid PendingOperationId;
     TWeakObjectPtr<AMarburgumInteractable> PendingTarget;

@@ -2,8 +2,9 @@
 # Regenerate the generated maps through the editor's Python commandlet:
 #   Content/Maps/FrontEnd.umap  (client offline front-end, no gameplay authority)
 #   Content/Maps/NetSmoke.umap  (Stage 0B network test map)
-# Usage: scripts/create-maps.sh [frontend|netsmoke|all]   (default: all)
-# The FrontEnd map references AMarburgumFrontEndGameMode, so build MarburgumIIEditor first.
+#   Content/Maps/Lent.umap      (Stage 1 fallback blockout district, plus Content/Blockout/Materials)
+# Usage: scripts/create-maps.sh [frontend|netsmoke|lent|all]   (default: all)
+# The maps reference Marburgum C++ classes, so build MarburgumIIEditor first.
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -26,12 +27,14 @@ run_script() {
 case "$which" in
     frontend) run_script create_front_end_map.py ;;
     netsmoke) run_script create_net_smoke_map.py ;;
+    lent) run_script create_lent_map.py ;;
     all)
         run_script create_front_end_map.py
         run_script create_net_smoke_map.py
+        run_script create_lent_map.py
         ;;
     *)
-        echo "Usage: $0 [frontend|netsmoke|all]" >&2
+        echo "Usage: $0 [frontend|netsmoke|lent|all]" >&2
         exit 2
         ;;
 esac

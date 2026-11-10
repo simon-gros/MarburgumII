@@ -6,8 +6,11 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumArea.h"
 #include "MarburgumInteractable.h"
+#include "MarburgumMissionRules.h"
 #include "MarburgumNetworkContract.h"
+#include "MarburgumNpc.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
 #include "MarburgumWorldStore.h"
@@ -15,6 +18,7 @@
 #include "Misc/DateTime.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "TimerManager.h"
 
 using namespace MarburgumII::Gameplay;
 
@@ -43,6 +47,38 @@ namespace
         }
         return Stacks;
     }
+
+    TArray<FMarburgumMissionState> ToMissions(const TMap<FString, FMarburgumStoredMission>* Owned)
+    {
+        TArray<FMarburgumMissionState> States;
+        if (Owned)
+        {
+            TArray<FString> Ids;
+            Owned->GetKeys(Ids);
+            Ids.Sort();
+            for (const FString& Id : Ids)
+            {
+                FMarburgumMissionState& State = States.AddDefaulted_GetRef();
+                State.MissionId = FName(*Id);
+                State.StageId = FName(*(*Owned)[Id].Stage);
+                State.StartedRevision = (*Owned)[Id].StartedRevision;
+            }
+        }
+        return States;
+    }
+
+    EMarburgumInteractionEffect EffectFromKind(const FString& Kind)
+    {
+        for (const EMarburgumInteractionEffect Effect : { EMarburgumInteractionEffect::ItemGranted,
+                 EMarburgumInteractionEffect::MissionStarted, EMarburgumInteractionEffect::StageCompleted })
+        {
+            if (Kind == ToString(Effect))
+            {
+                return Effect;
+            }
+        }
+        return EMarburgumInteractionEffect::None;
+    }
 }
 
 bool UMarburgumWorldAuthority::ShouldCreateSubsystem(UObject* Outer) const
@@ -61,6 +97,10 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
         return;
     }
     bActive = true;
+
+    // Location does not depend on the store: it is derived from pawn positions and never persisted.
+    InWorld.GetTimerManager().SetTimer(LocationTimer, FTimerDelegate::CreateUObject(this, &UMarburgumWorldAuthority::UpdateLocations),
+        LocationUpdateSeconds, true);
 
     FString Path;
     if (!FParse::Value(FCommandLine::Get(), TEXT("MB2WorldStore="), Path) || Path.IsEmpty())
@@ -97,10 +137,14 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
     }
 
     const FMarburgumWorldRecord& Record = Store->Get();
-    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=store_loaded path=\"%s\" revision=%lld characters=%d receipts=%d"),
-        InteractLogPrefix, *Path, Record.Revision, Record.Inventories.Num(), Record.Receipts.Num());
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=store_loaded path=\"%s\" schema=%d revision=%lld characters=%d missions=%d receipts=%d"),
+        InteractLogPrefix, *Path, Store->GetLoadedSchema(), Record.Revision, Record.Inventories.Num(), Record.Missions.Num(), Record.Receipts.Num());
     for (TActorIterator<AMarburgumInteractable> It(&InWorld); It; ++It)
     {
+        if (!It->IsItemSource())
+        {
+            continue;
+        }
         UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=stock target=%s stock=%d source=%s"),
             InteractLogPrefix, *It->InteractableId.ToString(), It->GetRemainingStock(),
             Record.Stocks.Contains(It->InteractableId.ToString()) ? TEXT("store") : TEXT("authored"));
@@ -109,6 +153,10 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
 
 void UMarburgumWorldAuthority::Deinitialize()
 {
+    if (UWorld* World = GetWorld())
+    {
+        World->GetTimerManager().ClearTimer(LocationTimer);
+    }
     FGameModeEvents::GameModePostLoginEvent.Remove(PostLoginHandle);
     Store.Reset();
     Super::Deinitialize();
@@ -123,23 +171,57 @@ void UMarburgumWorldAuthority::HandlePostLogin(AGameModeBase* GameMode, APlayerC
     if (AMarburgumPlayerState* State = NewPlayer->GetPlayerState<AMarburgumPlayerState>())
     {
         ApplyInventory(*State);
-        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=inventory_restored player=%d character=%s stacks=%d"),
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=inventory_restored player=%d character=%s stacks=%d missions=%d"),
             InteractLogPrefix, State->GetPlayerId(),
-            State->GetCharacterKey().IsEmpty() ? TEXT("-") : *State->GetCharacterKey(), State->GetInventory().Num());
+            State->GetCharacterKey().IsEmpty() ? TEXT("-") : *State->GetCharacterKey(), State->GetInventory().Num(),
+            State->GetMissions().Num());
     }
 }
 
 void UMarburgumWorldAuthority::ApplyInventory(AMarburgumPlayerState& State) const
 {
+    // Custody and mission progress always travel together, so a client never sees one without the other.
     const FString& Key = State.GetCharacterKey();
     State.SetInventoryAuthority(ToStacks(Key.IsEmpty() ? nullptr : Store->Get().Inventories.Find(Key)));
+    State.SetMissionsAuthority(ToMissions(Key.IsEmpty() ? nullptr : Store->Get().Missions.Find(Key)));
 }
 
 void UMarburgumWorldAuthority::ApplyStocks() const
 {
     for (TActorIterator<AMarburgumInteractable> It(GetWorld()); It; ++It)
     {
-        It->SetRemainingStockAuthority(CurrentStock(**It));
+        if (It->IsItemSource())
+        {
+            It->SetRemainingStockAuthority(CurrentStock(**It));
+        }
+    }
+}
+
+void UMarburgumWorldAuthority::UpdateLocations()
+{
+    UWorld* World = GetWorld();
+    if (!World)
+    {
+        return;
+    }
+    for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+    {
+        const APlayerController* Player = It->Get();
+        const APawn* Body = Player ? Player->GetPawn() : nullptr;
+        AMarburgumPlayerState* State = Player ? Player->GetPlayerState<AMarburgumPlayerState>() : nullptr;
+        if (!Body || !State)
+        {
+            continue;
+        }
+        const FName Area = AMarburgumArea::Resolve(World, Body->GetActorLocation());
+        if (!State->IsLocationKnown() || State->GetAreaId() != Area)
+        {
+            State->SetAreaAuthority(Area);
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=area player=%d character=%s area=%s"),
+                InteractLogPrefix, State->GetPlayerId(),
+                State->GetCharacterKey().IsEmpty() ? TEXT("-") : *State->GetCharacterKey(),
+                Area.IsNone() ? TEXT("-") : *Area.ToString());
+        }
     }
 }
 
@@ -165,13 +247,15 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::Finish(FMarburgumInteract
 {
     const AMarburgumPlayerState* State = Requester.GetPlayerState<AMarburgumPlayerState>();
     UE_LOG(LogMarburgumNet, Log,
-        TEXT("%s role=server event=interaction player=%d character=%s op=%s target=%s outcome=%s reason=%s item=%s quantity=%d stock=%d revision=%lld"),
+        TEXT("%s role=server event=interaction player=%d character=%s op=%s target=%s outcome=%s reason=%s effect=%s mission=%s stage=%s item=%s quantity=%d stock=%d revision=%lld"),
         InteractLogPrefix,
         State ? State->GetPlayerId() : -1,
         State && !State->GetCharacterKey().IsEmpty() ? *State->GetCharacterKey() : TEXT("-"),
         *OperationKey(Receipt.OperationId),
         Receipt.InteractableId.IsNone() ? TEXT("-") : *Receipt.InteractableId.ToString(),
-        ToString(Receipt.Outcome), ToString(Receipt.Reason),
+        ToString(Receipt.Outcome), ToString(Receipt.Reason), ToString(Receipt.Effect),
+        Receipt.MissionId.IsNone() ? TEXT("-") : *Receipt.MissionId.ToString(),
+        Receipt.MissionStage.IsNone() ? TEXT("-") : *Receipt.MissionStage.ToString(),
         Receipt.ItemId.IsNone() ? TEXT("-") : *Receipt.ItemId.ToString(),
         Receipt.Quantity, Receipt.StockRemaining, Receipt.WorldRevision);
     return Receipt;
@@ -218,23 +302,25 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
             return Refuse(EMarburgumInteractionReason::OperationConflict);
         }
         Receipt.Outcome = EMarburgumRequestOutcome::Duplicate;
-        Receipt.ItemId = FName(*Prior->Item);
+        Receipt.Effect = EffectFromKind(Prior->Kind);
+        Receipt.ItemId = Prior->Item.IsEmpty() ? NAME_None : FName(*Prior->Item);
         Receipt.Quantity = Prior->Quantity;
+        Receipt.MissionId = Prior->Mission.IsEmpty() ? NAME_None : FName(*Prior->Mission);
+        Receipt.MissionStage = Prior->Stage.IsEmpty() ? NAME_None : FName(*Prior->Stage);
         Receipt.WorldRevision = Prior->Revision;
         const AMarburgumInteractable* PriorTarget = FindInteractable(Prior->Interactable);
-        Receipt.StockRemaining = PriorTarget ? CurrentStock(*PriorTarget) : -1;
+        Receipt.StockRemaining = PriorTarget && PriorTarget->IsItemSource() ? CurrentStock(*PriorTarget) : -1;
         return Finish(Receipt, Requester);
     }
 
+    AMarburgumNpc* Npc = Cast<AMarburgumNpc>(Target);
     if (!Target || Target->GetWorld() != GetWorld() || Target->InteractableId.IsNone()
-        || !FindItem(Target->GrantedItemId.ToString()))
+        || (!Npc && !FindItem(Target->GrantedItemId.ToString())))
     {
         return Refuse(EMarburgumInteractionReason::UnknownTarget);
     }
     Receipt.InteractableId = Target->InteractableId;
     const FString TargetId = Target->InteractableId.ToString();
-    const int32 Stock = CurrentStock(*Target);
-    Receipt.StockRemaining = Stock;
 
     const APawn* Body = Requester.GetPawn();
     const float Reach = Target->InteractionRange + RangeToleranceCm;
@@ -242,6 +328,13 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
     {
         return Refuse(EMarburgumInteractionReason::OutOfRange);
     }
+    if (Npc)
+    {
+        return HandleNpc(Receipt, Requester, *State, *Npc);
+    }
+
+    const int32 Stock = CurrentStock(*Target);
+    Receipt.StockRemaining = Stock;
     if (Stock <= 0)
     {
         return Refuse(EMarburgumInteractionReason::OutOfStock);
@@ -255,6 +348,7 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
     Next.Inventories.FindOrAdd(Character).FindOrAdd(Item) += 1;
     FMarburgumStoredReceipt Stored;
     Stored.Character = Character;
+    Stored.Kind = ToString(EMarburgumInteractionEffect::ItemGranted);
     Stored.Interactable = TargetId;
     Stored.Item = Item;
     Stored.Quantity = 1;
@@ -275,9 +369,58 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
     ApplyInventory(*State);
 
     Receipt.Outcome = EMarburgumRequestOutcome::Applied;
+    Receipt.Effect = EMarburgumInteractionEffect::ItemGranted;
     Receipt.ItemId = Target->GrantedItemId;
     Receipt.Quantity = 1;
     Receipt.StockRemaining = Stock - 1;
+    Receipt.WorldRevision = Next.Revision;
+    return Finish(Receipt, Requester);
+}
+
+FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleNpc(FMarburgumInteractionReceipt Receipt,
+    const AMarburgumPlayerController& Requester, AMarburgumPlayerState& State, const AMarburgumNpc& Npc)
+{
+    const FString& Character = State.GetCharacterKey();
+    FMarburgumWorldRecord Next;
+    const FMarburgumNpcDecision Decision =
+        MarburgumII::Missions::DecideNpcInteraction(Store->Get(), Character, Npc.InteractableId.ToString(), Next);
+    Receipt.MissionId = Decision.Mission.IsEmpty() ? NAME_None : FName(*Decision.Mission);
+    Receipt.MissionStage = Decision.Stage.IsEmpty() ? NAME_None : FName(*Decision.Stage);
+    if (!Decision.bApplied)
+    {
+        Receipt.Reason = Decision.Reason;
+        return Finish(Receipt, Requester);
+    }
+
+    // Mission progress and any item it grants or consumes are one all-or-nothing transition.
+    FMarburgumStoredReceipt Stored;
+    Stored.Character = Character;
+    Stored.Kind = ToString(Decision.Effect);
+    Stored.Interactable = Npc.InteractableId.ToString();
+    Stored.Item = Decision.Item;
+    Stored.Quantity = Decision.Quantity;
+    Stored.Mission = Decision.Mission;
+    Stored.Stage = Decision.Stage;
+    Stored.Revision = Next.Revision;
+    Stored.CommittedUtc = FDateTime::UtcNow().ToIso8601();
+    Next.Receipts.Add(OperationKey(Receipt.OperationId), Stored);
+
+    FString Error;
+    if (!Store->Commit(Next, Error))
+    {
+        UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=commit_failed op=%s error=\"%s\""),
+            InteractLogPrefix, *OperationKey(Receipt.OperationId), *Error);
+        Receipt.Reason = EMarburgumInteractionReason::StoreWriteFailed;
+        return Finish(Receipt, Requester);
+    }
+
+    // Durable first, visible second.
+    ApplyInventory(State);
+
+    Receipt.Outcome = EMarburgumRequestOutcome::Applied;
+    Receipt.Effect = Decision.Effect;
+    Receipt.ItemId = Decision.Item.IsEmpty() ? NAME_None : FName(*Decision.Item);
+    Receipt.Quantity = Decision.Quantity;
     Receipt.WorldRevision = Next.Revision;
     return Finish(Receipt, Requester);
 }

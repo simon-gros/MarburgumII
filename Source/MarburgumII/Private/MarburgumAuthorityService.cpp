@@ -29,6 +29,20 @@ namespace MarburgumII::Gameplay
         case EMarburgumInteractionReason::UnknownTarget: return TEXT("unknown_target");
         case EMarburgumInteractionReason::OutOfRange: return TEXT("out_of_range");
         case EMarburgumInteractionReason::OutOfStock: return TEXT("out_of_stock");
+        case EMarburgumInteractionReason::RequirementNotMet: return TEXT("requirement_not_met");
+        case EMarburgumInteractionReason::NothingToDo: return TEXT("nothing_to_do");
+        }
+        return TEXT("unknown");
+    }
+
+    const TCHAR* ToString(EMarburgumInteractionEffect Effect)
+    {
+        switch (Effect)
+        {
+        case EMarburgumInteractionEffect::None: return TEXT("none");
+        case EMarburgumInteractionEffect::ItemGranted: return TEXT("item_granted");
+        case EMarburgumInteractionEffect::MissionStarted: return TEXT("mission_started");
+        case EMarburgumInteractionEffect::StageCompleted: return TEXT("stage_completed");
         }
         return TEXT("unknown");
     }

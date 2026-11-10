@@ -9,9 +9,10 @@ class UStaticMeshComponent;
 DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumInteractableChanged, class AMarburgumInteractable*);
 
 /**
- * A world object that grants an item from a limited, server-owned stock (ontology
- * `InteractionDefinition` projected into the level). Placed in maps with a stable InteractableId;
- * clients see the replicated remaining stock but can only request, never take.
+ * Something the player can interact with (ontology `InteractionDefinition` projected into the level),
+ * placed in maps with a stable InteractableId. The base class is an item source: it grants an item from
+ * a limited, server-owned stock; clients see the replicated remaining stock but can only request, never
+ * take. AMarburgumNpc is the other kind. The server decides what every request means.
  */
 UCLASS()
 class MARBURGUMII_API AMarburgumInteractable : public AActor
@@ -50,6 +51,9 @@ public:
     /** Development fixture rather than authored Marburgum content; always labeled in the HUD. */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Marburgum|Interaction")
     bool bTestFixture = true;
+
+    /** Whether this grants items from a stock (true for a placed item source with a GrantedItemId). */
+    virtual bool IsItemSource() const { return !GrantedItemId.IsNone(); }
 
     /** Current stock; -1 until the server has applied its durable record. */
     int32 GetRemainingStock() const { return RemainingStock; }

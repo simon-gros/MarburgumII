@@ -170,7 +170,7 @@ inv = doc["inventories"]
 a = inv.get(key_a, {}).get("fishing_rod", 0)
 b = inv.get(key_b, {}).get("fishing_rod", 0)
 problems = []
-if doc["format"] != "marburgumii.world_store" or doc["schema_version"] != 1: problems.append("format")
+if doc["format"] != "marburgumii.world_store" or doc["schema_version"] != 2: problems.append("format")
 if doc["revision"] != 3: problems.append("revision=%s" % doc["revision"])
 if doc["stocks"].get("dev_supply_crate") != 0: problems.append("stock=%s" % doc["stocks"].get("dev_supply_crate"))
 if "dev_supply_crate_far" in doc["stocks"]: problems.append("far_stock_written")

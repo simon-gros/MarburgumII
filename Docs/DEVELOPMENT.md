@@ -41,13 +41,14 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ## Test map, packaging and network smoke (Linux)
 
 ```bash
-./scripts/create-maps.sh              # regenerate Content/Maps/FrontEnd.umap and NetSmoke.umap (editor Python commandlet; build the Editor first)
+./scripts/create-maps.sh              # regenerate Content/Maps/FrontEnd, NetSmoke and Lent (+ Content/Blockout/Materials) with the editor Python commandlet; build the Editor first
 ./scripts/package-linux.sh            # BuildCookRun: Saved/StagedBuilds/LinuxServer and LinuxClient
 ./scripts/net-smoke-linux.sh          # Gate 0B against the packaged builds
 ./scripts/net-smoke-linux.sh editor   # same test with uncooked UnrealEditor -server / -game processes
 ./scripts/ui-capture-linux.sh         # Stage 0C rendered-client UI captures against the packaged builds
 ./scripts/chat-smoke-linux.sh         # CHAT-001: dedicated server + sender/recipient/bystander clients
 ./scripts/interaction-smoke-linux.sh  # Gate 1: interaction, receipts, race, server restart, admission refusals
+./scripts/lent-smoke-linux.sh         # Lent slice: location, NPC, saved mission, objective/journal, restart, privacy
 ```
 
 The smoke script starts one headless dedicated server on port 7777 (override with `MB2_SMOKE_PORT`). It runs one client through a refused mutation, an idempotent operation and a disconnect/reconnect, then two concurrent clients. Logs and `summary.txt` go to `Saved/NetSmoke/<UTC timestamp>/`. A nonzero exit means a failed expectation. The PythonScriptPlugin and EditorScriptingUtilities plugins are enabled only for the Editor target.
@@ -57,6 +58,24 @@ The UI capture script runs real `MarburgumIIClient` processes with `-RenderOffSc
 The chat smoke starts a packaged server and three clients: A sends general, private, invalid and burst messages, B replies privately, C is the bystander. Each client checks its own deliveries and exits nonzero on any mismatch; the script also counts server-accepted messages and greps every log for private bodies. A and C render offscreen and save screenshots of their chat panel (`MB2_CHAT_RENDER` selects which roles render). Evidence goes to `Saved/ChatSmoke/<UTC timestamp>/`.
 
 The interaction smoke runs two server sessions on one world store in `Saved/InteractSmoke/<UTC timestamp>/`. Phase 1 starts with one injected write fault (`-MB2StoreFaultInjection` and `world-store.json.fail`) and runs clients A and B: a refused faulty commit, a grant, a replay of the same operation id, an out-of-range request, a second grant and a race for the last unit. The script then checks the store file (3 grants, stock 0, 3 receipts) and restarts the server. Phase 2 checks restored inventories and stock, a replay answered `Duplicate`, a keyless client, a duplicate login and a malformed key (both refused at admission), and a later session of the same character. The store must be byte-identical afterwards. A, D and A3 render offscreen one at a time; on the test host a second offscreen Vulkan client could not create its device while another was rendering, so the script also retries a renderer whose Vulkan device creation fails before connecting.
+
+The Lent smoke runs `/Game/Maps/Lent` twice on one world store in `Saved/LentSmoke/<UTC timestamp>/`. Phase 1 (one injected write fault): M starts at the riverside angler. Its faulty first talk is refused and leaves no mission and no item behind. The mission is then accepted with its start item in one commit, the same operation is replayed (`Duplicate`), the next step is refused for want of a fish, and the journal opens. Meanwhile W, on Stari most, is refused out of range, sees none of M's progress, inventory or location, and walks north until the server places it in Lent. K, without a character key, is refused. The script checks the store file (schema 2, one commit) and restarts the server. Phase 2: M2 sees its mission, objective and rod restored, and the replay is still a `Duplicate`. T walks from the bridge into Lent for the location banner. The store must be byte-identical afterwards. M, M2 and T render offscreen one at a time.
+
+Server-side rules also have an editor automation test:
+
+```bash
+"$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -ExecCmds="Automation RunTests Marburgum;Quit" \
+    -unattended -nullrhi -stdout -TestExit="Automation Test Queue Empty"   # Marburgum.Chat.TextPolicy, Marburgum.Server.MissionRules
+```
+
+### Playing the Lent slice by hand
+
+```bash
+Saved/StagedBuilds/LinuxServer/MarburgumIIServer.sh /Game/Maps/Lent -port=7777 -log
+Saved/StagedBuilds/LinuxClient/MarburgumIIClient.sh -MB2Character=simon
+```
+
+You arrive on the Lent promenade, and the location banner names the district. The riverside angler stands 30 m west at the railing. Walk up and press **E** to talk: the server starts "Something in the Water", hands over a fishing rod and pins the objective (top left). Press **E** again and he asks for a fish, which cannot be caught until fishing exists (Stage 2). **J** opens the journal and **I** the inventory. Walk east onto Stari most and back to see the banner change between "Maribor" and "Lent". The store is `.../WorldStore/Lent.json` next to the NetSmoke file named below; delete it to start the mission afresh. The map is a fallback blockout, not the licensed city model (ADR-016). `/Game/Maps/Lent` is also the server's default map now.
 
 ### Playing the Gate 1 slice by hand
 

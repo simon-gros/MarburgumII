@@ -2,18 +2,32 @@
 
 #include "CoreMinimal.h"
 
-/** One committed grant, kept so a replayed operation id is answered without applying it again. */
+/**
+ * One committed operation, kept so a replayed operation id is answered without applying it again.
+ * Kind is the effect's wire name (`item_granted`, `mission_started`, `stage_completed`); schema 1
+ * receipts, which predate missions, load as `item_granted`.
+ */
 struct FMarburgumStoredReceipt
 {
     FString Character;
+    FString Kind;
     FString Interactable;
     FString Item;
     int32 Quantity = 0;
+    FString Mission;
+    FString Stage;
     int64 Revision = 0;
     FString CommittedUtc;
 };
 
-/** Durable authoritative world state for one map (schema `marburgumii.world_store` v1). */
+/** One character's progress in one mission. */
+struct FMarburgumStoredMission
+{
+    FString Stage;
+    int64 StartedRevision = 0;
+};
+
+/** Durable authoritative world state for one map (schema `marburgumii.world_store` v2). */
 struct FMarburgumWorldRecord
 {
     int64 Revision = 0;
@@ -21,7 +35,9 @@ struct FMarburgumWorldRecord
     TMap<FString, int32> Stocks;
     /** Character key -> item id -> quantity. */
     TMap<FString, TMap<FString, int32>> Inventories;
-    /** Operation id (32 hex digits) -> committed grant. */
+    /** Character key -> mission id -> progress. */
+    TMap<FString, TMap<FString, FMarburgumStoredMission>> Missions;
+    /** Operation id (32 hex digits) -> committed operation. */
     TMap<FString, FMarburgumStoredReceipt> Receipts;
 };
 
@@ -36,8 +52,14 @@ class FMarburgumWorldStore
 public:
     explicit FMarburgumWorldStore(const FString& InPath) : Path(InPath) {}
 
-    /** A missing file is an empty world. A present but unreadable file is an error, never overwritten. */
+    /**
+     * A missing file is an empty world. A present but unreadable file is an error, never overwritten.
+     * A schema 1 document loads as-is (it has no missions) and the next commit rewrites it as schema 2.
+     */
     bool Load(FString& OutError);
+
+    /** Schema version of the loaded document; 0 for a new world. */
+    int32 GetLoadedSchema() const { return LoadedSchema; }
 
     /** Make Next durable, then adopt it. On failure the previous record stays current. */
     bool Commit(const FMarburgumWorldRecord& Next, FString& OutError);
@@ -55,9 +77,10 @@ private:
     bool ConsumeInjectedFault() const;
 
     static FString Serialize(const FMarburgumWorldRecord& Source);
-    static bool Deserialize(const FString& Text, FMarburgumWorldRecord& Out, FString& OutError);
+    static bool Deserialize(const FString& Text, FMarburgumWorldRecord& Out, int32& OutSchema, FString& OutError);
 
     FString Path;
     FMarburgumWorldRecord Record;
+    int32 LoadedSchema = 0;
     bool bFaultInjection = false;
 };
