@@ -1,0 +1,105 @@
+MarburgumII Gate 1 interaction smoke
+result: PASS
+date_utc: 2026-11-10T12:25:58Z
+git_sha: 9b626d36dce78ad8e8fe735e805ff1394284792f
+mode: staged
+host: Linux 6.18.60-2-cachyos-lts x86_64
+store_after_phase1: revision=3 items_a=2 items_b=1 sha256=266a0908c0642f5385a76c067e40e13b670951003b101d042c611294c1969375
+store_after_phase2_sha256: 266a0908c0642f5385a76c067e40e13b670951003b101d042c611294c1969375
+server_phase1: applied=3 commit_failed=1
+server_phase2: store_loaded=1 admission_refused=2 applied=0
+
+MB2INTERACT role=client tag=A2 event=start op=1621D54520E144978B65150F9F833FF0 expect=2 shot=0
+MB2INTERACT role=client tag=A2 event=ready player=256 character=1 items=2 crate_stock=0 far_stock=1
+MB2INTERACT role=client tag=A2 event=restored items=2 stock=0
+MB2INTERACT role=client tag=A2 event=submit kind=replay_after_restart op=1621D54520E144978B65150F9F833FF0 target=dev_supply_crate
+MB2INTERACT role=client tag=A2 event=receipt op=1621D54520E144978B65150F9F833FF0 outcome=duplicate reason=none target=dev_supply_crate item=fishing_rod quantity=1 stock=0 revision=1
+MB2INTERACT role=client tag=A2 event=submit kind=after_restart op=01A1C56BB05078BEAB59F1B06A0CB238 target=dev_supply_crate
+MB2INTERACT role=client tag=A2 event=receipt op=01A1C56BB05078BEAB59F1B06A0CB238 outcome=rejected reason=out_of_stock target=dev_supply_crate item=None quantity=0 stock=0 revision=0
+MB2INTERACT role=client tag=A2 event=holding
+MB2INTERACT role=client tag=A2 event=pass
+MB2INTERACT role=client tag=A3 event=start op=1621D54520E144978B65150F9F833FF0 expect=2 shot=1
+MB2INTERACT role=client tag=A3 event=ready player=259 character=1 items=2 crate_stock=0 far_stock=1
+MB2INTERACT role=client tag=A3 event=restored items=2 stock=0
+MB2INTERACT role=client tag=A3 event=shot file=interact-a-session3-restored.png saved=1
+MB2INTERACT role=client tag=A3 event=pass
+MB2INTERACT role=client tag=A event=start op=1621D54520E144978B65150F9F833FF0 expect=-1 shot=1
+MB2INTERACT role=client tag=A event=ready player=257 character=1 items=0 crate_stock=3 far_stock=1
+MB2INTERACT role=client tag=A event=shot file=interact-a-session1-prompt.png saved=1
+MB2INTERACT role=client tag=A event=submit kind=fault op=01A1C56B6A75744CA2F9254D28E92519 target=dev_supply_crate
+MB2INTERACT role=client tag=A event=receipt op=01A1C56B6A75744CA2F9254D28E92519 outcome=rejected reason=store_write_failed target=dev_supply_crate item=None quantity=0 stock=3 revision=0
+MB2INTERACT role=client tag=A event=submit kind=first op=1621D54520E144978B65150F9F833FF0 target=dev_supply_crate
+MB2INTERACT role=client tag=A event=receipt op=1621D54520E144978B65150F9F833FF0 outcome=applied reason=none target=dev_supply_crate item=fishing_rod quantity=1 stock=2 revision=1
+MB2INTERACT role=client tag=A event=shot file=interact-a-session1-applied.png saved=1
+MB2INTERACT role=client tag=A event=submit kind=replay op=1621D54520E144978B65150F9F833FF0 target=dev_supply_crate
+MB2INTERACT role=client tag=A event=receipt op=1621D54520E144978B65150F9F833FF0 outcome=duplicate reason=none target=dev_supply_crate item=fishing_rod quantity=1 stock=2 revision=1
+MB2INTERACT role=client tag=A event=submit kind=far op=01A1C56B72B97C62979A47772928C47B target=dev_supply_crate_far
+MB2INTERACT role=client tag=A event=receipt op=01A1C56B72B97C62979A47772928C47B outcome=rejected reason=out_of_range target=dev_supply_crate_far item=None quantity=0 stock=1 revision=0
+MB2INTERACT role=client tag=A event=submit kind=second op=01A1C56B72ED73128935F96EBA1050C9 target=dev_supply_crate
+MB2INTERACT role=client tag=A event=receipt op=01A1C56B72ED73128935F96EBA1050C9 outcome=applied reason=none target=dev_supply_crate item=fishing_rod quantity=1 stock=1 revision=2
+MB2INTERACT role=client tag=A event=submit kind=race op=01A1C56B731F7C54B853772CFA2E5DD9 target=dev_supply_crate
+MB2INTERACT role=client tag=A event=receipt op=01A1C56B731F7C54B853772CFA2E5DD9 outcome=rejected reason=out_of_stock target=dev_supply_crate item=None quantity=0 stock=0 revision=0
+MB2INTERACT role=client tag=A event=final items=2 stock=0 race=lost
+MB2INTERACT role=client tag=A event=shot file=interact-a-session1-inventory.png saved=1
+MB2INTERACT role=client tag=A event=pass
+MB2INTERACT role=client tag=B2 event=start op=1621D54520E144978B65150F9F833FF0 expect=1 shot=0
+MB2INTERACT role=client tag=B2 event=ready player=257 character=1 items=1 crate_stock=0 far_stock=1
+MB2INTERACT role=client tag=B2 event=restored items=1 stock=0
+MB2INTERACT role=client tag=B2 event=pass
+MB2INTERACT role=client tag=B event=start op=1621D54520E144978B65150F9F833FF0 expect=-1 shot=0
+MB2INTERACT role=client tag=B event=ready player=256 character=1 items=0 crate_stock=3 far_stock=1
+MB2INTERACT role=client tag=B event=submit kind=race op=01A1C56B731E76988643BA3E5F9765A9 target=dev_supply_crate
+MB2INTERACT role=client tag=B event=receipt op=01A1C56B731E76988643BA3E5F9765A9 outcome=applied reason=none target=dev_supply_crate item=fishing_rod quantity=1 stock=0 revision=3
+MB2INTERACT role=client tag=B event=final items=1 stock=0 race=won
+MB2INTERACT role=client tag=B event=pass
+MB2INTERACT role=client tag=D event=start op=1621D54520E144978B65150F9F833FF0 expect=-1 shot=1
+MB2INTERACT role=client tag=D event=refused fault=refused detail="This character is already connected to the server."
+MB2INTERACT role=client tag=D event=shot file=interact-d-duplicate-login-refused.png saved=1
+MB2INTERACT role=client tag=D event=pass
+MB2INTERACT role=client tag=N event=start op=1621D54520E144978B65150F9F833FF0 expect=-1 shot=0
+MB2INTERACT role=client tag=N event=ready player=258 character=0 items=0 crate_stock=0 far_stock=1
+MB2INTERACT role=client tag=N event=submit kind=keyless op=01A1C56BB02674C582D4BED27B1022B6 target=dev_supply_crate
+MB2INTERACT role=client tag=N event=receipt op=01A1C56BB02674C582D4BED27B1022B6 outcome=rejected reason=no_character target=None item=None quantity=0 stock=-1 revision=0
+MB2INTERACT role=client tag=N event=pass
+MB2INTERACT role=client tag=X event=start op=1621D54520E144978B65150F9F833FF0 expect=-1 shot=0
+MB2INTERACT role=client tag=X event=refused fault=refused detail="Invalid character key: use 3-40 characters a-z, 0-9, '-' or '_'."
+MB2INTERACT role=client tag=X event=pass
+MB2SMOKE role=server event=ready map=NetSmoke port=7777 contract=1
+MB2INTERACT role=server event=store_loaded path="/mnt/data/MarburgumII/Saved/InteractSmoke/20261110T122507Z/world-store.json" revision=0 characters=0 receipts=0
+MB2INTERACT role=server event=stock target=dev_supply_crate stock=3 source=authored
+MB2INTERACT role=server event=stock target=dev_supply_crate_far stock=1 source=authored
+MB2INTERACT role=server event=inventory_restored player=256 character=mb2b-t179431350710394 stacks=0
+MB2SMOKE role=server event=login player=256 players=1
+MB2INTERACT role=server event=inventory_restored player=257 character=mb2a-t179431350710394 stacks=0
+MB2SMOKE role=server event=login player=257 players=2
+MB2INTERACT role=server event=commit_failed op=01A1C56B6A75744CA2F9254D28E92519 error="injected write fault"
+MB2INTERACT role=server event=interaction player=257 character=mb2a-t179431350710394 op=01A1C56B6A75744CA2F9254D28E92519 target=dev_supply_crate outcome=rejected reason=store_write_failed item=- quantity=0 stock=3 revision=0
+MB2INTERACT role=server event=interaction player=257 character=mb2a-t179431350710394 op=1621D54520E144978B65150F9F833FF0 target=dev_supply_crate outcome=applied reason=none item=fishing_rod quantity=1 stock=2 revision=1
+MB2INTERACT role=server event=interaction player=257 character=mb2a-t179431350710394 op=1621D54520E144978B65150F9F833FF0 target=dev_supply_crate outcome=duplicate reason=none item=fishing_rod quantity=1 stock=2 revision=1
+MB2INTERACT role=server event=interaction player=257 character=mb2a-t179431350710394 op=01A1C56B72B97C62979A47772928C47B target=dev_supply_crate_far outcome=rejected reason=out_of_range item=- quantity=0 stock=1 revision=0
+MB2INTERACT role=server event=interaction player=257 character=mb2a-t179431350710394 op=01A1C56B72ED73128935F96EBA1050C9 target=dev_supply_crate outcome=applied reason=none item=fishing_rod quantity=1 stock=1 revision=2
+MB2INTERACT role=server event=interaction player=256 character=mb2b-t179431350710394 op=01A1C56B731E76988643BA3E5F9765A9 target=dev_supply_crate outcome=applied reason=none item=fishing_rod quantity=1 stock=0 revision=3
+MB2INTERACT role=server event=interaction player=257 character=mb2a-t179431350710394 op=01A1C56B731F7C54B853772CFA2E5DD9 target=dev_supply_crate outcome=rejected reason=out_of_stock item=- quantity=0 stock=0 revision=0
+MB2SMOKE role=server event=logout player=256 players=1
+MB2SMOKE role=server event=logout player=257 players=0
+MB2SMOKE role=server event=ready map=NetSmoke port=7777 contract=1
+MB2INTERACT role=server event=store_loaded path="/mnt/data/MarburgumII/Saved/InteractSmoke/20261110T122507Z/world-store.json" revision=3 characters=2 receipts=3
+MB2INTERACT role=server event=stock target=dev_supply_crate stock=0 source=store
+MB2INTERACT role=server event=stock target=dev_supply_crate_far stock=1 source=authored
+MB2INTERACT role=server event=inventory_restored player=256 character=mb2a-t179431350710394 stacks=1
+MB2SMOKE role=server event=login player=256 players=1
+MB2INTERACT role=server event=inventory_restored player=257 character=mb2b-t179431350710394 stacks=1
+MB2SMOKE role=server event=login player=257 players=2
+MB2INTERACT role=server event=inventory_restored player=258 character=- stacks=0
+MB2SMOKE role=server event=login player=258 players=3
+MB2SMOKE role=server event=logout player=257 players=2
+MB2INTERACT role=server event=interaction player=256 character=mb2a-t179431350710394 op=1621D54520E144978B65150F9F833FF0 target=dev_supply_crate outcome=duplicate reason=none item=fishing_rod quantity=1 stock=0 revision=1
+MB2INTERACT role=server event=interaction player=258 character=- op=01A1C56BB02674C582D4BED27B1022B6 target=- outcome=rejected reason=no_character item=- quantity=0 stock=-1 revision=0
+MB2INTERACT role=server event=interaction player=256 character=mb2a-t179431350710394 op=01A1C56BB05078BEAB59F1B06A0CB238 target=dev_supply_crate outcome=rejected reason=out_of_stock item=- quantity=0 stock=0 revision=0
+MB2SMOKE role=server event=logout player=258 players=1
+MB2INTERACT role=server event=admission_refused stage=prelogin character=x reason="Invalid character key: use 3-40 characters a-z, 0-9, '-' or '_'."
+MB2INTERACT role=server event=admission_refused stage=prelogin character=mb2a-t179431350710394 reason="This character is already connected to the server."
+MB2SMOKE role=server event=logout player=256 players=0
+MB2INTERACT role=server event=inventory_restored player=259 character=mb2a-t179431350710394 stacks=1
+MB2SMOKE role=server event=login player=259 players=1
+MB2SMOKE role=server event=logout player=259 players=0

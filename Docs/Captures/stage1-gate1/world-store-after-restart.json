@@ -1,0 +1,50 @@
+{
+	"format": "marburgumii.world_store",
+	"schema_version": 1,
+	"revision": 3,
+	"stocks":
+	{
+		"dev_supply_crate": 0
+	},
+	"inventories":
+	{
+		"mb2a-t179431350710394":
+		{
+			"fishing_rod": 2
+		},
+		"mb2b-t179431350710394":
+		{
+			"fishing_rod": 1
+		}
+	},
+	"receipts":
+	{
+		"01A1C56B72ED73128935F96EBA1050C9":
+		{
+			"character": "mb2a-t179431350710394",
+			"interactable": "dev_supply_crate",
+			"item": "fishing_rod",
+			"quantity": 1,
+			"revision": 2,
+			"committed_utc": "2026-11-10T12:25:15.783Z"
+		},
+		"01A1C56B731E76988643BA3E5F9765A9":
+		{
+			"character": "mb2b-t179431350710394",
+			"interactable": "dev_supply_crate",
+			"item": "fishing_rod",
+			"quantity": 1,
+			"revision": 3,
+			"committed_utc": "2026-11-10T12:25:15.816Z"
+		},
+		"1621D54520E144978B65150F9F833FF0":
+		{
+			"character": "mb2a-t179431350710394",
+			"interactable": "dev_supply_crate",
+			"item": "fishing_rod",
+			"quantity": 1,
+			"revision": 1,
+			"committed_utc": "2026-11-10T12:25:13.678Z"
+		}
+	}
+}
