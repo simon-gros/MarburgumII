@@ -5,14 +5,15 @@
 #include "MarburgumCharacter.generated.h"
 
 class UCameraComponent;
-class UStaticMeshComponent;
+class USpringArmComponent;
 
 /**
- * Minimal first-person test character for the Stage 1 interaction loop. Movement uses the engine's
+ * Third-person player character for the Stage 1 interaction loop (ADR-023). Movement uses the engine's
  * networked CharacterMovementComponent, so the server knows the real pawn position it validates
  * interaction range against. UMarburgumCharacterMovement adds running (hold Shift) with the original
  * breath rules (ADR-020) and reports clients whose move timestamps run ahead of server time (ADR-019).
- * The body is a placeholder primitive; no character art exists yet.
+ * The body is the protagonist prototype on the mannequin skeleton, animated by the template's
+ * ABP_Unarmed (ADR-021); the camera orbits on a spring arm and the body turns to face its movement.
  */
 UCLASS()
 class MARBURGUMII_API AMarburgumCharacter : public ACharacter
@@ -35,8 +36,8 @@ private:
     void StopRunning();
 
     UPROPERTY(VisibleAnywhere, Category = "Marburgum|Character")
-    TObjectPtr<UCameraComponent> Camera;
+    TObjectPtr<USpringArmComponent> CameraBoom;
 
     UPROPERTY(VisibleAnywhere, Category = "Marburgum|Character")
-    TObjectPtr<UStaticMeshComponent> Body;
+    TObjectPtr<UCameraComponent> Camera;
 };

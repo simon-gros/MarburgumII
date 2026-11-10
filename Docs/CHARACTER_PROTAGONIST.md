@@ -1,6 +1,6 @@
 # Protagonist character prototype
 
-**Status (2026-11-10):** prototype skeletal mesh imported into UE 5.8.3 on the template mannequin skeleton. Not yet placed on a playable pawn, not owner-playtested, and not a final hero asset.
+**Status (2026-11-10):** prototype skeletal mesh imported into UE 5.8.3 on the template mannequin skeleton. It is the player's body in third person, animated by the template's `ABP_Unarmed` (ADR-023). Not owner-playtested, and not a final hero asset.
 
 ![TRELLIS turntable](Captures/character-protagonist/trellis_turntable.png)
 
@@ -47,4 +47,5 @@ The pipeline runs outside this repository because its steps are Blender and Unre
 - **Hands:** TRELLIS does not separate fingers, so hand and finger animation deforms poorly. The fix is a modelled or swapped hand mesh.
 - **Detail:** about 4.5k vertices with a 1024² texture is enough for a prototype. A hero asset needs retopology and a proper texture bake.
 - **Bind pose:** on import, UE warns about the bind pose and recalculates it. This is harmless.
-- **Not wired up:** no pawn, Animation Blueprint or map uses the mesh yet.
+- **In the game:** `AMarburgumCharacter` uses the mesh with `ABP_Unarmed` and a third-person camera (ADR-023). [Walking](Captures/character-protagonist/lent-winded-walking-1920x1080.jpg) and [running](Captures/character-protagonist/lent-running-1920x1080.jpg) on the Lent promenade are frames from the packaged client in the condition smoke; the smoke runs east while the camera still faces the spawn direction, so he runs toward the camera.
+- **Blend-space speeds:** the template blend space was authored for the template's walk and run speeds, not 2.2 and 4.4 m/s, so the feet may slide; this has not been measured.

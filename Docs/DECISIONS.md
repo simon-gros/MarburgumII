@@ -148,13 +148,26 @@ Evidence: [STAGE1_CONDITION_EVIDENCE.md](STAGE1_CONDITION_EVIDENCE.md).
 - **Source art lives in `SourceArt/`** (concept, generator output, rigged FBX); the imported assets live in `Content/`. `*.glb` joins the Git LFS patterns.
 - **The authoring pipeline stays outside the repository.** Its steps are Blender and Unreal editor Python, which ADR-018 keeps out of the tree. Its procedure and checks are recorded in [CHARACTER_PROTAGONIST.md](CHARACTER_PROTAGONIST.md).
 
-**Not covered.** Whether the research-only licences of the rasterizers used for TRELLIS's texture bake reach the baked texture in a commercial game. Hands, retopology and the final texture. A pawn, Animation Blueprint or map that uses the mesh.
+**Not covered.** Whether the research-only licences of the rasterizers used for TRELLIS's texture bake reach the baked texture in a commercial game. Hands, retopology and the final texture. The player pawn now uses the mesh (ADR-023).
 
 ## ADR-022 — Email-confirmed account, first character and server-gated world entry (product direction accepted 2026-11-10; implementation pending)
 
 The player's first launch must start at a login/title screen. Like the original Marburgum in user-facing design, a new account requires **email confirmation** before it can obtain usable username/password credentials; passwords must be created/set via a secure verification-bound flow, never emailed or stored as plaintext. The player signs in with username/password. If that account has no character, **First name, Last name and a selected approved character model are mandatory** on a dedicated full-screen character creator. The server durably creates and binds that character to the authenticated account before enabling Enter World. A returning user resumes the existing owned character. No playable pawn/world authority may be granted to an unauthenticated, unverified, characterless or mismatched account.
 
 The initial product policy is one character per account (expandable only by a later explicit decision), opaque account and character IDs, and distinct login username vs in-world first/last names. UI-02A and Stage 0F are added as a **public Stage 1 entry prerequisite**; Stage 4 remains responsible for operational hardening, scale and production deployment. The ADR-014 MB2Character test key remains a development-only compatibility path, not production login or an account ownership guarantee. Do not treat this accepted direction as an implemented or owner-playtested service. The credential provider, storage/email provider, exact naming policy and approved character model roster remain open implementation choices. Design and acceptance are specified by [FIRST_LAUNCH_ONTOLOGY.md](FIRST_LAUNCH_ONTOLOGY.md) and [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json); see [ROADMAP.md](ROADMAP.md) and [UI_HUD_ROADMAP.md](UI_HUD_ROADMAP.md).
+
+## ADR-023 — The player is the protagonist in third person (accepted 2026-11-10)
+
+**Problem.** `AMarburgumCharacter` was a first-person camera with a cylinder that only other players saw. The protagonist prototype (ADR-021) existed but nothing used it, so a playtest could not show the character. The owner chose a third-person camera.
+
+**Decision.**
+
+- **The pawn's body is `SKM_Protagonist`** on `ACharacter`'s own skeletal mesh component, feet at the bottom of the unchanged 34 × 88 cm capsule, turned −90° because the mannequin faces +Y. The placeholder cylinder is gone.
+- **Animation is Epic's template `ABP_Unarmed`** from the committed mannequin: idle/walk/run blend space, jump and fall, and foot IK through `CR_Mannequin_FootIK`. It reads only the engine `Character` and its movement component, so it needs no project Blueprint. Running at 4.4 m/s and walking at 2.2 m/s (ADR-020) drive the blend space directly; no root motion is used.
+- **Third-person camera:** a 350 cm spring arm, 50 cm above the capsule centre, follows the control rotation; the mouse orbits it. The body no longer follows the controller's yaw; it turns toward its movement at 540°/s. WASD stays relative to the camera's yaw. Interaction already picks the nearest object in range, not the one in view, so it is unchanged.
+- **Bodies nobody sees skip their animation** (`OnlyTickPoseWhenRendered`). A dedicated server renders nothing and nothing on it reads bone poses, so it never animates. This must change when a montage with root motion or bone-based hit tests arrives.
+
+**Not covered.** Owner playtest. Rendered evidence of how another player's body animates on a remote client (the smokes render one client at a time). Camera collision tuning in tight interiors, camera settings in the Settings screen, and a first-person option. Hands and texture licence remain open under ADR-021.
 
 ## Open decisions
 
