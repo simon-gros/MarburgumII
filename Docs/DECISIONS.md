@@ -191,6 +191,8 @@ The opening-route pass (`-FictionLent`) does not move those meshes, the landscap
 
 `-RebuildFacades` then rebuilt all 133 Lent façades in place. Footprints, eaves and roofs stayed. Each wall plane that was a blank plaster shell now has a cornice, a window on every floor, and one door on the building's longest wall. Frames are dark painted wood and the glass is a dark low-roughness instance of the building material. The pitched roof was a rectangle laid over the footprint, so on a complex plan it did not meet the walls. Roofs are rebuilt from the footprint. A plan that is nearly rectangular becomes that rectangle, and the pitch sits on those four walls. A complex plan keeps its outline: the eaves are the wall tops, and the ridge rises from the middle instead of a loose box. Eight footprints under 30 m², including the one triangle, are removed from the level. Windows sit on the outside of a solid wall instead of being cut through it. Each roof is a slab that shares the wall-top edge, overhangs it, and has an underside, so the join is not a see-through crack. It is not the final art, but after the `0c06ce8` playtest the owner made this level the standing default: the game, the editor and the dedicated server open `/Game/World/lent` from now on. `/Game/Maps/Lent` is no longer a launch map. It remains only as the map the older mission and condition smokes name explicitly.
 
+The building geometry described here is superseded by ADR-034.
+
 ## ADR-028 — Characters wear the mannequin's hands (accepted 2026-11-10)
 
 **Problem.** TRELLIS fuses the fingers into one lump, so the protagonist's finger bones smeared the hand whenever a hand animation curled or relaxed it. The fitting step also left Manny's elbows bent from his bind pose, so the hand and finger joints sat about 16 cm in front of the generated hands and pulled the wrong vertices.
@@ -260,6 +262,55 @@ This closes the rasterizer-licence question for this character. It stays open fo
 - **Evidence.** Read back from the saved clip at the four key times, the torso points 17° above horizontal and each leg 13° above or below it, in opposite phase. The commandlet now also logs bone heights. `scripts/swim-smoke-linux.sh editor` passes with the new clip; the rendered swimmer shows the head and shoulders out and the back along the surface.
 
 **Not covered.** Owner playtest. Treading water: an idle or sinking swimmer still plays the prone cycle. The river surface is opaque, so the captures do not show the legs.
+
+## ADR-034 — Lent buildings are closed shells with straight-skeleton roofs (accepted 2026-11-10)
+
+**Problem.** The `-RebuildFacades` buildings of ADR-027 never closed, and several rounds of fixes did not close them. There were four separate causes:
+
+- **Unwelded triangles.** Every triangle had its own vertices, so no wall shared an edge with its roof.
+- **Strip roofs.** Roofs were stacked from the source's LiDAR `roof_sections`. Those are fitted strips, often only 3–5 m wide, so neighbouring strips overlapped or left slots.
+- **Reversed winding.** The generator assumed the opposite front-face winding to Unreal's (`FStaticMeshOperations` takes the normal as `(C − A) × (B − A)`), so every single-sided face pointed inward. It had to double each wall and roof slab to be seen at all.
+- **New geometry never reached disk.** The generator created a fresh package for each building and called `BuildFromMeshDescriptions`, which only builds render data in memory. Saving fully loaded the existing file into that package, so the old mesh overwrote the new one. A freshly built 10,512-triangle mesh with five material slots read back from disk as the old 3,809-triangle, four-slot mesh. Earlier fixes could therefore look right in the editor session that made them and still be missing from the next load or cook.
+
+**Decision.** `MarburgumBuildingMesher` (plain C++, editor-only) builds each footprint as one closed solid:
+
+- **Shell.** A floor, the walls, a soffit and fascia under the eaves, and a roof.
+- **Roof shape.** The roof is the weighted straight skeleton of the eave outline. Every roof face starts on a wall line, so roof and walls meet by construction.
+- **Gables and party walls.** Walls shared with a neighbouring footprint (party walls) and the short ends of gabled roofs are edges that do not move inward. Their faces come out vertical and are plaster gables or fire walls.
+- **Pitch.** Each roof peaks at its measured LiDAR rise, with the pitch held between 18° and 55°. A block too wide for that is cut flat at the rise.
+- **Flat roofs.** A 0.3 m parapet around a bitumen deck (`MI_roof_bitumen`).
+- **Openings.** Window frames, glass, sills and doors are separate closed solids set 3 cm into the wall.
+- **Vertices and winding.** Positions are welded at 0.1 mm and written in Unreal's winding.
+
+The `roof_sections` strips are no longer used.
+
+The commandlet loads each existing asset and replaces its source mesh in place (`CreateMeshDescription` and `CommitMeshDescription`, then `Build`). It then checks every shell before saving:
+
+- each edge is used exactly once in each direction, with no T-junctions;
+- the volume is positive;
+- the committed source has the mesher's triangle count and five material slots.
+
+A building that fails is not saved, and the run fails. Other options:
+
+- `-CheckOnly` builds and checks every building without saving anything.
+- `-Only=<id>` rebuilds one building.
+- `-Inspect=<id>` reports what a saved asset holds.
+
+The automation test `Marburgum.Editor.BuildingMesher` covers a gabled rectangle, a hipped L, a gabled U, a flat block, a skewed clockwise outline and two row houses sharing a wall.
+
+Of 125 placed footprints, 124 are rebuilt: 74 gabled, 30 hipped and 20 flat, 360,090 triangles in total with 6,159 framed windows. Every one passes the check, and the source read back from disk matches. One footprint the cleaner cannot keep simple is removed from the level: `w106076714`, a 4 m sliver cut off at the edge of the source data. The tiny footprints already removed under ADR-027 stay removed.
+
+**Evidence.** The development switch `-MB2ViewShots` switches the running game's camera to fixed views and saves screenshots. Before and after, from the same views of `/Game/World/lent` in the editor build:
+
+- [overview](Captures/lent-buildings/overview.jpg)
+- [arrival](Captures/lent-buildings/arrival.jpg)
+- [eaves](Captures/lent-buildings/eaves.jpg)
+- [rooftops](Captures/lent-buildings/rooftops-near.jpg)
+- [street](Captures/lent-buildings/street-up.jpg)
+- [south bank](Captures/lent-buildings/southbank.jpg)
+- [promenade](Captures/lent-buildings/promenade-street.jpg)
+
+**Not covered.** Dormers, chimneys, cornices, and roof overhangs at gable ends (verges). Real façade detail per building. Lightmap UVs come from Unreal's automatic generation. No packaged build or owner playtest yet (ADR-008).
 
 ## Open decisions
 

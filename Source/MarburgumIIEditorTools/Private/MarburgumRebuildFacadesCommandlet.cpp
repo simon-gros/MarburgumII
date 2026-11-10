@@ -1,13 +1,16 @@
 #include "MarburgumRebuildFacadesCommandlet.h"
 
-#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetCompilingManager.h"
 #include "AssetToolsModule.h"
+#include "Misc/PackageName.h"
+#include "UObject/Package.h"
 #include "Dom/JsonObject.h"
-#include "Engine/StaticMeshActor.h"
 #include "Engine/StaticMesh.h"
+#include "Engine/StaticMeshActor.h"
 #include "EngineUtils.h"
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "FileHelpers.h"
+#include "MarburgumBuildingMesher.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "MeshDescription.h"
 #include "MeshDescriptionBuilder.h"
@@ -16,374 +19,133 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "StaticMeshAttributes.h"
+#include "StaticMeshResources.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogMarburgumFacades, Log, All);
 
 namespace
 {
-    struct FPlan
-    {
-        FString Id;
-        TArray<FVector2D> Outline;
-        double Ground = 0.0;
-        double Eaves = 0.0;
-        double Ridge = 0.0;
-        double Angle = 0.0;
-        double Area = 0.0;
-        double TerrainMin = 0.0;
-        bool bTerrain = false;
-        FString Roof;
-        bool bSimplify = false;
-        struct FSection
-        {
-            double Angle = 0.0;
-            double U0 = 0.0;
-            double U1 = 0.0;
-            double V0 = 0.0;
-            double V1 = 0.0;
-            double Ridge = 0.0;
-            bool bHip = false;
-        };
-        TArray<FSection> Sections;
-    };
+    namespace MB = MarburgumBuildings;
 
-    struct FOpening
-    {
-        float U0 = 0.0f;
-        float U1 = 0.0f;
-        float V0 = 0.0f;
-        float V1 = 0.0f;
-        bool bDoor = false;
-    };
+    const TCHAR* SourcePath = TEXT("/home/simon/magna-raedarum-marburgum/project/assets/terrain/lent_buildings.json");
 
-    FVector Ue(const FVector2D& Plan, double HeightMetres)
+    // Plan metres (x east, y south of Stari most, z up) to Unreal centimetres. A rotation, so windings
+    // and normals carry over unchanged.
+    FVector Ue(const MB::FVec3& P)
     {
-        return FVector(-Plan.Y * 100.0, Plan.X * 100.0, HeightMetres * 100.0);
+        return FVector(-P.Y * 100.0, P.X * 100.0, P.Z * 100.0);
     }
 
-    double SignedArea(const TArray<FVector2D>& Outline)
+    bool ReadFootprints(TArray<FString>& OutIds, std::vector<MB::FFootprint>& OutFootprints, TArray<FString>& OutDropped)
     {
-        double Area = 0.0;
-        for (int32 Index = 0; Index < Outline.Num(); ++Index)
+        FString Text;
+        if (!FFileHelper::LoadFileToString(Text, SourcePath))
         {
-            const FVector2D& A = Outline[Index];
-            const FVector2D& B = Outline[(Index + 1) % Outline.Num()];
-            Area += A.X * B.Y - B.X * A.Y;
+            return false;
         }
-        return Area * 0.5;
-    }
-
-    bool Inside(const TArray<FVector2D>& Outline, const FVector2D& Point)
-    {
-        bool bInside = false;
-        for (int32 Index = 0, Previous = Outline.Num() - 1; Index < Outline.Num(); Previous = Index++)
+        TSharedPtr<FJsonObject> Root;
+        const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Text);
+        if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid())
         {
-            const FVector2D& A = Outline[Index];
-            const FVector2D& B = Outline[Previous];
-            const bool bCross = (A.Y > Point.Y) != (B.Y > Point.Y)
-                && Point.X < (B.X - A.X) * (Point.Y - A.Y) / (B.Y - A.Y + KINDA_SMALL_NUMBER) + A.X;
-            if (bCross)
+            return false;
+        }
+        for (const TSharedPtr<FJsonValue>& Value : Root->GetArrayField(TEXT("buildings")))
+        {
+            const TSharedPtr<FJsonObject> Object = Value->AsObject();
+            if (!Object.IsValid())
             {
-                bInside = !bInside;
-            }
-        }
-        return bInside;
-    }
-
-    bool Triangulate(const TArray<FVector2D>& Outline, TArray<int32>& Triangles)
-    {
-        TArray<int32> Vertex;
-        for (int32 Index = 0; Index < Outline.Num(); ++Index)
-        {
-            Vertex.Add(Index);
-        }
-        auto Cross = [&](int32 I0, int32 I1, int32 I2)
-        {
-            const FVector2D& A = Outline[Vertex[I0]];
-            const FVector2D& B = Outline[Vertex[I1]];
-            const FVector2D& C = Outline[Vertex[I2]];
-            return (B.X - A.X) * (C.Y - A.Y) - (B.Y - A.Y) * (C.X - A.X);
-        };
-        int32 Guard = Outline.Num() * Outline.Num();
-        while (Vertex.Num() > 3 && Guard-- > 0)
-        {
-            bool bClipped = false;
-            for (int32 Index = 0; Index < Vertex.Num(); ++Index)
-            {
-                const int32 Prev = (Index + Vertex.Num() - 1) % Vertex.Num();
-                const int32 Next = (Index + 1) % Vertex.Num();
-                if (Cross(Prev, Index, Next) <= 1.0e-8)
-                {
-                    continue;
-                }
-                bool bContains = false;
-                const FVector2D& A = Outline[Vertex[Prev]];
-                const FVector2D& B = Outline[Vertex[Index]];
-                const FVector2D& C = Outline[Vertex[Next]];
-                for (int32 Other = 0; Other < Vertex.Num(); ++Other)
-                {
-                    if (Other == Prev || Other == Index || Other == Next)
-                    {
-                        continue;
-                    }
-                    const FVector2D& P = Outline[Vertex[Other]];
-                    const double C1 = (B.X - A.X) * (P.Y - A.Y) - (B.Y - A.Y) * (P.X - A.X);
-                    const double C2 = (C.X - B.X) * (P.Y - B.Y) - (C.Y - B.Y) * (P.X - B.X);
-                    const double C3 = (A.X - C.X) * (P.Y - C.Y) - (A.Y - C.Y) * (P.X - C.X);
-                    if (C1 >= -1.0e-8 && C2 >= -1.0e-8 && C3 >= -1.0e-8)
-                    {
-                        bContains = true;
-                        break;
-                    }
-                }
-                if (bContains)
-                {
-                    continue;
-                }
-                Triangles.Append({ Vertex[Prev], Vertex[Index], Vertex[Next] });
-                Vertex.RemoveAt(Index);
-                bClipped = true;
-                break;
-            }
-            if (!bClipped)
-            {
-                return false;
-            }
-        }
-        if (Vertex.Num() == 3 && Cross(0, 1, 2) > 1.0e-8)
-        {
-            Triangles.Append(Vertex);
-            return true;
-        }
-        return false;
-    }
-
-    class FShell
-    {
-    public:
-        explicit FShell(FMeshDescription& Description)
-        {
-            Builder.SetMeshDescription(&Description);
-            Builder.EnablePolyGroups();
-            Builder.SetNumUVLayers(1);
-            Plaster = Builder.AppendPolygonGroup(TEXT("plaster"));
-            Roof = Builder.AppendPolygonGroup(TEXT("roof"));
-            Frame = Builder.AppendPolygonGroup(TEXT("frame"));
-            Glass = Builder.AppendPolygonGroup(TEXT("glass"));
-        }
-
-        void Triangle(const FVector& A, const FVector& B, const FVector& C, const FPolygonGroupID& Group)
-        {
-            const FVector Normal = FVector::CrossProduct(B - A, C - A).GetSafeNormal();
-            if (Normal.IsNearlyZero())
-            {
-                return;
-            }
-            const auto Instance = [&](const FVector& Position)
-            {
-                const FVertexID Vertex = Builder.AppendVertex(Position);
-                const FVertexInstanceID InstanceId = Builder.AppendInstance(Vertex);
-                Builder.SetInstanceNormal(InstanceId, Normal);
-                Builder.SetInstanceUV(InstanceId, FVector2D(Position.X, Position.Z) * 0.01, 0);
-                return InstanceId;
-            };
-            Builder.AppendTriangle(Instance(A), Instance(B), Instance(C), Group);
-        }
-
-        void Quad(const FVector& A, const FVector& B, const FVector& C, const FVector& D, const FPolygonGroupID& Group)
-        {
-            Triangle(A, B, C, Group);
-            Triangle(A, C, D, Group);
-        }
-
-        FPolygonGroupID Plaster;
-        FPolygonGroupID Roof;
-        FPolygonGroupID Frame;
-        FPolygonGroupID Glass;
-        FMeshDescriptionBuilder Builder;
-    };
-
-    FVector OnWall(const FVector& Bottom0, const FVector& Bottom1, const FVector& Top0, const FVector& Top1, float U, float V, float Width, float Height, const FVector& Inset)
-    {
-        const float Tu = Width > 1.0f ? U / Width : 0.0f;
-        const float Tv = Height > 1.0f ? V / Height : 0.0f;
-        return FMath::Lerp(FMath::Lerp(Bottom0, Bottom1, Tu), FMath::Lerp(Top0, Top1, Tu), Tv) + Inset;
-    }
-
-    void AddOpenings(float Width, float Height, bool bDoor, TArray<FOpening>& Out)
-    {
-        if (Height < 240.0f || Width < 220.0f)
-        {
-            return;
-        }
-        const int32 Storeys = FMath::Clamp(FMath::RoundToInt(Height / 320.0f), 1, 4);
-        const float Storey = Height / Storeys;
-        const int32 Count = FMath::Clamp(FMath::FloorToInt(Width / 320.0f), 1, 3);
-        const float Step = Width / (Count + 1);
-        auto Window = [&](int32 Index, float Sill)
-        {
-            const float Center = Step * (Index + 1);
-            if (Sill < 70.0f || Sill + 140.0f > Height - 40.0f)
-            {
-                return;
-            }
-            FOpening Opening;
-            Opening.U0 = Center - 55.0f;
-            Opening.U1 = Center + 55.0f;
-            Opening.V0 = Sill;
-            Opening.V1 = Sill + 140.0f;
-            Out.Add(Opening);
-        };
-        for (int32 StoreyIndex = 0; StoreyIndex < Storeys; ++StoreyIndex)
-        {
-            if (StoreyIndex == 0 && bDoor)
-            {
-                FOpening Door;
-                Door.bDoor = true;
-                Door.U0 = Width * 0.5f - 55.0f;
-                Door.U1 = Width * 0.5f + 55.0f;
-                Door.V0 = 0.0f;
-                Door.V1 = FMath::Min(215.0f, Storey - 40.0f);
-                if (Door.V1 > 170.0f)
-                {
-                    Out.Add(Door);
-                }
                 continue;
             }
-            const float Sill = Storey * StoreyIndex + (Storey - 140.0f) * 0.45f;
-            for (int32 Index = 0; Index < Count; ++Index)
+            const FString Id = Object->GetStringField(TEXT("id"));
+            double Number = 0.0;
+            MB::FFootprint Footprint;
+            Footprint.Id = TCHAR_TO_UTF8(*Id);
+            Footprint.Ground = Object->TryGetNumberField(TEXT("ground"), Number) ? Number : 0.0;
+            Footprint.Eaves = Object->TryGetNumberField(TEXT("eaves"), Number) ? Number : Footprint.Ground + 3.0;
+            const double Ridge = Object->TryGetNumberField(TEXT("ridge"), Number) ? Number : Footprint.Eaves;
+            Footprint.RoofRise = Ridge - Footprint.Eaves;
+            Footprint.PitchDegrees = Object->TryGetNumberField(TEXT("pitch"), Number) ? Number : 40.0;
+            const double Area = Object->TryGetNumberField(TEXT("area"), Number) ? Number : 0.0;
+            const FString Roof = Object->GetStringField(TEXT("roof"));
+            Footprint.Roof = Roof == TEXT("flat") ? MB::ERoof::Flat
+                : (Roof == TEXT("hipped") || Roof == TEXT("pyramidal") ? MB::ERoof::Hipped : MB::ERoof::Gabled);
+
+            // Walls start just below the lowest terrain under the footprint, so none floats on a slope.
+            Footprint.Base = Footprint.Ground - 0.15;
+            const TSharedPtr<FJsonObject>* Contact = nullptr;
+            if (Object->TryGetObjectField(TEXT("ground_contact"), Contact) && Contact && (*Contact)->TryGetNumberField(TEXT("terrain_min"), Number))
             {
-                Window(Index, Sill);
+                const double Gap = Footprint.Ground - Number;
+                if (Gap > 0.05 && Gap < 8.0)
+                {
+                    Footprint.Base = Number - 0.15;
+                }
             }
+            for (const TSharedPtr<FJsonValue>& Point : Object->GetArrayField(TEXT("outline")))
+            {
+                const TArray<TSharedPtr<FJsonValue>> Pair = Point->AsArray();
+                if (Pair.Num() >= 2)
+                {
+                    Footprint.Outline.push_back({ Pair[0]->AsNumber(), Pair[1]->AsNumber() });
+                }
+            }
+            // Footprints under 30 square metres are not buildings (sheds, kiosks, mapping slivers), and
+            // neither is an outline the cleaner cannot keep simple.
+            if (Area < 30.0 || Footprint.Outline.size() < 4 || !MB::CleanOutline(Footprint.Outline))
+            {
+                OutDropped.Add(Id);
+                continue;
+            }
+            OutIds.Add(Id);
+            OutFootprints.push_back(Footprint);
         }
+        return !OutFootprints.empty();
     }
 
-    FVector2D Outward(const FVector2D& From, const FVector2D& To, double Metres);
-
-    void EmitWall(FShell& Shell, const FVector2D& A, const FVector2D& B, double Base, double Eaves, bool bDoor)
+    void ToMeshDescription(const MB::FBuildingMesh& Mesh, FMeshDescription& Description)
     {
-        const FVector Bottom0 = Ue(A, Base);
-        const FVector Bottom1 = Ue(B, Base);
-        const FVector Top0 = Ue(A, Eaves);
-        const FVector Top1 = Ue(B, Eaves);
-        Shell.Quad(Bottom0, Bottom1, Top1, Top0, Shell.Plaster);
-        Shell.Quad(Bottom0, Top0, Top1, Bottom1, Shell.Plaster);
-        const float Width = static_cast<float>(FVector::Dist(Bottom0, Bottom1));
-        const float Height = static_cast<float>(FMath::Max(Top0.Z, Top1.Z) - FMath::Min(Bottom0.Z, Bottom1.Z));
-        const FVector2D Out = Outward(A, B, 0.08);
-        const FVector Shift = Ue(A + Out, Base) - Bottom0;
-        TArray<FOpening> Holes;
-        AddOpenings(Width, Height, bDoor, Holes);
-        for (const FOpening& Hole : Holes)
+        FStaticMeshAttributes(Description).Register();
+        FMeshDescriptionBuilder Builder;
+        Builder.SetMeshDescription(&Description);
+        Builder.EnablePolyGroups();
+        Builder.SetNumUVLayers(1);
+        TArray<FPolygonGroupID> Groups;
+        const TCHAR* Names[MB::MaterialCount] = { TEXT("plaster"), TEXT("roof"), TEXT("frame"), TEXT("glass"), TEXT("flat_roof") };
+        for (int32 Index = 0; Index < MB::MaterialCount; ++Index)
         {
-            const FVector O00 = OnWall(Bottom0, Bottom1, Top0, Top1, Hole.U0, Hole.V0, Width, Height, FVector::ZeroVector) + Shift;
-            const FVector O10 = OnWall(Bottom0, Bottom1, Top0, Top1, Hole.U1, Hole.V0, Width, Height, FVector::ZeroVector) + Shift;
-            const FVector O11 = OnWall(Bottom0, Bottom1, Top0, Top1, Hole.U1, Hole.V1, Width, Height, FVector::ZeroVector) + Shift;
-            const FVector O01 = OnWall(Bottom0, Bottom1, Top0, Top1, Hole.U0, Hole.V1, Width, Height, FVector::ZeroVector) + Shift;
-            const FVector Face = Shift.GetSafeNormal() * 6.0;
-            Shell.Quad(O00, O10, O10 + Face, O00 + Face, Shell.Frame);
-            Shell.Quad(O10, O11, O11 + Face, O10 + Face, Shell.Frame);
-            Shell.Quad(O11, O01, O01 + Face, O11 + Face, Shell.Frame);
-            Shell.Quad(O01, O00, O00 + Face, O01 + Face, Shell.Frame);
-            Shell.Quad(O00 + Face, O10 + Face, O11 + Face, O01 + Face, Hole.bDoor ? Shell.Frame : Shell.Glass);
+            Groups.Add(Builder.AppendPolygonGroup(Names[Index]));
         }
-    }
-
-    FVector2D Outward(const FVector2D& From, const FVector2D& To, double Metres)
-    {
-        const FVector2D Edge = To - From;
-        const double Length = Edge.Size();
-        if (Length < 1.0e-4)
+        // Welded positions keep the shell closed; each triangle gets its own vertex instances for a
+        // flat normal and a planar UV of one unit per metre.
+        TArray<FVertexID> Vertices;
+        Vertices.Reserve(static_cast<int32>(Mesh.Positions.size()));
+        for (const MB::FVec3& P : Mesh.Positions)
         {
-            return FVector2D::ZeroVector;
+            Vertices.Add(Builder.AppendVertex(Ue(P)));
         }
-        return FVector2D(Edge.Y, -Edge.X) * (Metres / Length);
-    }
-
-    void AddRoof(FShell& Shell, FVector A, FVector B, FVector C)
-    {
-        FVector Normal = FVector::CrossProduct(B - A, C - A);
-        if (Normal.Z < 0.0)
+        for (const MB::FTriangle& Tri : Mesh.Triangles)
         {
-            Swap(B, C);
-            Normal *= -1.0;
+            const FVector A = Ue(Mesh.Positions[Tri.A]);
+            const FVector B = Ue(Mesh.Positions[Tri.B]);
+            const FVector C = Ue(Mesh.Positions[Tri.C]);
+            const FVector Normal = FVector::CrossProduct(C - A, B - A).GetSafeNormal();
+            if (Normal.IsNearlyZero())
+            {
+                continue;
+            }
+            // Walls and roofs run U along the level and V up the surface; flat faces use the plan axes.
+            const bool bLevel = FMath::Abs(Normal.Z) > 0.9;
+            const FVector U = bLevel ? FVector::ForwardVector : FVector::CrossProduct(FVector::UpVector, Normal).GetSafeNormal();
+            const FVector V = bLevel ? FVector::RightVector : FVector::CrossProduct(Normal, U).GetSafeNormal();
+            const auto Instance = [&](int32 Index, const FVector& Position)
+            {
+                const FVertexInstanceID Id = Builder.AppendInstance(Vertices[Index]);
+                Builder.SetInstanceNormal(Id, Normal);
+                Builder.SetInstanceUV(Id, FVector2D(FVector::DotProduct(Position, U), FVector::DotProduct(Position, V)) * 0.01, 0);
+                return Id;
+            };
+            Builder.AppendTriangle(Instance(Tri.A, A), Instance(Tri.B, B), Instance(Tri.C, C), Groups[Tri.Material]);
         }
-        Normal = Normal.GetSafeNormal();
-        const FVector Thick = Normal * -18.0;
-        Shell.Triangle(A, B, C, Shell.Roof);
-        Shell.Triangle(A + Thick, C + Thick, B + Thick, Shell.Roof);
-        Shell.Quad(A, B, B + Thick, A + Thick, Shell.Roof);
-        Shell.Quad(B, C, C + Thick, B + Thick, Shell.Roof);
-        Shell.Quad(C, A, A + Thick, C + Thick, Shell.Roof);
-    }
-
-    void Eave(FShell& Shell, const FVector2D& A, const FVector2D& B, double Height)
-    {
-        const FVector2D Out = Outward(A, B, 0.45);
-        if (Out.IsNearlyZero())
-        {
-            return;
-        }
-        const FVector TopA = Ue(A, Height);
-        const FVector TopB = Ue(B, Height);
-        const FVector OutA = Ue(A + Out, Height);
-        const FVector OutB = Ue(B + Out, Height);
-        const FVector SkirtA = Ue(A + Out, Height - 0.28);
-        const FVector SkirtB = Ue(B + Out, Height - 0.28);
-        const FVector LipA = Ue(A, Height - 0.28);
-        const FVector LipB = Ue(B, Height - 0.28);
-        AddRoof(Shell, TopA, TopB, OutB);
-        AddRoof(Shell, TopA, OutB, OutA);
-        Shell.Quad(OutA, OutB, SkirtB, SkirtA, Shell.Roof);
-        Shell.Quad(SkirtA, SkirtB, LipB, LipA, Shell.Roof);
-    }
-
-    void Lid(FShell& Shell, const TArray<FVector2D>& Outline, double Height)
-    {
-        TArray<int32> Triangles;
-        if (!Triangulate(Outline, Triangles))
-        {
-            return;
-        }
-        for (int32 Index = 0; Index + 2 < Triangles.Num(); Index += 3)
-        {
-            AddRoof(Shell, Ue(Outline[Triangles[Index]], Height), Ue(Outline[Triangles[Index + 1]], Height), Ue(Outline[Triangles[Index + 2]], Height));
-        }
-        for (int32 Index = 0; Index < Outline.Num(); ++Index)
-        {
-            Eave(Shell, Outline[Index], Outline[(Index + 1) % Outline.Num()], Height);
-        }
-    }
-
-    void Pitched(FShell& Shell, const TArray<FVector2D>& Rect, double Eaves, double Ridge, double Base, bool bHip)
-    {
-        const FVector2D Along = Rect[1] - Rect[0];
-        const double Length = Along.Size();
-        const FVector2D Unit = Along / Length;
-        const FVector2D Across = Rect[3] - Rect[0];
-        const double Span = Across.Size();
-        const double Inset = bHip ? FMath::Min(Span * 0.5, Length * 0.5) : 0.0;
-        const FVector2D RidgeA = Rect[0] + Unit * Inset + Across * 0.5;
-        const FVector2D RidgeB = Rect[1] - Unit * Inset + Across * 0.5;
-        const FVector2D Over0 = Rect[0] + Outward(Rect[0], Rect[1], 0.45);
-        const FVector2D Over1 = Rect[1] + Outward(Rect[0], Rect[1], 0.45);
-        const FVector2D Over2 = Rect[2] + Outward(Rect[3], Rect[2], 0.45);
-        const FVector2D Over3 = Rect[3] + Outward(Rect[3], Rect[2], 0.45);
-        AddRoof(Shell, Ue(Over0, Eaves), Ue(Over1, Eaves), Ue(RidgeB, Ridge));
-        AddRoof(Shell, Ue(Over0, Eaves), Ue(RidgeB, Ridge), Ue(RidgeA, Ridge));
-        AddRoof(Shell, Ue(Over2, Eaves), Ue(Over3, Eaves), Ue(RidgeA, Ridge));
-        AddRoof(Shell, Ue(Over2, Eaves), Ue(RidgeA, Ridge), Ue(RidgeB, Ridge));
-        if (!bHip)
-        {
-            AddRoof(Shell, Ue(Rect[0], Eaves), Ue(Rect[3], Eaves), Ue(RidgeA, Ridge));
-            AddRoof(Shell, Ue(Rect[1], Eaves), Ue(RidgeB, Ridge), Ue(Rect[2], Eaves));
-        }
-        else
-        {
-            AddRoof(Shell, Ue(Over0, Eaves), Ue(Over3, Eaves), Ue(RidgeA, Ridge));
-            AddRoof(Shell, Ue(Over1, Eaves), Ue(RidgeB, Ridge), Ue(Over2, Eaves));
-        }
-        (void)Base;
     }
 
     UMaterialInstanceConstant* EnsureMaterial(const TCHAR* Name, UMaterialInterface* Parent, const FLinearColor& Tint, float Roughness)
@@ -409,119 +171,6 @@ namespace
         Instance->MarkPackageDirty();
         return Instance;
     }
-
-    bool ReadPlans(TArray<FPlan>& OutPlans, TArray<FString>& OutDropped)
-    {
-        FString Text;
-        if (!FFileHelper::LoadFileToString(Text, TEXT("/home/simon/magna-raedarum-marburgum/project/assets/terrain/lent_buildings.json")))
-        {
-            return false;
-        }
-        TSharedPtr<FJsonObject> Root;
-        const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Text);
-        if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid())
-        {
-            return false;
-        }
-        for (const TSharedPtr<FJsonValue>& Value : Root->GetArrayField(TEXT("buildings")))
-        {
-            const TSharedPtr<FJsonObject> Object = Value->AsObject();
-            if (!Object.IsValid())
-            {
-                continue;
-            }
-            FPlan Plan;
-            Plan.Id = Object->GetStringField(TEXT("id"));
-            double Number = 0.0;
-            Plan.Ground = Object->TryGetNumberField(TEXT("ground"), Number) ? Number : 0.0;
-            Plan.Eaves = Object->TryGetNumberField(TEXT("eaves"), Number) ? Number : Plan.Ground + 3.0;
-            Plan.Ridge = Object->TryGetNumberField(TEXT("ridge"), Number) ? Number : Plan.Eaves;
-            Plan.Angle = Object->TryGetNumberField(TEXT("ridge_angle"), Number) ? Number : 0.0;
-            Plan.Area = Object->TryGetNumberField(TEXT("area"), Number) ? Number : 0.0;
-            Plan.Roof = Object->GetStringField(TEXT("roof"));
-            const TArray<TSharedPtr<FJsonValue>>* Sections = nullptr;
-            if (Object->TryGetArrayField(TEXT("roof_sections"), Sections))
-            {
-                for (const TSharedPtr<FJsonValue>& SectionValue : *Sections)
-                {
-                    const TSharedPtr<FJsonObject> SectionObject = SectionValue->AsObject();
-                    if (!SectionObject.IsValid())
-                    {
-                        continue;
-                    }
-                    const TArray<TSharedPtr<FJsonValue>>* URange = nullptr;
-                    const TArray<TSharedPtr<FJsonValue>>* VRange = nullptr;
-                    if (!SectionObject->TryGetArrayField(TEXT("u"), URange) || !SectionObject->TryGetArrayField(TEXT("v"), VRange)
-                        || !URange || !VRange || URange->Num() < 2 || VRange->Num() < 2)
-                    {
-                        continue;
-                    }
-                    FPlan::FSection Section;
-                    Section.Angle = SectionObject->TryGetNumberField(TEXT("angle"), Number) ? Number : Plan.Angle;
-                    Section.U0 = (*URange)[0]->AsNumber();
-                    Section.U1 = (*URange)[1]->AsNumber();
-                    Section.V0 = (*VRange)[0]->AsNumber();
-                    Section.V1 = (*VRange)[1]->AsNumber();
-                    Section.Ridge = SectionObject->TryGetNumberField(TEXT("ridge"), Number) ? Number : Plan.Ridge;
-                    const FString Shape = SectionObject->GetStringField(TEXT("shape"));
-                    Section.bHip = Shape == TEXT("hipped") || Shape == TEXT("pyramidal");
-                    Plan.Sections.Add(Section);
-                }
-            }
-            const TSharedPtr<FJsonObject>* Contact = nullptr;
-            if (Object->TryGetObjectField(TEXT("ground_contact"), Contact) && Contact && (*Contact)->TryGetNumberField(TEXT("terrain_min"), Number))
-            {
-                Plan.TerrainMin = Number;
-                Plan.bTerrain = true;
-            }
-            for (const TSharedPtr<FJsonValue>& Point : Object->GetArrayField(TEXT("outline")))
-            {
-                const TArray<TSharedPtr<FJsonValue>> Pair = Point->AsArray();
-                if (Pair.Num() >= 2)
-                {
-                    Plan.Outline.Add(FVector2D(Pair[0]->AsNumber(), Pair[1]->AsNumber()));
-                }
-            }
-            if (SignedArea(Plan.Outline) < 0.0)
-            {
-                Algo::Reverse(Plan.Outline);
-            }
-            const bool bTiny = Plan.Area < 30.0 || Plan.Outline.Num() < 4;
-            if (bTiny)
-            {
-                OutDropped.Add(Plan.Id);
-                continue;
-            }
-            const FVector2D Dir(FMath::Cos(Plan.Angle), FMath::Sin(Plan.Angle));
-            const FVector2D Across(-Dir.Y, Dir.X);
-            double U0 = TNumericLimits<double>::Max();
-            double U1 = TNumericLimits<double>::Lowest();
-            double V0 = U0;
-            double V1 = U1;
-            for (const FVector2D& Point : Plan.Outline)
-            {
-                const double U = FVector2D::DotProduct(Point, Dir);
-                const double V = FVector2D::DotProduct(Point, Across);
-                U0 = FMath::Min(U0, U);
-                U1 = FMath::Max(U1, U);
-                V0 = FMath::Min(V0, V);
-                V1 = FMath::Max(V1, V);
-            }
-            const double BoxArea = FMath::Max(0.0, (U1 - U0) * (V1 - V0));
-            Plan.bSimplify = BoxArea > 1.0 && Plan.Area / BoxArea < 0.88;
-            if (!Plan.bSimplify)
-            {
-                Plan.Outline = {
-                    Dir * U0 + Across * V0,
-                    Dir * U1 + Across * V0,
-                    Dir * U1 + Across * V1,
-                    Dir * U0 + Across * V1
-                };
-            }
-            OutPlans.Add(Plan);
-        }
-        return OutPlans.Num() > 0;
-    }
 }
 
 UMarburgumRebuildFacadesCommandlet::UMarburgumRebuildFacadesCommandlet()
@@ -534,120 +183,160 @@ UMarburgumRebuildFacadesCommandlet::UMarburgumRebuildFacadesCommandlet()
 
 int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
 {
-    (void)Params;
-    TArray<FPlan> Plans;
-    TArray<FString> Dropped;
-    if (!ReadPlans(Plans, Dropped))
+    FString InspectId;
+    if (FParse::Value(*Params, TEXT("Inspect="), InspectId))
     {
-        UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not read lent_buildings.json"));
+        // Reports what a saved building mesh holds: its source description and its built render data.
+        const FString Path = FString::Printf(TEXT("/Game/World/Buildings/lent/%s.%s"), *InspectId, *InspectId);
+        UStaticMesh* Saved = LoadObject<UStaticMesh>(nullptr, *Path);
+        if (!Saved)
+        {
+            UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE inspect %s not found"), *Path);
+            return 1;
+        }
+        const FMeshDescription* Source = Saved->GetMeshDescription(0);
+        Saved->ConditionalPostLoad();
+        UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE inspect %s source_triangles=%d render_triangles=%d materials=%d bounds=%s"),
+            *InspectId, Source ? Source->Triangles().Num() : -1,
+            Saved->GetRenderData() && Saved->GetRenderData()->LODResources.Num() ? Saved->GetRenderData()->LODResources[0].GetNumTriangles() : -1,
+            Saved->GetStaticMaterials().Num(), *Saved->GetBounds().GetBox().ToString());
+        return 0;
+    }
+    const bool bCheckOnly = FParse::Param(*Params, TEXT("CheckOnly"));
+    FString Only;
+    FParse::Value(*Params, TEXT("Only="), Only);
+    TArray<FString> Ids;
+    std::vector<MB::FFootprint> Footprints;
+    TArray<FString> Dropped;
+    if (!ReadFootprints(Ids, Footprints, Dropped))
+    {
+        UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not read %s"), SourcePath);
         return 1;
     }
+    MB::FindPartyWalls(Footprints);
+
     UMaterialInterface* Parent = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Marburgum/Materials/Masters/M_Building.M_Building"));
     UMaterialInstanceConstant* Frame = Parent ? EnsureMaterial(TEXT("MI_facade_frame"), Parent, FLinearColor(0.22f, 0.14f, 0.09f), 0.58f) : nullptr;
     UMaterialInstanceConstant* Glass = Parent ? EnsureMaterial(TEXT("MI_facade_glass"), Parent, FLinearColor(0.16f, 0.20f, 0.22f), 0.06f) : nullptr;
     UMaterialInterface* Plaster = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Marburgum/Materials/Instances/building_envelope/MI_plaster_mineral.MI_plaster_mineral"));
-    UMaterialInterface* RoofMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Marburgum/Materials/Instances/building_envelope/MI_roof_tile_clay.MI_roof_tile_clay"));
-    if (!Frame || !Glass || !Plaster || !RoofMaterial)
+    UMaterialInterface* RoofTile = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Marburgum/Materials/Instances/building_envelope/MI_roof_tile_clay.MI_roof_tile_clay"));
+    UMaterialInterface* FlatRoof = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Marburgum/Materials/Instances/building_envelope/MI_roof_bitumen.MI_roof_bitumen"));
+    if (!Frame || !Glass || !Plaster || !RoofTile || !FlatRoof)
     {
         UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE missing materials"));
         return 1;
     }
-    UEditorLoadingAndSavingUtils::SavePackages({ Frame->GetOutermost(), Glass->GetOutermost() }, false);
+    if (!bCheckOnly)
+    {
+        UEditorLoadingAndSavingUtils::SavePackages({ Frame->GetOutermost(), Glass->GetOutermost() }, false);
+    }
 
     int32 Rebuilt = 0;
-    int32 ComplexRoofs = 0;
     int32 Failed = 0;
-    for (const FPlan& Plan : Plans)
+    int32 Open = 0;
+    int64 Triangles = 0;
+    TMap<FString, int32> Methods;
+    for (int32 Index = 0; Index < Ids.Num(); ++Index)
     {
-        const double Gap = Plan.bTerrain ? Plan.Ground - Plan.TerrainMin : 0.0;
-        const double Base = (Gap > 0.05 && Gap < 8.0) ? Plan.TerrainMin - 0.15 : Plan.Ground;
-        const bool bFlat = Plan.bSimplify || Plan.Roof == TEXT("flat") || Plan.Ridge - Plan.Eaves < 0.2;
-        FMeshDescription Description;
-        FStaticMeshAttributes(Description).Register();
-        FShell Shell(Description);
-        int32 Longest = 0;
-        double LongestLength = 0.0;
-        for (int32 Index = 0; Index < Plan.Outline.Num(); ++Index)
+        const FString& Id = Ids[Index];
+        const MB::FFootprint& Footprint = Footprints[Index];
+        if (!Only.IsEmpty() && Id != Only)
         {
-            const double Length = FVector2D::Distance(Plan.Outline[Index], Plan.Outline[(Index + 1) % Plan.Outline.Num()]);
-            if (Length > LongestLength)
-            {
-                LongestLength = Length;
-                Longest = Index;
-            }
+            continue;
         }
-        for (int32 Index = 0; Index < Plan.Outline.Num(); ++Index)
+        MB::FBuildingMesh Mesh;
+        std::string Error;
+        if (!MB::BuildBuilding(Footprint, Mesh, Error))
         {
-            const FVector2D& A = Plan.Outline[Index];
-            const FVector2D& B = Plan.Outline[(Index + 1) % Plan.Outline.Num()];
-            if (FVector2D::Distance(A, B) < 0.05)
-            {
-                continue;
-            }
-            EmitWall(Shell, A, B, Base, Plan.Eaves, Index == Longest);
-        }
-        Lid(Shell, Plan.Outline, Plan.Eaves);
-        if (!bFlat && Plan.Outline.Num() == 4 && Plan.Sections.Num() == 0)
-        {
-            Pitched(Shell, Plan.Outline, Plan.Eaves, Plan.Ridge, Base, Plan.Roof == TEXT("hipped") || Plan.Roof == TEXT("pyramidal"));
-        }
-        else if (Plan.Sections.Num() > 0)
-        {
-            ++ComplexRoofs;
-            for (const FPlan::FSection& Section : Plan.Sections)
-            {
-                const FVector2D Along(FMath::Cos(Section.Angle), FMath::Sin(Section.Angle));
-                const FVector2D Across(-Along.Y, Along.X);
-                const auto At = [&](double U, double V) { return Along * U + Across * V; };
-                const FVector2D C00 = At(Section.U0, Section.V0);
-                const FVector2D C10 = At(Section.U1, Section.V0);
-                const FVector2D C11 = At(Section.U1, Section.V1);
-                const FVector2D C01 = At(Section.U0, Section.V1);
-                if (!Inside(Plan.Outline, (C00 + C10 + C11 + C01) * 0.25))
-                {
-                    continue;
-                }
-                const double Middle = (Section.V0 + Section.V1) * 0.5;
-                const double AlongSpan = FMath::Abs(Section.U1 - Section.U0);
-                const double Inset = Section.bHip ? FMath::Min(FMath::Abs(Section.V1 - Section.V0), AlongSpan) * 0.5 : 0.0;
-                const FVector2D RidgeA = At(FMath::Min(Section.U0, Section.U1) + Inset, Middle);
-                const FVector2D RidgeB = At(FMath::Max(Section.U0, Section.U1) - Inset, Middle);
-                const double Ridge = FMath::Max(Section.Ridge, Plan.Eaves + 0.15);
-                AddRoof(Shell, Ue(C00, Plan.Eaves), Ue(C10, Plan.Eaves), Ue(RidgeB, Ridge));
-                AddRoof(Shell, Ue(C00, Plan.Eaves), Ue(RidgeB, Ridge), Ue(RidgeA, Ridge));
-                AddRoof(Shell, Ue(C11, Plan.Eaves), Ue(C01, Plan.Eaves), Ue(RidgeA, Ridge));
-                AddRoof(Shell, Ue(C11, Plan.Eaves), Ue(RidgeA, Ridge), Ue(RidgeB, Ridge));
-                AddRoof(Shell, Ue(C00, Plan.Eaves), Ue(C01, Plan.Eaves), Ue(RidgeA, Ridge));
-                AddRoof(Shell, Ue(C10, Plan.Eaves), Ue(RidgeB, Ridge), Ue(C11, Plan.Eaves));
-            }
-        }
-        else
-        {
-            ++ComplexRoofs;
-        }
-
-        UPackage* Package = CreatePackage(*FString::Printf(TEXT("/Game/World/Buildings/lent/%s"), *Plan.Id));
-        UStaticMesh* Mesh = FindObject<UStaticMesh>(Package, *Plan.Id);
-        if (!Mesh)
-        {
-            Mesh = NewObject<UStaticMesh>(Package, *Plan.Id, RF_Public | RF_Standalone);
-        }
-        Mesh->SetNumSourceModels(1);
-        Mesh->bAllowCPUAccess = true;
-        UStaticMesh::FBuildMeshDescriptionsParams BuildParams;
-        BuildParams.bFastBuild = false;
-        BuildParams.bAllowCpuAccess = true;
-        BuildParams.bBuildSimpleCollision = false;
-        const TArray<const FMeshDescription*> Descriptions = { &Description };
-        if (!Mesh->BuildFromMeshDescriptions(Descriptions, BuildParams))
-        {
+            UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE %s failed: %s"), *Id, UTF8_TO_TCHAR(Error.c_str()));
             ++Failed;
             continue;
         }
-        Mesh->SetStaticMaterials({ FStaticMaterial(Plaster), FStaticMaterial(RoofMaterial), FStaticMaterial(Frame), FStaticMaterial(Glass) });
-        Mesh->CreateBodySetup();
-        Mesh->GetBodySetup()->CollisionTraceFlag = CTF_UseComplexAsSimple;
-        Mesh->GetBodySetup()->bDoubleSidedGeometry = true;
+        const MB::FCheck Check = MB::Check(Mesh, Footprint);
+        UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE %s roof=%s corners=%d party=%d gables=%d windows=%d triangles=%d closed=%d strict=%d open_edges=%d volume_m3=%.0f"),
+            *Id, UTF8_TO_TCHAR(Mesh.RoofMethod.c_str()), static_cast<int32>(Footprint.Outline.size()), Mesh.PartyWalls, Mesh.Gables, Mesh.Windows,
+            static_cast<int32>(Mesh.Triangles.size()), Check.bClosed ? 1 : 0, Check.bStrict ? 1 : 0, Check.StrictOpenEdges, Check.Volume);
+        if (!Check.bStrict || Check.Volume <= 0.0)
+        {
+            ++Open;
+            continue;
+        }
+        Methods.FindOrAdd(UTF8_TO_TCHAR(Mesh.RoofMethod.c_str()))++;
+        Triangles += static_cast<int64>(Mesh.Triangles.size());
+        if (bCheckOnly)
+        {
+            ++Rebuilt;
+            continue;
+        }
+
+        FMeshDescription Description;
+        ToMeshDescription(Mesh, Description);
+        // An existing asset is loaded and changed in place. A fresh package with the same name would
+        // be fully loaded from disk when saved, and the old mesh would overwrite the new one.
+        const FString PackageName = FString::Printf(TEXT("/Game/World/Buildings/lent/%s"), *Id);
+        UPackage* Package = FPackageName::DoesPackageExist(PackageName) ? LoadPackage(nullptr, *PackageName, LOAD_None) : CreatePackage(*PackageName);
+        if (!Package)
+        {
+            UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE %s could not load its package"), *Id);
+            ++Failed;
+            continue;
+        }
+        Package->FullyLoad();
+        UStaticMesh* StaticMesh = FindObject<UStaticMesh>(Package, *Id);
+        if (StaticMesh)
+        {
+            // Let any post-load build of the old mesh finish before its source model is replaced.
+            FAssetCompilingManager::Get().FinishAllCompilation();
+            StaticMesh->Modify();
+        }
+        else
+        {
+            StaticMesh = NewObject<UStaticMesh>(Package, *Id, RF_Public | RF_Standalone);
+        }
+        // The mesh description is committed as the asset's source model. BuildFromMeshDescriptions
+        // would only build render data in memory; the saved source would stay the old geometry and
+        // come back whenever the render data is rebuilt.
+        StaticMesh->SetNumSourceModels(1);
+        StaticMesh->bAllowCPUAccess = true;
+        FStaticMeshSourceModel& Source = StaticMesh->GetSourceModel(0);
+        Source.BuildSettings.bRecomputeNormals = false;
+        Source.BuildSettings.bRecomputeTangents = true;
+        Source.BuildSettings.bRemoveDegenerates = true;
+        Source.BuildSettings.bGenerateLightmapUVs = true;
+        Source.BuildSettings.SrcLightmapIndex = 0;
+        Source.BuildSettings.DstLightmapIndex = 1;
+        StaticMesh->SetLightMapCoordinateIndex(1);
+        StaticMesh->CreateMeshDescription(0, MoveTemp(Description));
+        StaticMesh->CommitMeshDescription(0);
+        StaticMesh->SetStaticMaterials({ FStaticMaterial(Plaster, TEXT("plaster"), TEXT("plaster")), FStaticMaterial(RoofTile, TEXT("roof"), TEXT("roof")),
+            FStaticMaterial(Frame, TEXT("frame"), TEXT("frame")), FStaticMaterial(Glass, TEXT("glass"), TEXT("glass")),
+            FStaticMaterial(FlatRoof, TEXT("flat_roof"), TEXT("flat_roof")) });
+        StaticMesh->Build(true);
+        if (!StaticMesh->GetRenderData() || StaticMesh->GetRenderData()->LODResources.Num() == 0
+            || StaticMesh->GetRenderData()->LODResources[0].GetNumTriangles() == 0)
+        {
+            UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE %s did not build"), *Id);
+            ++Failed;
+            continue;
+        }
+        const int32 Built = StaticMesh->GetRenderData()->LODResources[0].GetNumTriangles();
+        if (Built != static_cast<int32>(Mesh.Triangles.size()))
+        {
+            UE_LOG(LogMarburgumFacades, Warning, TEXT("MB2FACADE %s built %d triangles of %d"), *Id, Built, static_cast<int32>(Mesh.Triangles.size()));
+        }
+        StaticMesh->PostEditChange();
+        StaticMesh->CreateBodySetup();
+        // The shell is closed, so its own triangles are the collision and one side is enough.
+        StaticMesh->GetBodySetup()->CollisionTraceFlag = CTF_UseComplexAsSimple;
+        StaticMesh->GetBodySetup()->bDoubleSidedGeometry = false;
+        FAssetCompilingManager::Get().FinishAllCompilation();
+        const FMeshDescription* Committed = StaticMesh->GetMeshDescription(0);
+        if (!Committed || Committed->Triangles().Num() != static_cast<int32>(Mesh.Triangles.size()) || StaticMesh->GetStaticMaterials().Num() != MB::MaterialCount)
+        {
+            UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE %s source model was not replaced"), *Id);
+            ++Failed;
+            continue;
+        }
         Package->MarkPackageDirty();
         if (!UEditorLoadingAndSavingUtils::SavePackages({ Package }, false))
         {
@@ -657,10 +346,15 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
         ++Rebuilt;
     }
 
-    UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(TEXT("/Game/World/lent"));
     int32 Removed = 0;
-    if (World)
+    if (!bCheckOnly)
     {
+        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(TEXT("/Game/World/lent"));
+        if (!World)
+        {
+            UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not load /Game/World/lent"));
+            return 1;
+        }
         TArray<AActor*> Junk;
         for (TActorIterator<AStaticMeshActor> It(World); It; ++It)
         {
@@ -680,6 +374,12 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
             return 1;
         }
     }
-    UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE done rebuilt=%d complex_roofs=%d dropped=%d removed=%d failed=%d"), Rebuilt, ComplexRoofs, Dropped.Num(), Removed, Failed);
-    return Failed > 0 && Rebuilt == 0 ? 1 : 0;
+    FString MethodText;
+    for (const TPair<FString, int32>& Method : Methods)
+    {
+        MethodText += FString::Printf(TEXT(" %s=%d"), *Method.Key, Method.Value);
+    }
+    UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE done rebuilt=%d open=%d failed=%d dropped=%d removed=%d triangles=%lld check_only=%d%s"),
+        Rebuilt, Open, Failed, Dropped.Num(), Removed, Triangles, bCheckOnly ? 1 : 0, *MethodText);
+    return Open > 0 || Failed > 0 ? 1 : 0;
 }

@@ -43,6 +43,11 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ```bash
 ./scripts/create-maps.sh              # regenerate Content/Maps/FrontEnd, NetSmoke and Lent (+ Content/Blockout/Materials) with the C++ commandlet `-run=MarburgumCreateMaps`; build the Editor first
 ./scripts/create-swim-content.sh      # regenerate A_Swim (the original swim cycle on the mannequin) and the Drava water volumes in /Game/World/lent (`-run=MarburgumSwimContent`, ADR-032)
+# Lent buildings (ADR-034): rebuild every /Game/World/lent building as a closed shell; -CheckOnly builds and checks without saving
+"$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildFacades -unattended -nop4 -nosplash -nullrhi
+# Fixed-camera screenshots of a level for before/after evidence (centimetres; name@eye@target@fov;...)
+"$UE_ROOT/Engine/Binaries/Linux/UnrealEditor" "$PWD/MarburgumII.uproject" /Game/World/lent -game -RenderOffScreen -windowed -ForceRes -ResX=1920 -ResY=1080 \
+    "-MB2ViewShots=overview@-6000,-6000,11000@17000,-6000,2000@60" -MB2ViewShotDir=/abs/dir
 ./scripts/package-linux.sh            # BuildCookRun: Saved/StagedBuilds/LinuxServer and LinuxClient
 ./scripts/net-smoke-linux.sh          # Gate 0B against the packaged builds
 ./scripts/net-smoke-linux.sh editor   # same test with uncooked UnrealEditor -server / -game processes

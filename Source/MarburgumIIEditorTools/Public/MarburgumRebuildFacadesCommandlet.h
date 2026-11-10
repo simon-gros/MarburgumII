@@ -5,14 +5,16 @@
 #include "MarburgumRebuildFacadesCommandlet.generated.h"
 
 /**
- * Rebuilds every Lent building façade in place.
+ * Rebuilds every Lent building in place as one closed shell.
  *
- *   UnrealEditor-Cmd MarburgumII.uproject -run=MarburgumRebuildFacades
+ *   UnrealEditor-Cmd MarburgumII.uproject -run=MarburgumRebuildFacades [-CheckOnly]
  *
- * Rebuilds every Lent building from its footprint. A nearly rectangular plan keeps a pitched
- * roof on that rectangle. A complex plan gets a roof whose eaves are the wall tops, instead of
- * a loose box roof. Footprints under 30 square metres, or with fewer than four corners, are
- * removed from the level.
+ * Each footprint becomes a closed solid (MarburgumBuildingMesher): walls, soffit and fascia, and a
+ * straight-skeleton roof whose faces start on the wall lines. Gable ends and walls shared with a
+ * neighbour stay vertical. Every shell must pass the closed-mesh check or the run fails without
+ * saving it. -CheckOnly builds and checks every building without saving anything. Footprints under
+ * 30 square metres, with fewer than four corners, or that cannot be kept simple are removed from
+ * the level.
  */
 UCLASS()
 class UMarburgumRebuildFacadesCommandlet : public UCommandlet
