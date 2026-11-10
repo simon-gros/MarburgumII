@@ -261,7 +261,7 @@ This closes the rasterizer-licence question for this character. It stays open fo
 - **The drawn body is lifted 32 cm while it swims** (`SwimLiftCm`, was 20). Read back from the saved clip, the pelvis is 94–98 cm and the head joint 113–117 cm above the feet. While steering, the surface is 140 cm above the feet, so the back is about 10 cm under the surface and the face is out. The mouth rule and the movement are unchanged.
 - **Evidence.** Read back from the saved clip at the four key times, the torso points 17° above horizontal and each leg 13° above or below it, in opposite phase. The commandlet now also logs bone heights. `scripts/swim-smoke-linux.sh editor` passes with the new clip; the rendered swimmer shows the head and shoulders out and the back along the surface.
 
-**Not covered.** Owner playtest. Treading water: an idle or sinking swimmer still plays the prone cycle. The river surface is opaque, so the captures do not show the legs.
+**Not covered.** Owner playtest. Treading water (ADR-036). The river surface is opaque, so the captures do not show the legs.
 
 ## ADR-034 — Lent buildings are closed shells with straight-skeleton roofs (accepted 2026-11-10)
 
@@ -338,3 +338,16 @@ Of 125 placed footprints, 124 are rebuilt: 74 gabled, 30 hipped and 20 flat, 360
 
 **Not covered.** The back is still invented, now quieter, not drawn; a back-view concept or hand sculpt would replace it. Owner sign-off on the look in game.
 
+## ADR-036 — A swimmer that is not moving treads water upright (accepted 2026-11-10)
+
+**Problem.** The owner asked for an idle swimmer to be vertical and a moving one horizontal. After ADR-033 every swimmer lay along the water, including one that had let go and was slipping under. The original had no idle swim pose.
+
+**Decision.**
+
+- **A second generated clip, `/Game/Characters/Animations/A_SwimTread`**, is written by `-Steps=animation` with the stroke and in the same way: model-space turns on the original humanoid's hierarchy, carried onto the mannequin. It is Marburgum II's own, a 1.6 s cycle. The body is upright and the chest 8° forward. The legs pedal in turn: each thigh rises with the knee bent, then presses down as the knee straightens. The forearms scull out and in before the chest, under the surface. Each leg's push lifts the body 2 cm.
+- **The client chooses the clip by the body's horizontal speed.** At or above 40 cm/s the swimmer strokes; under 20 cm/s it treads water; between the two it keeps what it was doing, so a swimmer that is slowing down does not flick between them. A new swimmer under 40 cm/s starts treading. The visible velocity decides, so a remote body chooses as its owner does. The two clips blend into each other over 0.45 s in `DefaultSlot`.
+- **Treading water is not lifted.** Read back from the saved clip, the head joint is 161–164 cm above the feet, as it is standing, so the mouth is where the movement's mouth rule has it. The 32 cm stroke lift (ADR-033) eases off at 60 cm/s as the swimmer turns upright. The sinking rule and the server's rules are unchanged: a swimmer that lets go still slips under, now upright.
+- **A stopped swimmer reports that it has stopped.** `PhysSwimming` kept the previous velocity whenever the engine had pushed the capsule out of a penetration (`bJustTeleported`). A swimmer that had let go was pushed like that every frame, so it went on reporting its last stroke, 1.1 m/s, on its own client and to everyone it was replicated to. On those frames the velocity is now the move that was asked for, the stroke plus the rise or sink. Otherwise it is still the distance the body moved.
+- **Evidence.** Read back from the saved clip at quarter cycles, the torso points 8° forward of vertical and each leg within 6° of straight down. `scripts/swim-smoke-linux.sh editor` now requires the stroke, not treading, while swimming at speed, treading half a second after letting go, and still treading under. It captures `swim-w-treading`. It passes both phases in editor mode.
+
+**Not covered.** Owner playtest. Treading water does not hold the swimmer up: under the original's rule only steering does. Remote bodies are checked as playing a swim clip, not which one. What a stopped swimmer's capsule overlaps every frame is not established; only its effect on the velocity is handled.

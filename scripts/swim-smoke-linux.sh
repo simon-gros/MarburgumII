@@ -3,8 +3,8 @@
 # Clients start at the arrival start on the Lent promenade, about 20 m east of the Drava.
 #
 # Phase 1 (fresh world store):
-#   W  walks west into the river; swims at swim speed with the mouth up and the swim clip playing; lets
-#      go and slips under; holds its breath for ten seconds at about a minute per bar; swims up and back
+#   W  walks west into the river; swims at swim speed with the mouth up and the stroke playing; lets
+#      go, turns upright treading water and slips under; holds its breath for ten seconds at about a minute per bar; swims up and back
 #      east, and climbs out onto the bank; walks back in, lets go and drowns. Down, it is at the recovery
 #      point and cannot move; it leaves while still down.
 #   O  an observer (-nullrhi) connected while W swims: W's body is in the water on O's client and plays

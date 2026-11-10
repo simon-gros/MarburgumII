@@ -224,11 +224,11 @@ void UMarburgumSwimSmokeSubsystem::Report(const TCHAR* Event, double Now)
     const FMarburgumCondition Condition = State ? State->GetCondition() : FMarburgumCondition();
     const FVector At = Character ? Character->GetActorLocation() : FVector::ZeroVector;
     MB2_SWIM_LOG("event=%s step_s=%.2f mps=%.2f pos=%.0f,%.0f,%.0f predicted_water=%d predicted_under=%d predicted_stamina=%.1f "
-                 "server_swimming=%d server_under=%d server_stamina=%d server_vitality=%d recovery_s=%d clip=%d hud=\"%s\"",
+                 "server_swimming=%d server_under=%d server_stamina=%d server_vitality=%d recovery_s=%d clip=%d tread=%d hud=\"%s\"",
         Event, Now - StepSeconds, SpeedOver(1.0), At.X, At.Y, At.Z, Moving && Moving->IsInWaterBody() ? 1 : 0,
         Moving && Moving->IsSubmerged() ? 1 : 0, Moving ? Moving->GetStamina() : -1.f, Condition.bSwimming ? 1 : 0,
         Condition.bSubmerged ? 1 : 0, Condition.Stamina, Condition.Vitality, Condition.RecoverySeconds,
-        Character && Character->IsSwimClipPlaying() ? 1 : 0, *HudState());
+        Character && Character->IsSwimClipPlaying() ? 1 : 0, Character && Character->IsTreadingWater() ? 1 : 0, *HudState());
 }
 
 bool UMarburgumSwimSmokeSubsystem::Tick(float DeltaTime)
@@ -320,6 +320,7 @@ void UMarburgumSwimSmokeSubsystem::TickW(double Now)
         Expect(Moving->IsInWaterBody() && !Moving->IsSubmerged(), TEXT("swimmer_not_at_surface"));
         Expect(Condition.bSwimming && !Condition.bSubmerged, TEXT("server_swimmer_not_at_surface"));
         Expect(Character->IsSwimClipPlaying(), TEXT("swim_clip_not_playing"));
+        Expect(!Character->IsTreadingWater(), TEXT("treading_while_swimming"));
         ExpectHud(TEXT("SWIMMING"), TEXT("swimming"));
         Shot(TEXT("swimming"));
         Advance(30, Now);
@@ -335,9 +336,26 @@ void UMarburgumSwimSmokeSubsystem::TickW(double Now)
         Advance(3, Now);
         return;
     case 3:
-        // Let go: the body slips under.
+        // Let go: the swimmer turns upright and treads water (ADR-036).
         if (Now - StepSeconds < 0.5) return;
         Release();
+        Report(TEXT("let_go"), Now);
+        Advance(31, Now);
+        return;
+    case 31:
+        // Upright as soon as the body stops: the stroke blends into treading water.
+        if (!Character->IsTreadingWater())
+        {
+            if (Now - StepSeconds > 2.0) Fail(TEXT("not_treading_after_letting_go"));
+            return;
+        }
+        if (Now - StepSeconds < 0.5) return;
+        Report(TEXT("treading"), Now);
+        Shot(TEXT("treading"));
+        Advance(32, Now);
+        return;
+    case 32:
+        // Still letting go: the body slips under.
         if (!Condition.bSubmerged)
         {
             if (Now - StepSeconds > 6.0) Fail(TEXT("never_went_under"));
@@ -347,6 +365,7 @@ void UMarburgumSwimSmokeSubsystem::TickW(double Now)
         MarkStamina = Condition.Stamina;
         Report(TEXT("under"), Now);
         Expect(Character->IsSwimClipPlaying(), TEXT("swim_clip_stopped_under"));
+        Expect(Character->IsTreadingWater(), TEXT("not_treading_under"));
         Advance(4, Now);
         return;
     case 4:

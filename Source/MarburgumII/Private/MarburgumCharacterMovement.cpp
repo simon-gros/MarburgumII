@@ -307,10 +307,10 @@ void UMarburgumCharacterMovement::PhysSwimming(float DeltaTime, int32 Iterations
     {
         return;
     }
-    if (!bJustTeleported)
-    {
-        Velocity = (UpdatedComponent->GetComponentLocation() - OldLocation) / DeltaTime;
-    }
+    // The velocity is what the body did. When the engine pushed it out of a penetration (that sets
+    // bJustTeleported) the push is not motion, so the velocity is the move that was asked for. Keeping
+    // the old value instead left a swimmer that had stopped reporting its last stroke (ADR-036).
+    Velocity = bJustTeleported ? Delta / DeltaTime : (UpdatedComponent->GetComponentLocation() - OldLocation) / DeltaTime;
 }
 
 bool UMarburgumCharacterMovement::TryClimbOut(float SurfaceZ, const FVector& Stroke)

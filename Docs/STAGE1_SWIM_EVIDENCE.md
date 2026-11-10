@@ -58,7 +58,7 @@ Per [ADR-008](DECISIONS.md) the status is `implemented_awaiting_owner_playtest`.
 
 ## Captures
 
-The two swimming captures are from the ADR-033 rerun (`scripts/swim-smoke-linux.sh editor`, 2026-11-10, PASS): the prone pose with the body lifted 32 cm. The others are from the packaged run above.
+The two swimming captures are from the ADR-033 rerun (`scripts/swim-smoke-linux.sh editor`, 2026-11-10, PASS): the prone pose with the body lifted 32 cm. The treading capture is from the ADR-036 rerun (editor, PASS), half a second after letting go. The others are from the packaged run above.
 
 | | |
 | --- | --- |
@@ -66,6 +66,8 @@ The two swimming captures are from the ADR-033 rerun (`scripts/swim-smoke-linux.
 | Swimming west, mouth up, SWIMMING | The same stroke from the side |
 | ![under](Captures/stage1-swim/swim-w-under.jpg) | ![ashore](Captures/stage1-swim/swim-w-ashore.jpg) |
 | Under, camera at the surface, HOLDING BREATH, stamina 83 | Wading out, the clip blending out |
+| ![treading](Captures/stage1-swim/swim-w-treading.jpg) | |
+| Let go: upright, treading water, slipping under (ADR-036) | |
 | ![down](Captures/stage1-swim/swim-w-down.jpg) | ![recovered](Captures/stage1-swim/swim-w2-recovered.jpg) |
 | Drowned, at the recovery point, DROWNED · 58 s | Phase 2, recovered and walking |
 

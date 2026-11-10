@@ -22,13 +22,20 @@ namespace
     // The swim cycle is played through the template animation blueprint's montage slot.
     const FName SwimSlot(TEXT("DefaultSlot"));
     constexpr float SwimBlendSeconds = 0.25f;
-    // Enough loops of the 1.2 s cycle for any swim; the clip is restarted if it ever runs out.
+    // Turning from the stroke to treading water and back: the body swings between lying and upright.
+    constexpr float SwimPoseBlendSeconds = 0.45f;
+    // Enough loops of either cycle for any swim; the clip is restarted if it ever runs out.
     constexpr int32 SwimLoops = 100000;
-    // The swim pose lies along the water (ADR-033): the pelvis 96 cm and the head joint 115 cm above
-    // the feet, against a surface 140 cm up while the swimmer steers. The body is drawn this much higher
-    // while it swims, so the back is just under the surface and the face is out; the mouth rule
-    // (MouthHeightCm) is the movement's and does not move.
+    // The stroke lies along the water (ADR-033): the pelvis 96 cm and the head joint 115 cm above the
+    // feet, against a surface 140 cm up while the swimmer steers. The body is drawn this much higher
+    // while it strokes, so the back is just under the surface and the face is out. Treading water is
+    // upright and the mouth is where the movement's mouth rule (MouthHeightCm) has it, so it is not
+    // lifted (ADR-036). The rule itself does not move.
     constexpr float SwimLiftCm = 32.f;
+    // Horizontal speed at which a swimmer starts to stroke, and under which it goes back to treading
+    // water. The gap keeps a swimmer that is slowing down from flicking between the two.
+    constexpr float StrokeFromCmPerSecond = 40.f;
+    constexpr float TreadUnderCmPerSecond = 20.f;
     constexpr float SwimLiftCmPerSecond = 60.f;
 }
 
@@ -80,6 +87,12 @@ AMarburgumCharacter::AMarburgumCharacter(const FObjectInitializer& ObjectInitial
     {
         SwimClip = Swim.Object;
     }
+    // Treading water, upright, when the swimmer is not going anywhere (ADR-036).
+    static ConstructorHelpers::FObjectFinder<UAnimSequenceBase> Tread(TEXT("/Game/Characters/Animations/A_SwimTread.A_SwimTread"));
+    if (Tread.Succeeded())
+    {
+        TreadClip = Tread.Object;
+    }
 }
 
 void AMarburgumCharacter::Tick(float DeltaSeconds)
@@ -88,7 +101,7 @@ void AMarburgumCharacter::Tick(float DeltaSeconds)
     if (GetNetMode() != NM_DedicatedServer)
     {
         UpdateSwimPresentation();
-        const float Target = SwimMontage ? SwimLiftCm : 0.f;
+        const float Target = SwimMontage && !bTreading ? SwimLiftCm : 0.f;
         SwimLift = FMath::FInterpConstantTo(SwimLift, Target, DeltaSeconds, SwimLiftCmPerSecond);
         GetMesh()->SetRelativeLocation(MeshRestOffset + FVector(0.f, 0.f, SwimLift));
     }
@@ -108,19 +121,27 @@ void AMarburgumCharacter::UpdateSwimPresentation()
         {
             Anim->Montage_Stop(SwimBlendSeconds, SwimMontage);
             SwimMontage = nullptr;
+            bTreading = false;
         }
         return;
     }
-    if (!SwimMontage || !Anim->Montage_IsPlaying(SwimMontage))
+    // The visible speed decides, so a remote body chooses as its owner's does.
+    const float Speed = GetVelocity().Size2D();
+    const bool bWasPlaying = SwimMontage && Anim->Montage_IsPlaying(SwimMontage);
+    const float Threshold = bWasPlaying && !bTreading ? TreadUnderCmPerSecond : StrokeFromCmPerSecond;
+    const bool bTread = TreadClip && Speed < Threshold;
+    UAnimSequenceBase* Clip = bTread ? TreadClip.Get() : SwimClip.Get();
+    if (!bWasPlaying || bTread != bTreading)
     {
-        SwimMontage = Anim->PlaySlotAnimationAsDynamicMontage(SwimClip, SwimSlot, SwimBlendSeconds, SwimBlendSeconds, 1.f, SwimLoops);
+        // A new montage in the slot blends the playing one out as it blends in.
+        const float BlendIn = bWasPlaying ? SwimPoseBlendSeconds : SwimBlendSeconds;
+        SwimMontage = Anim->PlaySlotAnimationAsDynamicMontage(Clip, SwimSlot, BlendIn, SwimBlendSeconds, 1.f, SwimLoops);
+        bTreading = SwimMontage && Clip == TreadClip;
     }
-    if (SwimMontage)
+    if (SwimMontage && !bTreading)
     {
-        // As the original paced the clip: by the visible speed, or at the stroke's own pace when
-        // treading water.
-        const float Speed = GetVelocity().Size2D();
-        const float Pace = Speed > 15.f ? Speed : MarburgumII::Gameplay::SwimSpeedCm;
+        // As the original paced the stroke: by the visible speed.
+        const float Pace = FMath::Max(Speed, 15.f);
         Anim->Montage_SetPlayRate(SwimMontage, FMath::Clamp(Pace / MarburgumII::Gameplay::SwimSpeedCm, 0.75f, 1.4f));
     }
 }
@@ -129,6 +150,11 @@ bool AMarburgumCharacter::IsSwimClipPlaying() const
 {
     const UAnimInstance* Anim = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
     return Anim && SwimMontage && Anim->Montage_IsPlaying(SwimMontage);
+}
+
+bool AMarburgumCharacter::IsTreadingWater() const
+{
+    return bTreading && IsSwimClipPlaying();
 }
 
 void AMarburgumCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

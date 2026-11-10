@@ -29,6 +29,7 @@ namespace
     constexpr const TCHAR* SkeletonPath = TEXT("/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin");
     constexpr const TCHAR* PreviewMeshPath = TEXT("/Game/Characters/Protagonist/SKM_Protagonist.SKM_Protagonist");
     constexpr const TCHAR* SwimPackage = TEXT("/Game/Characters/Animations/A_Swim");
+    constexpr const TCHAR* TreadPackage = TEXT("/Game/Characters/Animations/A_SwimTread");
     constexpr const TCHAR* LentMap = TEXT("/Game/World/lent");
 
     // ---- The original swim cycle (magna-raedarum-marburgum tools/build_character.gd, _swim_animation) ----
@@ -37,6 +38,7 @@ namespace
     // faces -Z, a positive X rotation swings a limb forward and a positive Z rotation lifts the left arm
     // out to the side. Godot composes them Y, then X, then Z (Basis.from_euler, EULER_ORDER_YXZ).
     constexpr double SwimCycleSeconds = 1.2;
+    constexpr double TreadCycleSeconds = 1.6;
     constexpr int32 FramesPerSecond = 30;
 
     struct FGodotTrack
@@ -119,6 +121,52 @@ namespace
     // The hips bob two centimetres up and down, once per cycle (the original's position track).
     const TArray<double> HipsBobMetres = { 0.02, -0.02, 0.02 };
 
+    /**
+     * Treading water (ADR-036), Marburgum II's own; the original had no idle swim. Upright, the chest a
+     * little forward and the face level. The legs pedal, each thigh rising and the knee bending in turn,
+     * the other leg half a cycle behind. The forearms scull out and back in front of the chest, both
+     * together. The body rises a little on each leg's push.
+     */
+    TArray<FGodotTrack> TreadTracks()
+    {
+        TArray<FGodotTrack> Tracks;
+        Tracks.Add({ TEXT("Hips"), { FVector(-0.12, 0.04, 0), FVector(-0.12, -0.04, 0), FVector(-0.12, 0.04, 0) } });
+        Tracks.Add({ TEXT("Spine"), { FVector(-0.05, 0, 0), FVector(-0.05, 0, 0), FVector(-0.05, 0, 0) } });
+        Tracks.Add({ TEXT("Head"), { FVector(0.17, 0, 0), FVector(0.17, 0, 0), FVector(0.17, 0, 0) } });
+
+        // The upper arm is out to the side and forward, under the surface; the forearm sweeps out and in.
+        const TArray<FVector> UpperArm = {
+            FVector(0.55, 0, 0.75), FVector(0.4, 0, 0.95), FVector(0.55, 0, 0.75), FVector(0.4, 0, 0.95), FVector(0.55, 0, 0.75),
+        };
+        const TArray<FVector> LowerArm = {
+            FVector(0.7, 0, 0), FVector(0.45, 0, 0), FVector(0.7, 0, 0), FVector(0.45, 0, 0), FVector(0.7, 0, 0),
+        };
+        Tracks.Add({ TEXT("LeftUpperArm"), UpperArm });
+        Tracks.Add({ TEXT("LeftLowerArm"), LowerArm });
+        Tracks.Add({ TEXT("RightUpperArm"), Mirror(UpperArm) });
+        Tracks.Add({ TEXT("RightLowerArm"), Mirror(LowerArm) });
+
+        // Up, push down: the thigh rises with the knee bent and presses down as the knee straightens.
+        const TArray<FVector> Thigh = { FVector(0.75, 0, 0), FVector(0.45, 0, 0), FVector(0.2, 0, 0), FVector(0.45, 0, 0), FVector(0.75, 0, 0) };
+        const TArray<FVector> Knee = { FVector(-1.1, 0, 0), FVector(-0.55, 0, 0), FVector(-0.3, 0, 0), FVector(-0.85, 0, 0), FVector(-1.1, 0, 0) };
+        Tracks.Add({ TEXT("LeftUpperLeg"), Thigh });
+        Tracks.Add({ TEXT("LeftLowerLeg"), Knee });
+        Tracks.Add({ TEXT("RightUpperLeg"), Shift(Thigh, 2) });
+        Tracks.Add({ TEXT("RightLowerLeg"), Shift(Knee, 2) });
+        return Tracks;
+    }
+
+    // A push from each leg lifts the body two centimetres.
+    const TArray<double> TreadBobMetres = { -0.01, 0.02, -0.01, 0.02, -0.01 };
+
+    struct FSwimClip
+    {
+        const TCHAR* Package;
+        double CycleSeconds;
+        TArray<FGodotTrack> Tracks;
+        TArray<double> BobMetres;
+    };
+
     // The Godot humanoid's chain for the bones the cycle moves: a bone not listed follows its parent.
     const TMap<FString, FString> GodotParents = {
         { TEXT("Spine"), TEXT("Hips") },
@@ -192,10 +240,10 @@ namespace
     }
 
     /** Godot's looping cubic track, sampled at T seconds: Catmull-Rom through evenly spaced keys. */
-    FVector SampleLoop(const TArray<FVector>& Keys, double T)
+    FVector SampleLoop(const TArray<FVector>& Keys, double T, double CycleSeconds)
     {
         const int32 Segments = Keys.Num() - 1;
-        const double Position = FMath::Fmod(T / SwimCycleSeconds, 1.0) * Segments;
+        const double Position = FMath::Fmod(T / CycleSeconds, 1.0) * Segments;
         const int32 Segment = FMath::Clamp(FMath::FloorToInt32(Position), 0, Segments - 1);
         const double U = Position - Segment;
         const auto At = [&Keys, Segments](int32 Index) { return Keys[((Index % Segments) + Segments) % Segments]; };
@@ -207,14 +255,14 @@ namespace
             + (-P0 + 3.0 * P1 - 3.0 * P2 + P3) * U * U * U);
     }
 
-    double SampleLoop(const TArray<double>& Keys, double T)
+    double SampleLoop(const TArray<double>& Keys, double T, double CycleSeconds)
     {
         TArray<FVector> Vectors;
         for (double Key : Keys)
         {
             Vectors.Add(FVector(Key, 0, 0));
         }
-        return SampleLoop(Vectors, T).X;
+        return SampleLoop(Vectors, T, CycleSeconds).X;
     }
 
     UPackage* PreparePackage(const TCHAR* PackageName, UClass* Class, UObject*& OutExisting)
@@ -225,7 +273,7 @@ namespace
         return Package;
     }
 
-    bool BuildSwimAnimation()
+    bool BuildSwimAnimation(const FSwimClip& Clip)
     {
         USkeleton* Skeleton = LoadObject<USkeleton>(nullptr, SkeletonPath);
         USkeletalMesh* Preview = LoadObject<USkeletalMesh>(nullptr, PreviewMeshPath);
@@ -288,13 +336,13 @@ namespace
         }
 
         TMap<FString, const FGodotTrack*> TrackByBone;
-        const TArray<FGodotTrack> Tracks = SwimTracks();
+        const TArray<FGodotTrack>& Tracks = Clip.Tracks;
         for (const FGodotTrack& Track : Tracks)
         {
             TrackByBone.Add(Track.GodotBone, &Track);
         }
 
-        const int32 Frames = FMath::RoundToInt32(SwimCycleSeconds * FramesPerSecond);
+        const int32 Frames = FMath::RoundToInt32(Clip.CycleSeconds * FramesPerSecond);
         TMap<FName, TArray<FVector>> Positions;
         TMap<FName, TArray<FQuat>> Rotations;
         TMap<FName, TArray<FVector>> Scales;
@@ -314,7 +362,7 @@ namespace
                 const FString* Parent = GodotParents.Find(GodotBone);
                 const FQuat ParentTurn = Parent ? GodotTurn.FindChecked(*Parent) : FQuat::Identity;
                 const FGodotTrack* const* Track = TrackByBone.Find(GodotBone);
-                const FQuat Own = Track ? GodotEulerToMannequin(SampleLoop((*Track)->Keys, T)) : FQuat::Identity;
+                const FQuat Own = Track ? GodotEulerToMannequin(SampleLoop((*Track)->Keys, T, Clip.CycleSeconds)) : FQuat::Identity;
                 GodotTurn.Add(GodotBone, ParentTurn * Own);
             }
 
@@ -342,7 +390,7 @@ namespace
                 FVector Position = LocalRest[Bone].GetLocation();
                 if (Pair.Value == TEXT("Hips"))
                 {
-                    const FVector Bob(0.0, 0.0, SampleLoop(HipsBobMetres, T) * 100.0);
+                    const FVector Bob(0.0, 0.0, SampleLoop(Clip.BobMetres, T, Clip.CycleSeconds) * 100.0);
                     Position += Parent == INDEX_NONE ? Bob : GlobalRest[Parent].GetRotation().UnrotateVector(Bob);
                 }
                 Positions.FindOrAdd(Pair.Key).Add(Position);
@@ -352,11 +400,11 @@ namespace
         }
 
         UObject* Existing = nullptr;
-        UPackage* Package = PreparePackage(SwimPackage, UAnimSequence::StaticClass(), Existing);
+        UPackage* Package = PreparePackage(Clip.Package, UAnimSequence::StaticClass(), Existing);
         UAnimSequence* Sequence = Cast<UAnimSequence>(Existing);
         if (!Sequence)
         {
-            Sequence = NewObject<UAnimSequence>(Package, *FPackageName::GetShortName(SwimPackage), RF_Public | RF_Standalone);
+            Sequence = NewObject<UAnimSequence>(Package, *FPackageName::GetShortName(Clip.Package), RF_Public | RF_Standalone);
             FAssetRegistryModule::AssetCreated(Sequence);
         }
         Sequence->SetSkeleton(Skeleton);
@@ -366,7 +414,7 @@ namespace
         }
         IAnimationDataController& Controller = Sequence->GetController();
         Controller.InitializeModel();
-        Controller.OpenBracket(FText::FromString(TEXT("Marburgum swim cycle")), false);
+        Controller.OpenBracket(FText::FromString(FString::Printf(TEXT("Marburgum %s"), *FPackageName::GetShortName(Clip.Package))), false);
         Controller.RemoveAllBoneTracks(false);
         Controller.SetFrameRate(FFrameRate(FramesPerSecond, 1), false);
         Controller.SetNumberOfFrames(FFrameNumber(Frames), false);
@@ -388,10 +436,10 @@ namespace
         Package->MarkPackageDirty();
         if (!UEditorLoadingAndSavingUtils::SavePackages({ Package }, false))
         {
-            UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM could not save %s"), SwimPackage);
+            UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM could not save %s"), Clip.Package);
             return false;
         }
-        UE_LOG(LogMarburgumSwim, Display, TEXT("MB2SWIM saved %s frames=%d length=%.2fs tracks=%d"), SwimPackage, Frames,
+        UE_LOG(LogMarburgumSwim, Display, TEXT("MB2SWIM saved %s frames=%d length=%.2fs tracks=%d"), Clip.Package, Frames,
             Sequence->GetPlayLength(), MannequinToGodot.Num());
 
         // Evidence: limb directions read back from the saved clip, in the original's model axes (x right,
@@ -401,8 +449,10 @@ namespace
             const FVector D = (Pose[To].GetLocation() - Pose[From].GetLocation()).GetSafeNormal();
             return FVector(D.X, D.Z, -D.Y);
         };
-        for (const double T : { 0.0, 0.3, 0.6, 0.9 })
+        const FString Name = FPackageName::GetShortName(Clip.Package);
+        for (const double Quarter : { 0.0, 0.25, 0.5, 0.75 })
         {
+            const double T = Quarter * Clip.CycleSeconds;
             TArray<FTransform> Pose;
             Pose.SetNum(BoneCount);
             for (int32 Bone = 0; Bone < BoneCount; ++Bone)
@@ -422,12 +472,12 @@ namespace
             const FVector LegL = Direction(Pose, Index(TEXT("thigh_l")), Index(TEXT("foot_l")));
             const FVector LegR = Direction(Pose, Index(TEXT("thigh_r")), Index(TEXT("foot_r")));
             UE_LOG(LogMarburgumSwim, Display,
-                TEXT("MB2SWIM check t=%.1f torso=(%.2f,%.2f,%.2f) arm_l=(%.2f,%.2f,%.2f) arm_r=(%.2f,%.2f,%.2f) leg_l=(%.2f,%.2f,%.2f) leg_r=(%.2f,%.2f,%.2f)"), T,
+                TEXT("MB2SWIM check %s t=%.2f torso=(%.2f,%.2f,%.2f) arm_l=(%.2f,%.2f,%.2f) arm_r=(%.2f,%.2f,%.2f) leg_l=(%.2f,%.2f,%.2f) leg_r=(%.2f,%.2f,%.2f)"), *Name, T,
                 Torso.X, Torso.Y, Torso.Z, ArmL.X, ArmL.Y, ArmL.Z, ArmR.X, ArmR.Y, ArmR.Z, LegL.X, LegL.Y, LegL.Z, LegR.X, LegR.Y, LegR.Z);
             // Heights above the feet, for the swim lift (AMarburgumCharacter::SwimLiftCm) and the mouth rule.
             const auto Height = [&Pose, &Index](const TCHAR* Name) { return Pose[Index(Name)].GetLocation().Z; };
             UE_LOG(LogMarburgumSwim, Display,
-                TEXT("MB2SWIM height t=%.1f pelvis=%.1f spine_04=%.1f head=%.1f thigh_l=%.1f foot_l=%.1f foot_r=%.1f hand_l=%.1f"), T,
+                TEXT("MB2SWIM height %s t=%.2f pelvis=%.1f spine_04=%.1f head=%.1f thigh_l=%.1f foot_l=%.1f foot_r=%.1f hand_l=%.1f"), *Name, T,
                 Height(TEXT("pelvis")), Height(TEXT("spine_04")), Height(TEXT("head")), Height(TEXT("thigh_l")), Height(TEXT("foot_l")),
                 Height(TEXT("foot_r")), Height(TEXT("hand_l")));
         }
@@ -745,7 +795,8 @@ int32 UMarburgumSwimContentCommandlet::Main(const FString& Params)
         }
         else if (Step == TEXT("animation"))
         {
-            bOk &= BuildSwimAnimation();
+            bOk &= BuildSwimAnimation({ SwimPackage, SwimCycleSeconds, SwimTracks(), HipsBobMetres });
+            bOk &= BuildSwimAnimation({ TreadPackage, TreadCycleSeconds, TreadTracks(), TreadBobMetres });
         }
         else if (Step == TEXT("water"))
         {
