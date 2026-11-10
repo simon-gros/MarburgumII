@@ -1,6 +1,6 @@
 using UnrealBuildTool;
 
-// Editor-only content tooling: the map generator commandlet (scripts/create-maps.sh). Compiled into the
+// Editor-only content tooling: the map, swim and vehicle content commandlets (scripts/create-*.sh). Compiled into the
 // Editor target only; Game, Client and Server targets never contain it.
 public class MarburgumIIEditorTools : ModuleRules
 {
@@ -11,7 +11,7 @@ public class MarburgumIIEditorTools : ModuleRules
         bEnableExceptions = true;
         PrivateDependencyModuleNames.AddRange(new[]
         {
-            "Core", "CoreUObject", "Engine", "UnrealEd", "AssetTools", "MeshDescription", "StaticMeshDescription", "MeshConversion", "Landscape", "Json", "BSPUtils", "MarburgumII"
+            "Core", "CoreUObject", "Engine", "UnrealEd", "AssetTools", "MeshDescription", "StaticMeshDescription", "MeshConversion", "Landscape", "Json", "BSPUtils", "MarburgumII", "MarburgumIIShared"
         });
     }
 }

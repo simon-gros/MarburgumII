@@ -35,10 +35,10 @@ int32 AMarburgumPlayerState::CountItem(FName ItemId) const
     return Count;
 }
 
-void AMarburgumPlayerState::SetInventoryAuthority(const TArray<FMarburgumItemStack>& Items)
+void AMarburgumPlayerState::SetInventoryAuthority(const TArray<FMarburgumItemStack>& Stacks)
 {
     check(HasAuthority());
-    Inventory = Items;
+    Inventory = Stacks;
     bInventoryKnown = true;
     ForceNetUpdate();
     OnInventoryChanged().Broadcast(this);

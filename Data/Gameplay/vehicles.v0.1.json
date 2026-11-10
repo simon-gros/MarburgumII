@@ -1,0 +1,616 @@
+{
+  "format": "marburgumii.vehicle_catalogue",
+  "version": "0.1.0",
+  "status": "stage1_lent_driving",
+  "description": "Vehicle definitions and authored vehicle instances carried forward from the original Marburgum. Mirrors MarburgumIIShared/Public/MarburgumVehicleContract.h (handling, dimensions, seats); `mb2 validate vehicles` keeps them in step. The `model` blocks are read by the MarburgumVehicleContent commandlet that generates the bodywork. Distances in metres, forces in newtons, the original Godot axes (x right, y up, -z forward) for every in-vehicle offset.",
+  "provenance": {
+    "source": "original Marburgum project/data/vehicles.json (version 1) and project/data/vehicle_instances.json (version 1); handling code src/shared/vehicle.cpp and UnrealMarburgum/Source/MarburgumServer/Private/MarburgumVehicleRules.cpp; bodywork src/shared/vehicle_mesh.cpp; enter/exit clips tools/build_character.gd _vehicle_animation; driving keys src/client/player_controller.cpp update_driving; camera src/client/player_camera.cpp",
+    "review": "Definitions copied unchanged (ADR-039). Not carried: San Andreas DE engine sound banks (UnrealMarburgum MarburgumEngineSounds.cpp) and GTA III / SA DE enter/exit clips (docs/PLACEHOLDER_ASSETS.md) are placeholders owned by Rockstar; ambient traffic, carjacking and parked-car promotion are later work."
+  },
+  "vehicles": [
+    {
+      "id": "city_hatchback_a",
+      "name": "City hatchback",
+      "class": "car",
+      "map_archetype": "hatchback",
+      "archetype": "Renault 4 GTL (1978-1992), assembled at IMV/Revoz in Novo mesto and ordinary on Maribor streets throughout the decade. Light, short-wheelbase, front-drive city car: quick steering, modest speed, a high-ish seating box. Dimensions, wheelbase, track, wheel size and top speed are the real car's; engine force and grip are arcade-believable, not its real 27 s to 100 km/h. See NINETIES_AUTHENTICITY_WORLD_STATE_ROADMAP.md section 12.",
+      "naming": "provisional",
+      "mass": 780.0,
+      "centre_of_mass": [
+        0.0,
+        -0.35,
+        0.0
+      ],
+      "body_length": 3.66,
+      "body_width": 1.49,
+      "body_height": 1.44,
+      "wheelbase": 2.4,
+      "track_width": 1.25,
+      "wheel_radius": 0.29,
+      "driven_wheels": "front",
+      "engine_force": 3400.0,
+      "max_speed": 33.0,
+      "reverse_speed": 8.0,
+      "brake_force": 5200.0,
+      "handbrake_force": 9000.0,
+      "steering_angle": 34.0,
+      "steering_speed": 2.8,
+      "grip": 6.8,
+      "wet_grip": 4.0,
+      "handbrake_grip": 1.5,
+      "suspension_rest_length": 0.42,
+      "suspension_strength": 28000.0,
+      "suspension_damping": 3000.0,
+      "suspension_travel": 0.22,
+      "drag": 0.46,
+      "rolling_resistance": 12.0,
+      "model": {
+        "note": "Bodywork, built by src/shared/vehicle_mesh.cpp like the parked cars but with the R4's own proportions: a short low bonnet, an upright windscreen, a long roof running almost to a near-vertical tailgate, tall doors and narrow wheels. Distances from the front bumper, heights from the ground, metres; the axles are placed by the wheelbase above. Paint is sRGB.",
+        "paint": [
+          0.62,
+          0.66,
+          0.58
+        ],
+        "shape": {
+          "clearance": 0.2,
+          "belt": 0.92,
+          "roof": 1.44,
+          "bonnet_front": 0.74,
+          "windscreen_base": 0.92,
+          "windscreen_top": 1.36,
+          "roof_end": 3.42,
+          "rear_glass_base": 3.56,
+          "tail_top": 0.95,
+          "inset": 0.05,
+          "tumblehome": 0.05,
+          "side_windows": 2,
+          "a_pillar": 0.07,
+          "b_pillar": 0.09,
+          "c_pillar": 0.18,
+          "wheel_width": 0.14,
+          "front_axle": 0.62
+        }
+      },
+      "passenger_capacity": 4,
+      "enter_range": 3.5,
+      "seats": [
+        {
+          "id": "driver",
+          "role": "driver",
+          "offset": [
+            -0.33,
+            0.1,
+            -0.25
+          ],
+          "door": [
+            -1.0,
+            0.0,
+            -0.25
+          ]
+        },
+        {
+          "id": "front_passenger",
+          "role": "passenger",
+          "offset": [
+            0.33,
+            0.1,
+            -0.25
+          ],
+          "door": [
+            1.0,
+            0.0,
+            -0.25
+          ]
+        },
+        {
+          "id": "rear_left",
+          "role": "passenger",
+          "offset": [
+            -0.33,
+            0.1,
+            0.65
+          ],
+          "door": [
+            -1.0,
+            0.0,
+            0.65
+          ]
+        },
+        {
+          "id": "rear_right",
+          "role": "passenger",
+          "offset": [
+            0.33,
+            0.1,
+            0.65
+          ],
+          "door": [
+            1.0,
+            0.0,
+            0.65
+          ]
+        }
+      ]
+    },
+    {
+      "id": "city_sedan_a",
+      "name": "City saloon",
+      "class": "car",
+      "map_archetype": "sedan",
+      "archetype": "Generic 1990s Central-European three-box saloon. Longer wheelbase and lower body than the hatchback: planted, faster on the open road, slower to turn in town. Front-drive, mass over the front axle. Arcade-believable, not a named make.",
+      "naming": "provisional",
+      "mass": 1180.0,
+      "centre_of_mass": [
+        0.0,
+        -0.38,
+        -0.18
+      ],
+      "body_length": 4.3,
+      "body_width": 1.68,
+      "body_height": 1.4,
+      "wheelbase": 2.55,
+      "track_width": 1.42,
+      "wheel_radius": 0.3,
+      "driven_wheels": "front",
+      "engine_force": 4800.0,
+      "max_speed": 42.0,
+      "reverse_speed": 7.5,
+      "brake_force": 7800.0,
+      "handbrake_force": 11000.0,
+      "steering_angle": 28.0,
+      "steering_speed": 2.1,
+      "grip": 7.6,
+      "wet_grip": 4.6,
+      "handbrake_grip": 1.8,
+      "suspension_rest_length": 0.4,
+      "suspension_strength": 40000.0,
+      "suspension_damping": 4200.0,
+      "suspension_travel": 0.18,
+      "drag": 0.36,
+      "rolling_resistance": 11.0,
+      "model": {
+        "paint": [
+          0.26,
+          0.27,
+          0.28
+        ],
+        "shape": {
+          "clearance": 0.2,
+          "belt": 0.86,
+          "roof": 1.4,
+          "bonnet_front": 0.7,
+          "windscreen_base": 1.15,
+          "windscreen_top": 1.8,
+          "roof_end": 3.05,
+          "rear_glass_base": 3.55,
+          "tail_top": 0.92,
+          "inset": 0.09,
+          "wheel_radius": 0.3,
+          "wheel_width": 0.18,
+          "front_axle": 0.85,
+          "tumblehome": 0.07,
+          "side_windows": 2,
+          "c_pillar": 0.14
+        }
+      },
+      "passenger_capacity": 4,
+      "enter_range": 3.6,
+      "seats": [
+        {
+          "id": "driver",
+          "role": "driver",
+          "offset": [
+            -0.36,
+            0.1,
+            -0.2
+          ],
+          "door": [
+            -1.05,
+            0.0,
+            -0.2
+          ]
+        },
+        {
+          "id": "front_passenger",
+          "role": "passenger",
+          "offset": [
+            0.36,
+            0.1,
+            -0.2
+          ],
+          "door": [
+            1.05,
+            0.0,
+            -0.2
+          ]
+        },
+        {
+          "id": "rear_left",
+          "role": "passenger",
+          "offset": [
+            -0.36,
+            0.1,
+            0.85
+          ],
+          "door": [
+            -1.05,
+            0.0,
+            0.85
+          ]
+        },
+        {
+          "id": "rear_right",
+          "role": "passenger",
+          "offset": [
+            0.36,
+            0.1,
+            0.85
+          ],
+          "door": [
+            1.05,
+            0.0,
+            0.85
+          ]
+        }
+      ]
+    },
+    {
+      "id": "city_estate_a",
+      "name": "City estate",
+      "class": "car",
+      "map_archetype": "estate",
+      "archetype": "Generic 1990s Central-European estate. Same family as the saloon but mass and the ride sit further back: longer roof, softer springs, slower yaw, a little less top speed. Front-drive. Arcade-believable.",
+      "naming": "provisional",
+      "mass": 1280.0,
+      "centre_of_mass": [
+        0.0,
+        -0.3,
+        0.28
+      ],
+      "body_length": 4.45,
+      "body_width": 1.7,
+      "body_height": 1.45,
+      "wheelbase": 2.62,
+      "track_width": 1.42,
+      "wheel_radius": 0.3,
+      "driven_wheels": "front",
+      "engine_force": 4300.0,
+      "max_speed": 36.0,
+      "reverse_speed": 7.0,
+      "brake_force": 7600.0,
+      "handbrake_force": 11500.0,
+      "steering_angle": 27.0,
+      "steering_speed": 1.9,
+      "grip": 6.9,
+      "wet_grip": 3.9,
+      "handbrake_grip": 1.4,
+      "suspension_rest_length": 0.46,
+      "suspension_strength": 32000.0,
+      "suspension_damping": 3300.0,
+      "suspension_travel": 0.24,
+      "drag": 0.45,
+      "rolling_resistance": 15.0,
+      "model": {
+        "paint": [
+          0.16,
+          0.29,
+          0.2
+        ],
+        "shape": {
+          "clearance": 0.21,
+          "belt": 0.88,
+          "roof": 1.45,
+          "bonnet_front": 0.72,
+          "windscreen_base": 1.15,
+          "windscreen_top": 1.8,
+          "roof_end": 4.2,
+          "rear_glass_base": 4.4,
+          "tail_top": 0.9,
+          "inset": 0.09,
+          "wheel_radius": 0.3,
+          "wheel_width": 0.18,
+          "front_axle": 0.85,
+          "tumblehome": 0.06,
+          "side_windows": 3,
+          "c_pillar": 0.1
+        }
+      },
+      "passenger_capacity": 5,
+      "enter_range": 3.7,
+      "seats": [
+        {
+          "id": "driver",
+          "role": "driver",
+          "offset": [
+            -0.36,
+            0.1,
+            -0.2
+          ],
+          "door": [
+            -1.08,
+            0.0,
+            -0.2
+          ]
+        },
+        {
+          "id": "front_passenger",
+          "role": "passenger",
+          "offset": [
+            0.36,
+            0.1,
+            -0.2
+          ],
+          "door": [
+            1.08,
+            0.0,
+            -0.2
+          ]
+        },
+        {
+          "id": "rear_left",
+          "role": "passenger",
+          "offset": [
+            -0.36,
+            0.1,
+            0.9
+          ],
+          "door": [
+            -1.08,
+            0.0,
+            0.9
+          ]
+        },
+        {
+          "id": "rear_right",
+          "role": "passenger",
+          "offset": [
+            0.36,
+            0.1,
+            0.9
+          ],
+          "door": [
+            1.08,
+            0.0,
+            0.9
+          ]
+        }
+      ]
+    },
+    {
+      "id": "city_van_a",
+      "name": "City van",
+      "class": "van",
+      "map_archetype": "van",
+      "archetype": "Generic 1990s forward-control light van. Cab over the front axle, a tall side and a lot of side area: slow to steer, leans, runs out of breath on the flat. Front-drive. Arcade-believable, not a panel-van simulator.",
+      "naming": "provisional",
+      "mass": 1680.0,
+      "centre_of_mass": [
+        0.0,
+        -0.18,
+        -0.55
+      ],
+      "body_length": 4.6,
+      "body_width": 1.85,
+      "body_height": 1.95,
+      "wheelbase": 2.5,
+      "track_width": 1.58,
+      "wheel_radius": 0.32,
+      "driven_wheels": "front",
+      "engine_force": 3600.0,
+      "max_speed": 26.0,
+      "reverse_speed": 5.5,
+      "brake_force": 8200.0,
+      "handbrake_force": 13000.0,
+      "steering_angle": 24.0,
+      "steering_speed": 1.5,
+      "grip": 5.9,
+      "wet_grip": 3.2,
+      "handbrake_grip": 1.3,
+      "suspension_rest_length": 0.5,
+      "suspension_strength": 38000.0,
+      "suspension_damping": 3600.0,
+      "suspension_travel": 0.26,
+      "drag": 0.62,
+      "rolling_resistance": 20.0,
+      "model": {
+        "paint": [
+          0.83,
+          0.83,
+          0.8
+        ],
+        "shape": {
+          "clearance": 0.24,
+          "belt": 1.05,
+          "roof": 1.95,
+          "bonnet_front": 0.95,
+          "windscreen_base": 0.2,
+          "windscreen_top": 0.55,
+          "roof_end": 4.5,
+          "rear_glass_base": 4.58,
+          "tail_top": 1.05,
+          "inset": 0.05,
+          "wheel_radius": 0.32,
+          "wheel_width": 0.2,
+          "front_axle": 0.9,
+          "tumblehome": 0.03,
+          "side_windows": 3,
+          "a_pillar": 0.06,
+          "c_pillar": 0.12
+        }
+      },
+      "passenger_capacity": 3,
+      "enter_range": 4.0,
+      "seats": [
+        {
+          "id": "driver",
+          "role": "driver",
+          "offset": [
+            -0.4,
+            0.25,
+            -1.2
+          ],
+          "door": [
+            -1.15,
+            0.0,
+            -1.2
+          ]
+        },
+        {
+          "id": "front_passenger",
+          "role": "passenger",
+          "offset": [
+            0.4,
+            0.25,
+            -1.2
+          ],
+          "door": [
+            1.15,
+            0.0,
+            -1.2
+          ]
+        },
+        {
+          "id": "rear_left",
+          "role": "passenger",
+          "offset": [
+            -0.4,
+            0.25,
+            0.4
+          ],
+          "door": [
+            -1.15,
+            0.0,
+            0.4
+          ]
+        }
+      ]
+    },
+    {
+      "id": "city_truck_a",
+      "name": "City lorry",
+      "class": "truck",
+      "map_archetype": "truck",
+      "archetype": "Generic 1990s cab-over light lorry. Rear-drive, long wheelbase, mass over the cargo bed: slow, wide turning circle, lots of brake, little wet grip. Arcade-believable city lorry, not an HGV simulator.",
+      "naming": "provisional",
+      "mass": 3800.0,
+      "centre_of_mass": [
+        0.0,
+        -0.12,
+        0.7
+      ],
+      "body_length": 6.8,
+      "body_width": 2.3,
+      "body_height": 3.0,
+      "wheelbase": 3.5,
+      "track_width": 1.95,
+      "wheel_radius": 0.45,
+      "driven_wheels": "rear",
+      "engine_force": 5600.0,
+      "max_speed": 20.0,
+      "reverse_speed": 4.0,
+      "brake_force": 14000.0,
+      "handbrake_force": 18000.0,
+      "steering_angle": 22.0,
+      "steering_speed": 1.2,
+      "grip": 5.2,
+      "wet_grip": 2.8,
+      "handbrake_grip": 1.1,
+      "suspension_rest_length": 0.64,
+      "suspension_strength": 78000.0,
+      "suspension_damping": 8200.0,
+      "suspension_travel": 0.3,
+      "drag": 0.78,
+      "rolling_resistance": 32.0,
+      "model": {
+        "paint": [
+          0.7,
+          0.63,
+          0.49
+        ],
+        "shape": {
+          "clearance": 0.45,
+          "belt": 1.45,
+          "roof": 2.55,
+          "bonnet_front": 1.3,
+          "windscreen_base": 0.08,
+          "windscreen_top": 0.25,
+          "roof_end": 1.55,
+          "rear_glass_base": 1.65,
+          "tail_top": 1.3,
+          "inset": 0.04,
+          "wheel_radius": 0.45,
+          "wheel_width": 0.28,
+          "front_axle": 1.1,
+          "rear_wheel_width": 0.42,
+          "tumblehome": 0.02,
+          "side_windows": 1,
+          "a_pillar": 0.06,
+          "c_pillar": 0.1,
+          "cargo": {
+            "start": 1.8,
+            "end": 6.8,
+            "bottom": 1.0,
+            "top": 3.0,
+            "width": 2.3
+          }
+        }
+      },
+      "passenger_capacity": 2,
+      "enter_range": 4.5,
+      "seats": [
+        {
+          "id": "driver",
+          "role": "driver",
+          "offset": [
+            -0.5,
+            0.5,
+            -2.2
+          ],
+          "door": [
+            -1.4,
+            0.0,
+            -2.2
+          ]
+        },
+        {
+          "id": "front_passenger",
+          "role": "passenger",
+          "offset": [
+            0.5,
+            0.5,
+            -2.2
+          ],
+          "door": [
+            1.4,
+            0.0,
+            -2.2
+          ]
+        }
+      ]
+    }
+  ],
+  "instances": [
+    {
+      "id": "lent_hatchback",
+      "definition": "city_hatchback_a",
+      "position_m": [
+        -124.0,
+        2.45,
+        -74.0
+      ],
+      "basis": [
+        0.0,
+        0.0,
+        -1.0,
+        0.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "source": "original project/scenes/world/lent_terrain.tscn#LentHatchback",
+      "placement": "The original position is in the Godot Lent frame. Marburgum II's /Game/World/lent is placed by MarburgumVehicleContent -Steps=place, which uses that position when it is clear, level ground and otherwise the nearest such kerb spot to the arrival start; the commandlet logs which (MB2VEHICLE place)."
+    }
+  ]
+}

@@ -43,6 +43,7 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ```bash
 ./scripts/create-maps.sh              # regenerate Content/Maps/FrontEnd, NetSmoke and Lent (+ Content/Blockout/Materials) with the C++ commandlet `-run=MarburgumCreateMaps`; build the Editor first
 ./scripts/create-swim-content.sh      # regenerate A_Swim (the original swim cycle on the mannequin) and the Drava water volumes in /Game/World/lent (`-run=MarburgumSwimContent`, ADR-032)
+./scripts/create-vehicle-content.sh   # regenerate the five catalogue cars (the original procedural bodywork), M_Vehicle, A_EnterVehicle/A_ExitVehicle and the lent_hatchback placement (`-run=MarburgumVehicleContent`, ADR-039)
 # Lent buildings (ADR-034): rebuild every /Game/World/lent building as a closed shell; -CheckOnly builds and checks without saving
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildFacades -unattended -nop4 -nosplash -nullrhi
 # Fixed-camera screenshots of a level for before/after evidence (centimetres; name@eye@target@fov;...)
@@ -57,6 +58,7 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ./scripts/lent-smoke-linux.sh         # Lent slice: location, NPC, saved mission, objective/journal, restart, privacy
 ./scripts/condition-smoke-linux.sh    # Player condition: running costs breath, server-decided, saved at logout/stop, restart
 ./scripts/swim-smoke-linux.sh         # Swimming (ADR-032): swim, sink, held breath, wade out, drown, recovery, saved wait, restart
+./scripts/vehicle-smoke-linux.sh      # Driving (ADR-039): parked car, enter clip, driver + passenger, throttle, steer, brake, reverse, exits
 ```
 
 The smoke script starts one headless dedicated server on port 7777 (override with `MB2_SMOKE_PORT`). It runs one client through a refused mutation, an idempotent operation and a disconnect/reconnect, then two concurrent clients. Logs and `summary.txt` go to `Saved/NetSmoke/<UTC timestamp>/`. A nonzero exit means a failed expectation. Map generation is the editor-only C++ commandlet in `MarburgumIIEditorTools`; the PythonScriptPlugin and EditorScriptingUtilities plugins are disabled.
@@ -88,6 +90,14 @@ Saved/StagedBuilds/LinuxClient/MarburgumIIClient.sh -MB2Character=simon
 ```
 
 You arrive on the Lent promenade, and the location banner names the district. Hold **Shift** to run: the condition card (lower left) shows stamina draining, and after ten seconds you are winded and walk until some breath is back. **C** opens the Character panel. The riverside angler stands 30 m west at the railing. Walk up and press **E** to talk: the server starts "Something in the Water", hands over a fishing rod and pins the objective (top left). Press **E** again and he asks for a fish, which cannot be caught until fishing exists (Stage 2). **J** opens the journal and **I** the inventory. Walk east onto Stari most and back to see the banner change between "Maribor" and "Lent". The store is `.../WorldStore/Lent.json` next to the NetSmoke file named below; delete it to start the mission afresh. The game, editor and server now open the original Unreal Lent level, `/Game/World/lent` (ADR-027). Every Lent façade has been rebuilt with windows, a door and a cornice; the footprints and roofs are the original shells. `/Game/Maps/Lent` is only the older blockout, still used by the mission smokes. The front-end remains, and the UI capture opens it by name.
+
+The original's city hatchback is parked where the original game put it, about 160 m west of the arrival start along the promenade (ADR-039). To start beside its driver's door, connect straight to the server:
+
+```bash
+Saved/StagedBuilds/LinuxClient/MarburgumIIClient.sh '127.0.0.1:7777?MB2Start=lent_hatchback?MB2Character=simon'
+```
+
+Press **E** at a door to get in (the driver's seat whenever its door is in reach), **W** to drive, **S** to brake and, once stopped, reverse, **A**/**D** to steer, **Shift** for the handbrake and **E** again to get out. The card in the lower right shows the speed. The mouse looks around; the camera swings back behind the car after a few seconds. A second client can ride along in a passenger seat. Cars are silent, and the car returns to its spot when the server restarts.
 
 ### Playing the Gate 1 slice by hand
 

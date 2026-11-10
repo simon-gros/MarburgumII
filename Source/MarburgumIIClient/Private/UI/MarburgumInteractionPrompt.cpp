@@ -7,8 +7,11 @@
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
+#include "MarburgumCharacter.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumInteractable.h"
+#include "MarburgumVehicle.h"
+#include "MarburgumVehicleContract.h"
 #include "MarburgumNpc.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
@@ -93,7 +96,7 @@ void UMarburgumInteractionPrompt::NativeTick(const FGeometry& MyGeometry, float 
 
 void UMarburgumInteractionPrompt::Place()
 {
-    const AMarburgumInteractable* Target = Shown.Get();
+    const AActor* Target = Shown.Get();
     APlayerController* Controller = GetOwningPlayer();
     if (!Target || !Controller || !Placement || Card->GetVisibility() == ESlateVisibility::Collapsed)
     {
@@ -127,8 +130,24 @@ void UMarburgumInteractionPrompt::Place()
 void UMarburgumInteractionPrompt::Refresh()
 {
     AMarburgumPlayerController* Controller = Cast<AMarburgumPlayerController>(GetOwningPlayer());
-    AMarburgumInteractable* Target = Controller && UMarburgumSessionSubsystem::IsAdmitted(Controller->GetWorld())
-        ? Controller->FindInteractionCandidate() : nullptr;
+    const bool bAdmitted = Controller && UMarburgumSessionSubsystem::IsAdmitted(Controller->GetWorld());
+    if (bAdmitted)
+    {
+        // Cars first: the same key gets in and out of them.
+        const AMarburgumCharacter* Body = Cast<AMarburgumCharacter>(Controller->GetPawn());
+        FName Seat;
+        if (const AMarburgumVehicle* Ridden = Body ? Body->GetSeatedVehicle() : nullptr)
+        {
+            RefreshVehicle(*Ridden, Body->GetSeatId(), true, Controller->IsVehicleRequestPending());
+            return;
+        }
+        if (const AMarburgumVehicle* Car = Controller->FindVehicleCandidate(Seat))
+        {
+            RefreshVehicle(*Car, Seat, false, Controller->IsVehicleRequestPending());
+            return;
+        }
+    }
+    AMarburgumInteractable* Target = bAdmitted ? Controller->FindInteractionCandidate() : nullptr;
     if (!Target)
     {
         if (!LastSignature.IsEmpty())
@@ -307,14 +326,59 @@ void UMarburgumInteractionPrompt::RefreshNpc(const AMarburgumNpc& Npc, const AMa
     Apply(Npc, Verb, Detail, Tone, bKeyActive);
 }
 
+void UMarburgumInteractionPrompt::RefreshVehicle(const AMarburgumVehicle& Vehicle, FName Seat, bool bSeated, bool bWaiting)
+{
+    const bool bDriver = Seat == Vehicle.GetDriverSeatId();
+    const FString Signature = FString::Printf(TEXT("vehicle|%s|%s|%d|%d"), *Vehicle.GetName(), *Seat.ToString(), bSeated ? 1 : 0, bWaiting ? 1 : 0);
+    if (Signature == LastSignature)
+    {
+        return;
+    }
+    LastSignature = Signature;
+    Shown = const_cast<AMarburgumVehicle*>(&Vehicle);
+
+    FText Verb;
+    FText Detail;
+    ETone Tone = ETone::Accent;
+    bool bKeyActive = true;
+    if (bWaiting)
+    {
+        Verb = LOCTEXT("WaitingVerb", "Waiting for the server");
+        Detail = LOCTEXT("VehicleWaiting", "Request sent. You move only when the server confirms it.");
+        Tone = ETone::Info;
+        bKeyActive = false;
+    }
+    else if (bSeated)
+    {
+        Verb = LOCTEXT("ExitVerb", "Get out");
+        Detail = bDriver
+            ? LOCTEXT("Driving", "[W] Throttle  ·  [S] Brake / reverse  ·  [A][D] Steer  ·  [Shift] Handbrake")
+            : LOCTEXT("Riding", "Riding as a passenger. The driver has the wheel.");
+        Tone = ETone::Neutral;
+    }
+    else
+    {
+        Verb = bDriver ? LOCTEXT("DriveVerb", "Drive") : LOCTEXT("RideVerb", "Get in");
+        Detail = bDriver ? LOCTEXT("DriverSeat", "Driver's seat") : LOCTEXT("PassengerSeat", "Passenger seat");
+    }
+    ApplyTo(Vehicle, Vehicle.GetDisplayName(), false, Verb, Detail, Tone, bKeyActive);
+}
+
 void UMarburgumInteractionPrompt::Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, ETone Tone, bool bKeyActive)
+{
+    ApplyTo(Target, Target.DisplayName.IsEmpty() ? FText::FromName(Target.InteractableId) : Target.DisplayName, Target.bTestFixture, Verb,
+        Detail, Tone, bKeyActive);
+}
+
+void UMarburgumInteractionPrompt::ApplyTo(const AActor& Target, const FText& Subject, bool bFixture, const FText& Verb, const FText& Detail,
+    ETone Tone, bool bKeyActive)
 {
     const FTokens& T = Tokens();
     VerbLabel->SetText(FText::FromString(Verb.ToString().ToUpper()));
     VerbLabel->SetColorAndOpacity(FSlateColor(Tone == ETone::Neutral ? T.Color.TextSecondary : ToneColor(Tone)));
-    SubjectLabel->SetText(Target.DisplayName.IsEmpty() ? FText::FromName(Target.InteractableId) : Target.DisplayName);
+    SubjectLabel->SetText(Subject);
     DetailLabel->SetText(Detail);
-    FixturePill->SetVisibility(Target.bTestFixture ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
+    FixturePill->SetVisibility(bFixture ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
     KeyCap->SetBrush(RoundedBrush(bKeyActive ? T.Color.Accent : T.Color.Raised, T.Radius.Medium,
         bKeyActive ? T.Color.AccentPressed : T.Color.BorderStrong, T.BorderWidth));
     KeyLabel->SetColorAndOpacity(FSlateColor(bKeyActive ? T.Color.TextOnAccent : T.Color.TextMuted));

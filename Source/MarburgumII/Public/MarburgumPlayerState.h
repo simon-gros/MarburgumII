@@ -36,7 +36,7 @@ public:
     int32 CountItem(FName ItemId) const;
 
     /** Authority only: replace the replicated inventory with the durable record. */
-    void SetInventoryAuthority(const TArray<FMarburgumItemStack>& Items);
+    void SetInventoryAuthority(const TArray<FMarburgumItemStack>& Stacks);
 
     /** Fired on the owning client when the replicated inventory changes, and on the server when set. */
     static FMarburgumInventoryChanged& OnInventoryChanged();

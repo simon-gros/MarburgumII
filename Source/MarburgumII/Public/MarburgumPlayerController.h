@@ -8,9 +8,12 @@
 #include "MarburgumPlayerController.generated.h"
 
 class AMarburgumInteractable;
+class AMarburgumVehicle;
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FMarburgumRequestResultEvent, const FGuid& /*OperationId*/, EMarburgumRequestOutcome /*Outcome*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumInteractionReceiptEvent, const FMarburgumInteractionReceipt& /*Receipt*/);
+/** The server's answer to getting into or out of a car: action enter|exit, a wire reason when refused. */
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FMarburgumVehicleResultEvent, bool /*bOk*/, FName /*Action*/, FName /*Reason*/);
 
 /**
  * Player-owned RPC boundary: the server derives sender identity from PlayerState,
@@ -25,6 +28,7 @@ class MARBURGUMII_API AMarburgumPlayerController : public APlayerController
 public:
     virtual void BeginPlay() override;
     virtual void SetupInputComponent() override;
+    virtual void PlayerTick(float DeltaTime) override;
 
     /** Request a plain-text message for all connected players on this logical server. */
     UFUNCTION(BlueprintCallable, Category = "Marburgum|Chat")
@@ -66,6 +70,31 @@ public:
     /** Client-local notification when the server answers an interaction request. */
     FMarburgumInteractionReceiptEvent OnInteractionReceipt;
 
+    // ---- Vehicles (ADR-039) ----
+
+    /**
+     * Client: the car E would get this player into, and which seat: the nearest car with a free seat whose
+     * door is within reach (the driver's whenever it is). Null while seated or when none is in reach.
+     */
+    AMarburgumVehicle* FindVehicleCandidate(FName& OutSeat) const;
+
+    /** Client: ask to get into a car (seat None = the driver's) or out of the one this pawn sits in. */
+    void RequestEnterVehicle(AMarburgumVehicle* Vehicle, FName SeatId);
+    void RequestExitVehicle();
+
+    /** Client: true from a request until the server's answer (or ReceiptTimeoutSeconds). */
+    bool IsVehicleRequestPending() const;
+
+    /**
+     * Client, test drivers only: hold these pedals instead of the keyboard's until cleared. Throttle -1..1,
+     * brake 0..1, steer -1 (left)..1 (right). The server still decides what the car does.
+     */
+    void SetDrivingOverride(float Throttle, float Brake, float Steer, bool bHandbrake);
+    void ClearDrivingOverride();
+
+    /** Client-local notification when the server answers a vehicle request. */
+    FMarburgumVehicleResultEvent OnVehicleResult;
+
     /** Server-approved deliveries only. Local history is bounded and nonpersistent. */
     UPROPERTY(BlueprintAssignable, Category = "Marburgum|Chat")
     FMarburgumChatMessageEvent OnChatReceived;
@@ -84,6 +113,19 @@ protected:
     UFUNCTION(Client, Reliable)
     void ClientReceiveInteractionReceipt(const FMarburgumInteractionReceipt& Receipt);
 
+    UFUNCTION(Server, Reliable)
+    void ServerEnterVehicle(AMarburgumVehicle* Vehicle, FName SeatId);
+
+    UFUNCTION(Server, Reliable)
+    void ServerExitVehicle();
+
+    /** The driver's held intent; unreliable and resent while held, so a lost packet only delays it. */
+    UFUNCTION(Server, Unreliable)
+    void ServerSetVehicleInput(float Throttle, float Brake, float Steer, bool bHandbrake);
+
+    UFUNCTION(Client, Reliable)
+    void ClientReceiveVehicleResult(bool bOk, FName Action, FName Reason);
+
 private:
     AMarburgumGameState* GetMarburgumGameState() const;
 
@@ -98,6 +140,22 @@ private:
     void RequestToggleInventory();
     void RequestToggleJournal();
     void RequestToggleCharacter();
+
+    /** Shared request budget for interactions and vehicle requests (MaxRequestsPerSecond). */
+    bool AdmitRequest(const TCHAR* What);
+    void UpdateDriving();
+
+    double VehicleRequestAt = -1000.0;
+    bool bDrivingOverride = false;
+    float OverrideThrottle = 0.f;
+    float OverrideBrake = 0.f;
+    float OverrideSteer = 0.f;
+    bool bOverrideHandbrake = false;
+    float SentThrottle = 0.f;
+    float SentBrake = 0.f;
+    float SentSteer = 0.f;
+    bool bSentHandbrake = false;
+    double SentAt = -1000.0;
 
     FGuid PendingOperationId;
     TWeakObjectPtr<AMarburgumInteractable> PendingTarget;

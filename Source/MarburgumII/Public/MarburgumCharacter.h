@@ -4,10 +4,35 @@
 #include "GameFramework/Character.h"
 #include "MarburgumCharacter.generated.h"
 
+class AMarburgumVehicle;
 class UAnimMontage;
 class UAnimSequenceBase;
 class UCameraComponent;
 class USpringArmComponent;
+
+/** Which seat of which car this character sits in, and where it last stepped out (ADR-039). */
+USTRUCT()
+struct FMarburgumSeating
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    TObjectPtr<AMarburgumVehicle> Vehicle = nullptr;
+
+    UPROPERTY()
+    FName SeatId;
+
+    /** Where the server put the body when it got out, so the owning client lands on the same spot. */
+    UPROPERTY()
+    FVector_NetQuantize10 ExitLocation = FVector::ZeroVector;
+
+    UPROPERTY()
+    float ExitYaw = 0.f;
+
+    /** Changes on every seat change, so two identical states in a row still replicate. */
+    UPROPERTY()
+    uint8 Sequence = 0;
+};
 
 /**
  * Third-person player character for the Stage 1 interaction loop (ADR-023). Movement uses the engine's
@@ -19,6 +44,12 @@ class USpringArmComponent;
  * In the water the body plays a swim clip through the template's DefaultSlot: the stroke, A_Swim
  * (ADR-032, ADR-033), lying along the water while it moves, and A_SwimTread, upright, while it does not
  * (ADR-036). That is presentation only and never runs on a dedicated server.
+ *
+ * In a car (ADR-039) the body rides in its seat: the server attaches it to the vehicle, turns its own
+ * movement and collision off, and replicates the seating; every machine applies the same state. The body
+ * plays the original's enter clip at the door, then is hidden in the seat as the original did, and plays the
+ * exit clip where it steps out. The camera pulls back behind the car and swings round to follow it unless
+ * the player has looked around in the last few seconds.
  */
 UCLASS()
 class MARBURGUMII_API AMarburgumCharacter : public ACharacter
@@ -28,14 +59,33 @@ class MARBURGUMII_API AMarburgumCharacter : public ACharacter
 public:
     explicit AMarburgumCharacter(const FObjectInitializer& ObjectInitializer);
 
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
     virtual void Tick(float DeltaSeconds) override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     /** Presentation evidence: a swim clip (the stroke or treading water) is playing on this body. */
     bool IsSwimClipPlaying() const;
 
     /** Presentation evidence: the playing swim clip is treading water, upright, not the stroke. */
     bool IsTreadingWater() const;
+
+    // ---- Vehicles (ADR-039) ----
+
+    AMarburgumVehicle* GetSeatedVehicle() const { return Seating.Vehicle; }
+    FName GetSeatId() const { return Seating.Vehicle ? Seating.SeatId : NAME_None; }
+    /** In the driver's seat of a car. */
+    bool IsDriving() const;
+
+    /** A body that can move can get into a car; a drowned one cannot. */
+    bool CanEnterVehicle() const;
+
+    /** Server only (AMarburgumVehicle decides): sit in a seat, or step out at a spot. */
+    void SeatAuthority(AMarburgumVehicle* Vehicle, FName SeatId);
+    void UnseatAuthority(const FVector& At, float Yaw);
+
+    /** Presentation evidence: the body is drawn (false while hidden in a seat). */
+    bool IsBodyShown() const;
 
 private:
     void MoveForward(float Value);
@@ -65,7 +115,34 @@ private:
     TObjectPtr<UAnimMontage> SwimMontage;
 
     FVector MeshRestOffset = FVector::ZeroVector;
+    FRotator MeshRestRotation = FRotator::ZeroRotator;
     float SwimLift = 0.f;
     // The clip SwimMontage plays: treading water rather than the stroke.
     bool bTreading = false;
+
+    // ---- Vehicles ----
+
+    UFUNCTION()
+    void OnRep_Seating(const FMarburgumSeating& Previous);
+
+    /** Make this machine's body match Seating: attached and still in a seat, or free on its feet. */
+    void ApplySeating(const FMarburgumSeating& Previous);
+    void UpdateDrivingCamera(float DeltaSeconds);
+    void UpdateSeatPresentation(float DeltaSeconds);
+
+    UPROPERTY(ReplicatedUsing = OnRep_Seating)
+    FMarburgumSeating Seating;
+
+    UPROPERTY()
+    TObjectPtr<UAnimSequenceBase> EnterVehicleClip;
+
+    UPROPERTY()
+    TObjectPtr<UAnimSequenceBase> ExitVehicleClip;
+
+    /** Seconds left of the enter clip; the body is hidden in the seat when it runs out. */
+    float EnterClipRemaining = 0.f;
+    /** Seconds the player has left the driving camera alone after looking around. */
+    float FreeLookRemaining = 0.f;
+    float OnFootArmLength = 350.f;
+    FVector OnFootBoomOffset = FVector::ZeroVector;
 };

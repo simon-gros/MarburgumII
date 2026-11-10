@@ -5,23 +5,25 @@ mod chat;
 mod gameplay;
 mod python_free;
 mod ui_ontology;
+mod vehicles;
 
 use crate::repo::{self, Problems};
 
 /// A check returns its success summary lines, or records problems.
 type Check = fn(&std::path::Path, &mut Problems) -> Vec<String>;
 
-const CHECKS: [(&str, &str, Check); 4] = [
+const CHECKS: [(&str, &str, Check); 5] = [
     ("ui-ontology", "UI/HUD ontology", ui_ontology::check),
     ("chat", "Chat source contract", chat::check),
     ("gameplay", "Gameplay contract", gameplay::check),
+    ("vehicles", "Vehicle contract", vehicles::check),
     ("python-free", "Python-free tooling", python_free::check),
 ];
 
 pub fn run(which: &str) -> u8 {
     let selected: Vec<_> = CHECKS.iter().filter(|(name, _, _)| which == "all" || which == *name).collect();
     if selected.is_empty() {
-        eprintln!("Unknown check '{which}'; use ui-ontology, chat, gameplay, python-free or all.");
+        eprintln!("Unknown check '{which}'; use ui-ontology, chat, gameplay, vehicles, python-free or all.");
         return 2;
     }
     let root = repo::root();

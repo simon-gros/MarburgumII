@@ -22,6 +22,7 @@
 #include "UI/MarburgumLocationBanner.h"
 #include "UI/MarburgumPinnedObjective.h"
 #include "UI/MarburgumPlayerCondition.h"
+#include "UI/MarburgumVehicleStatus.h"
 #include "EngineUtils.h"
 #include "UI/MarburgumNotificationFeed.h"
 #include "UI/MarburgumUIGallery.h"
@@ -115,6 +116,7 @@ void UMarburgumUISubsystem::TearDown()
     Banner = nullptr;
     Objective = nullptr;
     Condition = nullptr;
+    VehicleStatus = nullptr;
     CharacterPanel = nullptr;
 }
 
@@ -202,6 +204,7 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
     Release(Banner);
     Release(Objective);
     Release(Condition);
+    Release(VehicleStatus);
     Release(CharacterPanel);
     if (!Banner)
     {
@@ -217,6 +220,11 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
     {
         Condition = CreateWidget<UMarburgumPlayerCondition>(Player, UMarburgumPlayerCondition::StaticClass());
         Root->AddToLayer(EMarburgumUILayer::Hud, Condition);
+    }
+    if (!VehicleStatus)
+    {
+        VehicleStatus = CreateWidget<UMarburgumVehicleStatus>(Player, UMarburgumVehicleStatus::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Hud, VehicleStatus);
     }
     if (!Prompt)
     {

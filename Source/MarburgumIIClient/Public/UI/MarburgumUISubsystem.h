@@ -15,6 +15,7 @@ class UMarburgumJournalPanel;
 class UMarburgumCharacterPanel;
 class UMarburgumLocationBanner;
 class UMarburgumPlayerCondition;
+class UMarburgumVehicleStatus;
 class UMarburgumPinnedObjective;
 class UMarburgumNotificationFeed;
 struct FMarburgumInteractionReceipt;
@@ -60,6 +61,7 @@ public:
     const UMarburgumLocationBanner* GetLocationBanner() const { return Banner; }
     const UMarburgumPinnedObjective* GetPinnedObjective() const { return Objective; }
     const UMarburgumPlayerCondition* GetPlayerCondition() const { return Condition; }
+    const UMarburgumVehicleStatus* GetVehicleStatus() const { return VehicleStatus; }
     const UMarburgumCharacterPanel* GetCharacterPanel() const { return CharacterPanel; }
 
     /** Independent UI scale on top of DPI scaling (0.5 - 3.0). */
@@ -90,6 +92,7 @@ private:
     UPROPERTY(Transient) TObjectPtr<UMarburgumLocationBanner> Banner;
     UPROPERTY(Transient) TObjectPtr<UMarburgumPinnedObjective> Objective;
     UPROPERTY(Transient) TObjectPtr<UMarburgumPlayerCondition> Condition;
+    UPROPERTY(Transient) TObjectPtr<UMarburgumVehicleStatus> VehicleStatus;
     UPROPERTY(Transient) TObjectPtr<UMarburgumCharacterPanel> CharacterPanel;
 
     TWeakObjectPtr<APlayerController> PendingChatOwner;

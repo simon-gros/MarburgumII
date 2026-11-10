@@ -11,6 +11,7 @@ class AMarburgumPlayerController;
 class AMarburgumPlayerState;
 class AMarburgumInteractable;
 class AMarburgumNpc;
+class AMarburgumVehicle;
 
 /**
  * `interaction_prompt` module: one eligible verb, its key and the subject, for the interactable the
@@ -20,6 +21,8 @@ class AMarburgumNpc;
  * (from the owner-only mission record), greyed out when a requirement is visibly missing. Also a waiting
  * state while a request is unanswered and an honest empty / no-character state. It never predicts a
  * result: items and missions appear only through the server receipt and replicated state.
+ * Cars come first, as the same key gets in and out of them (ADR-039): a car in reach offers its seat,
+ * and in a car the prompt offers the way out and names the controls.
  * Refreshes at 10 Hz and only touches widgets whose text changed.
  */
 UCLASS()
@@ -34,7 +37,10 @@ protected:
 private:
     void Refresh();
     void RefreshNpc(const AMarburgumNpc& Npc, const AMarburgumPlayerState* State, bool bWaiting);
+    void RefreshVehicle(const AMarburgumVehicle& Vehicle, FName Seat, bool bSeated, bool bWaiting);
     void Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone, bool bKeyActive);
+    void ApplyTo(const AActor& Target, const FText& Subject, bool bFixture, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone,
+        bool bKeyActive);
     void Place();
 
     UPROPERTY(Transient) TObjectPtr<UBorder> Card;
@@ -48,5 +54,5 @@ private:
 
     float SinceRefresh = 0.f;
     FString LastSignature;
-    TWeakObjectPtr<class AMarburgumInteractable> Shown;
+    TWeakObjectPtr<AActor> Shown;
 };

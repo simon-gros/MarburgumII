@@ -46,12 +46,13 @@ The playable world is currently a development slice of **Lent**, the historic ri
 | **World** | Original Unreal Lent level at `/Game/World/lent`, now the default; authored opening route, detailed façades and watertight building shells with footprint-fitted roofs | [World decisions](Docs/DECISIONS.md) (ADR-024–027, ADR-034) · latest geometry requires fresh owner testing |
 | **Interactions & story** | Server-validated supply-crate transactions, persisted inventory, riverside angler, opening of **“Something in the Water”**, journal and objective tracking | [Interaction](Docs/STAGE1_GATE1_EVIDENCE.md) · [Lent mission](Docs/STAGE1_LENT_EVIDENCE.md) |
 | **Movement & condition** | Server-bounded movement time; stamina, running and winded state; swimming, submersion, drowning and recovery, including persisted condition | [Movement](Docs/STAGE1_MOVEMENT_TIME_EVIDENCE.md) · [condition](Docs/STAGE1_CONDITION_EVIDENCE.md) · [swimming](Docs/STAGE1_SWIM_EVIDENCE.md) |
+| **Cars & driving** | The original's five-car catalogue and four-raycast handling, simulated by the server only; seats and doors, driver and passengers; the original's city hatchback parked in Lent; procedural bodywork and door clips | [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) · [ADR-039](Docs/DECISIONS.md) |
 | **Rendering** | Optional, client-side NVIDIA feature detection and fallbacks; Unreal TSR is the baseline renderer | [Rendering and platform limits](Docs/RENDERING_NVIDIA.md) |
 
 <details>
 <summary><strong>What is not implemented yet?</strong></summary>
 
-Production account registration, email verification and login; first-time character creation and account-bound admission; a production database; fishing and the remainder of the first mission; the purchased city map; large-scale server operations; and the full mission, economy, skills, vehicle and population systems. Current persistence is a **development file store** and characters use **development-only test identities**. The refined graphics, current level and major gameplay slices all still require the owner's personal playtest and explicit approval.
+Production account registration, email verification and login; first-time character creation and account-bound admission; a production database; fishing and the remainder of the first mission; the purchased city map; large-scale server operations; and the full mission, economy, skills and population systems, including car ownership, fuel, damage, traffic and vehicle sounds. Current persistence is a **development file store** and characters use **development-only test identities**. The refined graphics, current level and major gameplay slices all still require the owner's personal playtest and explicit approval.
 
 </details>
 
@@ -93,6 +94,7 @@ Build and stage the distinct Linux server and client executables, then run the e
 ./scripts/lent-smoke-linux.sh
 ./scripts/condition-smoke-linux.sh
 ./scripts/swim-smoke-linux.sh
+./scripts/vehicle-smoke-linux.sh
 ```
 
 To enter the **current default Lent world** manually with development credentials, start the server and client in separate terminals after packaging:
@@ -105,7 +107,7 @@ Saved/StagedBuilds/LinuxServer/MarburgumIIServer.sh /Game/World/lent -port=7777 
 Saved/StagedBuilds/LinuxClient/MarburgumIIClient.sh -MB2Character=localtester
 ```
 
-**Controls:** WASD + mouse to move/look · **Shift** run · **E** interact · **C** character · **I** inventory · **J** journal · **Enter** chat. The angler can start the opening mission, but fishing is not available yet. See the [full playthrough instructions](Docs/DEVELOPMENT.md#playing-the-lent-slice-by-hand) for map distinctions, world-store paths, test switches and troubleshooting.
+**Controls:** WASD + mouse to move/look · **Shift** run · **E** interact, or get in and out of a car (then W/S drive, brake and reverse, A/D steer, Shift handbrake) · **C** character · **I** inventory · **J** journal · **Enter** chat. The angler can start the opening mission, but fishing is not available yet. See the [full playthrough instructions](Docs/DEVELOPMENT.md#playing-the-lent-slice-by-hand) for map distinctions, world-store paths, test switches and troubleshooting.
 
 The network and mission tests use dedicated development fixtures, including the older `/Game/Maps/Lent` blockout. The actual default game, server and editor map is **`/Game/World/lent`**. Do not confuse success on an older smoke fixture with approval of the latest world content.
 
@@ -142,7 +144,7 @@ The project advances through independently tested, owner-approved slices:
 
 1. **Foundation — implemented, acceptance pending:** Linux UE targets, authoritative networking, connection UI and basic chat.
 2. **First-play onboarding — planned:** email verification, secure login, first name, last name and character-model selection, followed by server-gated world entry. A new account must not spawn in the world before its character has been saved. [First-launch ontology](Docs/FIRST_LAUNCH_ONTOLOGY.md).
-3. **Playable Lent — in development:** third-person movement, first interactions, introductory mission, condition, swimming, early HUD and persistent development state. Build a visually coherent, manually approved district.
+3. **Playable Lent — in development:** third-person movement, first interactions, introductory mission, condition, swimming, driving, early HUD and persistent development state. Build a visually coherent, manually approved district.
 4. **Deeper city life — planned:** fishing, ecology, skills, missions, economy, professions, transport and more extensive interaction systems.
 5. **City and operations — planned:** licensed geometry intake, larger-world streaming, population systems, production identities/storage and measured multiplayer scalability.
 
@@ -156,7 +158,7 @@ The [full milestone roadmap](Docs/ROADMAP.md) and [UI/HUD roadmap](Docs/UI_HUD_R
 | **Engineering** | [Development guide](Docs/DEVELOPMENT.md) · [Architecture](Docs/ARCHITECTURE.md) · [Network contract](Docs/NETWORK_ARCHITECTURE.md) · [Engineering decisions](Docs/DECISIONS.md) |
 | **Player experience** | [First launch](Docs/FIRST_LAUNCH_ONTOLOGY.md) · [UI/HUD design](Docs/UI_HUD_DESIGN.md) · [UI ontology](Docs/UI_HUD_ONTOLOGY.md) · [UI roadmap](Docs/UI_HUD_ROADMAP.md) · [Chat](Docs/CHAT.md) |
 | **World & assets** | [Map adoption](Docs/WORLD_MAP_ADOPTION.md) · [Protagonist](Docs/CHARACTER_PROTAGONIST.md) · [Conditional Hunyuan3D pipeline](Docs/ASSET_GENERATION_HUNYUAN3D.md) · [NVIDIA rendering](Docs/RENDERING_NVIDIA.md) |
-| **Verification** | [Main roadmap and gates](Docs/ROADMAP.md) · [Playtest freshness](Docs/PLAYTEST_FRESHNESS.md) · [Stage 0](Docs/STAGE0_EVIDENCE.md) · [Lent](Docs/STAGE1_LENT_EVIDENCE.md) · [Swimming](Docs/STAGE1_SWIM_EVIDENCE.md) |
+| **Verification** | [Main roadmap and gates](Docs/ROADMAP.md) · [Playtest freshness](Docs/PLAYTEST_FRESHNESS.md) · [Stage 0](Docs/STAGE0_EVIDENCE.md) · [Lent](Docs/STAGE1_LENT_EVIDENCE.md) · [Swimming](Docs/STAGE1_SWIM_EVIDENCE.md) · [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) |
 
 Machine-readable design contracts are under `Data/`; implementation, scripts and tests are under `Source/`, `scripts/`, `tools/` and `native/`. The GitHub workflow validates Rust and C# components; **CI does not replace a real Unreal Editor, client/server build or multiplayer test**.
 

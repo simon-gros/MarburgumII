@@ -1,0 +1,63 @@
+#pragma once
+
+#include "CoreMinimal.h"
+
+class UAnimSequence;
+
+/**
+ * Carries one of the original game's procedural character clips (magna-raedarum-marburgum
+ * tools/build_character.gd) onto the UE5 mannequin, key for key (ADR-039). The vehicle door
+ * clips use it; the swim commandlet (ADR-032, ADR-033, ADR-036) still carries its own copy of the same steps.
+ *
+ * The original keys model-space Euler angles in radians on its Godot humanoid: Y up, the body faces -Z, a
+ * positive X rotation swings a limb forward and a positive Z rotation lifts the left arm out to the side.
+ * Godot composes them Y, then X, then Z (Basis.from_euler, EULER_ORDER_YXZ), and each bone's turn applies
+ * after its parent's (_bone_pose). The mannequin's reference pose is an A-pose with bent elbows, so each limb
+ * is first turned onto the original's rest direction and the clip is applied from there.
+ */
+namespace MarburgumGodotClip
+{
+    /** One Godot bone's keys, evenly spaced over the clip; a looping clip's last key equals its first. */
+    struct FTrack
+    {
+        const TCHAR* GodotBone;
+        TArray<FVector> Keys;
+    };
+
+    struct FClip
+    {
+        /** Long package name, e.g. /Game/Characters/Animations/A_Swim. */
+        const TCHAR* Package;
+        /** Transaction title in the animation model. */
+        const TCHAR* Title;
+        double LengthSeconds = 1.0;
+        bool bLoop = false;
+        TArray<FTrack> Tracks;
+        /** Displacement of the hips from rest, Godot model-space metres, evenly spaced keys (may be empty). */
+        TArray<FVector> HipsOffsets;
+    };
+
+    inline constexpr int32 FramesPerSecond = 30;
+
+    /** _shift(): the same loop started Steps keys later (the last key repeats the first). */
+    TArray<FVector> Shift(const TArray<FVector>& Values, int32 Steps);
+    /** _mirror(): the same motion on the other side of the body. */
+    TArray<FVector> Mirror(TArray<FVector> Values);
+    /** _cycle(values, Vector3.RIGHT): an X rotation per key, looping back to the first. */
+    TArray<FVector> Cycle(std::initializer_list<double> Values);
+
+    /**
+     * Godot's cubic track sampled at T seconds: Catmull-Rom through the evenly spaced keys, wrapping round a
+     * loop and holding the end keys of a one-shot.
+     */
+    FVector Sample(const TArray<FVector>& Keys, double T, double LengthSeconds, bool bLoop);
+
+    /** Builds the clip on SK_Mannequin and saves it; nullptr (after logging under LogTag) on failure. */
+    UAnimSequence* Build(const FClip& Clip, const TCHAR* LogTag);
+
+    /**
+     * Evidence: limb directions read back from a saved clip at the given times, in the original's model axes
+     * (x right, y up, z back), to compare with the same directions computed from the original's own clip.
+     */
+    void LogLimbCheck(const UAnimSequence& Sequence, const TArray<double>& Times, const TCHAR* LogTag);
+}

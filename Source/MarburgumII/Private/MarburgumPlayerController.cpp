@@ -4,8 +4,12 @@
 #include "MarburgumClientUiHooks.h"
 #include "MarburgumChatPolicy.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumCharacter.h"
 #include "MarburgumInteractable.h"
 #include "MarburgumNetworkContract.h"
+#include "MarburgumVehicle.h"
+#include "MarburgumVehicleContract.h"
+#include "MarburgumVehicleDynamics.h"
 #include "Components/InputComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -100,9 +104,23 @@ void AMarburgumPlayerController::RequestInteract()
 {
     FGuid Pending;
     TWeakObjectPtr<AMarburgumInteractable> PendingObject;
-    if (!IsLocalController() || GetPendingInteraction(Pending, PendingObject))
+    if (!IsLocalController() || GetPendingInteraction(Pending, PendingObject) || IsVehicleRequestPending())
     {
         return; // One request in flight at a time; the prompt shows it as waiting.
+    }
+    // The same key gets in and out of cars, and a car in reach comes first (the original's
+    // toggle_vehicle_or_interact).
+    const AMarburgumCharacter* Body = Cast<AMarburgumCharacter>(GetPawn());
+    if (Body && Body->GetSeatedVehicle())
+    {
+        RequestExitVehicle();
+        return;
+    }
+    FName Seat;
+    if (AMarburgumVehicle* Car = FindVehicleCandidate(Seat))
+    {
+        RequestEnterVehicle(Car, Seat);
+        return;
     }
     if (AMarburgumInteractable* Target = FindInteractionCandidate())
     {
@@ -141,17 +159,8 @@ void AMarburgumPlayerController::ServerRequestInteraction_Implementation(FGuid O
     {
         return;
     }
-    // Bounded request rate: floods are dropped without a reliable reply for each one.
-    const double Now = World->GetTimeSeconds();
-    if (Now - RequestWindowStartSeconds >= 1.0)
+    if (!AdmitRequest(TEXT("interaction")))
     {
-        RequestWindowStartSeconds = Now;
-        RequestsInWindow = 0;
-    }
-    if (++RequestsInWindow > MarburgumII::Gameplay::MaxRequestsPerSecond)
-    {
-        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=interaction_dropped player=%d reason=rate"),
-            MarburgumII::Gameplay::InteractLogPrefix, PlayerState ? PlayerState->GetPlayerId() : -1);
         return;
     }
 
@@ -167,6 +176,205 @@ void AMarburgumPlayerController::ServerRequestInteraction_Implementation(FGuid O
         Receipt.Reason = EMarburgumInteractionReason::AuthorityUnavailable;
     }
     ClientReceiveInteractionReceipt(Receipt);
+}
+
+bool AMarburgumPlayerController::AdmitRequest(const TCHAR* What)
+{
+    // Bounded request rate: floods are dropped without a reliable reply for each one.
+    const UWorld* World = GetWorld();
+    const double Now = World ? World->GetTimeSeconds() : 0.0;
+    if (Now - RequestWindowStartSeconds >= 1.0)
+    {
+        RequestWindowStartSeconds = Now;
+        RequestsInWindow = 0;
+    }
+    if (++RequestsInWindow > MarburgumII::Gameplay::MaxRequestsPerSecond)
+    {
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=%s_dropped player=%d reason=rate"),
+            MarburgumII::Gameplay::InteractLogPrefix, What, PlayerState ? PlayerState->GetPlayerId() : -1);
+        return false;
+    }
+    return true;
+}
+
+// ---- Vehicles (ADR-039) ----
+
+AMarburgumVehicle* AMarburgumPlayerController::FindVehicleCandidate(FName& OutSeat) const
+{
+    OutSeat = NAME_None;
+    const AMarburgumCharacter* Body = Cast<AMarburgumCharacter>(GetPawn());
+    if (!Body || Body->GetSeatedVehicle())
+    {
+        return nullptr;
+    }
+    TArray<AMarburgumVehicle*> Cars;
+    AMarburgumVehicle::GetAll(GetWorld(), Cars);
+    AMarburgumVehicle* Best = nullptr;
+    double BestDistance = TNumericLimits<double>::Max();
+    for (AMarburgumVehicle* Car : Cars)
+    {
+        const FName Seat = Car->FindReachableSeat(Body->GetActorLocation());
+        if (Seat.IsNone())
+        {
+            continue;
+        }
+        const double Distance = FVector::DistSquared(Car->GetDoorLocation(Seat), Body->GetActorLocation());
+        if (Distance < BestDistance)
+        {
+            BestDistance = Distance;
+            Best = Car;
+            OutSeat = Seat;
+        }
+    }
+    return Best;
+}
+
+bool AMarburgumPlayerController::IsVehicleRequestPending() const
+{
+    return FPlatformTime::Seconds() - VehicleRequestAt <= MarburgumII::Gameplay::ReceiptTimeoutSeconds;
+}
+
+void AMarburgumPlayerController::RequestEnterVehicle(AMarburgumVehicle* Vehicle, FName SeatId)
+{
+    if (IsLocalController() && Vehicle)
+    {
+        VehicleRequestAt = FPlatformTime::Seconds();
+        ServerEnterVehicle(Vehicle, SeatId);
+    }
+}
+
+void AMarburgumPlayerController::RequestExitVehicle()
+{
+    if (IsLocalController())
+    {
+        VehicleRequestAt = FPlatformTime::Seconds();
+        ServerExitVehicle();
+    }
+}
+
+void AMarburgumPlayerController::ServerEnterVehicle_Implementation(AMarburgumVehicle* Vehicle, FName SeatId)
+{
+    if (!AdmitRequest(TEXT("vehicle")))
+    {
+        return;
+    }
+    AMarburgumCharacter* Body = Cast<AMarburgumCharacter>(GetPawn());
+    FName Reason = TEXT("no_vehicle");
+    const bool bOk = Body && Vehicle && Vehicle->TryEnterAuthority(*Body, SeatId, Reason);
+    if (!Body || !Vehicle)
+    {
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=enter_refused player=%d reason=%s"), MarburgumII::Vehicles::LogPrefix,
+            PlayerState ? PlayerState->GetPlayerId() : -1, Body ? TEXT("no_vehicle") : TEXT("no_character"));
+        Reason = Body ? Reason : FName(TEXT("no_character"));
+    }
+    ClientReceiveVehicleResult(bOk, TEXT("enter"), bOk ? NAME_None : Reason);
+}
+
+void AMarburgumPlayerController::ServerExitVehicle_Implementation()
+{
+    if (!AdmitRequest(TEXT("vehicle")))
+    {
+        return;
+    }
+    AMarburgumCharacter* Body = Cast<AMarburgumCharacter>(GetPawn());
+    AMarburgumVehicle* Vehicle = Body ? Body->GetSeatedVehicle() : nullptr;
+    FName Reason = TEXT("not_seated");
+    const bool bOk = Vehicle && Vehicle->TryExitAuthority(*Body, Reason);
+    ClientReceiveVehicleResult(bOk, TEXT("exit"), bOk ? NAME_None : Reason);
+}
+
+void AMarburgumPlayerController::ServerSetVehicleInput_Implementation(float Throttle, float Brake, float Steer, bool bHandbrake)
+{
+    // Identity comes from this connection's pawn, never the payload; only the driver's input counts.
+    const AMarburgumCharacter* Body = Cast<AMarburgumCharacter>(GetPawn());
+    if (AMarburgumVehicle* Vehicle = Body ? Body->GetSeatedVehicle() : nullptr)
+    {
+        Vehicle->SetDriverInputAuthority(PlayerState, Throttle, Brake, Steer, bHandbrake);
+    }
+}
+
+void AMarburgumPlayerController::ClientReceiveVehicleResult_Implementation(bool bOk, FName Action, FName Reason)
+{
+    VehicleRequestAt = -1000.0;
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=%s ok=%d reason=%s"), MarburgumII::Vehicles::LogPrefix, *Action.ToString(),
+        bOk ? 1 : 0, Reason.IsNone() ? TEXT("-") : *Reason.ToString());
+    OnVehicleResult.Broadcast(bOk, Action, Reason);
+}
+
+void AMarburgumPlayerController::SetDrivingOverride(float Throttle, float Brake, float Steer, bool bHandbrake)
+{
+    bDrivingOverride = true;
+    OverrideThrottle = Throttle;
+    OverrideBrake = Brake;
+    OverrideSteer = Steer;
+    bOverrideHandbrake = bHandbrake;
+}
+
+void AMarburgumPlayerController::ClearDrivingOverride()
+{
+    bDrivingOverride = false;
+}
+
+void AMarburgumPlayerController::PlayerTick(float DeltaTime)
+{
+    Super::PlayerTick(DeltaTime);
+    if (IsLocalController())
+    {
+        UpdateDriving();
+    }
+}
+
+void AMarburgumPlayerController::UpdateDriving()
+{
+    using namespace MarburgumII::Vehicles;
+    const AMarburgumCharacter* Body = Cast<AMarburgumCharacter>(GetPawn());
+    const AMarburgumVehicle* Car = Body && Body->IsDriving() ? Body->GetSeatedVehicle() : nullptr;
+    if (!Car)
+    {
+        return;
+    }
+    // The walking keys read as pedals (player_controller.cpp update_driving): forward is the throttle, back
+    // brakes while rolling forward and reverses once stopped, left and right are the wheel, and the run key
+    // is the handbrake. The car's speed is the one the server last reported.
+    float Throttle = 0.f;
+    float Brake = 0.f;
+    float Steer = 0.f;
+    bool bHandbrake = false;
+    if (bDrivingOverride)
+    {
+        Throttle = OverrideThrottle;
+        Brake = OverrideBrake;
+        Steer = OverrideSteer;
+        bHandbrake = bOverrideHandbrake;
+    }
+    else
+    {
+        const float Forward = (IsInputKeyDown(EKeys::W) ? 1.f : 0.f) - (IsInputKeyDown(EKeys::S) ? 1.f : 0.f);
+        Steer = (IsInputKeyDown(EKeys::D) ? 1.f : 0.f) - (IsInputKeyDown(EKeys::A) ? 1.f : 0.f);
+        bHandbrake = IsInputKeyDown(EKeys::LeftShift);
+        double PedalThrottle = 0.0;
+        double PedalBrake = 0.0;
+        Dynamics::Pedals(Forward, Car->GetForwardSpeed(), PedalThrottle, PedalBrake);
+        Throttle = static_cast<float>(PedalThrottle);
+        Brake = static_cast<float>(PedalBrake);
+    }
+
+    // Send on change, and resend while anything is held so the server's 0.4 s expiry never lapses.
+    const double Now = FPlatformTime::Seconds();
+    const bool bChanged = bHandbrake != bSentHandbrake || FMath::Abs(Steer - SentSteer) > InputEpsilon
+        || FMath::Abs(Throttle - SentThrottle) > InputEpsilon || FMath::Abs(Brake - SentBrake) > InputEpsilon;
+    const bool bIdle = Throttle == 0.f && Brake == 0.f && Steer == 0.f && !bHandbrake;
+    const bool bKeepalive = !bIdle && Now - SentAt >= InputKeepaliveSeconds;
+    if (!bChanged && !bKeepalive)
+    {
+        return;
+    }
+    SentThrottle = Throttle;
+    SentBrake = Brake;
+    SentSteer = Steer;
+    bSentHandbrake = bHandbrake;
+    SentAt = Now;
+    ServerSetVehicleInput(Throttle, Brake, Steer, bHandbrake);
 }
 
 void AMarburgumPlayerController::ClientReceiveInteractionReceipt_Implementation(const FMarburgumInteractionReceipt& Receipt)

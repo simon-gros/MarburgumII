@@ -4,6 +4,7 @@
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimSequenceBase.h"
 #include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -13,6 +14,9 @@
 #include "InputCoreTypes.h"
 #include "MarburgumCharacterMovement.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumVehicle.h"
+#include "MarburgumVehicleContract.h"
+#include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
 
 namespace
@@ -37,6 +41,13 @@ namespace
     constexpr float StrokeFromCmPerSecond = 40.f;
     constexpr float TreadUnderCmPerSecond = 20.f;
     constexpr float SwimLiftCmPerSecond = 60.f;
+
+    // The original's enter and exit clips are one-shots played at the door (tools/build_character.gd).
+    const FName VehicleSlot(TEXT("DefaultSlot"));
+    constexpr float VehicleClipBlendSeconds = 0.15f;
+    // How quickly the camera arm and its pivot move between walking and driving framing.
+    constexpr float CameraFramingSpeed = 4.f;
+    constexpr float OnFootBoomHeightCm = 50.f;
 }
 
 AMarburgumCharacter::AMarburgumCharacter(const FObjectInitializer& ObjectInitializer)
@@ -80,6 +91,9 @@ AMarburgumCharacter::AMarburgumCharacter(const FObjectInitializer& ObjectInitial
     // (every body on a dedicated server) skips its animation.
     Body->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
     MeshRestOffset = Body->GetRelativeLocation();
+    MeshRestRotation = Body->GetRelativeRotation();
+    OnFootArmLength = CameraBoom->TargetArmLength;
+    OnFootBoomOffset = CameraBoom->GetRelativeLocation();
 
     // The original game's swim cycle, generated onto the mannequin skeleton (ADR-032).
     static ConstructorHelpers::FObjectFinder<UAnimSequenceBase> Swim(TEXT("/Game/Characters/Animations/A_Swim.A_Swim"));
@@ -93,6 +107,24 @@ AMarburgumCharacter::AMarburgumCharacter(const FObjectInitializer& ObjectInitial
     {
         TreadClip = Tread.Object;
     }
+
+    // The original game's enter and exit clips, generated onto the mannequin skeleton (ADR-039).
+    static ConstructorHelpers::FObjectFinder<UAnimSequenceBase> Enter(MarburgumII::Vehicles::EnterClipPath);
+    if (Enter.Succeeded())
+    {
+        EnterVehicleClip = Enter.Object;
+    }
+    static ConstructorHelpers::FObjectFinder<UAnimSequenceBase> Exit(MarburgumII::Vehicles::ExitClipPath);
+    if (Exit.Succeeded())
+    {
+        ExitVehicleClip = Exit.Object;
+    }
+}
+
+void AMarburgumCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(AMarburgumCharacter, Seating);
 }
 
 void AMarburgumCharacter::Tick(float DeltaSeconds)
@@ -103,8 +135,206 @@ void AMarburgumCharacter::Tick(float DeltaSeconds)
         UpdateSwimPresentation();
         const float Target = SwimMontage && !bTreading ? SwimLiftCm : 0.f;
         SwimLift = FMath::FInterpConstantTo(SwimLift, Target, DeltaSeconds, SwimLiftCmPerSecond);
-        GetMesh()->SetRelativeLocation(MeshRestOffset + FVector(0.f, 0.f, SwimLift));
+        if (!Seating.Vehicle)
+        {
+            GetMesh()->SetRelativeLocation(MeshRestOffset + FVector(0.f, 0.f, SwimLift));
+        }
+        UpdateSeatPresentation(DeltaSeconds);
+        if (IsLocallyControlled())
+        {
+            UpdateDrivingCamera(DeltaSeconds);
+        }
     }
+}
+
+void AMarburgumCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    // A body that leaves the world gives its seat back (the original's release_user).
+    if (HasAuthority() && Seating.Vehicle)
+    {
+        Seating.Vehicle->ReleaseAuthority(GetPlayerState());
+    }
+    Super::EndPlay(EndPlayReason);
+}
+
+// ---- Vehicles ----
+
+bool AMarburgumCharacter::IsDriving() const
+{
+    return Seating.Vehicle && Seating.SeatId == Seating.Vehicle->GetDriverSeatId();
+}
+
+bool AMarburgumCharacter::CanEnterVehicle() const
+{
+    const UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(GetCharacterMovement());
+    return Movement && !Movement->IsDown();
+}
+
+bool AMarburgumCharacter::IsBodyShown() const
+{
+    return GetMesh() && GetMesh()->IsVisible();
+}
+
+void AMarburgumCharacter::SeatAuthority(AMarburgumVehicle* Vehicle, FName SeatId)
+{
+    const FMarburgumSeating Previous = Seating;
+    Seating.Vehicle = Vehicle;
+    Seating.SeatId = SeatId;
+    ++Seating.Sequence;
+    ApplySeating(Previous);
+    ForceNetUpdate();
+}
+
+void AMarburgumCharacter::UnseatAuthority(const FVector& At, float Yaw)
+{
+    const FMarburgumSeating Previous = Seating;
+    Seating.Vehicle = nullptr;
+    Seating.SeatId = NAME_None;
+    Seating.ExitLocation = At;
+    Seating.ExitYaw = Yaw;
+    ++Seating.Sequence;
+    ApplySeating(Previous);
+    ForceNetUpdate();
+}
+
+void AMarburgumCharacter::OnRep_Seating(const FMarburgumSeating& Previous)
+{
+    ApplySeating(Previous);
+}
+
+void AMarburgumCharacter::ApplySeating(const FMarburgumSeating& Previous)
+{
+    using namespace MarburgumII::Vehicles;
+    UCharacterMovementComponent* Movement = GetCharacterMovement();
+    AMarburgumVehicle* Vehicle = Seating.Vehicle;
+    const FVehicleDefinition* Definition = Vehicle ? Vehicle->GetDefinition() : nullptr;
+    const FSeatDefinition* Seat = Definition ? FindSeat(*Definition, Seating.SeatId.ToString()) : nullptr;
+    UAnimInstance* Anim = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
+    const bool bPresent = GetNetMode() != NM_DedicatedServer;
+    // Walking prediction does not run in a seat. Moves saved before it, and the timestamps both ends hold,
+    // are stale on either side of one: replayed after getting out, they put the owning client back where it
+    // got in, and the server rejects them as expired.
+    if (Previous.Vehicle != Vehicle)
+    {
+        if (GetLocalRole() == ROLE_AutonomousProxy)
+        {
+            Movement->ResetPredictionData_Client();
+        }
+        if (HasAuthority())
+        {
+            Movement->ResetPredictionData_Server();
+        }
+    }
+
+    if (Vehicle && Seat)
+    {
+        // Still in the seat: the car carries the body; it neither walks nor collides.
+        Movement->StopMovementImmediately();
+        Movement->DisableMovement();
+        Movement->SetComponentTickEnabled(false);
+        SetActorEnableCollision(false);
+        AttachToComponent(Vehicle->GetBody(), FAttachmentTransformRules::KeepWorldTransform);
+        SetActorRelativeLocation(SeatPointCm(*Seat));
+        SetActorRelativeRotation(FRotator::ZeroRotator);
+        if (bPresent && Previous.Vehicle != Vehicle)
+        {
+            // The enter clip plays where the body stands at the door, facing the car; then it is hidden.
+            const FVector Door = DoorPointCm(*Seat);
+            const FVector SeatAt = SeatPointCm(*Seat);
+            const FVector Offset(Door.X - SeatAt.X, Door.Y - SeatAt.Y, -RideHeightCm(*Definition) - SeatAt.Z);
+            const float FaceYaw = (SeatAt - Door).GetSafeNormal2D().Rotation().Yaw;
+            GetMesh()->SetRelativeLocationAndRotation(Offset, FRotator(0.f, FaceYaw + MeshRestRotation.Yaw, 0.f));
+            GetMesh()->SetVisibility(true, true);
+            EnterClipRemaining = 0.f;
+            if (Anim && EnterVehicleClip)
+            {
+                Anim->StopAllMontages(VehicleClipBlendSeconds);
+                Anim->PlaySlotAnimationAsDynamicMontage(EnterVehicleClip, VehicleSlot, VehicleClipBlendSeconds, VehicleClipBlendSeconds);
+                EnterClipRemaining = EnterVehicleClip->GetPlayLength();
+            }
+            if (EnterClipRemaining <= 0.f)
+            {
+                GetMesh()->SetVisibility(false, true);
+            }
+        }
+        return;
+    }
+
+    // On foot again (or never seated).
+    const bool bWasSeated = Previous.Vehicle != nullptr || GetAttachParentActor() != nullptr;
+    if (!bWasSeated)
+    {
+        return;
+    }
+    DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+    StopJumping();
+    SetActorEnableCollision(true);
+    Movement->SetComponentTickEnabled(true);
+    Movement->SetMovementMode(MOVE_Walking);
+    if (!Seating.ExitLocation.IsZero())
+    {
+        SetActorLocationAndRotation(Seating.ExitLocation, FRotator(0.f, Seating.ExitYaw, 0.f), false, nullptr, ETeleportType::TeleportPhysics);
+    }
+    EnterClipRemaining = 0.f;
+    if (bPresent)
+    {
+        GetMesh()->SetRelativeLocationAndRotation(MeshRestOffset, MeshRestRotation);
+        GetMesh()->SetVisibility(true, true);
+        if (Anim && ExitVehicleClip)
+        {
+            Anim->StopAllMontages(VehicleClipBlendSeconds);
+            Anim->PlaySlotAnimationAsDynamicMontage(ExitVehicleClip, VehicleSlot, VehicleClipBlendSeconds, VehicleClipBlendSeconds);
+        }
+    }
+}
+
+void AMarburgumCharacter::UpdateSeatPresentation(float DeltaSeconds)
+{
+    if (!Seating.Vehicle || EnterClipRemaining <= 0.f)
+    {
+        return;
+    }
+    EnterClipRemaining -= DeltaSeconds;
+    if (EnterClipRemaining <= 0.f)
+    {
+        // In and the door shut behind: the original hid the body in the seat.
+        GetMesh()->SetVisibility(false, true);
+    }
+}
+
+void AMarburgumCharacter::UpdateDrivingCamera(float DeltaSeconds)
+{
+    using namespace MarburgumII::Vehicles;
+    const AMarburgumVehicle* Vehicle = Seating.Vehicle;
+    const FVehicleDefinition* Definition = Vehicle ? Vehicle->GetDefinition() : nullptr;
+    const FSeatDefinition* Seat = Definition ? FindSeat(*Definition, Seating.SeatId.ToString()) : nullptr;
+
+    // Driving framing (player_camera.cpp): 11 m back, the pivot a metre above the car's origin and led
+    // ahead of the car a little at speed. On foot it returns to the walking framing exactly.
+    float TargetArm = OnFootArmLength;
+    FVector TargetBoom = OnFootBoomOffset;
+    if (Seat)
+    {
+        TargetArm = static_cast<float>(CameraDistance * CentimetresPerMetre);
+        const double Ahead = FMath::Clamp(Vehicle->GetForwardSpeed() * CameraLookAheadSeconds, -CameraMaxLookAhead, CameraMaxLookAhead);
+        // The original's origin is CollisionLift below this car's actor origin; the seat is where this body is.
+        TargetBoom = FVector(Ahead * CentimetresPerMetre, 0.0, (CameraFocusHeight - CollisionLift) * CentimetresPerMetre - SeatPointCm(*Seat).Z);
+    }
+    CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, TargetArm, DeltaSeconds, CameraFramingSpeed);
+    CameraBoom->SetRelativeLocation(FMath::VInterpTo(CameraBoom->GetRelativeLocation(), TargetBoom, DeltaSeconds, CameraFramingSpeed));
+
+    AController* Owner = GetController();
+    FreeLookRemaining = FMath::Max(0.f, FreeLookRemaining - DeltaSeconds);
+    if (!Seat || !Owner || FreeLookRemaining > 0.f)
+    {
+        return;
+    }
+    // Swing back round behind the car, and down to the driving pitch.
+    const float Weight = 1.f - FMath::Exp(-static_cast<float>(CameraHeadingSharpness) * DeltaSeconds);
+    const FRotator Current = Owner->GetControlRotation();
+    const FRotator Wanted(-static_cast<float>(CameraPitchDegrees), Vehicle->GetActorRotation().Yaw, 0.f);
+    const FRotator Delta = (Wanted - Current).GetNormalized();
+    Owner->SetControlRotation(FRotator(Current.Pitch + Delta.Pitch * Weight, Current.Yaw + Delta.Yaw * Weight, 0.f));
 }
 
 void AMarburgumCharacter::UpdateSwimPresentation()
@@ -191,7 +421,8 @@ void AMarburgumCharacter::StopRunning()
 
 void AMarburgumCharacter::MoveForward(float Value)
 {
-    if (Value != 0.f && Controller)
+    // In a car the same keys are its pedals and wheel, which the player controller reads.
+    if (Value != 0.f && Controller && !Seating.Vehicle)
     {
         const FRotator Yaw(0.f, Controller->GetControlRotation().Yaw, 0.f);
         AddMovementInput(FRotationMatrix(Yaw).GetUnitAxis(EAxis::X), Value);
@@ -200,7 +431,7 @@ void AMarburgumCharacter::MoveForward(float Value)
 
 void AMarburgumCharacter::MoveRight(float Value)
 {
-    if (Value != 0.f && Controller)
+    if (Value != 0.f && Controller && !Seating.Vehicle)
     {
         const FRotator Yaw(0.f, Controller->GetControlRotation().Yaw, 0.f);
         AddMovementInput(FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y), Value);
@@ -219,10 +450,18 @@ void AMarburgumCharacter::MoveLeft(float Value)
 
 void AMarburgumCharacter::Turn(float Value)
 {
+    if (Seating.Vehicle && FMath::Abs(Value) > 0.001f)
+    {
+        FreeLookRemaining = static_cast<float>(MarburgumII::Vehicles::CameraFreeLookSeconds);
+    }
     AddControllerYawInput(Value);
 }
 
 void AMarburgumCharacter::LookUp(float Value)
 {
+    if (Seating.Vehicle && FMath::Abs(Value) > 0.001f)
+    {
+        FreeLookRemaining = static_cast<float>(MarburgumII::Vehicles::CameraFreeLookSeconds);
+    }
     AddControllerPitchInput(-Value);
 }
