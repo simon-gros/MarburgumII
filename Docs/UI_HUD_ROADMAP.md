@@ -1,12 +1,12 @@
 # UI/HUD development roadmap — MarburgumII
 
-**Version:** 0.1.0 — 8 November 2026  
+**Revision:** 0.2.0 — 11 November 2026; as-built review through `af2d0b3` ([daily change audit](DAILY_CHANGE_REVIEW_2026-11-10.md))  
 **Scope:** P0-to-production user interface program for the new **Unreal Engine 5.8.3** client.  
 **Normative concepts:** [UI/HUD ontology](UI_HUD_ONTOLOGY.md) and [machine-readable module registry](../Data/Ontology/ui_hud.v0.1.json).  
 **Visual contract:** [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md).  
 **Network dependency:** [NET-001](https://github.com/simon-gros/MarburgumII/issues/2), a genuine two-client authoritative session.  
 **Umbrella implementation task:** [UI-001](https://github.com/simon-gros/MarburgumII/issues/3).  
-**Status:** UI-01 (design tokens, primitives, gallery) and UI-02 (session state machine and connection shell) have a first runtime implementation with rendered-client captures on Linux ([evidence](STAGE0C_UI_EVIDENCE.md)); per ADR-008 they are `implemented_awaiting_owner_playtest`, not accepted. UI-02 keyboard/controller focus traversal is not yet verified. UI-03 has its first modules: the themed `chat_panel`, with server receipts in the notification feed, qualified by a three-client network test ([evidence](STAGE0C_CHAT_EVIDENCE.md)), and the `interaction_prompt` with server-receipt notifications for the Gate 1 interaction ([evidence](STAGE1_GATE1_EVIDENCE.md)). On the Lent slice ([evidence](STAGE1_LENT_EVIDENCE.md)), UI-03 adds the `location_banner`, which is transient and driven by the server-derived area, and the `pinned_objective`, which shows the saved mission's current step at the top left. The `interaction_prompt` also learns NPC states (offer, next step, a requirement missing). UI-04 has a first `inventory_view` shell (I key), showing owner-only replicated custody with designed waiting, no-character, empty and filled states. It also has a first `journal_panel` shell (J key) with the same states for missions; opening one management screen closes the others. With the player condition ([evidence](STAGE1_CONDITION_EVIDENCE.md), ADR-020), UI-03 adds the `player_condition` card (lower left): vitality and stamina meters, a RUNNING or WINDED pill, and a designed waiting state until the server has restored the character. The stamina bar follows the server-corrected prediction. UI-04 adds a first `character_panel` shell (C key): identity, condition, whereabouts, saved-record summaries and an explicit "not part of this build" equipment card.
+**Status:** UI-01/02 UMG theme/gallery/connection recovery were compiled and captured in packaged Linux clients, awaiting owner review ([evidence](STAGE0C_UI_EVIDENCE.md)). UI-03 includes live general/private `chat_panel`, notifications, interaction prompts for items/NPCs/doors, `location_banner`, `pinned_objective`, `player_condition` including swimming/down, and contextual `vehicle_status` for speed/REV ([chat](STAGE0C_CHAT_EVIDENCE.md), [Gate 1](STAGE1_GATE1_EVIDENCE.md), [Lent](STAGE1_LENT_EVIDENCE.md), [condition](STAGE1_CONDITION_EVIDENCE.md), [swimming](STAGE1_SWIM_EVIDENCE.md), [driving](STAGE1_VEHICLE_EVIDENCE.md)). UI-04 includes functional first Character (C), Inventory (I), Journal (J) shells. **Skills/Settings are still missing**, UI-02A first-login/character creation is **design only**, and owner UX, full DPI/focus/accessibility and integrated latest-asset acceptance are open. UI-05 already has a first driving context, rather than being entirely future work.
 
 ## 1. Product requirement and planning principle
 
@@ -50,11 +50,35 @@ Preserve Marburgum's recognizable experience: transient district names; concise 
 | **UI-02A: Verified accounts and first character** | Stage 0F–1 public entry | Email-confirmed registration, real username/password login, mandatory First/Last/model creation and server-approved world entry | UI-01, UI-02, account service, authoritative character persistence | FL-01–FL-12; secure account admission and owner-approved full-screen captures |
 | **UI-03: Live modular exploration HUD and basic communications** | Stage 0C–1 | Location, condition, context prompt, objective, subject cue, notifications and general/private chat | UI-01, UI-02, NET-001 for live status, CHAT-001 for messaging | Real general/private recipient routing, graphical display and no privacy leaks |
 | **UI-04: Information-rich management screens** | Stage 1 | Visual Character, Skills, Inventory, Journal and Settings with unified navigation | UI-01 and signal/view-model contracts | Nonempty/empty/error/stale state matrix; screenshot-backed UI review |
-| **UI-05: Context and cooperative overlays** | Stage 2–3 | Fishing/work/trading/dialogue/driving/group presentation as systems become real | Real corresponding authoritative gameplay systems | Correct context entry/exit, privacy, no phantom controls |
+| **UI-05: Context and cooperative overlays** | Stage 1 driving prototype; Stage 2–3 expansion | Existing seat/speed/REV/exit context; fishing/work/trade/dialogue/party follow real gameplay | Real authoritative corresponding system | Seat/refusal/reconnect focus, contextual clearing and later group privacy |
 | **UI-06: Layout personalization** | After Stage 1 baseline, Stage 2–3 | Presets, local persistence, per-module sizing/position/visibility, edit mode and reset | Accepted default UI and focus/safe-zone constraints | Drag/move/scale/snap/restore tests; essential alerts always visible |
 | **UI-07: Fidelity, accessibility, performance and capture** | Cross-cutting from UI-01 | Continuous polish and verifiable public-ready client UX | Each accepted slice | Screenshot/input/accessibility/performance gates per supported target |
 
 **Important:** UI-05 breadth and UI-06 extensive customization do not delay Stage 1, but their underlying *module registry, layout policy, tokenized style and state boundaries* must be designed in UI-01/03 so future work does not require rebuilding the interface.
+
+### Updated phase and work-package ledger (11 November 2026)
+
+| Phase | Proven first runtime slice | Still required |
+| --- | --- | --- |
+| UI-00 | Ontology, stable module registry and exclusions | Current vehicle/swim vocabulary owner review |
+| UI-01 | Design tokens, actual UMG primitives, SAMPLE DATA gallery | Polish and full scale/contrast matrix |
+| UI-02 | Join/failure/retry/recovery shell | Keyboard/controller focus, logout and session edge cases |
+| UI-02A | Full login/character lifecycle **specified**, not implemented | FL-01–FL-12, verified backend, full-screen creator/model preview, server admission |
+| UI-03 | Chat, receipt notifications, prompt, location, mission, condition/swim/down, car status | Integrated consistent layout and privacy/focus/connection-state review |
+| UI-04 | First Character, Inventory and Journal | Skills, Settings and actual production identity, loading/disabled/error states |
+| UI-05 | First vehicle/seat/driver context | Real fishing/trade/dialogue/group UI after mechanics |
+| UI-06 | Profile architecture only | Noneditable presets after accepted default, editor later |
+| UI-07 | Selected authentic Linux captures | Current SHA/asset seal, device/scale/accessibility/owner approval |
+
+**UI-P0A — Current-build integrated visual test.** Repackage the actual default `/Game/World/lent` with the latest façade/roof, protagonist, swim animations, vehicle content and dedicated server. Check display sizes 1280×720, 1366×768, 1920×1080, 2560×1440, 3440×1440, 3840×2160 and UI scales 80/100/125/150/200%. Distinguish gallery SAMPLE DATA from live server-backed captures, record SHA, cooked content hashes and frame-time impact.
+
+**UI-P0B — Input arbitration and truthful status priority.** Focus priority: auth/system modal > managed panel > chat text > nearby E interaction > movement/driving. Typing or opening a panel must never simultaneously move/drive/exit/use an item; E must choose vehicle-door context before NPC/item appropriately. Clear state on logout, server loss, seat change, death/recovery and travel. Condition priority is DROWNED/recovery > underwater/held breath > swimming > winded > running. Upright treading is an animation state, not an invented inventory/gameplay stat.
+
+**UI-P0C — First launch (blocking public entry).** Create polished verified-email, login/password/recovery, First name / Last name / approved 3D model creator and loading/admission screens backed by the trusted account service. Public game must deny unauthorized travel and dev `-MB2Character` bypass. Validate Slovene diacritics, long names, model freshness/rights, duplicate creates, server restart, returning user and two authenticated clients. Owner personally playtests first and subsequent entry.
+
+**UI-P1 — Complete live presentation.** Character/Inventory/Journal must show real server-owned data and honest unavailable fields, Skills and Settings need real first pass, pinned objective must match saved mission, vehicle card only while seated, swimming feedback coherent with condition and camera. Add proper response to denied seat, unavailable fish, failed store commit, private recipient disappearing and reconnect.
+
+**Proposed acceptance IDs (not tests already implemented):** `UI-REAL-01` crate→receipt→inventory; `UI-REAL-02` mission→objective→journal→restart; `UI-COND-01` run→swim→down→recovery; `UI-VEH-01` driver/passenger/brake/reverse/exit; `UI-FOCUS-01` chat/panel/vehicle conflicts; `UI-PRIV-01` three clients and private data; `UI-RES-01` six resolutions/five scales; `UI-FL-01` new/returning-account admission. Every major module requires owner visual and in-game approval.
 
 ## 3. UI-00 — Ontology and legacy behavior inventory
 
@@ -66,7 +90,7 @@ Preserve Marburgum's recognizable experience: transient district names; concise 
 4. Define a data privacy/authority table: gameplay state server-owned; input/device/layout client-local; historical place labels reviewed; fixture data isolated.
 5. Record unresolved product decisions for later art/UX approval; do not fill gaps with generic gameplay assumptions.
 
-**Exit gate:** machine-readable source validates referential integrity and the visual ontology links to actual phases and acceptance. **Status at roadmap creation: documentation and catalogue delivered; no live UI.**
+**Exit gate:** machine-readable source validates referential integrity and the visual ontology links to actual phases and acceptance. **Current:** catalogue and several actual UMG widgets exist. The older no-live-UI statement was the creation-time snapshot; design approval and personal visual acceptance remain separate.
 
 ## 4. UI-01 — High-fidelity graphical foundations
 
@@ -119,7 +143,7 @@ The minimal HUD consists of a restrained player-condition module, transient loca
 
 **Exit gate:** at least two real clients connected to one dedicated server correctly see appropriate server-owned state changes and do not show fabricated client rewards. Record on-screen and log evidence. This is a substantive integration gate beyond NET-001's minimal replication marker.
 
-**Early chat integration:** Build the [`chat_panel`](CHAT.md) with always-available server-wide general messages and private player-to-player conversation. General messages may reach all clients on the logical server; private ones must reach **only sender and chosen recipient**, never other clients' replicated state or notifications. Source scaffolding exists, but it requires real UE 5.8.3 compilation, dedicated server / three-client isolation test, visual refinement and personal owner approval. Keep server routing independent of UMG, and give the chat its own focus/opacity/unread-message policies so it does not obscure the interaction HUD.
+**Early chat integration:** Build the [`chat_panel`](CHAT.md) with always-available server-wide general messages and private player-to-player conversation. General messages may reach all clients on the logical server; private ones must reach **only sender and chosen recipient**, never other clients' replicated state or notifications. Real UE 5.8.3 packaged Linux clients and dedicated-server **three-client isolation test have passed** ([evidence](STAGE0C_CHAT_EVIDENCE.md)); stale target/focus, visual refinement and personal owner approval remain open. Keep server routing independent of UMG, and give the chat its own focus/opacity/unread-message policies so it does not obscure the interaction HUD.
 
 ## 7. UI-04 — Core MMORPG information architecture
 
@@ -144,7 +168,7 @@ Only after a real supporting feature exists, expand in order of game priority:
 1. **Fishing/work/interactions:** contextual task status/progress/eligible tools, results, accessibility cues, animation of meaningful events.
 2. **Dialogue/investigation:** contact identity, speech text, deliberate responses, evidence and journal links; decision confirmation via authoritative receipt.
 3. **Trading and economy:** item detail, explicit currency, price/quantity preview, guarded buy/sell confirmation, receipt/error without double spending.
-4. **Driving:** vehicle name, readable speed, context exit action and subtle route information if period-plausible.
+4. **Driving — first runtime slice implemented (ADR-039):** the real `vehicle_status` card shows replicated vehicle, seat, speed in km/h and REV; `interaction_prompt` chooses DRIVE / GET OUT. Verify driver/passenger/refused seat transitions, context/hide/reset on exit and disconnect, modal/chat input focus, and absent unsupported ownership/damage UI. Route and navigation enhancements remain future scope.
 5. **Small-group play:** compact party frames, joining/leaving, party-relevant notices and optionally authorized communication with privacy controls.
 
 Each activity module must **disappear when not applicable**; optional display is not permission to invent gameplay. Do not design a raid-focused HUD, long toolbar, global NPC nameplates or a police-chase layer as a default.
@@ -181,11 +205,11 @@ Learn from the advantages of configurable modern online interfaces while preserv
 | --- | --- |
 | Screen size | 1280×720, 1366×768, 1920×1080, 2560×1440, 3440×1440, 3840×2160 |
 | UI scale | 80%, 100%, 125%, 150%, 200%, where supported |
-| HUD states | Empty exploration, location transition, interactable subject, objective pinned/unpinned, notification, critical error, activity/vehicle/group where implemented |
+| HUD states | Empty exploration, location change, item/NPC/car prompt, objective, receipt/error, running/winded, swim/tread/underwater/down/recovery, car driver/passenger/reversing/exit; future activity/group only when implemented |
 | Panels | Character, Skills, Inventory, Journal, Settings, connection shell, login, email verification, credential setup and first-character creator |
 | Values | Zero, unknown, large valid integers, long Slovene/English titles, invalid item/actions, unauthorized target |
 | Input | Keyboard/mouse, controller-only, focus recovery, device switching |
-| Continuity | Connected, joining, timeout, disconnect, reconnect, server rejection and gameplay resumption |
+| Continuity | Connected/joining/timeout/disconnect/reconnect, refusal, world exit, stale private target, seat/prompt/condition reset, public auth expiry once UI-02A exists |
 
 At the **first public Stage 1 showcase**, require (a) a clear 1440p or 4K real-client screenshot, (b) a short gameplay capture showing **server-confirmed interaction and feedback** with visible polished HUD, and (c) a capture manifest specifying game/engine SHA, resolution/scale, input, connection truth, licensed assets, and whether any UI fixtures were used. Do not say an activity/panel is implemented when the footage is of a fixture.
 
