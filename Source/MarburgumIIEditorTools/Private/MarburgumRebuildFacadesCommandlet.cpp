@@ -3,35 +3,41 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "Engine/StaticMesh.h"
-#include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "EngineUtils.h"
+#include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "FileHelpers.h"
-#include "IAssetTools.h"
-#include "Materials/Material.h"
+#include "LandscapeProxy.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "MeshDescription.h"
-#include "LandscapeProxy.h"
 #include "MeshDescriptionBuilder.h"
 #include "PhysicsEngine/BodySetup.h"
 #include "StaticMeshAttributes.h"
-#include "StaticMeshResources.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogMarburgumFacades, Log, All);
 
 namespace
 {
+    bool Near(const FVector& A, const FVector& B)
+    {
+        return FVector::DistSquared(A, B) < 1.0;
+    }
+
+    struct FTri
+    {
+        FVector V[3];
+        FVector Normal = FVector::UpVector;
+        bool bUsed = false;
+    };
+
     struct FWall
     {
-        TArray<FVector2D> Coverage;
-        FVector Normal = FVector::UpVector;
-        FVector Origin = FVector::ZeroVector;
-        FVector AxisU = FVector::ForwardVector;
+        FVector Bottom0 = FVector::ZeroVector;
+        FVector Bottom1 = FVector::ZeroVector;
+        FVector Top0 = FVector::ZeroVector;
+        FVector Top1 = FVector::ZeroVector;
+        FVector Normal = FVector::ForwardVector;
         double Width = 0.0;
         double Height = 0.0;
-        /** Original floor, after the plinth has been added below it. Windows start here. */
-        double Floor = 0.0;
-        /** Top of the rectangular storeys. The gable above this stays plain. */
-        double Eave = 0.0;
     };
 
     struct FOpening
@@ -43,44 +49,10 @@ namespace
         bool bDoor = false;
     };
 
-    bool NearlyVertical(const FVector& Normal)
-    {
-        return FMath::Abs(Normal.Z) < 0.35;
-    }
-
-    FVector PolygonNormal(const TArray<FVector>& Vertices)
-    {
-        FVector Accum = FVector::ZeroVector;
-        for (int32 Index = 0; Index < Vertices.Num(); ++Index)
-        {
-            const FVector& A = Vertices[Index];
-            const FVector& B = Vertices[(Index + 1) % Vertices.Num()];
-            Accum += FVector::CrossProduct(A, B);
-        }
-        return Accum.GetSafeNormal();
-    }
-
-    bool Inside(const TArray<FVector2D>& Polygon, const FVector2D& Point)
-    {
-        bool bInside = false;
-        for (int32 Index = 0, Previous = Polygon.Num() - 1; Index < Polygon.Num(); Previous = Index++)
-        {
-            const FVector2D& A = Polygon[Index];
-            const FVector2D& B = Polygon[Previous];
-            const bool bCross = (A.Y > Point.Y) != (B.Y > Point.Y)
-                && Point.X < (B.X - A.X) * (Point.Y - A.Y) / (B.Y - A.Y + KINDA_SMALL_NUMBER) + A.X;
-            if (bCross)
-            {
-                bInside = !bInside;
-            }
-        }
-        return bInside;
-    }
-
-    class FFacadeMesh
+    class FMesh
     {
     public:
-        explicit FFacadeMesh(FMeshDescription& Description)
+        explicit FMesh(FMeshDescription& Description)
         {
             Builder.SetMeshDescription(&Description);
             Builder.EnablePolyGroups();
@@ -93,33 +65,15 @@ namespace
 
         void Triangle(const FVector& A, const FVector& B, const FVector& C, const FPolygonGroupID& Group, const FVector& Normal)
         {
-            const FVector Side = (B - A).GetSafeNormal();
-            const auto Instance = [&](const FVector& Position, const FVector2D& UV)
+            const auto Instance = [&](const FVector& Position)
             {
                 const FVertexID Vertex = Builder.AppendVertex(Position);
                 const FVertexInstanceID InstanceId = Builder.AppendInstance(Vertex);
                 Builder.SetInstanceNormal(InstanceId, Normal);
-                Builder.SetInstanceUV(InstanceId, UV, 0);
+                Builder.SetInstanceUV(InstanceId, FVector2D(Position.X, Position.Z) * 0.01, 0);
                 return InstanceId;
             };
-            const FVertexInstanceID Ia = Instance(A, FVector2D(A.X, A.Z) * 0.01);
-            const FVertexInstanceID Ib = Instance(B, FVector2D(B.X, B.Z) * 0.01);
-            const FVertexInstanceID Ic = Instance(C, FVector2D(C.X, C.Z) * 0.01);
-            Builder.AppendTriangle(Ia, Ib, Ic, Group);
-            (void)Side;
-        }
-
-        void CopyPolygon(const TArray<FVector>& Vertices, const FPolygonGroupID& Group)
-        {
-            if (Vertices.Num() < 3)
-            {
-                return;
-            }
-            const FVector Normal = PolygonNormal(Vertices);
-            for (int32 Index = 1; Index + 1 < Vertices.Num(); ++Index)
-            {
-                Triangle(Vertices[0], Vertices[Index], Vertices[Index + 1], Group, Normal);
-            }
+            Builder.AppendTriangle(Instance(A), Instance(B), Instance(C), Group);
         }
 
         void Quad(const FVector& A, const FVector& B, const FVector& C, const FVector& D, const FPolygonGroupID& Group, const FVector& Normal)
@@ -135,84 +89,195 @@ namespace
         FMeshDescriptionBuilder Builder;
     };
 
-    void OpeningsFor(const FWall& Wall, bool bDoorWall, TArray<FOpening>& OutOpenings)
+    int32 Shared(const FTri& A, const FTri& B, int32& A0, int32& A1, int32& B0, int32& B1)
     {
-        const float Floor = static_cast<float>(Wall.Floor);
-        const float Eave = static_cast<float>(Wall.Eave);
-        const float Body = Eave - Floor;
-        if (Body < 220.0f || Wall.Width < 180.0)
+        int32 Count = 0;
+        for (int32 Ia = 0; Ia < 3; ++Ia)
+        {
+            for (int32 Ib = 0; Ib < 3; ++Ib)
+            {
+                if (!Near(A.V[Ia], B.V[Ib]))
+                {
+                    continue;
+                }
+                if (Count == 0)
+                {
+                    A0 = Ia;
+                    B0 = Ib;
+                }
+                else if (Count == 1)
+                {
+                    A1 = Ia;
+                    B1 = Ib;
+                }
+                ++Count;
+            }
+        }
+        return Count;
+    }
+
+    bool MakeWall(const FTri& A, const FTri& B, FWall& Out)
+    {
+        int32 A0 = 0;
+        int32 A1 = 0;
+        int32 B0 = 0;
+        int32 B1 = 0;
+        if (Shared(A, B, A0, A1, B0, B1) != 2)
+        {
+            return false;
+        }
+        if (FVector::DotProduct(A.Normal, B.Normal) < 0.99)
+        {
+            return false;
+        }
+        const FVector ApexA = A.V[3 - A0 - A1];
+        const FVector ApexB = B.V[3 - B0 - B1];
+        const FVector S0 = A.V[A0];
+        const FVector S1 = A.V[A1];
+        const FVector Corners[4] = { ApexA, S0, ApexB, S1 };
+        const int32 Edges[4][2] = { { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 } };
+        int32 Bottom = 0;
+        float BottomZ = TNumericLimits<float>::Max();
+        for (int32 Edge = 0; Edge < 4; ++Edge)
+        {
+            const FVector& P = Corners[Edges[Edge][0]];
+            const FVector& Q = Corners[Edges[Edge][1]];
+            if (FMath::Abs(P.Z - Q.Z) > 40.0)
+            {
+                continue;
+            }
+            const float Z = static_cast<float>(P.Z + Q.Z) * 0.5f;
+            if (Z < BottomZ)
+            {
+                BottomZ = Z;
+                Bottom = Edge;
+            }
+        }
+        const FVector P0 = Corners[Edges[Bottom][0]];
+        const FVector P1 = Corners[Edges[Bottom][1]];
+        const FVector Along = (P1 - P0).GetSafeNormal();
+        if (Along.IsNearlyZero())
+        {
+            return false;
+        }
+        FVector Normal = A.Normal;
+        if (FVector::DotProduct(FVector::CrossProduct(Along, FVector::UpVector), Normal) < 0.0)
+        {
+            Normal *= -1.0;
+        }
+        // The two points that are not this bottom edge are the top, matched by which bottom point they sit over.
+        const int32 Other0 = Edges[Bottom][0];
+        const int32 Other1 = Edges[Bottom][1];
+        FVector TopOver0 = FVector::ZeroVector;
+        FVector TopOver1 = FVector::ZeroVector;
+        bool b0 = false;
+        bool b1 = false;
+        for (int32 Corner = 0; Corner < 4; ++Corner)
+        {
+            if (Corner == Other0 || Corner == Other1)
+            {
+                continue;
+            }
+            const FVector Flat = FVector(Corners[Corner].X, Corners[Corner].Y, 0.0);
+            const float D0 = static_cast<float>(FVector::DistSquared(Flat, FVector(P0.X, P0.Y, 0.0)));
+            const float D1 = static_cast<float>(FVector::DistSquared(Flat, FVector(P1.X, P1.Y, 0.0)));
+            if (D0 <= D1 && !b0)
+            {
+                TopOver0 = Corners[Corner];
+                b0 = true;
+            }
+            else
+            {
+                TopOver1 = Corners[Corner];
+                b1 = true;
+            }
+        }
+        if (!b0 || !b1)
+        {
+            return false;
+        }
+        Out.Bottom0 = P0;
+        Out.Bottom1 = P1;
+        Out.Top0 = TopOver0;
+        Out.Top1 = TopOver1;
+        Out.Normal = Normal;
+        Out.Width = FVector::Dist(P0, P1);
+        Out.Height = FMath::Max(TopOver0.Z, TopOver1.Z) - FMath::Min(P0.Z, P1.Z);
+        return Out.Width > 120.0 && Out.Height > 200.0 && FMath::Abs(Normal.Z) < 0.35;
+    }
+
+    FVector OnWall(const FWall& Wall, float U, float V, float Inset)
+    {
+        const float Tu = Wall.Width > 1.0 ? U / static_cast<float>(Wall.Width) : 0.0f;
+        const float Tv = Wall.Height > 1.0 ? V / static_cast<float>(Wall.Height) : 0.0f;
+        const FVector Bottom = FMath::Lerp(Wall.Bottom0, Wall.Bottom1, Tu);
+        const FVector Top = FMath::Lerp(Wall.Top0, Wall.Top1, Tu);
+        return FMath::Lerp(Bottom, Top, Tv) - Wall.Normal * Inset;
+    }
+
+    void Openings(const FWall& Wall, bool bDoor, TArray<FOpening>& Out)
+    {
+        if (Wall.Height < 240.0 || Wall.Width < 200.0)
         {
             return;
         }
-        const int32 Storeys = FMath::Clamp(FMath::RoundToInt(Body / 320.0f), 1, 5);
-        const float Storey = Body / Storeys;
-        const float WindowWidth = 110.0f;
-        const float WindowHeight = 140.0f;
-        const float Spacing = 250.0f;
-        const int32 Count = FMath::Clamp(FMath::FloorToInt(static_cast<float>(Wall.Width) / Spacing), 1, 4);
-        auto AddWindow = [&](float CenterU, float Sill)
+        const int32 Storeys = FMath::Clamp(FMath::RoundToInt(Wall.Height / 320.0), 1, 4);
+        const float Storey = static_cast<float>(Wall.Height) / Storeys;
+        const float WinW = 110.0f;
+        const float WinH = 140.0f;
+        const int32 Count = FMath::Clamp(FMath::FloorToInt(static_cast<float>(Wall.Width) / 280.0f), 1, 3);
+        const float Step = static_cast<float>(Wall.Width) / (Count + 1);
+        auto Window = [&](int32 Index, float Sill)
         {
-            if (CenterU - WindowWidth * 0.5f < 70.0f || CenterU + WindowWidth * 0.5f > Wall.Width - 70.0f)
+            const float Center = Step * (Index + 1);
+            if (Sill < 60.0f || Sill + WinH > Wall.Height - 40.0f)
             {
                 return;
             }
-            if (Sill < Floor + 50.0f || Sill + WindowHeight > Eave - 36.0f)
-            {
-                return;
-            }
-            FOpening Window;
-            Window.U0 = CenterU - WindowWidth * 0.5f;
-            Window.U1 = CenterU + WindowWidth * 0.5f;
-            Window.V0 = Sill;
-            Window.V1 = Sill + WindowHeight;
-            OutOpenings.Add(Window);
+            FOpening Opening;
+            Opening.U0 = Center - WinW * 0.5f;
+            Opening.U1 = Center + WinW * 0.5f;
+            Opening.V0 = Sill;
+            Opening.V1 = Sill + WinH;
+            Out.Add(Opening);
         };
-        const float RowWidth = Count * Spacing;
-        const float First = (static_cast<float>(Wall.Width) - RowWidth) * 0.5f + Spacing * 0.5f;
         for (int32 StoreyIndex = 0; StoreyIndex < Storeys; ++StoreyIndex)
         {
-            const float BandBottom = Floor + Storey * StoreyIndex;
-            if (StoreyIndex == 0 && bDoorWall)
+            if (StoreyIndex == 0 && bDoor)
             {
                 FOpening Door;
                 Door.bDoor = true;
                 Door.U0 = static_cast<float>(Wall.Width) * 0.5f - 55.0f;
                 Door.U1 = static_cast<float>(Wall.Width) * 0.5f + 55.0f;
-                Door.V0 = Floor;
-                Door.V1 = FMath::Min(Floor + 215.0f, Eave - 40.0f);
-                if (Door.V1 - Door.V0 > 170.0f)
+                Door.V0 = 0.0f;
+                Door.V1 = FMath::Min(215.0f, Storey - 30.0f);
+                if (Door.V1 > 170.0f)
                 {
-                    OutOpenings.Add(Door);
+                    Out.Add(Door);
                 }
                 if (Count >= 3)
                 {
-                    AddWindow(First, Floor + 85.0f);
-                    AddWindow(First + (Count - 1) * Spacing, Floor + 85.0f);
+                    Window(0, 90.0f);
+                    Window(Count - 1, 90.0f);
                 }
                 continue;
             }
-            const float Sill = BandBottom + (Storey - WindowHeight) * 0.42f;
-            for (int32 WindowIndex = 0; WindowIndex < Count; ++WindowIndex)
+            const float Sill = Storey * StoreyIndex + (Storey - WinH) * 0.42f;
+            for (int32 Index = 0; Index < Count; ++Index)
             {
-                AddWindow(First + WindowIndex * Spacing, Sill);
+                Window(Index, Sill);
             }
         }
     }
 
-    void EmitWall(FFacadeMesh& Mesh, const FWall& Wall, const TArray<FOpening>& Openings)
+    void EmitSealed(FMesh& Mesh, const FWall& Wall, const TArray<FOpening>& Holes)
     {
         TArray<float> Us = { 0.0f, static_cast<float>(Wall.Width) };
-        TArray<float> Vs = { 0.0f, static_cast<float>(Wall.Height), static_cast<float>(Wall.Eave), static_cast<float>(Wall.Eave - 18.0) };
-        for (const FOpening& Opening : Openings)
+        TArray<float> Vs = { 0.0f, static_cast<float>(Wall.Height) };
+        for (const FOpening& Hole : Holes)
         {
-            Us.Add(Opening.U0 - 8.0f);
-            Us.Add(Opening.U0);
-            Us.Add(Opening.U1);
-            Us.Add(Opening.U1 + 8.0f);
-            Vs.Add(Opening.V0 - 8.0f);
-            Vs.Add(Opening.V0);
-            Vs.Add(Opening.V1);
-            Vs.Add(Opening.V1 + 8.0f);
+            Us.Append({ Hole.U0, Hole.U1 });
+            Vs.Append({ Hole.V0, Hole.V1 });
         }
         Us.Sort();
         Vs.Sort();
@@ -221,11 +286,7 @@ namespace
             TArray<float> Kept;
             for (float Value : Values)
             {
-                if (Value < -1.0f)
-                {
-                    continue;
-                }
-                if (Kept.Num() == 0 || Value - Kept.Last() > 1.5f)
+                if (Kept.Num() == 0 || Value > Kept.Last() + 0.5f)
                 {
                     Kept.Add(Value);
                 }
@@ -234,90 +295,48 @@ namespace
         };
         Unique(Us);
         Unique(Vs);
-
-        const FVector Inward = -Wall.Normal;
-        auto Point = [&](float U, float V, float Inset)
+        for (int32 U = 0; U + 1 < Us.Num(); ++U)
         {
-            return Wall.Origin + Wall.AxisU * U + FVector::UpVector * V + Inward * Inset;
-        };
-        for (int32 UIndex = 0; UIndex + 1 < Us.Num(); ++UIndex)
-        {
-            for (int32 VIndex = 0; VIndex + 1 < Vs.Num(); ++VIndex)
+            for (int32 V = 0; V + 1 < Vs.Num(); ++V)
             {
-                const float U0 = Us[UIndex];
-                const float U1 = Us[UIndex + 1];
-                const float V0 = Vs[VIndex];
-                const float V1 = Vs[VIndex + 1];
-                if (U1 - U0 < 2.0f || V1 - V0 < 2.0f)
-                {
-                    continue;
-                }
+                const float U0 = Us[U];
+                const float U1 = Us[U + 1];
+                const float V0 = Vs[V];
+                const float V1 = Vs[V + 1];
                 const FVector2D Center((U0 + U1) * 0.5f, (V0 + V1) * 0.5f);
-                bool bCovered = false;
-                for (int32 Triangle = 0; Triangle + 2 < Wall.Coverage.Num(); Triangle += 3)
+                const FOpening* Hole = nullptr;
+                for (const FOpening& Candidate : Holes)
                 {
-                    const FVector2D& A = Wall.Coverage[Triangle];
-                    const FVector2D& B = Wall.Coverage[Triangle + 1];
-                    const FVector2D& C = Wall.Coverage[Triangle + 2];
-                    const FVector2D Edge0 = B - A;
-                    const FVector2D Edge1 = C - A;
-                    const FVector2D Edge2 = Center - A;
-                    const float Den = static_cast<float>(Edge0.X * Edge1.Y - Edge1.X * Edge0.Y);
-                    if (FMath::Abs(Den) < KINDA_SMALL_NUMBER)
+                    if (Center.X > Candidate.U0 && Center.X < Candidate.U1 && Center.Y > Candidate.V0 && Center.Y < Candidate.V1)
                     {
-                        continue;
-                    }
-                    const float U = static_cast<float>((Edge2.X * Edge1.Y - Edge1.X * Edge2.Y) / Den);
-                    const float V = static_cast<float>((Edge0.X * Edge2.Y - Edge2.X * Edge0.Y) / Den);
-                    if (U >= -0.02f && V >= -0.02f && U + V <= 1.02f)
-                    {
-                        bCovered = true;
+                        Hole = &Candidate;
                         break;
                     }
                 }
-                if (!bCovered)
+                if (Hole)
                 {
                     continue;
                 }
-                const FOpening* Hit = nullptr;
-                bool bFrame = false;
-                for (const FOpening& Opening : Openings)
-                {
-                    const bool bInner = Center.X > Opening.U0 && Center.X < Opening.U1 && Center.Y > Opening.V0 && Center.Y < Opening.V1;
-                    const bool bOuter = Center.X > Opening.U0 - 8.0f && Center.X < Opening.U1 + 8.0f && Center.Y > Opening.V0 - 8.0f && Center.Y < Opening.V1 + 8.0f;
-                    if (bInner)
-                    {
-                        Hit = &Opening;
-                        break;
-                    }
-                    if (bOuter)
-                    {
-                        bFrame = true;
-                    }
-                }
-                FPolygonGroupID Group = Mesh.Plaster;
-                float Inset = 0.0f;
-                if (Hit && Hit->bDoor)
-                {
-                    Group = Mesh.Frame;
-                    Inset = 10.0f;
-                }
-                else if (Hit)
-                {
-                    Group = Mesh.Glass;
-                    Inset = 14.0f;
-                }
-                else if (bFrame || (Center.Y > Wall.Eave - 18.0 && Center.Y <= Wall.Eave + 1.0))
-                {
-                    Group = Mesh.Frame;
-                    Inset = bFrame ? 2.0f : 0.0f;
-                }
-                const FVector A = Point(U0, V0, Inset);
-                const FVector B = Point(U1, V0, Inset);
-                const FVector C = Point(U1, V1, Inset);
-                const FVector D = Point(U0, V1, Inset);
-                Mesh.Quad(A, B, C, D, Group, Wall.Normal);
+                Mesh.Quad(OnWall(Wall, U0, V0, 0.0f), OnWall(Wall, U1, V0, 0.0f), OnWall(Wall, U1, V1, 0.0f), OnWall(Wall, U0, V1, 0.0f), Mesh.Plaster, Wall.Normal);
             }
+        }
+        for (const FOpening& Hole : Holes)
+        {
+            const float Inset = Hole.bDoor ? 8.0f : 16.0f;
+            const FPolygonGroupID Back = Hole.bDoor ? Mesh.Frame : Mesh.Glass;
+            const FVector O00 = OnWall(Wall, Hole.U0, Hole.V0, 0.0f);
+            const FVector O10 = OnWall(Wall, Hole.U1, Hole.V0, 0.0f);
+            const FVector O11 = OnWall(Wall, Hole.U1, Hole.V1, 0.0f);
+            const FVector O01 = OnWall(Wall, Hole.U0, Hole.V1, 0.0f);
+            const FVector I00 = OnWall(Wall, Hole.U0, Hole.V0, Inset);
+            const FVector I10 = OnWall(Wall, Hole.U1, Hole.V0, Inset);
+            const FVector I11 = OnWall(Wall, Hole.U1, Hole.V1, Inset);
+            const FVector I01 = OnWall(Wall, Hole.U0, Hole.V1, Inset);
+            Mesh.Quad(O00, O10, I10, I00, Mesh.Frame, (O10 - O00).GetSafeNormal().Cross((I00 - O00).GetSafeNormal()));
+            Mesh.Quad(O10, O11, I11, I10, Mesh.Frame, (O11 - O10).GetSafeNormal().Cross((I10 - O10).GetSafeNormal()));
+            Mesh.Quad(O11, O01, I01, I11, Mesh.Frame, (O01 - O11).GetSafeNormal().Cross((I11 - O11).GetSafeNormal()));
+            Mesh.Quad(O01, O00, I00, I01, Mesh.Frame, (O00 - O01).GetSafeNormal().Cross((I01 - O01).GetSafeNormal()));
+            Mesh.Quad(I00, I10, I11, I01, Back, -Wall.Normal);
         }
     }
 
@@ -358,16 +377,11 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
 {
     (void)Params;
     UMaterialInterface* Parent = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Marburgum/Materials/Masters/M_Building.M_Building"));
-    if (!Parent)
-    {
-        UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE missing M_Building"));
-        return 1;
-    }
-    UMaterialInstanceConstant* Frame = EnsureMaterial(TEXT("MI_facade_frame"), Parent, FLinearColor(0.22f, 0.14f, 0.09f), 0.58f);
-    UMaterialInstanceConstant* Glass = EnsureMaterial(TEXT("MI_facade_glass"), Parent, FLinearColor(0.16f, 0.20f, 0.22f), 0.06f);
+    UMaterialInstanceConstant* Frame = Parent ? EnsureMaterial(TEXT("MI_facade_frame"), Parent, FLinearColor(0.22f, 0.14f, 0.09f), 0.58f) : nullptr;
+    UMaterialInstanceConstant* Glass = Parent ? EnsureMaterial(TEXT("MI_facade_glass"), Parent, FLinearColor(0.16f, 0.20f, 0.22f), 0.06f) : nullptr;
     if (!Frame || !Glass)
     {
-        UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not create façade materials"));
+        UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE missing façade materials"));
         return 1;
     }
     UEditorLoadingAndSavingUtils::SavePackages({ Frame->GetOutermost(), Glass->GetOutermost() }, false);
@@ -382,224 +396,136 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
             Landscape = *It;
         }
     }
-    UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE landscape=%s"), Landscape ? *Landscape->GetActorLabel() : TEXT("none"));
 
     FAssetRegistryModule& Registry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
     TArray<FAssetData> Assets;
     Registry.Get().GetAssetsByPath(TEXT("/Game/World/Buildings/lent"), Assets, false);
     int32 Rebuilt = 0;
-    int32 Skipped = 0;
     int32 Failed = 0;
     for (const FAssetData& Asset : Assets)
     {
         UStaticMesh* Mesh = Cast<UStaticMesh>(Asset.GetAsset());
-        if (!Mesh)
+        if (!Mesh || !Mesh->GetMeshDescription(0))
         {
-            continue;
-        }
-        FMeshDescription* Source = Mesh->GetMeshDescription(0);
-        if (!Source)
-        {
-            UE_LOG(LogMarburgumFacades, Warning, TEXT("MB2FACADE %s has no mesh description"), *Mesh->GetName());
             ++Failed;
             continue;
         }
-        bool bAlready = false;
+        bool bDone = false;
         for (const FStaticMaterial& Slot : Mesh->GetStaticMaterials())
         {
             if (Slot.MaterialInterface && Slot.MaterialInterface->GetName().Contains(TEXT("facade_glass")))
             {
-                bAlready = true;
-                break;
+                bDone = true;
             }
         }
-        if (bAlready)
+        if (bDone)
         {
-            ++Skipped;
             continue;
         }
+        FMeshDescription* Source = Mesh->GetMeshDescription(0);
         FStaticMeshAttributes Attributes(*Source);
         const TVertexAttributesConstRef<FVector3f> Positions = Attributes.GetVertexPositions();
-        struct FSourceTri
-        {
-            FVector A;
-            FVector B;
-            FVector C;
-            FVector Normal;
-            int32 Key = 0;
-        };
-        TArray<FSourceTri> Triangles;
+        TArray<FTri> Tris;
         for (const FTriangleID TriangleId : Source->Triangles().GetElementIDs())
         {
             const TArrayView<const FVertexID> Ids = Source->GetTriangleVertices(TriangleId);
-            FSourceTri Triangle;
-            Triangle.A = FVector(Positions[Ids[0]]);
-            Triangle.B = FVector(Positions[Ids[1]]);
-            Triangle.C = FVector(Positions[Ids[2]]);
-            Triangle.Normal = FVector::CrossProduct(Triangle.B - Triangle.A, Triangle.C - Triangle.A).GetSafeNormal();
-            Triangles.Add(Triangle);
+            FTri Triangle;
+            Triangle.V[0] = FVector(Positions[Ids[0]]);
+            Triangle.V[1] = FVector(Positions[Ids[1]]);
+            Triangle.V[2] = FVector(Positions[Ids[2]]);
+            Triangle.Normal = FVector::CrossProduct(Triangle.V[1] - Triangle.V[0], Triangle.V[2] - Triangle.V[0]).GetSafeNormal();
+            Tris.Add(Triangle);
         }
+
         TArray<FWall> Walls;
-        TArray<FSourceTri> Kept;
-        TArray<int32> GroupOf;
-        GroupOf.Init(INDEX_NONE, Triangles.Num());
-        for (int32 Index = 0; Index < Triangles.Num(); ++Index)
+        TArray<FTri> Kept;
+        for (int32 Index = 0; Index < Tris.Num(); ++Index)
         {
-            if (!NearlyVertical(Triangles[Index].Normal) || Triangles[Index].Normal.IsNearlyZero())
+            if (Tris[Index].bUsed || FMath::Abs(Tris[Index].Normal.Z) >= 0.35f)
             {
-                Kept.Add(Triangles[Index]);
                 continue;
             }
-            int32 Group = INDEX_NONE;
-            for (int32 WallIndex = 0; WallIndex < Walls.Num(); ++WallIndex)
+            int32 Partner = INDEX_NONE;
+            FWall Wall;
+            for (int32 Other = Index + 1; Other < Tris.Num(); ++Other)
             {
-                const double Plane = FVector::DotProduct(Walls[WallIndex].Origin, Walls[WallIndex].Normal);
-                const double Point = FVector::DotProduct(Triangles[Index].A, Walls[WallIndex].Normal);
-                if (FVector::DotProduct(Triangles[Index].Normal, Walls[WallIndex].Normal) > 0.985
-                    && FMath::Abs(Point - Plane) < 25.0)
+                if (Tris[Other].bUsed || FMath::Abs(Tris[Other].Normal.Z) >= 0.35f)
                 {
-                    Group = WallIndex;
+                    continue;
+                }
+                if (MakeWall(Tris[Index], Tris[Other], Wall))
+                {
+                    Partner = Other;
                     break;
                 }
             }
-            if (Group == INDEX_NONE)
+            if (Partner == INDEX_NONE)
             {
-                FWall Wall;
-                Wall.Normal = Triangles[Index].Normal;
-                Wall.Origin = Triangles[Index].A;
-                FVector Axis = FVector::CrossProduct(FVector::UpVector, Wall.Normal).GetSafeNormal();
-                if (Axis.IsNearlyZero())
-                {
-                    Kept.Add(Triangles[Index]);
-                    continue;
-                }
-                Wall.AxisU = Axis;
-                Group = Walls.Add(Wall);
-            }
-            GroupOf[Index] = Group;
-            auto Cover = [&](const FVector& Position)
-            {
-                Walls[Group].Coverage.Add(FVector2D(
-                    FVector::DotProduct(Position - Walls[Group].Origin, Walls[Group].AxisU), Position.Z));
-            };
-            Cover(Triangles[Index].A);
-            Cover(Triangles[Index].B);
-            Cover(Triangles[Index].C);
-        }
-        for (int32 Index = Walls.Num() - 1; Index >= 0; --Index)
-        {
-            float MinU = TNumericLimits<float>::Max();
-            float MaxU = TNumericLimits<float>::Lowest();
-            float MinZ = TNumericLimits<float>::Max();
-            float MaxZ = TNumericLimits<float>::Lowest();
-            for (const FVector2D& Point : Walls[Index].Coverage)
-            {
-                MinU = FMath::Min(MinU, static_cast<float>(Point.X));
-                MaxU = FMath::Max(MaxU, static_cast<float>(Point.X));
-                MinZ = FMath::Min(MinZ, static_cast<float>(Point.Y));
-                MaxZ = FMath::Max(MaxZ, static_cast<float>(Point.Y));
-            }
-            Walls[Index].Origin = Walls[Index].Origin + Walls[Index].AxisU * MinU + FVector(0.0, 0.0, MinZ - Walls[Index].Origin.Z);
-            Walls[Index].Width = MaxU - MinU;
-            Walls[Index].Height = MaxZ - MinZ;
-            for (FVector2D& Point : Walls[Index].Coverage)
-            {
-                Point.X -= MinU;
-                Point.Y -= MinZ;
-            }
-            if (Walls[Index].Width < 120.0 || Walls[Index].Height < 200.0 || Walls[Index].Coverage.Num() < 3)
-            {
-                for (int32 TriangleIndex = 0; TriangleIndex < Triangles.Num(); ++TriangleIndex)
-                {
-                    if (GroupOf[TriangleIndex] == Index)
-                    {
-                        Kept.Add(Triangles[TriangleIndex]);
-                    }
-                }
-                Walls.RemoveAt(Index);
                 continue;
             }
-            float BestSpan = 0.0f;
-            float Eave = static_cast<float>(Walls[Index].Height);
-            for (float Height = 180.0f; Height <= Walls[Index].Height; Height += 15.0f)
+            Tris[Index].bUsed = true;
+            Tris[Partner].bUsed = true;
+            Walls.Add(Wall);
+        }
+        for (const FTri& Triangle : Tris)
+        {
+            if (!Triangle.bUsed)
             {
-                float SpanMin = TNumericLimits<float>::Max();
-                float SpanMax = TNumericLimits<float>::Lowest();
-                for (const FVector2D& Point : Walls[Index].Coverage)
-                {
-                    if (FMath::Abs(Point.Y - Height) <= 20.0f)
-                    {
-                        SpanMin = FMath::Min(SpanMin, static_cast<float>(Point.X));
-                        SpanMax = FMath::Max(SpanMax, static_cast<float>(Point.X));
-                    }
-                }
-                const float Span = SpanMax > SpanMin ? SpanMax - SpanMin : 0.0f;
-                if (Span >= BestSpan - 15.0f)
-                {
-                    BestSpan = FMath::Max(BestSpan, Span);
-                    Eave = Height;
-                }
-            }
-            Walls[Index].Eave = Eave;
-            Walls[Index].Floor = 0.0;
-            float Ground = static_cast<float>(Walls[Index].Origin.Z);
-            if (Landscape)
-            {
-                for (float U : { 0.0f, static_cast<float>(Walls[Index].Width * 0.5), static_cast<float>(Walls[Index].Width) })
-                {
-                    const FVector At = Walls[Index].Origin + Walls[Index].AxisU * U;
-                    if (const TOptional<float> Height = Landscape->GetHeightAtLocation(At))
-                    {
-                        Ground = FMath::Min(Ground, *Height - 15.0f);
-                    }
-                }
-            }
-            const float Drop = FMath::Clamp(static_cast<float>(Walls[Index].Origin.Z) - Ground, 0.0f, 800.0f);
-            if (Drop > 8.0f)
-            {
-                for (FVector2D& Point : Walls[Index].Coverage)
-                {
-                    Point.Y += Drop;
-                }
-                const float Width = static_cast<float>(Walls[Index].Width);
-                Walls[Index].Coverage.Append({ FVector2D(0.0, 0.0), FVector2D(Width, 0.0), FVector2D(Width, Drop), FVector2D(0.0, 0.0), FVector2D(Width, Drop), FVector2D(0.0, Drop) });
-                Walls[Index].Origin.Z -= Drop;
-                Walls[Index].Height += Drop;
-                Walls[Index].Eave += Drop;
-                Walls[Index].Floor = Drop;
+                Kept.Add(Triangle);
             }
         }
         if (Walls.Num() == 0)
         {
-            UE_LOG(LogMarburgumFacades, Warning, TEXT("MB2FACADE %s has no wall quads"), *Mesh->GetName());
+            UE_LOG(LogMarburgumFacades, Warning, TEXT("MB2FACADE %s has no wall pair"), *Mesh->GetName());
             ++Failed;
             continue;
         }
-        int32 DoorWall = 0;
+        int32 Door = 0;
         for (int32 Index = 1; Index < Walls.Num(); ++Index)
         {
-            if (Walls[Index].Width > Walls[DoorWall].Width)
+            if (Walls[Index].Width > Walls[Door].Width)
             {
-                DoorWall = Index;
+                Door = Index;
             }
         }
 
         FMeshDescription Description;
         FStaticMeshAttributes(Description).Register();
-        FFacadeMesh Facade(Description);
-        for (const FSourceTri& Triangle : Kept)
+        FMesh Built(Description);
+        for (const FTri& Triangle : Kept)
         {
-            const bool bRoof = !NearlyVertical(Triangle.Normal);
-            Facade.Triangle(Triangle.A, Triangle.B, Triangle.C, bRoof ? Facade.Roof : Facade.Plaster, Triangle.Normal);
+            const bool bRoof = FMath::Abs(Triangle.Normal.Z) >= 0.35f;
+            Built.Triangle(Triangle.V[0], Triangle.V[1], Triangle.V[2], bRoof ? Built.Roof : Built.Plaster, Triangle.Normal);
         }
         int32 OpeningCount = 0;
+        int32 Foundations = 0;
         for (int32 Index = 0; Index < Walls.Num(); ++Index)
         {
-            TArray<FOpening> Openings;
-            OpeningsFor(Walls[Index], Index == DoorWall, Openings);
-            OpeningCount += Openings.Num();
-            EmitWall(Facade, Walls[Index], Openings);
+            TArray<FOpening> Holes;
+            Openings(Walls[Index], Index == Door, Holes);
+            OpeningCount += Holes.Num();
+            EmitSealed(Built, Walls[Index], Holes);
+            float Ground = static_cast<float>(FMath::Min(Walls[Index].Bottom0.Z, Walls[Index].Bottom1.Z));
+            if (Landscape)
+            {
+                for (const FVector& End : { Walls[Index].Bottom0, Walls[Index].Bottom1 })
+                {
+                    if (const TOptional<float> Height = Landscape->GetHeightAtLocation(End))
+                    {
+                        Ground = FMath::Min(Ground, *Height - 15.0f);
+                    }
+                }
+            }
+            const float Drop = FMath::Clamp(static_cast<float>(FMath::Min(Walls[Index].Bottom0.Z, Walls[Index].Bottom1.Z)) - Ground, 0.0f, 800.0f);
+            if (Drop > 12.0f)
+            {
+                const FVector Down0(Walls[Index].Bottom0.X, Walls[Index].Bottom0.Y, Walls[Index].Bottom0.Z - Drop);
+                const FVector Down1(Walls[Index].Bottom1.X, Walls[Index].Bottom1.Y, Walls[Index].Bottom1.Z - Drop);
+                Built.Quad(Down0, Down1, Walls[Index].Bottom1, Walls[Index].Bottom0, Built.Plaster, Walls[Index].Normal);
+                ++Foundations;
+            }
         }
+
         UMaterialInterface* Plaster = Mesh->GetStaticMaterials().IsValidIndex(0) ? Mesh->GetStaticMaterials()[0].MaterialInterface.Get() : nullptr;
         UMaterialInterface* RoofMaterial = Mesh->GetStaticMaterials().IsValidIndex(1) ? Mesh->GetStaticMaterials()[1].MaterialInterface.Get() : Plaster;
         Mesh->SetNumSourceModels(1);
@@ -611,29 +537,22 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
         const TArray<const FMeshDescription*> Descriptions = { &Description };
         if (!Mesh->BuildFromMeshDescriptions(Descriptions, BuildParams))
         {
-            UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE %s failed to build"), *Mesh->GetName());
             ++Failed;
             continue;
         }
-        TArray<FStaticMaterial> Materials;
-        Materials.Add(FStaticMaterial(Plaster));
-        Materials.Add(FStaticMaterial(RoofMaterial));
-        Materials.Add(FStaticMaterial(Frame));
-        Materials.Add(FStaticMaterial(Glass));
-        Mesh->SetStaticMaterials(Materials);
+        Mesh->SetStaticMaterials({ FStaticMaterial(Plaster), FStaticMaterial(RoofMaterial), FStaticMaterial(Frame), FStaticMaterial(Glass) });
         Mesh->CreateBodySetup();
         Mesh->GetBodySetup()->CollisionTraceFlag = CTF_UseComplexAsSimple;
         Mesh->GetBodySetup()->bDoubleSidedGeometry = true;
         Mesh->GetOutermost()->MarkPackageDirty();
         if (!UEditorLoadingAndSavingUtils::SavePackages({ Mesh->GetOutermost() }, false))
         {
-            UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE %s failed to save"), *Mesh->GetName());
             ++Failed;
             continue;
         }
-        UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE rebuilt %s walls=%d openings=%d"), *Mesh->GetName(), Walls.Num(), OpeningCount);
+        UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE sealed %s walls=%d openings=%d foundations=%d"), *Mesh->GetName(), Walls.Num(), OpeningCount, Foundations);
         ++Rebuilt;
     }
-    UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE done rebuilt=%d skipped=%d failed=%d"), Rebuilt, Skipped, Failed);
+    UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE done rebuilt=%d failed=%d"), Rebuilt, Failed);
     return Failed > 0 && Rebuilt == 0 ? 1 : 0;
 }
