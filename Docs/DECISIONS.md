@@ -181,6 +181,14 @@ The owner asked that the authored Lent streetscape replace the previous launch m
 
 **Temporary.** A client started with no server address now loads Lent under the local game mode, which is the offline-authority case ADR-013 avoided. The front-end returns as the client default when login is the way into the world. This does not recook the build that is already running.
 
+## ADR-026 — Lent buildings are the original LiDAR mesh, seated on the promenade (accepted 2026-11-10)
+
+The owner asked for a TRELLIS city mesh of the original Lent, derived from LiDAR. TRELLIS is image-to-3D. It does not read a survey, and the TRELLIS map roadmap forbids it as the generator of footprints, party walls, eaves or ridges. The mesh that is actually the original Lent is the one the first game builds from `lent_buildings.json`: OpenStreetMap footprints (ODbL, © OpenStreetMap contributors) and ARSO 2014 LiDAR eaves and ridge heights.
+
+That description is now `Data/World/lent_buildings.json`. The map commandlet turns it into `/Game/Blockout/LentLidar/SM_LentLidar`: one wall per footprint edge and the original gable, hip or flat roof. Each floor is seated at the promenade, because this map still has no DEM; the LiDAR still decides the storey height and the roof rise. Buildings whose centre falls in the Drava are left out so the bridge deck stays clear. The angler, the area box and the player starts are unchanged.
+
+This is not a TRELLIS mesh, not a textured facade, and not the licensed Maribor model. A later pass can hang TRELLIS props and detail on these shells once a rights-cleared image exists for that one object.
+
 ## Open decisions
 
 - Clear the TRELLIS texture-bake rasterizer licences (nvdiffrast, Inria) for shipped textures, or rebake characters with vertex colours (ADR-021).
