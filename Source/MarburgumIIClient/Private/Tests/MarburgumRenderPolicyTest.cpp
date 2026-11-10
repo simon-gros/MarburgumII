@@ -19,6 +19,7 @@ namespace
         Caps.DlssUnavailable = TEXT("plugin_not_installed:DLSS");
         Caps.FrameGenerationUnavailable = TEXT("plugin_not_installed:StreamlineDLSSG");
         Caps.ReflexUnavailable = TEXT("plugin_not_installed:StreamlineReflex");
+        Caps.NeuralRenderingUnavailable = TEXT("plugin_disabled:DLSS5ForUE5");
         return Caps;
     }
 }
@@ -85,6 +86,28 @@ bool FMarburgumRenderPolicyTest::RunTest(const FString& Parameters)
     Out = Resolve(Generated, NoReflex);
     TestTrue(TEXT("Frame generation needs Reflex"), Out.FrameGeneration == EFrameGeneration::Off);
     TestTrue(TEXT("Missing Reflex recorded"), Out.Notes.Contains(TEXT("frame_generation:reflex_unsupported")));
+
+    FRenderRequest Neural;
+    Neural.NeuralRendering = ENeuralRendering::Guided;
+    Out = Resolve(Neural, Everything());
+    TestTrue(TEXT("Neural rendering runs on top of DLSS"), Out.NeuralRendering == ENeuralRendering::Guided);
+    TestTrue(TEXT("Neural rendering never starts by default"), Resolve(Defaults, Everything()).NeuralRendering == ENeuralRendering::Off);
+
+    Neural.Upscaler = EUpscaler::Tsr;
+    Out = Resolve(Neural, Everything());
+    TestTrue(TEXT("Neural rendering needs DLSS"), Out.NeuralRendering == ENeuralRendering::Off);
+    TestTrue(TEXT("Missing DLSS recorded"), Out.Notes.Contains(TEXT("neural_rendering:requires_dlss")));
+
+    FRenderCapabilities NoRuntime = Everything();
+    NoRuntime.NeuralRenderingUnavailable = TEXT("runtime_missing:nvngx_dlssnr.dll");
+    Neural.Upscaler = EUpscaler::Auto;
+    Out = Resolve(Neural, NoRuntime);
+    TestTrue(TEXT("No runtime, no neural rendering"), Out.NeuralRendering == ENeuralRendering::Off);
+    TestTrue(TEXT("DLSS still runs without the neural runtime"), Out.Upscaler == EUpscaler::Dlss);
+    TestTrue(TEXT("Missing runtime recorded"), Out.Notes.Contains(TEXT("neural_rendering:runtime_missing:nvngx_dlssnr.dll")));
+
+    Neural.bSafeMode = true;
+    TestTrue(TEXT("Safe mode turns neural rendering off"), Resolve(Neural, Everything()).NeuralRendering == ENeuralRendering::Off);
 
     EDlssMode Mode = EDlssMode::Quality;
     TestTrue(TEXT("Tokens parse case-insensitively"), FromToken(TEXT(" Ultra_Performance "), Mode));

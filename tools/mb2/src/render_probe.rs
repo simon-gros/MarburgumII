@@ -37,7 +37,7 @@ pub fn run(engine_root: Option<&Path>) -> u8 {
     if dlss_plugin.is_null() {
         findings.push("DLSS plugin not installed: the game runs TSR (download NVIDIA's UE 5.8 DLSS package)".to_string());
     } else if cfg!(target_os = "linux") && !supports_linux(dlss_plugin) {
-        findings.push("installed DLSS plugin declares no Linux module: DLSS stays unavailable on this host".to_string());
+        findings.push("installed DLSS plugin's DLSS module is not built for Linux: the game reports dlss:unsupported here".to_string());
     }
     if cfg!(target_os = "linux") && !layers.is_empty() {
         findings.push("NVIDIA Smooth Motion layer present: scripts/smooth-motion-linux.sh can request it".to_string());
@@ -96,6 +96,7 @@ fn plugin_record(path: &Path) -> Value {
         "version_name": descriptor["VersionName"],
         "engine_version": descriptor["EngineVersion"],
         "module_platforms": module_platforms(&descriptor),
+        "main_module_platforms": main_module_platforms(&descriptor, &path.file_stem().unwrap_or_default().to_string_lossy()),
     })
 }
 
@@ -113,8 +114,19 @@ pub fn module_platforms(descriptor: &Value) -> Vec<String> {
     platforms
 }
 
+/// PlatformAllowList of the module named after the plugin (the one that does the work, not its
+/// cross-platform blueprint stubs); "any" when it has none, empty when there is no such module.
+pub fn main_module_platforms(descriptor: &Value, plugin: &str) -> Vec<String> {
+    let module = descriptor["Modules"].as_array().into_iter().flatten().find(|module| module["Name"] == plugin);
+    match module.map(|module| module["PlatformAllowList"].as_array()) {
+        None => Vec::new(),
+        Some(None) => vec!["any".to_string()],
+        Some(Some(list)) => list.iter().filter_map(Value::as_str).map(str::to_string).collect(),
+    }
+}
+
 fn supports_linux(record: &Value) -> bool {
-    record["module_platforms"]
+    record["main_module_platforms"]
         .as_array()
         .into_iter()
         .flatten()
@@ -191,7 +203,9 @@ mod tests {
         ]});
         assert_eq!(module_platforms(&descriptor), vec!["Linux", "Win64"]);
         assert_eq!(module_platforms(&json!({ "Modules": [{ "Name": "Any" }] })), vec!["any"]);
-        assert!(!supports_linux(&json!({ "module_platforms": ["Win64"] })));
+        assert_eq!(main_module_platforms(&descriptor, "DLSS"), vec!["Win64"]);
+        assert!(main_module_platforms(&descriptor, "Other").is_empty());
+        assert!(!supports_linux(&json!({ "main_module_platforms": ["Win64"] })));
     }
 
     #[test]

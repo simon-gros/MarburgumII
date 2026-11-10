@@ -8,8 +8,9 @@
  * subsystem probes capabilities and applies the result; nothing here touches the engine.
  *
  * Each lane is its own setting, never one "DLSS" master toggle: upscaler (TSR or DLSS Super
- * Resolution, whose modes include DLAA), native frame generation (DLSS FG), and Reflex. DLSS 5
- * Neural Rendering has no lane: there is no supported UE 5.8 package for it.
+ * Resolution, whose modes include DLAA), native frame generation (DLSS FG), Reflex, and DLSS 5
+ * Neural Rendering through the unofficial DLSS5ForUE5 plugin (ADR-030), which runs only on top of
+ * active DLSS and only where its runtime has been supplied.
  */
 namespace MarburgumII::Render
 {
@@ -43,12 +44,21 @@ namespace MarburgumII::Render
         Boost,
     };
 
+    /** The original project's two DLSS5ForUE5 profiles, always one pass. */
+    enum class ENeuralRendering : uint8
+    {
+        Off,
+        Safe, // scene guides generated but not fed: colour-only neural rendering
+        Guided, // depth and motion guides fed
+    };
+
     struct FRenderRequest
     {
         EUpscaler Upscaler = EUpscaler::Auto;
         EDlssMode DlssMode = EDlssMode::Quality;
         EFrameGeneration FrameGeneration = EFrameGeneration::Off;
         EReflex Reflex = EReflex::Auto;
+        ENeuralRendering NeuralRendering = ENeuralRendering::Off;
         /** -MB2SafeRender: every vendor feature off, whatever is saved. */
         bool bSafeMode = false;
     };
@@ -59,12 +69,14 @@ namespace MarburgumII::Render
         FString DlssUnavailable;
         FString FrameGenerationUnavailable;
         FString ReflexUnavailable;
+        FString NeuralRenderingUnavailable;
         /** NVIDIA Smooth Motion was requested for this process (NVPRESENT_ENABLE_SMOOTH_MOTION=1). */
         bool bExternalFrameGeneration = false;
 
         bool HasDlss() const { return DlssUnavailable.IsEmpty(); }
         bool HasFrameGeneration() const { return FrameGenerationUnavailable.IsEmpty(); }
         bool HasReflex() const { return ReflexUnavailable.IsEmpty(); }
+        bool HasNeuralRendering() const { return NeuralRenderingUnavailable.IsEmpty(); }
     };
 
     struct FRenderResolution
@@ -73,13 +85,14 @@ namespace MarburgumII::Render
         EDlssMode DlssMode = EDlssMode::Quality; // meaningful only when Upscaler is Dlss
         EFrameGeneration FrameGeneration = EFrameGeneration::Off;
         EReflex Reflex = EReflex::Off; // never Auto
+        ENeuralRendering NeuralRendering = ENeuralRendering::Off;
         /** Why a requested feature does not run, e.g. "dlss:plugin_not_installed". */
         TArray<FString> Notes;
 
         bool operator==(const FRenderResolution& Other) const
         {
             return Upscaler == Other.Upscaler && DlssMode == Other.DlssMode &&
-                FrameGeneration == Other.FrameGeneration && Reflex == Other.Reflex;
+                FrameGeneration == Other.FrameGeneration && Reflex == Other.Reflex && NeuralRendering == Other.NeuralRendering;
         }
     };
 
@@ -93,8 +106,10 @@ namespace MarburgumII::Render
     MARBURGUMIICLIENT_API const TCHAR* ToToken(EDlssMode Value);
     MARBURGUMIICLIENT_API const TCHAR* ToToken(EFrameGeneration Value);
     MARBURGUMIICLIENT_API const TCHAR* ToToken(EReflex Value);
+    MARBURGUMIICLIENT_API const TCHAR* ToToken(ENeuralRendering Value);
     MARBURGUMIICLIENT_API bool FromToken(const FString& Token, EUpscaler& Out);
     MARBURGUMIICLIENT_API bool FromToken(const FString& Token, EDlssMode& Out);
     MARBURGUMIICLIENT_API bool FromToken(const FString& Token, EFrameGeneration& Out);
     MARBURGUMIICLIENT_API bool FromToken(const FString& Token, EReflex& Out);
+    MARBURGUMIICLIENT_API bool FromToken(const FString& Token, ENeuralRendering& Out);
 }

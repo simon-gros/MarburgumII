@@ -1,0 +1,53 @@
+#include "/Engine/Public/Platform.ush"
+#include "/Engine/Private/Common.ush"
+#include "/DLSS5NR/Private/DLSS5NRMotionCommon.ush"
+
+// Dense UE motion-vector guide resolve for NVIDIA DLSS-NR.
+// Display-pixel displacement, previous minus current; NGX scale is unity.
+
+Texture2D<float> DepthTexture;
+Texture2D<float4> VelocityTexture;
+int2 SourceRectMin;
+int2 SourceRectSize;
+int2 OutputSize;
+uint HasObjectVelocity;
+RWTexture2D<float2> OutputMotionVectors;
+
+
+[numthreads(8, 8, 1)]
+void MotionMainCS(uint3 DispatchThreadId : SV_DispatchThreadID)
+{
+    const uint2 LocalPixel = DispatchThreadId.xy;
+    if (LocalPixel.x >= (uint)OutputSize.x || LocalPixel.y >= (uint)OutputSize.y)
+    {
+        return;
+    }
+
+    const float2 ViewportUV = (float2(LocalPixel) + 0.5f) / float2(OutputSize);
+    const int2 SourcePixel = DLSS5NRMapGuide(LocalPixel,OutputSize,SourceRectMin,SourceRectSize);
+    const float DeviceDepth = DepthTexture.Load(int3(SourcePixel, 0)).r;
+
+    const float2 CurrentClipXY = float2(ViewportUV.x * 2.0f - 1.0f,
+                                       1.0f - ViewportUV.y * 2.0f);
+
+    float2 VelocityClip = 0.0f;
+    bool bUseObjectVelocity = false;
+    float4 EncodedVelocity = 0.0f;
+
+    if (HasObjectVelocity != 0u)
+    {
+        EncodedVelocity = VelocityTexture.Load(int3(SourcePixel, 0));
+        bUseObjectVelocity = EncodedVelocity.x > 0.0f;
+    }
+
+    if (bUseObjectVelocity)
+    {
+        VelocityClip = DecodeVelocityFromTexture(EncodedVelocity).xy;
+    }
+    else
+    {
+        VelocityClip = DLSS5NRCameraVelocity(CurrentClipXY,DeviceDepth,View.ClipToPrevClip);
+    }
+
+    OutputMotionVectors[LocalPixel] = DLSS5NRToPixelMotion(VelocityClip,float2(OutputSize));
+}

@@ -8,8 +8,8 @@
 class IConsoleObject;
 
 /**
- * Client-local NVIDIA render features (ADR-029): DLSS Super Resolution / DLAA, DLSS Frame Generation
- * and Reflex, each its own setting, with TSR and no frame generation as the always-available
+ * Client-local NVIDIA render features (ADR-029): DLSS Super Resolution / DLAA, DLSS Frame Generation,
+ * Reflex and DLSS 5 Neural Rendering through DLSS5ForUE5 (ADR-030), each its own setting, with TSR and no frame generation as the always-available
  * fallback. Not created for dedicated servers or -nullrhi processes; nothing here reaches gameplay,
  * the server or the protocol, so two clients may run different features in the same world.
  *
@@ -26,8 +26,9 @@ class IConsoleObject;
  *
  * Options (this launch only, not saved): -MB2SafeRender forces every vendor feature off;
  * -MB2Upscaler=auto|tsr|dlss -MB2DlssMode=dlaa|quality|balanced|performance|ultra_performance
- * -MB2FrameGeneration=off|dlss -MB2Reflex=auto|off|on|boost.
- * Console: mb2.Render.Status, and mb2.Render.Upscaler/DlssMode/FrameGeneration/Reflex <token>, which save.
+ * -MB2FrameGeneration=off|dlss -MB2Reflex=auto|off|on|boost -MB2NeuralRendering=off|safe|guided.
+ * Console: mb2.Render.Status, and mb2.Render.Upscaler/DlssMode/FrameGeneration/Reflex/NeuralRendering
+ * <token>, which save.
  */
 UCLASS(config = Engine)
 class MARBURGUMIICLIENT_API UMarburgumRenderFeatureSubsystem : public UGameInstanceSubsystem
@@ -76,8 +77,21 @@ private:
     UPROPERTY(config)
     FString ReflexSupportQuery;
 
+    /** DLSS5ForUE5 (vendored source) and the runtime it loads, relative to the plugin directory. */
+    UPROPERTY(config)
+    FString NeuralRenderingPlugin;
+    UPROPERTY(config)
+    FString NeuralRenderingEnableCVar;
+    UPROPERTY(config)
+    FString NeuralRenderingRuntimeFile;
+
+    /** Probe, resolve, apply and register commands once every plugin module has loaded. */
+    void Start();
     void ProbeCapabilities();
-    FString ProbeFeature(const FString& Plugin, const TArray<FString>& CVars, const FString& SupportQuery) const;
+    FString ProbeFeature(const FString& Plugin, const TArray<FString>& CVars, const FString& SupportQuery,
+        const FString& RequiredFile = FString()) const;
+    /** Calls "/Script/Module.Class:Function"; empty if it returned true, otherwise the reason. */
+    static FString QuerySupport(const FString& SupportQuery);
     void LoadRequest();
     void SaveRequest() const;
     void Apply(bool bCutHistory);
@@ -92,4 +106,5 @@ private:
     /** r.ScreenPercentage before DLSS changed it, restored for TSR. */
     FString BaselineScreenPercentage;
     TArray<IConsoleObject*> ConsoleObjects;
+    FDelegateHandle InitCompleteHandle;
 };

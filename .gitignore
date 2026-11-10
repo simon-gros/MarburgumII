@@ -43,6 +43,11 @@ Thumbs.db
 __pycache__/
 
 # NVIDIA's DLSS/Streamline Unreal plugins are installed locally under NVIDIA's licence (ADR-029); never commit them.
-/Plugins/DLSS*/
+/Plugins/DLSS/
+/Plugins/DLSSMoviePipelineSupport/
 /Plugins/NIS/
 /Plugins/Streamline*/
+# DLSS5ForUE5 is committed as source only (ADR-030); its build output and the NVIDIA Neural Rendering runtime never are.
+/Plugins/*/Binaries/
+/Plugins/*/Intermediate/
+nvngx_dlssnr.dll

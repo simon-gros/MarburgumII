@@ -95,13 +95,13 @@ Client UI options for manual runs: `-MB2Server=host:port` (front-end default add
 
 ## NVIDIA render features (ADR-029)
 
-DLSS Super Resolution/DLAA, DLSS Frame Generation and Reflex are optional, client-local settings. TSR with no generated frames is what runs whenever one is unavailable, which on Linux is always: NVIDIA's UE plugin has no Linux support. Every client logs one `MB2RENDER` line naming the RHI, GPU, the request, the active features and the reason for each fallback.
+DLSS Super Resolution/DLAA, DLSS Frame Generation, Reflex and DLSS 5 Neural Rendering (unofficial DLSS5ForUE5, ADR-030) are optional, client-local settings. NVIDIA's DLSS package is installed locally in `Plugins/` and never committed. TSR with no generated frames is what runs whenever one is unavailable, which on Linux is always: NVIDIA's UE plugin has no Linux support. Every client logs one `MB2RENDER` line naming the RHI, GPU, the request, the active features and the reason for each fallback.
 
 ```bash
 scripts/mb2.sh render-probe "$UE_ROOT"           # JSON: NVIDIA plugins, GPU/driver, NGX runtime, Smooth Motion layer
 scripts/smooth-motion-linux.sh -- -MB2Start=arrival   # staged client under NVIDIA Smooth Motion (driver frame generation)
 # client: -MB2SafeRender | -MB2Upscaler=auto|tsr|dlss -MB2DlssMode=dlaa|quality|balanced|performance|ultra_performance
-#         -MB2FrameGeneration=off|dlss -MB2Reflex=auto|off|on|boost; console mb2.Render.Status and mb2.Render.<setting> <value>
+#         -MB2FrameGeneration=off|dlss -MB2Reflex=auto|off|on|boost -MB2NeuralRendering=off|safe|guided; console mb2.Render.Status and mb2.Render.<setting> <value>
 ```
 
 See [RENDERING_NVIDIA.md](RENDERING_NVIDIA.md) for the rules, the platform table and how to install and verify NVIDIA's package on Windows.

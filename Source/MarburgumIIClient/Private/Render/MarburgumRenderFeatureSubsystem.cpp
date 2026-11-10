@@ -8,9 +8,11 @@
 #include "HAL/PlatformMisc.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/App.h"
+#include "Misc/CoreDelegates.h"
 #include "Misc/CommandLine.h"
 #include "Misc/ConfigCacheIni.h"
 #include "Misc/Parse.h"
+#include "Misc/Paths.h"
 #include "RHI.h"
 #include "RHIGlobals.h"
 #include "UObject/SoftObjectPath.h"
@@ -52,6 +54,7 @@ namespace
         ReadSaved(TEXT("DlssMode"), Saved.DlssMode);
         ReadSaved(TEXT("FrameGeneration"), Saved.FrameGeneration);
         ReadSaved(TEXT("Reflex"), Saved.Reflex);
+        ReadSaved(TEXT("NeuralRendering"), Saved.NeuralRendering);
         return Saved;
     }
 
@@ -71,6 +74,21 @@ bool UMarburgumRenderFeatureSubsystem::ShouldCreateSubsystem(UObject* Outer) con
 void UMarburgumRenderFeatureSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
+    // A launching game creates its game instance before PostEngineInit, when the NVIDIA blueprint
+    // modules load and their support queries become valid. PIE instances start after that.
+    if (GIsRunning)
+    {
+        Start();
+    }
+    else
+    {
+        InitCompleteHandle = FCoreDelegates::OnFEngineLoopInitComplete.AddUObject(this, &UMarburgumRenderFeatureSubsystem::Start);
+    }
+}
+
+void UMarburgumRenderFeatureSubsystem::Start()
+{
+    FCoreDelegates::OnFEngineLoopInitComplete.Remove(InitCompleteHandle);
     if (const IConsoleVariable* Var = IConsoleManager::Get().FindConsoleVariable(ScreenPercentageCVar))
     {
         BaselineScreenPercentage = Var->GetString();
@@ -84,6 +102,7 @@ void UMarburgumRenderFeatureSubsystem::Initialize(FSubsystemCollectionBase& Coll
 
 void UMarburgumRenderFeatureSubsystem::Deinitialize()
 {
+    FCoreDelegates::OnFEngineLoopInitComplete.Remove(InitCompleteHandle);
     for (IConsoleObject* Object : ConsoleObjects)
     {
         IConsoleManager::Get().UnregisterConsoleObject(Object);
@@ -112,13 +131,16 @@ void UMarburgumRenderFeatureSubsystem::ProbeCapabilities()
     Capabilities.FrameGenerationUnavailable =
         ProbeFeature(FrameGenerationPlugin, { FrameGenerationEnableCVar }, FrameGenerationSupportQuery);
     Capabilities.ReflexUnavailable = ProbeFeature(ReflexPlugin, { ReflexEnableCVar, ReflexModeCVar }, ReflexSupportQuery);
+    // DLSS5ForUE5 has no support query; its runtime is supplied separately and never committed (ADR-030).
+    Capabilities.NeuralRenderingUnavailable =
+        ProbeFeature(NeuralRenderingPlugin, { NeuralRenderingEnableCVar }, FString(), NeuralRenderingRuntimeFile);
     // NVIDIA Smooth Motion is driver-side (NvPresent); the game can only see that it was asked for.
     Capabilities.bExternalFrameGeneration =
         FPlatformMisc::GetEnvironmentVariable(TEXT("NVPRESENT_ENABLE_SMOOTH_MOTION")).TrimStartAndEnd() == TEXT("1");
 }
 
 FString UMarburgumRenderFeatureSubsystem::ProbeFeature(
-    const FString& Plugin, const TArray<FString>& CVars, const FString& SupportQuery) const
+    const FString& Plugin, const TArray<FString>& CVars, const FString& SupportQuery, const FString& RequiredFile) const
 {
     if (Plugin.IsEmpty())
     {
@@ -137,6 +159,20 @@ FString UMarburgumRenderFeatureSubsystem::ProbeFeature(
     {
         return TEXT("not_nvidia_gpu");
     }
+    if (!RequiredFile.IsEmpty() && !FPaths::FileExists(FPaths::Combine(Found->GetBaseDir(), RequiredFile)))
+    {
+        return FString::Printf(TEXT("runtime_missing:%s"), *FPaths::GetCleanFilename(RequiredFile));
+    }
+    // The plugin's own verdict comes before its variables: on a platform it does not support, its
+    // blueprint module still loads and says so, while the modules that register variables do not.
+    if (!SupportQuery.IsEmpty())
+    {
+        const FString Verdict = QuerySupport(SupportQuery);
+        if (!Verdict.IsEmpty())
+        {
+            return Verdict;
+        }
+    }
     for (const FString& Name : CVars)
     {
         if (Name.IsEmpty() || !IConsoleManager::Get().FindConsoleVariable(*Name))
@@ -144,11 +180,11 @@ FString UMarburgumRenderFeatureSubsystem::ProbeFeature(
             return FString::Printf(TEXT("cvar_missing:%s"), Name.IsEmpty() ? TEXT("(unset)") : *Name);
         }
     }
-    if (SupportQuery.IsEmpty())
-    {
-        return FString();
-    }
+    return FString();
+}
 
+FString UMarburgumRenderFeatureSubsystem::QuerySupport(const FString& SupportQuery)
+{
     // The query is bound by name so the plugin stays optional: no headers, no link dependency.
     FString ClassPath;
     FString FunctionName;
@@ -177,6 +213,7 @@ void UMarburgumRenderFeatureSubsystem::LoadRequest()
     ReadOverride(TEXT("MB2DlssMode="), Request.DlssMode);
     ReadOverride(TEXT("MB2FrameGeneration="), Request.FrameGeneration);
     ReadOverride(TEXT("MB2Reflex="), Request.Reflex);
+    ReadOverride(TEXT("MB2NeuralRendering="), Request.NeuralRendering);
     Request.bSafeMode = FParse::Param(FCommandLine::Get(), TEXT("MB2SafeRender"));
 }
 
@@ -190,6 +227,7 @@ void UMarburgumRenderFeatureSubsystem::SaveRequest() const
     GConfig->SetString(SettingsSection, TEXT("DlssMode"), ToToken(Request.DlssMode), GGameUserSettingsIni);
     GConfig->SetString(SettingsSection, TEXT("FrameGeneration"), ToToken(Request.FrameGeneration), GGameUserSettingsIni);
     GConfig->SetString(SettingsSection, TEXT("Reflex"), ToToken(Request.Reflex), GGameUserSettingsIni);
+    GConfig->SetString(SettingsSection, TEXT("NeuralRendering"), ToToken(Request.NeuralRendering), GGameUserSettingsIni);
     GConfig->Flush(false, GGameUserSettingsIni);
 }
 
@@ -214,6 +252,18 @@ void UMarburgumRenderFeatureSubsystem::Apply(bool bCutHistory)
         SetCVar(ReflexEnableCVar, Resolution.Reflex == EReflex::Off ? TEXT("0") : TEXT("1"));
         SetCVar(ReflexModeCVar, Resolution.Reflex == EReflex::Boost ? TEXT("2") : TEXT("1"));
     }
+    if (Capabilities.HasNeuralRendering())
+    {
+        // One pass with scene guides generated; Guided also feeds depth and motion to the network.
+        const bool bOn = Resolution.NeuralRendering != ENeuralRendering::Off;
+        const bool bGuided = Resolution.NeuralRendering == ENeuralRendering::Guided;
+        SetCVar(TEXT("r.DLSS5.PassCount"), TEXT("1"));
+        SetCVar(TEXT("r.DLSS5.EnableSceneGuides"), TEXT("1"));
+        SetCVar(TEXT("r.DLSS5.FeedSceneGuides"), bGuided ? TEXT("1") : TEXT("0"));
+        SetCVar(TEXT("r.DLSS5.UseDepth"), TEXT("1"));
+        SetCVar(TEXT("r.DLSS5.UseMotionVectors"), bGuided ? TEXT("1") : TEXT("0"));
+        SetCVar(NeuralRenderingEnableCVar, bOn ? TEXT("1") : TEXT("0"));
+    }
 
     // A higher-priority setter (command line, device profile, console) wins over a game setting.
     if (Capabilities.HasDlss())
@@ -222,6 +272,15 @@ void UMarburgumRenderFeatureSubsystem::Apply(bool bCutHistory)
         if (Var && Var->GetBool() != (Resolution.Upscaler == EUpscaler::Dlss))
         {
             Resolution.Notes.AddUnique(FString::Printf(TEXT("dlss:overridden:%s"), *DlssEnableCVar));
+        }
+    }
+    if (Capabilities.HasNeuralRendering())
+    {
+        // DLSS5ForUE5's own editor window and crash recovery set its variables from the console.
+        const IConsoleVariable* Var = IConsoleManager::Get().FindConsoleVariable(*NeuralRenderingEnableCVar);
+        if (Var && Var->GetBool() != (Resolution.NeuralRendering != ENeuralRendering::Off))
+        {
+            Resolution.Notes.AddUnique(FString::Printf(TEXT("neural_rendering:overridden:%s"), *NeuralRenderingEnableCVar));
         }
     }
 
@@ -258,7 +317,8 @@ FString UMarburgumRenderFeatureSubsystem::DescribeState() const
         TEXT("MB2RENDER event=%s rhi=%s gpu=\"%s\" driver=%s nvidia=%d safe_mode=%d ")
         TEXT("request=upscaler:%s,dlss_mode:%s,frame_generation:%s,reflex:%s ")
         TEXT("active=upscaler:%s,dlss_mode:%s,screen_pct:%s,frame_generation:%s,reflex:%s ")
-        TEXT("available=dlss:%s,frame_generation:%s,reflex:%s external_frame_generation=%s neural_rendering=off notes=%s"),
+        TEXT("available=dlss:%s,frame_generation:%s,reflex:%s,neural_rendering:%s external_frame_generation=%s ")
+        TEXT("neural_rendering=%s/%s notes=%s"),
         bApplied ? TEXT("changed") : TEXT("resolved"),
         *FApp::GetGraphicsRHI(), *GRHIAdapterName, *GRHIAdapterUserDriverVersion, IsRHIDeviceNVIDIA() ? 1 : 0,
         Request.bSafeMode ? 1 : 0,
@@ -268,7 +328,9 @@ FString UMarburgumRenderFeatureSubsystem::DescribeState() const
         Capabilities.HasDlss() ? TEXT("yes") : *Capabilities.DlssUnavailable,
         Capabilities.HasFrameGeneration() ? TEXT("yes") : *Capabilities.FrameGenerationUnavailable,
         Capabilities.HasReflex() ? TEXT("yes") : *Capabilities.ReflexUnavailable,
+        Capabilities.HasNeuralRendering() ? TEXT("yes") : *Capabilities.NeuralRenderingUnavailable,
         Capabilities.bExternalFrameGeneration ? TEXT("nvidia-smooth-motion(requested-unverified)") : TEXT("none"),
+        ToToken(Request.NeuralRendering), ToToken(Resolution.NeuralRendering),
         Resolution.Notes.IsEmpty() ? TEXT("-") : *FString::Join(Resolution.Notes, TEXT(";")));
 }
 
@@ -295,6 +357,7 @@ void UMarburgumRenderFeatureSubsystem::RegisterConsoleCommands()
         { TEXT("DlssMode"), TEXT("dlaa | quality | balanced | performance | ultra_performance") },
         { TEXT("FrameGeneration"), TEXT("off | dlss") },
         { TEXT("Reflex"), TEXT("auto | off | on | boost") },
+        { TEXT("NeuralRendering"), TEXT("off | safe | guided (DLSS 5 through DLSS5ForUE5; needs DLSS on)") },
     };
     for (const auto& Setting : Settings)
     {
@@ -313,7 +376,8 @@ void UMarburgumRenderFeatureSubsystem::HandleConsoleSetting(const TArray<FString
         Key == TEXT("Upscaler") ? ParseConsoleToken(Args, Next.Upscaler) :
         Key == TEXT("DlssMode") ? ParseConsoleToken(Args, Next.DlssMode) :
         Key == TEXT("FrameGeneration") ? ParseConsoleToken(Args, Next.FrameGeneration) :
-        ParseConsoleToken(Args, Next.Reflex);
+        Key == TEXT("Reflex") ? ParseConsoleToken(Args, Next.Reflex) :
+        ParseConsoleToken(Args, Next.NeuralRendering);
     if (!bParsed)
     {
         UE_LOG(LogMarburgumRender, Warning, TEXT("MB2RENDER event=bad_setting setting=%s value=%s"),

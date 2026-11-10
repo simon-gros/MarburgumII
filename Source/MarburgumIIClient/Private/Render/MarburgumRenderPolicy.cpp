@@ -70,6 +70,23 @@ namespace MarburgumII::Render
             }
             break;
         }
+
+        if (Request.NeuralRendering != ENeuralRendering::Off)
+        {
+            if (!Capabilities.HasNeuralRendering())
+            {
+                Out.Notes.Add(FString::Printf(TEXT("neural_rendering:%s"), *Capabilities.NeuralRenderingUnavailable));
+            }
+            else if (Out.Upscaler != EUpscaler::Dlss)
+            {
+                // DLSS5ForUE5 evaluates through the NGX core that only active DLSS loads.
+                Out.Notes.Add(TEXT("neural_rendering:requires_dlss"));
+            }
+            else
+            {
+                Out.NeuralRendering = Request.NeuralRendering;
+            }
+        }
         return Out;
     }
 
@@ -127,6 +144,17 @@ namespace MarburgumII::Render
         return TEXT("auto");
     }
 
+    const TCHAR* ToToken(ENeuralRendering Value)
+    {
+        switch (Value)
+        {
+        case ENeuralRendering::Off: return TEXT("off");
+        case ENeuralRendering::Safe: return TEXT("safe");
+        case ENeuralRendering::Guided: return TEXT("guided");
+        }
+        return TEXT("off");
+    }
+
     namespace
     {
         template <typename EnumType, SIZE_T Count>
@@ -167,6 +195,12 @@ namespace MarburgumII::Render
     bool FromToken(const FString& Token, EReflex& Out)
     {
         static constexpr EReflex Values[] = { EReflex::Auto, EReflex::Off, EReflex::On, EReflex::Boost };
+        return ParseToken(Token, Values, Out);
+    }
+
+    bool FromToken(const FString& Token, ENeuralRendering& Out)
+    {
+        static constexpr ENeuralRendering Values[] = { ENeuralRendering::Off, ENeuralRendering::Safe, ENeuralRendering::Guided };
         return ParseToken(Token, Values, Out);
     }
 }

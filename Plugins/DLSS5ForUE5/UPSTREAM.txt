@@ -1,0 +1,1 @@
+upstream: https://github.com/praveenkumarappu/DLSS5ForUE5 @ 651c060f0240787ce4494ca1866cc5f010562701 (v0.6.1 source, MIT; no NVIDIA runtime)
