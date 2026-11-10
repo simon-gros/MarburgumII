@@ -3,7 +3,7 @@
   "scope": "Design parity matrix: source-of-intent, not an import manifest or proof of working functionality",
   "original_repository": "simon-gros/magna-raedarum-marburgum",
   "target_repository": "simon-gros/MarburgumII",
-  "source_reference": "original/main as reviewed 2026-11-08",
+  "source_reference": "original/main reviewed 2026-11-08; MarburgumII implementation statuses reviewed 2026-11-11 at af2d0b3",
   "rules": [
     "Preserve original Marburgum gameplay identity by default.",
     "Rebuild runtime technology, networking and implementation rather than copying code.",
@@ -12,7 +12,7 @@
     "Any intentional redesign requires an ADR and explicit parity-matrix update.",
     "Explicit exclusions override original parity: no wanted stars, wanted levels, police pursuit/chases, or generated talent UI.",
     "Every major playable feature requires personal in-game owner playtest and recorded approval.",
-    "Adopt TurboSquid Maribor product 1639711 as planned primary geometry only after commercial license/intake/owner approval, never public source redistribution."
+    "The default launch world is currently original Unreal /Game/World/lent. TurboSquid product 1639711 is an unpurchased commercial candidate, never an automatic default or public raw source; evaluate under license/period/geospatial/gameplay/owner gate."
   ],
   "entries": [
     {
@@ -26,9 +26,9 @@
         "project/data/landmarks.json"
       ],
       "intent": "A recognizably Maribor-based 1990s fictional city with the Drava, districts, places, buildings and route geography.",
-      "migration": "Planned primary geometry is purchased Maribor model 1639711, pending verified purchase, licensed local import, 2022-to-1990s period correction and owner playtest. The original map-production geometry is reference/fallback; original authored location/mission/ecology identities require a spatial crosswalk.",
-      "stage": "3",
-      "status": "planned_new_default_geometry_purchase_pending_owner_acceptance",
+      "migration": "Current launch map is the original Unreal /Game/World/lent (ADR-027), with repaired facades/roofs (ADR-034). LiDAR-shell replacement reverted; paid TurboSquid source 1639711 is a future candidate pending license, 1990s geospatial/mission crosswalk and owner approval.",
+      "stage": "1-3",
+      "status": "original_unreal_lent_map_active_commercial_candidate_unpurchased_owner_acceptance_pending",
       "planned_geometry_source": "Data/World/source-selection.v0.1.json"
     },
     {
@@ -53,9 +53,9 @@
         "project/data/population_groups.json"
       ],
       "intent": "Individual NPCs and broader simulated community with neighborhoods, schedules, social roles and contextual reactions.",
-      "migration": "Recreate from design/data rather than importing legacy C++ or assuming thousands of active AI Actors.",
-      "stage": "3",
-      "status": "design_retained_implementation_pending"
+      "migration": "Original Lent riverside angler is an interactable first mission contact. Wider city virtual population and NPC schedules are not yet implemented.",
+      "stage": "1-3",
+      "status": "original_angler_first_npc_awaiting_owner_playtest"
     },
     {
       "id": "skills",
@@ -92,9 +92,9 @@
         "project/data/missions.json"
       ],
       "intent": "The City in the Ledger narrative, investigations, character choices, evidence and long-running authored urban missions rather than fantasy quests.",
-      "migration": "Preserve approved narrative canon; remap mission IDs/objectives to new engine-neutral schemas; do not claim unported chapters function.",
-      "stage": "2-5",
-      "status": "design_retained_implementation_pending"
+      "migration": "Original lent_first_catch mission starts, saves and grants a rod with authoritative idempotent receipt. Fishing and the rest of mission progression are not implemented.",
+      "stage": "1-5",
+      "status": "first_original_mission_accepted_saved_completion_waits_for_fishing"
     },
     {
       "id": "reputation_social",
@@ -152,9 +152,9 @@
         "docs/PHYSICS_MOVEMENT_VEHICLES_ROADMAP.md"
       ],
       "intent": "Period-appropriate driving, roads, public transit, vehicle state, logistics and movement convenience.",
-      "migration": "New Unreal physics/replication with authoritative ownership/condition and journey costs.",
-      "stage": "3",
-      "status": "design_retained_implementation_pending"
+      "migration": "Original five vehicle definitions and authored Lent hatchback; ported procedural bodies/clips, four-raycast server dynamics, seat/door RPCs, replicated driving and passenger, km/h UI (ADR-039). No car persistence, ownership, fuel, traffic, damage or rights-cleared audio.",
+      "stage": "1-3",
+      "status": "five_car_catalogue_server_driving_first_slice_awaiting_owner_playtest"
     },
     {
       "id": "weather_time",
@@ -200,9 +200,9 @@
         "docs/PLAYER_EXPERIENCE_PLATFORM_QUALITY_ROADMAP.md"
       ],
       "intent": "Preserve original low-clutter HUD semantics, contextual prompts/location banner/objective/condition and notifications plus Character/Skills/Inventory/Journal, rebuilt immediately as a premium graphical, responsive UE 5.8.3 client interface for genuine public-facing gameplay captures. Module IDs, authority provenance, privacy/focus policy, status feedback, and later player layout profiles use the independent UI/HUD ontology.",
-      "migration": "New UMG/C++ presentation and shared visual theme; event-driven view models read replicated/authoritative data; honest empty and loading states; screenshot/readability/input matrix. Original wanted stars, chase UI and talent pages deliberately excluded. Implementation order UI-00 through UI-07 documented in Docs/UI_HUD_ROADMAP.md; default layout is accepted before optional movable widgets.",
-      "stage": "0C-1",
-      "status": "design_retained_implementation_pending",
+      "migration": "UMG gallery/connection shell, live chat, receipt prompt/location/objective/condition/swim and vehicle status, first Character/Inventory/Journal. Skills, Settings, first-account login/character creator, UI scale/focus quality and owner acceptance still open.",
+      "stage": "0C-3",
+      "status": "server_fed_umg_chat_hud_condition_swimming_vehicle_and_first_panels_awaiting_owner_playtest",
       "ontology": "Data/Ontology/ui_hud.v0.1.json",
       "roadmap": "Docs/UI_HUD_ROADMAP.md"
     },
