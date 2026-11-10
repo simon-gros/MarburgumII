@@ -1,7 +1,7 @@
 # Ontology of User Interface and HUD — MarburgumII
 
 **Version:** 0.1.0 — 8 November 2026  
-**Status:** Normative *design vocabulary*, not a claim of implemented UI, screenshots, native build or network session.  
+**Status:** Normative *design vocabulary*, not itself proof of a particular implementation. Actual Linux UE 5.8.3 UMG screenshots, server-fed modules and multiplayer tests are separately documented in the [UI roadmap](UI_HUD_ROADMAP.md).  
 **Companion catalogue:** [`Data/Ontology/ui_hud.v0.1.json`](../Data/Ontology/ui_hud.v0.1.json).  
 **Underlying game ontology:** [`ONTOLOGY.md`](ONTOLOGY.md) and [`core.v0.1.json`](../Data/Ontology/core.v0.1.json).  
 **Implementation plan:** [`UI_HUD_ROADMAP.md`](UI_HUD_ROADMAP.md); [existing visual contract](UI_HUD_DESIGN.md).  
@@ -24,7 +24,7 @@ A strong large-scale online interface follows these independent principles:
 
 The aesthetic identity remains **Marburgum**: restrained, high-quality, documentary/urban Central European design informed by 1990s signage, industrial materials, civic paperwork, urban transport and the Drava cityscape. Decorative nostalgia must not harm usability. Minimal permanent chrome is especially important for public screenshot and video quality.
 
-**Communication:** The initial `chat_panel` is a first-wave UI-03 client module for server-wide general and one-to-one private messages. Chat is a server-validated unicast event flow; in particular, `private_chat_event` cannot be globally replicated. This is currently C++ source awaiting real UE 5.8.3 runtime tests, UI refinement and the owner's personal acceptance. See [CHAT.md](CHAT.md).
+**Communication:** The initial `chat_panel` is a first-wave UI-03 client module for server-wide general and one-to-one private messages. Chat is a server-validated unicast event flow; in particular, `private_chat_event` cannot be globally replicated. The `chat_panel` now passes compiled Linux UE 5.8.3 packaged-client and dedicated-server three-client routing/isolation tests ([evidence](STAGE0C_CHAT_EVIDENCE.md)); additional visual/input refinement and the owner's personal approval remain open. See [CHAT.md](CHAT.md).
 
 **Binding product exclusions:** do not import the original wanted-star, heat/wanted-level or police-pursuit/chase system and do not create any HUD/widget from those mechanics. The previous generated Talent system and Talent UI are also excluded. Narrative institutions and ordinary non-pursuit characters are separate questions; they are not excuses to introduce the excluded systems.
 
