@@ -148,7 +148,7 @@ Evidence: [STAGE1_CONDITION_EVIDENCE.md](STAGE1_CONDITION_EVIDENCE.md).
 - **Source art lives in `SourceArt/`** (concept, generator output, rigged FBX); the imported assets live in `Content/`. `*.glb` joins the Git LFS patterns.
 - **The authoring pipeline stays outside the repository.** Its steps are Blender and Unreal editor Python, which ADR-018 keeps out of the tree. Its procedure and checks are recorded in [CHARACTER_PROTAGONIST.md](CHARACTER_PROTAGONIST.md).
 
-**Not covered.** Whether the research-only licences of the rasterizers used for TRELLIS's texture bake reach the baked texture in a commercial game. Hands, retopology and the final texture. The player pawn now uses the mesh (ADR-023).
+**Not covered.** Whether the research-only licences of the rasterizers used for TRELLIS's texture bake reach the baked texture in a commercial game (the protagonist no longer depends on it, ADR-031). The player pawn now uses the mesh (ADR-023); hands are ADR-028, retopology and the rebake ADR-031.
 
 ## ADR-022 — Email-confirmed account, first character and server-gated world entry (product direction accepted 2026-11-10; implementation pending)
 
@@ -212,10 +212,25 @@ The opening-route pass (`-FictionLent`) does not move those meshes, the landscap
 **Decision.** At the owner's request, NVIDIA's UE 5.8 DLSS 4.5 package v8.9.0 (archive SHA-256 `adeeb59b…380c`) is installed in the project's `Plugins/` under NVIDIA's licence. It is gitignored and referenced as optional plugins in the uproject, so it is never committed and its absence breaks nothing. Its source confirms every ADR-029 binding. The render-feature probe now runs after engine start-up, because NVIDIA's blueprint modules load at PostEngineInit. The community DLSS5ForUE5 plugin (v0.6.1, MIT) is vendored as source under `Plugins/DLSS5ForUE5`, enabled on Win64 only, and drives a fifth setting, Neural Rendering `off`/`safe`/`guided`. These are the original project's two one-pass profiles. It runs only with DLSS active and only when its runtime file exists.
 
 **Not done.** The plugin's runtime, `nvngx_dlssnr.dll`, is an unsigned, community-modified NVIDIA binary from an SDK NVIDIA has not released, and its redistribution is not authorised. It is not fetched, committed or shipped. The original project's roadmap already ruled out such binaries as dependencies. Nothing here has run on Windows yet. On Linux, DLSS, frame generation and Reflex report `unsupported` through NVIDIA's own queries, and DLSS5ForUE5 is not enabled.
+## ADR-031 — The protagonist is retopologised and rebaked without research-licensed tools (accepted 2026-11-10)
+
+**Problem.** The first protagonist (ADR-021) was TRELLIS's own 4.5k-vertex mesh with a 1024² texture that TRELLIS bakes through nvdiffrast and Inria's rasterizer, both licensed for research and evaluation only. The owner asked for a full retopology and texture rebake.
+
+**Decision.**
+
+- **Source:** TRELLIS's vertex-colour mode on the same concept and seed: the decoded 241k-triangle mesh with colour per vertex, exported without the texture bake, so no research-licensed code produces anything in the character.
+- **Retopology:** a watertight voxel shell of the dense mesh with a morphological close (2.2 cm), Instant Meshes (BSD) to about 12k quads, hole filling, shrinkwrap onto the shell. Blender 5.2's QuadriFlow rejects these meshes as non-manifold, so it is not used.
+- **Bake:** Blender Cycles, selected-to-active from the dense mesh: 2048² base colour and tangent-space normal maps, with the concept projected onto front-facing visible texels (registered to the concept by a fitted scale and shift, refined for the head).
+- **One material:** `M_Protagonist` with both maps; the UV strip u ≥ 0.97 stays flat in the normal map and carries the hand skin colour (ADR-028). The normal map is imported with `flip_green_channel`.
+- **The pipeline scripts stay outside the repository** (ADR-018); [CHARACTER_PROTAGONIST.md](CHARACTER_PROTAGONIST.md) records the steps and checks.
+
+This closes the rasterizer-licence question for this character. It stays open for any future asset baked through TRELLIS's textured export.
+
+**Not covered.** The back and sides have only vertex-colour detail; the concept is a single front view. A hand-authored UV layout, a final hand texture, LODs and owner sign-off on the look.
 
 ## Open decisions
 
-- Clear the TRELLIS texture-bake rasterizer licences (nvdiffrast, Inria) for shipped textures, or rebake characters with vertex colours (ADR-021).
+- Clear the TRELLIS texture-bake rasterizer licences (nvdiffrast, Inria) before any asset baked through TRELLIS's textured export ships; the protagonist no longer uses it (ADR-031).
 - Verify production rights for the locally installed Hunyuan3D-2.1 version, specifically use within Slovenia/EU, generated outputs and subsequent game distribution.
 - Public license and rules for distributing source/art; no license has been selected.
 - Minimum shipping platforms and tested build matrix.
