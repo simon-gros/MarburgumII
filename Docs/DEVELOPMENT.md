@@ -93,6 +93,19 @@ Connect from the front-end, walk with **W A S D** and the mouse, press **E** at 
 
 Client UI options for manual runs: `-MB2Server=host:port` (front-end default address), `-MB2UIGallery` (component gallery instead of the connection shell), `-MB2UIDiagnostics` (labeled live replicated-state overlay), `-MB2UIScale=<0.5-3.0>` (interface scale on top of DPI scaling).
 
+## NVIDIA render features (ADR-029)
+
+DLSS Super Resolution/DLAA, DLSS Frame Generation and Reflex are optional, client-local settings. TSR with no generated frames is what runs whenever one is unavailable, which on Linux is always: NVIDIA's UE plugin has no Linux support. Every client logs one `MB2RENDER` line naming the RHI, GPU, the request, the active features and the reason for each fallback.
+
+```bash
+scripts/mb2.sh render-probe "$UE_ROOT"           # JSON: NVIDIA plugins, GPU/driver, NGX runtime, Smooth Motion layer
+scripts/smooth-motion-linux.sh -- -MB2Start=arrival   # staged client under NVIDIA Smooth Motion (driver frame generation)
+# client: -MB2SafeRender | -MB2Upscaler=auto|tsr|dlss -MB2DlssMode=dlaa|quality|balanced|performance|ultra_performance
+#         -MB2FrameGeneration=off|dlss -MB2Reflex=auto|off|on|boost; console mb2.Render.Status and mb2.Render.<setting> <value>
+```
+
+See [RENDERING_NVIDIA.md](RENDERING_NVIDIA.md) for the rules, the platform table and how to install and verify NVIDIA's package on Windows.
+
 ## Local asset production (conditional)
 
 The project owner reports **Hunyuan3D-2.1** installed locally. The [local generator specification](ASSET_GENERATION_HUNYUAN3D.md) records the intended image → 3D shape → PBR texture → retopology → Unreal 5.8.3 import path. Installation location and execution have **not** been verified here. Its published community license excludes EU territory; production use remains blocked until an applicable license/permission is established. The model is not a dependency of the runtime or normal server build.

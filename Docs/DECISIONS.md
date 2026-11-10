@@ -199,6 +199,14 @@ The opening-route pass (`-FictionLent`) does not move those meshes, the landscap
 
 **Not covered.** Hand skin detail and an exact tone match with the baked body; a small step where the low-poly forearm meets the hand. Retopology and a final texture bake, which would replace both.
 
+## ADR-029 — NVIDIA render features are client-local, optional and resolved at runtime (accepted 2026-11-10)
+
+**Context.** Unreal Marburgum never shipped DLSS. It probed for NVIDIA's official UE plugin and the community DLSS5ForUE5 plugin, gated an experimental profiling mode to Windows/D3D12, and launched Linux builds under NVIDIA Smooth Motion. Its roadmaps fixed the rules: TSR is the reference, every NVIDIA feature is optional, there is one setting per feature, a missing plugin never breaks startup, and rendering never reaches the server. NVIDIA's UE 5.8 package is DLSS 4.5 (v8.9.0). It has no Linux support and is not installed here. No supported DLSS 5 Neural Rendering package exists for UE 5.8.
+
+**Decision.** The client module owns `UMarburgumRenderFeatureSubsystem` and a pure policy, `MarburgumII::Render::Resolve`. Upscaler (TSR or DLSS Super Resolution, with DLAA as its full-resolution mode), DLSS Frame Generation and Reflex are separate settings saved in `GameUserSettings.ini`. Each feature is available only if its plugin is enabled, the GPU is NVIDIA, its console variables exist and its support query returns true. The plugin names, variables and queries are config, and the query is called through reflection, so the plugins are never a build or packaging dependency. Anything unavailable falls back to TSR, no frame generation or no Reflex, with the reason logged on one `MB2RENDER` line. Frame generation keeps Reflex on and never runs with Smooth Motion. A change cuts temporal history, and `-MB2SafeRender` turns every vendor feature off. Neural Rendering has no setting. `scripts/mb2.sh render-probe` and `scripts/smooth-motion-linux.sh` replace the original Python probe and launcher. See [RENDERING_NVIDIA.md](RENDERING_NVIDIA.md).
+
+**Consequences.** On Linux every DLSS feature resolves to TSR until NVIDIA ships Linux support in its plugin. Smooth Motion is the Linux generated-frame path. The configured binding names have not been checked against an installed package; the first Windows install must confirm them through `mb2.Render.Status`. NVIDIA binaries are never committed.
+
 ## Open decisions
 
 - Clear the TRELLIS texture-bake rasterizer licences (nvdiffrast, Inria) for shipped textures, or rebake characters with vertex colours (ADR-021).
@@ -208,3 +216,4 @@ The opening-route pass (`-FictionLent`) does not move those meshes, the landscap
 - Production persistence engine, migrations, account/session admission, login security and service topology; initial Unreal-native replication is accepted for the first vertical slice. The ADR-014 development key and file store are stand-ins, not answers.
 - Rust static-library integration across Windows/Linux and ABI test approach.
 - Geospatial/historical data provenance and acceptable licensing.
+- Install NVIDIA's UE 5.8 DLSS package on a Windows build and verify the ADR-029 binding names; whether DLSS is offered on Linux depends on NVIDIA adding Linux support to that plugin.

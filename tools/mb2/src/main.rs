@@ -5,6 +5,7 @@
 mod engine;
 mod movement_check;
 mod playtest;
+mod render_probe;
 mod repo;
 mod store_check;
 mod validate;
@@ -21,6 +22,9 @@ Usage: mb2 <command>
                          Check Engine/Build/Build.version against .unreal-engine-version.
   playtest <build|verify|launch> --profile <file>
                          Fail-closed freshness guard for native client/server playtests.
+  render-probe [engine_root]
+                         JSON report of the NVIDIA plugins, GPU, driver runtime and Smooth Motion
+                         layer the optional render features need (ADR-029).
   new-op                 Print a fresh operation id (32 upper-case hex digits).
   store-check interaction <store> <key_a> <key_b> <first_op>
   store-check lent <store> <key_m> <key_w> <first_op>
@@ -36,6 +40,8 @@ fn main() -> ExitCode {
         ["validate", which] => validate::run(which),
         ["engine-version", engine_root] => engine::run(&PathBuf::from(engine_root)),
         ["playtest", action, "--profile", profile] => playtest::run(action, &PathBuf::from(profile)),
+        ["render-probe"] => render_probe::run(None),
+        ["render-probe", engine_root] => render_probe::run(Some(&PathBuf::from(engine_root))),
         ["new-op"] => {
             println!("{}", uuid::Uuid::new_v4().simple().to_string().to_uppercase());
             0

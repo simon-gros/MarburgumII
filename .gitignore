@@ -41,3 +41,8 @@ Thumbs.db
 
 # Python bytecode from local script/test runs
 __pycache__/
+
+# NVIDIA's DLSS/Streamline Unreal plugins are installed locally under NVIDIA's licence (ADR-029); never commit them.
+/Plugins/DLSS*/
+/Plugins/NIS/
+/Plugins/Streamline*/
