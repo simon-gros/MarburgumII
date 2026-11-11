@@ -1,6 +1,6 @@
 # World map strategy — current Unreal Lent and future licensed candidate
 
-**Actual current map (11 November 2026):** The owner-selected original Unreal `/Game/World/lent` is the default (ADR-027), with later façade/roof refinements needing fresh personal review. **This TurboSquid model is a future, unpurchased and unimported candidate**, not a currently running level. [Development-day audit](DAILY_CHANGE_REVIEW_2026-11-10.md).  
+**Active map as of 11 November 2026, ADR-045:** `/Game/World/lent` remains one default level, now containing Lent and its eight adjoining original 512 m windows (**1,536 m square**). Survey-based terrain/pavement, nine-window closed-shell buildings, bridges and river extensions have been integrated, with editor-mode geometry/gameplay checks but **no final packaged performance or owner acceptance**. **TurboSquid 1639711 remains an unpurchased, unimported alternative candidate**, never automatically replacing the current level. [Development-day audit](DAILY_CHANGE_REVIEW_2026-11-10.md).  
 **Engine:** Unreal Engine **5.8.3**.  
 **Asset:** [TurboSquid product 1639711 — Maribor Slovenia](https://www.turbosquid.com/3d-models/3d-city-area-building-model/1639711).  
 **Development intent:** Evaluate this city model as a potential later wider-city geometry source, *only* after license/file inspection, 1990s corrections, coordinate/mission reconciliation, UE tests and a new explicit owner decision. The generated LiDAR shell replacement was tried and reverted; it is not the current map or the fallback default. Original Marburgum remains the source of authored gameplay, interactions, storyline, fictionalized identities, period corrections, fish and vegetation ecology; it is not the default base-mesh importer.
@@ -42,6 +42,24 @@ A first geospatial benchmark should record exact source file, import units, coor
 
 A map-source replacement must demonstrate a before-and-after crosswalk of Stari most/riverbank roads, `lent_angler`, `lent_first_catch` stage interaction, `lent_hatchback` parking/door/drive/exit positions, swimming/wading depth and recovery, server-owned area bounds, correct collision, navigation and period state. Verify the same current-build server/client/cooked asset digest on each map plus render/streaming performance and explicit owner approval; protect the commercial source from the public repository.
 
+### Delivered world-expansion baseline and staging risks — ADR-040/045
+
+The current original-game Unreal level is **no longer just the single 512 m Lent window**. It includes a 3×3 arrangement:
+
+| | West | Middle | East |
+| --- | --- | --- | --- |
+| North | ljudski_vrt | center | avtobusna |
+| Middle | pristan | **lent** | titov_most |
+| South | kurilnica | magdalena | pobreska |
+
+**Geometry and survey source.** `tools/lent-ground` (Rust) reconstructs ground elevation from ARSO 2014 LiDAR tiles, uses OSM road/sidewalk geometry and the original nine orthophotos for surface classification; `MarburgumRebuildFacades` joins original source footprints across window edges and rebuilds 870 closed shells (751 added to the level). The new one-level square has 521 collision-enabled paved chunks, neighboring Drava sheets and three crossings, 407 water volumes and a 13,098-node/74.7-km pedestrian walk graph. The generated LiDAR **building-map replacement** from ADR-026 was reverted; **using LiDAR as a surveyed terrain height source** under ADR-040/045 is a different implementation with its own provenance.
+
+**Latest recorded verification.** Full saved-world ray/capsule check: 4,089,551 samples, no landscape-first hits and no sunken capsules. Street/combat/vehicle/swim editor-mode smokes passed on ADR-045. This **does not qualify the expanded level's packaged frame time, cold load, memory, replication, nine-window owner route or World Partition**. It is one always-loaded level with 576 landscape components and roughly 8.4 million static triangles.
+
+**Outstanding world-quality decisions.** Fourteen recorded >100 m², >3 m deep no-outlet hollows, many related to excavated courtyards/light wells, must be assessed for 1990s identity rather than filled automatically. The rail corridor lacks actual rails; stones, quay-wall finish, foliage, signs/furniture, road furniture and 1990s alterations of newer OSM mapping remain work. Paved meshes lack LOD/Nanite. The pedestrian walk graph has ungrounded/disconnected portions; fix or account for them before a city-life claim. Run separate collision and walk/drive/swim/mission/anger-crossing tests at the **eight seams** and quantify build/load/frametime tails before future geometry acquisition.
+
+**Source rights and attribution.** Preserve and independently review provenance/redistribution conditions for the original Unreal authored content, ARSO LiDAR, OSM/ODbL-derived geometry, orthophoto inputs and CC0 ambientCG materials. Captured orthophotos are not necessarily rights-cleared as distributable maps simply because their classification data informed a generated mask. Never mix a purchased proprietary geometry candidate into the public repository or silently claim the survey source reproduces 1990s Maribor.
+
 ## 4. Acquisition and intake gate (WORLD-001)
 
 Before the purchase is treated as a usable production asset:
@@ -79,7 +97,7 @@ Record exact SHA/build, UE 5.8.3 version, map source revision, tested scenarios,
 
 - **Stage 0B network smoke:** continue using a free/minimal empty test map. No paid asset dependency.
 - **Stage 0C UI design:** can use internally labeled prototype screenshots; do not require paid map purchase to build widgets.
-- **Stage 1 early district:** the real launch map is already `/Game/World/lent`, imported from the original Unreal project with Drava, Stari most, original building/road frame, player/angler starts, new water volumes and the parked original hatchback. `/Game/Maps/Lent` is a **separate older test/smoke map**. No paid model purchase is required to keep developing this slice, and no purchase automatically switches the level.
+- **Stage 1 extended district (ADR-045):** the real launch map `/Game/World/lent` now contains nine original windows in one 1,536 m square, with rebuilt LiDAR terrain and physically paved OSM roads, closed buildings and updated swimming/vehicle/pedestrian inputs. It retains the original Drava, bridges and authored mission contacts; the map is **unstreamed and only editor smoke-tested in its latest composite form**. The next gate is latest packaged client/server performance, multi-client world interactions and owner inspection. `/Game/Maps/Lent` is a **separate older test/smoke map**. No paid model purchase is required to keep developing this slice, and no purchase automatically switches the level.
 - **Stage 2:** first real gameplay interactions/fishing/missions reuse original semantic data mapped to the selected geometry.
 - **Stage 3:** progressively extend licensed geometry across city, applying 1990s corrections and streaming, collision and ecological review. Full world-scale import only after representative slice earns personal approval.
 
