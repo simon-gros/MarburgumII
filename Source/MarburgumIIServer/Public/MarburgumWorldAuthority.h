@@ -10,6 +10,8 @@ class AMarburgumNpc;
 class AMarburgumPlayerState;
 class APlayerController;
 class FMarburgumWorldStore;
+struct FMarburgumStoredReceipt;
+struct FMarburgumWorldRecord;
 
 /**
  * Server-only interaction authority for one networked world. Owns the durable world store, restores
@@ -17,8 +19,16 @@ class FMarburgumWorldStore;
  * interaction:
  *
  *   validate (operation id, store, character, receipt replay, target, range)
- *     -> item source: stock check | NPC: mission rules (MarburgumMissionRules.h)
+ *     -> item source: stock check | fishing spot: cast or strike (MarburgumFishingRules.h)
+ *        | NPC or authored place: mission rules (MarburgumMissionRules.h) | decision: the choice rules
  *     -> build the next record -> make it durable -> apply it to replicated actors -> receipt
+ *
+ * On the Lent levels it spawns the original game's mission people and places from the catalogue (ADR-049):
+ * at their original positions, or at their original offset from the angler where the map moved him.
+ *
+ * Fishing (ADR-048): a cast is transient server state, never stored. Ten times a second the server moves each
+ * line from waiting to a bite and lets the fish escape when the window passes; walking off, sitting in a car,
+ * swimming or going down ends the cast. Only a landed fish (with its Fishing XP) is committed.
  *
  * It also derives each player's named area (AMarburgumArea) from the pawn position four times a
  * second; location is never persisted.
@@ -45,7 +55,20 @@ public:
     virtual FMarburgumInteractionReceipt HandleInteraction(
         AMarburgumPlayerController& Requester, const FGuid& OperationId, AMarburgumInteractable* Target) override;
 
+    virtual FMarburgumInteractionReceipt HandleMissionChoice(AMarburgumPlayerController& Requester, const FGuid& OperationId,
+        AMarburgumInteractable* Target, FName MissionId, FName ChoiceId) override;
+
 private:
+    /** One player's line in the water. */
+    struct FCast
+    {
+        FString Spot;
+        FVector CastAt = FVector::ZeroVector;
+        double BiteAt = 0.0;
+        double EscapeAt = 0.0;
+        bool bBite = false;
+    };
+
     void HandlePostLogin(AGameModeBase* GameMode, APlayerController* NewPlayer);
     void HandleLogout(AGameModeBase* GameMode, AController* Exiting);
     void HandleWorldTearDown(UWorld* World);
@@ -54,8 +77,19 @@ private:
     void ApplyInventory(AMarburgumPlayerState& State) const;
     void ApplyStocks() const;
     void UpdateLocations();
-    FMarburgumInteractionReceipt HandleNpc(FMarburgumInteractionReceipt Receipt, const AMarburgumPlayerController& Requester,
-        AMarburgumPlayerState& State, const AMarburgumNpc& Npc);
+    FMarburgumInteractionReceipt HandleMissionTarget(FMarburgumInteractionReceipt Receipt, const AMarburgumPlayerController& Requester,
+        AMarburgumPlayerState& State, const AMarburgumInteractable& Target);
+    FMarburgumInteractionReceipt HandleFishing(FMarburgumInteractionReceipt Receipt, AMarburgumPlayerController& Requester,
+        AMarburgumPlayerState& State, const AMarburgumInteractable& Spot);
+    /** Shared validation of interaction and choice requests; false with Receipt set to the refusal or replay. */
+    bool Admit(FMarburgumInteractionReceipt& Receipt, AMarburgumPlayerController& Requester, AMarburgumInteractable* Target,
+        AMarburgumPlayerState*& OutState);
+    bool Commit(FMarburgumInteractionReceipt& Receipt, FMarburgumWorldRecord& Next, const FMarburgumStoredReceipt& Stored);
+    void SpawnAuthoredContent(UWorld& World);
+    void TickFishing();
+    void EndCast(AMarburgumPlayerController& Player, EMarburgumFishingEnd End, FName Catch, const TCHAR* Why);
+    /** Why this player cannot hold a line now, or nullptr. */
+    const TCHAR* WhyCannotFish(const AMarburgumPlayerController& Player) const;
     int32 CurrentStock(const AMarburgumInteractable& Target) const;
     AMarburgumInteractable* FindInteractable(const FString& Id) const;
     FMarburgumInteractionReceipt Finish(FMarburgumInteractionReceipt Receipt, const AMarburgumPlayerController& Requester) const;
@@ -67,4 +101,8 @@ private:
     FDelegateHandle LogoutHandle;
     FDelegateHandle TearDownHandle;
     FTimerHandle LocationTimer;
+    FTimerHandle FishingTimer;
+    TMap<TWeakObjectPtr<AMarburgumPlayerController>, FCast> Casts;
+    TMap<TWeakObjectPtr<AMarburgumPlayerController>, double> LastCastAt;
+    FRandomStream Rolls;
 };

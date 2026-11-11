@@ -26,10 +26,6 @@ public:
     virtual void BeginPlay() override;
     virtual bool IsItemSource() const override { return false; }
 
-    /** The NPC's line from the original interactions.json; shown when the server accepts a talk. */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Marburgum|Npc")
-    FText Dialogue;
-
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Marburgum|Npc")
     FLinearColor PrimaryColor = FLinearColor(0.1f, 0.13f, 0.09f);
 
@@ -40,8 +36,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Marburgum|Npc")
     bool bHoldsRod = false;
 
+protected:
+    virtual void ConfigureFromCatalogue() override;
+
 private:
     void Tint(UStaticMeshComponent* Part, const FLinearColor& Color) const;
+    void ApplyLook();
 
     UPROPERTY(VisibleAnywhere, Category = "Marburgum|Npc")
     TObjectPtr<USceneComponent> Root;

@@ -13,6 +13,7 @@
 #include "MarburgumGameplayContract.h"
 #include "MarburgumNetworkContract.h"
 #include "MarburgumPlayerController.h"
+#include "MarburgumPlayerState.h"
 #include "UI/MarburgumConnectionScreen.h"
 #include "UI/MarburgumInteractionPrompt.h"
 #include "MarburgumInteractable.h"
@@ -20,6 +21,8 @@
 #include "UI/MarburgumCharacterPanel.h"
 #include "UI/MarburgumInventoryPanel.h"
 #include "UI/MarburgumJournalPanel.h"
+#include "UI/MarburgumChoicePanel.h"
+#include "UI/MarburgumSkillsPanel.h"
 #include "UI/MarburgumLocationBanner.h"
 #include "UI/MarburgumPinnedObjective.h"
 #include "UI/MarburgumPlayerCondition.h"
@@ -59,12 +62,14 @@ void UMarburgumUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
     }
     PreLoadMapHandle = FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &UMarburgumUISubsystem::HandlePreLoadMap);
     PostLoadMapHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UMarburgumUISubsystem::HandlePostLoadMap);
+    FishingHandle = AMarburgumPlayerState::OnFishingChanged().AddUObject(this, &UMarburgumUISubsystem::HandleFishingChanged);
 }
 
 void UMarburgumUISubsystem::Deinitialize()
 {
     FCoreUObjectDelegates::PreLoadMap.Remove(PreLoadMapHandle);
     FCoreUObjectDelegates::PostLoadMapWithWorld.Remove(PostLoadMapHandle);
+    AMarburgumPlayerState::OnFishingChanged().Remove(FishingHandle);
     if (UMarburgumSessionSubsystem* SessionSubsystem = Session.Get())
     {
         SessionSubsystem->OnSessionChanged().Remove(SessionChangedHandle);
@@ -119,6 +124,8 @@ void UMarburgumUISubsystem::TearDown()
     Condition = nullptr;
     VehicleStatus = nullptr;
     CharacterPanel = nullptr;
+    SkillsPanel = nullptr;
+    ChoicePanel = nullptr;
 }
 
 void UMarburgumUISubsystem::MountChat(APlayerController* Player)
@@ -209,6 +216,8 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
     Release(Condition);
     Release(VehicleStatus);
     Release(CharacterPanel);
+    Release(SkillsPanel);
+    Release(ChoicePanel);
     if (!Banner)
     {
         Banner = CreateWidget<UMarburgumLocationBanner>(Player, UMarburgumLocationBanner::StaticClass());
@@ -248,6 +257,97 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
     {
         CharacterPanel = CreateWidget<UMarburgumCharacterPanel>(Player, UMarburgumCharacterPanel::StaticClass());
         Root->AddToLayer(EMarburgumUILayer::Screens, CharacterPanel);
+    }
+    if (!SkillsPanel)
+    {
+        SkillsPanel = CreateWidget<UMarburgumSkillsPanel>(Player, UMarburgumSkillsPanel::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Screens, SkillsPanel);
+    }
+    if (!ChoicePanel)
+    {
+        ChoicePanel = CreateWidget<UMarburgumChoicePanel>(Player, UMarburgumChoicePanel::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Screens, ChoicePanel);
+    }
+}
+
+bool UMarburgumUISubsystem::ToggleSkills()
+{
+    if (!SkillsPanel || LastPhase != EPhase::Ready)
+    {
+        return false;
+    }
+    CloseScreensExcept(SkillsPanel);
+    SkillsPanel->Toggle();
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=skills_panel open=%d"),
+        MarburgumII::Session::UiLogPrefix, SkillsPanel->IsOpen() ? 1 : 0);
+    return true;
+}
+
+bool UMarburgumUISubsystem::IsSkillsOpen() const
+{
+    return SkillsPanel && SkillsPanel->IsOpen();
+}
+
+bool UMarburgumUISubsystem::ToggleChoice(AMarburgumInteractable* Target, FName MissionId)
+{
+    if (!ChoicePanel || LastPhase != EPhase::Ready)
+    {
+        return false;
+    }
+    if (ChoicePanel->IsOpen())
+    {
+        ChoicePanel->Close();
+    }
+    else
+    {
+        CloseScreensExcept(ChoicePanel);
+        ChoicePanel->Open(Target, MissionId);
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=choice_panel open=%d mission=%s choices=%d"),
+        MarburgumII::Session::UiLogPrefix, ChoicePanel->IsOpen() ? 1 : 0, *MissionId.ToString(), ChoicePanel->GetShownChoiceCount());
+    return true;
+}
+
+bool UMarburgumUISubsystem::ChooseOption(int32 Number)
+{
+    return ChoicePanel && ChoicePanel->Choose(Number);
+}
+
+bool UMarburgumUISubsystem::IsChoiceOpen() const
+{
+    return ChoicePanel && ChoicePanel->IsOpen();
+}
+
+void UMarburgumUISubsystem::HandleFishingChanged(AMarburgumPlayerState* State)
+{
+    const UGameInstance* GameInstance = GetGameInstance();
+    const UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
+    const APlayerController* Local = World ? World->GetFirstPlayerController() : nullptr;
+    if (!Feed || !State || !Local || Local->PlayerState != State)
+    {
+        return;
+    }
+    const FMarburgumFishingStatus& Fishing = State->GetFishing();
+    if (Fishing.Phase == EMarburgumFishingPhase::Bite)
+    {
+        Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"), LOCTEXT("Bite", "A bite! Press [E] to strike."), MarburgumUI::ETone::Accent);
+        return;
+    }
+    // A cast that ended on its own: the receipt already told the catch and the too-early strike.
+    if (Fishing.Phase == EMarburgumFishingPhase::None && (Fishing.Attempt != LastFishingAttempt || Fishing.LastEnd != LastFishingEnd))
+    {
+        LastFishingAttempt = Fishing.Attempt;
+        LastFishingEnd = Fishing.LastEnd;
+        if (Fishing.LastEnd == EMarburgumFishingEnd::Escaped)
+        {
+            Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"), LOCTEXT("Escaped", "It got away. Strike sooner after the bite."),
+                MarburgumUI::ETone::Warning);
+        }
+        else if (Fishing.LastEnd == EMarburgumFishingEnd::Cancelled)
+        {
+            Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"), LOCTEXT("Cancelled", "You reeled in. Fishing needs you to stand still on the bank."),
+                MarburgumUI::ETone::Neutral);
+        }
     }
 }
 
@@ -320,6 +420,14 @@ void UMarburgumUISubsystem::CloseScreensExcept(const UObject* Keep)
     {
         CharacterPanel->Toggle();
     }
+    if (SkillsPanel && SkillsPanel.Get() != Keep && SkillsPanel->IsOpen())
+    {
+        SkillsPanel->Toggle();
+    }
+    if (ChoicePanel && ChoicePanel.Get() != Keep && ChoicePanel->IsOpen())
+    {
+        ChoicePanel->Close();
+    }
 }
 
 namespace
@@ -351,20 +459,24 @@ namespace
         return Mission ? FText::FromString(Mission->Name) : FText::FromName(MissionId);
     }
 
-    /** "European chub, Common roach or European perch" for a stage's inventory_any requirement. */
+    /** "European chub, Common roach or European perch" for a stage's inventory_any objective, or its required items. */
     FText RequiredItemsText(FName MissionId, FName StageId)
     {
         using namespace MarburgumII::Gameplay;
         const FMissionDefinition* Mission = FindMission(MissionId.ToString());
         const FMissionStageDefinition* Stage = Mission ? FindStage(*Mission, StageId.ToString()) : nullptr;
-        if (!Stage || Stage->RequiredAnyItemCount <= 0)
+        if (!Stage || (Stage->ObjectiveItemCount <= 0 && Stage->RequiredItemCount <= 0))
         {
             return FText::GetEmpty();
         }
         TArray<FString> Names;
-        for (int32 Index = 0; Index < Stage->RequiredAnyItemCount; ++Index)
+        for (int32 Index = 0; Index < Stage->ObjectiveItemCount; ++Index)
         {
-            Names.Add(ItemDisplayName(FName(Stage->RequiredAnyItems[Index])).ToString());
+            Names.Add(ItemDisplayName(FName(Stage->ObjectiveItems[Index])).ToString());
+        }
+        for (int32 Index = 0; Names.IsEmpty() && Index < Stage->RequiredItemCount; ++Index)
+        {
+            Names.Add(ItemDisplayName(FName(Stage->RequiredItems[Index].Id)).ToString());
         }
         FString Joined = Names.Pop();
         if (!Names.IsEmpty())
@@ -389,14 +501,65 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
     const AMarburgumInteractable* Subject = FindPlaced(GameInstance ? GameInstance->GetWorld() : nullptr, Receipt.InteractableId);
     const FText SubjectName = Subject && !Subject->DisplayName.IsEmpty() ? Subject->DisplayName : FText::FromName(Receipt.InteractableId);
 
-    if (Receipt.Outcome == EMarburgumRequestOutcome::Applied && Receipt.Effect == EMarburgumInteractionEffect::MissionStarted)
+    using namespace MarburgumII::Gameplay;
+    const bool bApplied = Receipt.Outcome == EMarburgumRequestOutcome::Applied;
+    const FMissionDefinition* Mission = Receipt.MissionId.IsNone() ? nullptr : FindMission(Receipt.MissionId.ToString());
+    auto PushSaid = [&]()
     {
-        // Oldest first: the line spoken, the mission it starts, then what it hands over.
-        if (const AMarburgumNpc* Npc = Cast<AMarburgumNpc>(Subject); Npc && !Npc->Dialogue.IsEmpty())
+        if (Subject && !Subject->Dialogue.IsEmpty())
         {
             Feed->Push(FName(*(Key.ToString() + TEXT(".said"))), FText::FromString(SubjectName.ToString().ToUpper()),
-                FText::Format(LOCTEXT("Said", "\u201C{0}\u201D"), Npc->Dialogue), MarburgumUI::ETone::Info);
+                FText::Format(LOCTEXT("Said", "\u201C{0}\u201D"), Subject->Dialogue), MarburgumUI::ETone::Info);
         }
+    };
+    auto PushGranted = [&]()
+    {
+        TArray<FString> Parts;
+        for (const FMarburgumItemStack& Stack : Receipt.ItemsGranted)
+        {
+            Parts.Add(FString::Printf(TEXT("%s \u00D7%d"), *ItemDisplayName(Stack.ItemId).ToString(), Stack.Quantity));
+        }
+        if (!Parts.IsEmpty())
+        {
+            Feed->Push(FName(*(Key.ToString() + TEXT(".granted"))), LOCTEXT("ItemsKind", "ITEMS RECEIVED"),
+                FText::FromString(FString::Join(Parts, TEXT(", "))), MarburgumUI::ETone::Success);
+        }
+    };
+    auto PushRewards = [&]()
+    {
+        if (Receipt.MoneyDelta != 0)
+        {
+            Feed->Push(FName(*(Key.ToString() + TEXT(".money"))), LOCTEXT("MoneyKind", "MONEY"),
+                Receipt.MoneyDelta > 0 ? FText::Format(LOCTEXT("MoneyPaid", "+{0}. Saved by the server."), FText::AsNumber(Receipt.MoneyDelta))
+                                       : FText::Format(LOCTEXT("MoneySpent", "\u2212{0}. Saved by the server."), FText::AsNumber(-Receipt.MoneyDelta)),
+                MarburgumUI::ETone::Success);
+        }
+        for (const FMarburgumSkillProgress& Award : Receipt.SkillXp)
+        {
+            const FSkillDefinition* Skill = FindSkill(Award.SkillId.ToString());
+            Feed->Push(FName(*(Key.ToString() + TEXT(".xp.") + Award.SkillId.ToString())), LOCTEXT("XpKind", "SKILL"),
+                FText::Format(LOCTEXT("XpGained", "{0} +{1} XP. [K] Skills."), FText::FromString(Skill ? Skill->DisplayName : Award.SkillId.ToString()),
+                    FText::AsNumber(Award.Xp)), MarburgumUI::ETone::Accent);
+        }
+    };
+
+    if (bApplied && Receipt.Effect == EMarburgumInteractionEffect::FishingCast)
+    {
+        Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"),
+            LOCTEXT("Cast", "Line in the water. Wait for a bite, then press [E] to strike."), MarburgumUI::ETone::Info);
+        return;
+    }
+    if (bApplied && Receipt.Effect == EMarburgumInteractionEffect::FishCaught)
+    {
+        Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"),
+            FText::Format(LOCTEXT("Caught", "You landed a {0}. Saved by the server."), ItemName), MarburgumUI::ETone::Success);
+        PushRewards();
+        return;
+    }
+    if (bApplied && Receipt.Effect == EMarburgumInteractionEffect::MissionStarted)
+    {
+        // Oldest first: the line spoken, the mission it starts, then what it hands over.
+        PushSaid();
         Feed->Push(Key, LOCTEXT("MissionStartedKind", "MISSION STARTED"),
             FText::Format(LOCTEXT("MissionStarted", "{0}. Saved by the server; your objective is pinned, and [J] opens the journal."),
                 MissionDisplayName(Receipt.MissionId)), MarburgumUI::ETone::Accent);
@@ -406,16 +569,49 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
                 FText::Format(LOCTEXT("MissionItem", "{0} \u00D7{1}, handed over for the mission."), ItemName, FText::AsNumber(Receipt.Quantity)),
                 MarburgumUI::ETone::Success);
         }
+        PushGranted();
         return;
     }
-    if (Receipt.Outcome == EMarburgumRequestOutcome::Applied && Receipt.Effect == EMarburgumInteractionEffect::StageCompleted)
+    if (bApplied && (Receipt.Effect == EMarburgumInteractionEffect::StageCompleted || Receipt.Effect == EMarburgumInteractionEffect::MissionCompleted))
     {
-        Feed->Push(Key, LOCTEXT("MissionUpdatedKind", "MISSION UPDATED"),
-            Receipt.ItemId.IsNone()
-                ? FText::Format(LOCTEXT("StageDone", "{0}: step complete. Saved by the server."), MissionDisplayName(Receipt.MissionId))
-                : FText::Format(LOCTEXT("StageDoneItem", "{0}: step complete; {1} \u00D7{2} handed over. Saved by the server."),
-                    MissionDisplayName(Receipt.MissionId), ItemName, FText::AsNumber(Receipt.Quantity)),
-            MarburgumUI::ETone::Success);
+        // The stage just done is the one before the new current stage, or the last one on completion.
+        const FMissionStageDefinition* Done = nullptr;
+        if (Mission)
+        {
+            const FMissionStageDefinition* Now = FindStage(*Mission, Receipt.MissionStage.ToString());
+            Done = Receipt.Effect == EMarburgumInteractionEffect::MissionCompleted ? Now : (Now && Now > Mission->Stages ? Now - 1 : nullptr);
+        }
+        const FMissionChoiceDefinition* Choice = Done && !Receipt.Choice.IsNone() ? FindChoice(*Done, Receipt.Choice.ToString()) : nullptr;
+        const FString Told = Choice ? Choice->CompletionText : Done ? Done->CompletionText : TEXT("");
+        if (!Choice)
+        {
+            PushSaid();
+        }
+        if (!Told.IsEmpty())
+        {
+            Feed->Push(FName(*(Key.ToString() + TEXT(".told"))), FText::FromString(MissionDisplayName(Receipt.MissionId).ToString().ToUpper()),
+                FText::FromString(Told), MarburgumUI::ETone::Info);
+        }
+        if (Receipt.Effect == EMarburgumInteractionEffect::MissionCompleted)
+        {
+            Feed->Push(Key, LOCTEXT("MissionCompletedKind", "MISSION COMPLETED"),
+                Mission && *Mission->JournalEntryId
+                    ? FText::Format(LOCTEXT("MissionCompletedEntry", "{0}. Journal entry added: {1}."), MissionDisplayName(Receipt.MissionId),
+                        FText::FromString(Mission->JournalEntryTitle))
+                    : FText::Format(LOCTEXT("MissionCompleted", "{0}. Saved by the server."), MissionDisplayName(Receipt.MissionId)),
+                MarburgumUI::ETone::Success);
+        }
+        else
+        {
+            Feed->Push(Key, LOCTEXT("MissionUpdatedKind", "MISSION UPDATED"),
+                Receipt.ItemId.IsNone()
+                    ? FText::Format(LOCTEXT("StageDone", "{0}: step complete. Saved by the server."), MissionDisplayName(Receipt.MissionId))
+                    : FText::Format(LOCTEXT("StageDoneItem", "{0}: step complete; {1} \u00D7{2} handed over. Saved by the server."),
+                        MissionDisplayName(Receipt.MissionId), ItemName, FText::AsNumber(Receipt.Quantity)),
+                MarburgumUI::ETone::Success);
+        }
+        PushGranted();
+        PushRewards();
         return;
     }
     if (Receipt.Outcome == EMarburgumRequestOutcome::Duplicate && Receipt.Effect != EMarburgumInteractionEffect::ItemGranted)
@@ -455,9 +651,47 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         break;
     }
     case EMarburgumInteractionReason::NothingToDo:
+        if (Subject && !Subject->Dialogue.IsEmpty())
+        {
+            // Talking to someone with no business for you still gets their line.
+            Feed->Push(FName(*(Key.ToString() + TEXT(".said"))), FText::FromString(SubjectName.ToString().ToUpper()),
+                FText::Format(LOCTEXT("Said", "\u201C{0}\u201D"), Subject->Dialogue), MarburgumUI::ETone::Info);
+            return;
+        }
         Message = FText::Format(LOCTEXT("NothingToDo", "{0} has nothing more for you right now. Nothing was changed."), SubjectName);
         Tone = MarburgumUI::ETone::Info;
         break;
+    case EMarburgumInteractionReason::ChoiceRequired:
+        Message = LOCTEXT("ChoiceRequired", "A decision is due here. Press [E] to see your choices.");
+        Tone = MarburgumUI::ETone::Info;
+        break;
+    case EMarburgumInteractionReason::UnknownChoice:
+        Message = LOCTEXT("UnknownChoice", "That decision is not open here any more. Nothing was changed.");
+        break;
+    case EMarburgumInteractionReason::InsufficientMoney:
+        Message = LOCTEXT("InsufficientMoney", "You cannot afford that. Nothing was changed.");
+        Tone = MarburgumUI::ETone::Info;
+        break;
+    case EMarburgumInteractionReason::PrerequisiteIncomplete:
+        Message = FText::Format(LOCTEXT("Prerequisite", "{0} is not ready to ask more of you yet. Nothing was changed."), SubjectName);
+        Tone = MarburgumUI::ETone::Info;
+        break;
+    case EMarburgumInteractionReason::NoRod:
+        Message = LOCTEXT("NoRod", "You need a fishing rod to fish here.");
+        Tone = MarburgumUI::ETone::Info;
+        break;
+    case EMarburgumInteractionReason::TooSoon:
+        Message = LOCTEXT("TooSoon", "Give the line a moment before casting again.");
+        Tone = MarburgumUI::ETone::Info;
+        break;
+    case EMarburgumInteractionReason::CannotFishNow:
+        Message = LOCTEXT("CannotFish", "Fishing needs both feet on the bank.");
+        Tone = MarburgumUI::ETone::Info;
+        break;
+    case EMarburgumInteractionReason::TooEarly:
+        Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"),
+            LOCTEXT("TooEarly", "You struck too early. Whatever was there is gone; cast again."), MarburgumUI::ETone::Warning);
+        return;
     case EMarburgumInteractionReason::OutOfStock:
         Message = LOCTEXT("OutOfStock", "Nothing left to take. Someone else got there first; nothing was changed.");
         break;

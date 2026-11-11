@@ -4,26 +4,166 @@
 
 // Gameplay vocabulary shared by the core, client and server modules (Gate 1 and the Lent slice).
 // Engine-neutral: ids are the stable snake_case content ids of Data/Gameplay/gameplay.v0.1.json, which
-// scripts/validate-gameplay-contract.py keeps in step with this header.
+// `mb2 validate gameplay` keeps in step with this header and the generated MarburgumGameplayCatalogue.h.
 namespace MarburgumII::Gameplay
 {
-    /** One registered item definition (ontology `ItemDefinition`). Display text is presentation only. */
+    // ---- Catalogue definition types. The tables themselves are generated from Data/Gameplay/gameplay.v0.1.json
+    // into MarburgumGameplayCatalogue.h (`mb2 generate gameplay`, ADR-049). Display text is presentation only. ----
+
+    enum class EItemKind : uint8 { Tool, Fish, Clue };
+
+    /** One registered item definition (ontology `ItemDefinition`), ids and English names from the original items.json. */
     struct FItemDefinition
     {
         const TCHAR* Id;
         const TCHAR* DisplayName;
+        EItemKind Kind;
     };
 
-    // Runtime subset of the item catalogue; ids and English names from the original Marburgum
-    // project/data/items.json (version 3). The three fish are registered because the first mission's
-    // requirement names them; nothing in this build can grant one yet (fishing is Stage 2).
-    inline constexpr FItemDefinition Items[] = {
-        { TEXT("fishing_rod"), TEXT("Fishing rod") },
-        { TEXT("chub"), TEXT("European chub") },
-        { TEXT("roach"), TEXT("Common roach") },
-        { TEXT("perch"), TEXT("European perch") },
+    /** A skill (original skills.json). Progress is XP on the 0-1990 curve (MarburgumSkillCurve.h, ADR-047). */
+    struct FSkillDefinition
+    {
+        const TCHAR* Id;
+        const TCHAR* DisplayName;
+        /** Reputation can be lost as well as earned. */
+        bool bReversible;
     };
 
+    /** One species a fishing spot can yield: weighted draw, XP to Fishing on landing it (original fishing.json). */
+    struct FFishSpecies
+    {
+        const TCHAR* Item;
+        int32 Weight;
+        int32 Xp;
+    };
+
+    struct FFishingSpotDefinition
+    {
+        const TCHAR* Id;
+        const TCHAR* DisplayName;
+        const FFishSpecies* Species;
+        int32 SpeciesCount;
+    };
+
+    enum class EInteractableKind : uint8 { Npc, FishingSpot, Clue, Location };
+
+    /**
+     * Where an authored interactable stands. Map: the map commandlet places it (the angler). Original: the server
+     * spawns it at the original game's position on the Lent level. AnglerRelative: at the original offset from
+     * wherever the map put the angler. Unplaced: outside the current level, so nothing can reach it yet.
+     */
+    enum class EPlacement : uint8 { Map, Original, AnglerRelative, Unplaced };
+
+    /** An authored interactable from the original interactions.json. */
+    struct FInteractableDefinition
+    {
+        const TCHAR* Id;
+        EInteractableKind Kind;
+        const TCHAR* DisplayName;
+        const TCHAR* Verb;
+        const TCHAR* Dialogue;
+        /** Original Godot metres: x east, y up, z south of the middle of Stari most. */
+        double GodotPosition[3];
+        float RangeCm;
+        EPlacement Placement;
+        float PrimaryColor[3];
+        float SecondaryColor[3];
+    };
+
+    struct FItemQuantity
+    {
+        const TCHAR* Id;
+        int32 Quantity;
+    };
+
+    struct FMissionFlag
+    {
+        const TCHAR* Id;
+        bool bValue;
+    };
+
+    struct FSkillXp
+    {
+        const TCHAR* Skill;
+        int32 Xp;
+    };
+
+    /** One way to resolve a choice stage: money, skill XP, a recorded outcome and flags (original missions.json). */
+    struct FMissionChoiceDefinition
+    {
+        const TCHAR* Id;
+        const TCHAR* Label;
+        int32 MoneyDelta;
+        const FSkillXp* SkillXp;
+        int32 SkillXpCount;
+        const TCHAR* Outcome;
+        const TCHAR* CompletionText;
+        const FMissionFlag* SetFlags;
+        int32 SetFlagCount;
+    };
+
+    /** Interaction: talk to or inspect CompleteTarget. InventoryAny: hold one of ObjectiveItems. Choice: pick a choice there. */
+    enum class EObjectiveType : uint8 { Interaction, InventoryAny, Choice };
+
+    /** One mission stage (original project/data/missions.json). Text is presentation only. */
+    struct FMissionStageDefinition
+    {
+        const TCHAR* Id;
+        const TCHAR* ObjectiveText;
+        /** Interactable that completes the stage. */
+        const TCHAR* CompleteTarget;
+        /** Verb shown at CompleteTarget while this stage is current. */
+        const TCHAR* Action;
+        EObjectiveType Objective;
+        /** InventoryAny: one of these, ObjectiveQuantity of it, consumed when bConsume. */
+        const TCHAR* const* ObjectiveItems;
+        int32 ObjectiveItemCount;
+        int32 ObjectiveQuantity;
+        bool bConsume;
+        /** Held, not consumed (a key that opens a door stays in the pocket). */
+        const FItemQuantity* RequiredItems;
+        int32 RequiredItemCount;
+        /** Handed over when the stage completes. */
+        const FItemQuantity* GrantItems;
+        int32 GrantItemCount;
+        const FMissionFlag* SetFlags;
+        int32 SetFlagCount;
+        const FMissionChoiceDefinition* Choices;
+        int32 ChoiceCount;
+        bool bFinal;
+        const TCHAR* CompletionText;
+    };
+
+    /** A registered mission with every stage of the original. */
+    struct FMissionDefinition
+    {
+        const TCHAR* Id;
+        const TCHAR* Name;
+        const TCHAR* Category;
+        const TCHAR* OfferTarget;
+        const TCHAR* Summary;
+        const TCHAR* StoryFamily;
+        /** Missions that must be completed before this one is offered. */
+        const TCHAR* const* RequiresCompleted;
+        int32 RequiresCompletedCount;
+        /** Granted, all or nothing, when the mission starts (`start_items`). */
+        const FItemQuantity* StartItems;
+        int32 StartItemCount;
+        const FMissionStageDefinition* Stages;
+        int32 StageCount;
+        /** Paid once, when the final stage completes. */
+        int32 RewardMoney;
+        /** Journal entry unlocked on completion; empty id for none. */
+        const TCHAR* JournalEntryId;
+        const TCHAR* JournalEntryTitle;
+        const TCHAR* JournalEntryText;
+    };
+}
+
+#include "MarburgumGameplayCatalogue.h"
+
+namespace MarburgumII::Gameplay
+{
     inline const FItemDefinition* FindItem(const FString& Id)
     {
         for (const FItemDefinition& Item : Items)
@@ -36,7 +176,43 @@ namespace MarburgumII::Gameplay
         return nullptr;
     }
 
-    // Development test fixtures placed on /Game/Maps/NetSmoke by scripts/editor/create_net_smoke_map.py.
+    inline const FSkillDefinition* FindSkill(const FString& Id)
+    {
+        for (const FSkillDefinition& Skill : Skills)
+        {
+            if (Id == Skill.Id)
+            {
+                return &Skill;
+            }
+        }
+        return nullptr;
+    }
+
+    inline const FFishingSpotDefinition* FindFishingSpot(const FString& Id)
+    {
+        for (const FFishingSpotDefinition& Spot : FishingSpots)
+        {
+            if (Id == Spot.Id)
+            {
+                return &Spot;
+            }
+        }
+        return nullptr;
+    }
+
+    inline const FInteractableDefinition* FindInteractable(const FString& Id)
+    {
+        for (const FInteractableDefinition& Entry : Interactables)
+        {
+            if (Id == Entry.Id)
+            {
+                return &Entry;
+            }
+        }
+        return nullptr;
+    }
+
+    // Development test fixtures placed on /Game/Maps/NetSmoke by the map commandlet.
     // They are labeled as fixtures in the world and the HUD; they are not authored Marburgum content.
     inline constexpr const TCHAR* SupplyCrateId = TEXT("dev_supply_crate");
     inline constexpr const TCHAR* FarSupplyCrateId = TEXT("dev_supply_crate_far");
@@ -72,74 +248,11 @@ namespace MarburgumII::Gameplay
     // The riverside angler from the original interactions.json; offers the first story mission.
     inline constexpr const TCHAR* LentAnglerId = TEXT("lent_angler");
 
-    /** One mission stage (original project/data/missions.json). Text is presentation only. */
-    struct FMissionStageDefinition
-    {
-        const TCHAR* Id;
-        const TCHAR* ObjectiveText;
-        /** Interactable that completes the stage. */
-        const TCHAR* CompleteTarget;
-        /** Verb shown at CompleteTarget while this stage is current. */
-        const TCHAR* Action;
-        /** `inventory_any`: one of these items, consumed on completion. Empty for interaction stages. */
-        const TCHAR* const* RequiredAnyItems;
-        int32 RequiredAnyItemCount;
-    };
-
-    /** A registered mission. Only the stages this build can reach are registered. */
-    struct FMissionDefinition
-    {
-        const TCHAR* Id;
-        const TCHAR* Name;
-        const TCHAR* Category;
-        const TCHAR* OfferTarget;
-        const TCHAR* Summary;
-        /** Granted, all or nothing, when the mission starts (`start_items`). */
-        const TCHAR* StartItem;
-        int32 StartItemQuantity;
-        const FMissionStageDefinition* Stages;
-        int32 StageCount;
-    };
-
-    inline constexpr const TCHAR* OrdinaryFish[] = { TEXT("chub"), TEXT("roach"), TEXT("perch") };
-
-    // `lent_first_catch` stages 1-2 of 5. Stage 1 cannot complete until fishing exists (Stage 2), and the
-    // stage 2 debris is not placed in any map yet, so a mission never gets past stage 2 in this build.
-    // Stages 3-5 (Petra Kralj, the service room, Vera Horvat) are not registered. Completing a stage
-    // moves to the next registered one; there is no "mission complete" state until the last stage exists.
-    inline constexpr FMissionStageDefinition LentFirstCatchStages[] = {
-        { TEXT("catch_first_fish"),
-          TEXT("Catch one ordinary fish from the nearby Drava spot, then show it to the riverside angler."),
-          TEXT("lent_angler"), TEXT("Show the catch"), OrdinaryFish, UE_ARRAY_COUNT(OrdinaryFish) },
-        { TEXT("recover_cashbox"),
-          TEXT("Inspect the debris beside the Drava and pull out the battered metal cashbox."),
-          TEXT("drava_cashbox_debris"), TEXT("Pull out the cashbox"), nullptr, 0 },
-    };
-
-    inline constexpr FMissionDefinition Missions[] = {
-        { TEXT("lent_first_catch"), TEXT("Something in the Water"), TEXT("story"), TEXT("lent_angler"),
-          TEXT("An ordinary Fishing assignment on the Drava has turned into a trail of old records, addresses and people."),
-          TEXT("fishing_rod"), 1, LentFirstCatchStages, UE_ARRAY_COUNT(LentFirstCatchStages) },
-    };
-
     inline const FMissionDefinition* FindMission(const FString& Id)
     {
         for (const FMissionDefinition& Mission : Missions)
         {
             if (Id == Mission.Id)
-            {
-                return &Mission;
-            }
-        }
-        return nullptr;
-    }
-
-    /** The mission an interactable offers, if any. */
-    inline const FMissionDefinition* FindMissionOfferedBy(const FString& InteractableId)
-    {
-        for (const FMissionDefinition& Mission : Missions)
-        {
-            if (InteractableId == Mission.OfferTarget)
             {
                 return &Mission;
             }
@@ -158,6 +271,36 @@ namespace MarburgumII::Gameplay
         }
         return nullptr;
     }
+
+    inline const FMissionChoiceDefinition* FindChoice(const FMissionStageDefinition& Stage, const FString& ChoiceId)
+    {
+        for (int32 Index = 0; Index < Stage.ChoiceCount; ++Index)
+        {
+            if (ChoiceId == Stage.Choices[Index].Id)
+            {
+                return &Stage.Choices[Index];
+            }
+        }
+        return nullptr;
+    }
+
+    // ---- Fishing (original src/shared/protocol.h and MarburgumFishingRules.cpp, ADR-048) ----
+
+    // After a cast something takes an interest between FishingMinWaitMs and FishingMaxWaitMs later; then the
+    // fish is on for FishingBiteWindowMs, and a strike in that window lands it. A strike before the bite, or
+    // none in time, ends the attempt. The original's purchasable ranks that shortened the wait or widened the
+    // window are excluded with that system (ADR-004): this is the original's base rule.
+    inline constexpr int32 FishingMinWaitMs = 1500;
+    inline constexpr int32 FishingMaxWaitMs = 4000;
+    inline constexpr int32 FishingBiteWindowMs = 1800;
+    // Casts closer together than this are refused (MIN_FISHING_INTERVAL_MSEC).
+    inline constexpr int32 FishingMinCastIntervalMs = 1000;
+    // Fishing needs both feet on the bank: a body more than this far from where it cast ends the cast.
+    inline constexpr float FishingMoveCancelCm = 75.f;
+    // The rod every cast needs.
+    inline constexpr const TCHAR* FishingRodItem = TEXT("fishing_rod");
+    // The skill a landed fish trains.
+    inline constexpr const TCHAR* FishingSkill = TEXT("fishing");
 
     // ---- Player condition (original src/shared/combat.h and protocol.h) ----
 
@@ -264,9 +407,10 @@ namespace MarburgumII::Gameplay
 
     // Durable world-store record format written by the server (MarburgumIIServer).
     inline constexpr const TCHAR* WorldStoreFormat = TEXT("marburgumii.world_store");
-    // Schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition.
-    // Older documents load and are rewritten at the current schema by the next commit.
-    inline constexpr int32 WorldStoreSchemaVersion = 3;
+    // Schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition; schema 4
+    // adds skill XP, money and mission outcomes (ADR-047, ADR-049). Older documents load and are rewritten at the
+    // current schema by the next commit.
+    inline constexpr int32 WorldStoreSchemaVersion = 4;
     inline constexpr int32 WorldStoreOldestReadableSchema = 1;
 
     // Prefix for machine-parsed interaction evidence lines (scripts/interaction-smoke-linux.sh).

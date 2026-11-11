@@ -18,7 +18,7 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
     const FString Path = FPaths::Combine(Directory, TEXT("store.json"));
     FString Error;
 
-    // A schema 3 commit round-trips each character's condition.
+    // A current-schema commit round-trips each character's condition.
     {
         FMarburgumWorldStore Store(Path);
         TestTrue(TEXT("missing file is an empty world"), Store.Load(Error));
@@ -33,7 +33,7 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
     {
         FMarburgumWorldStore Store(Path);
         TestTrue(TEXT("reload"), Store.Load(Error));
-        TestEqual(TEXT("schema"), Store.GetLoadedSchema(), 3);
+        TestEqual(TEXT("schema"), Store.GetLoadedSchema(), 4);
         const FMarburgumStoredCondition* Loaded = Store.Get().Conditions.Find(TEXT("runner"));
         TestTrue(TEXT("condition saved"), Loaded != nullptr);
         if (Loaded)
@@ -101,8 +101,54 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("vitality clamped"), Odd.Vitality, 0);
     }
 
+    // Schema 4 (ADR-047, ADR-049): skill XP, money and mission outcomes round-trip; a schema 3 mission is under way.
+    {
+        FMarburgumWorldStore Store(Path);
+        FMarburgumWorldRecord Next;
+        Next.Revision = 9;
+        Next.Skills.FindOrAdd(TEXT("simon")).Add(TEXT("fishing"), 44);
+        Next.Money.Add(TEXT("simon"), 30);
+        FMarburgumStoredMission& Done = Next.Missions.FindOrAdd(TEXT("simon")).Add(TEXT("kiosk_67_customer_stopped_coming"));
+        Done.Stage = TEXT("resolution");
+        Done.bCompleted = true;
+        Done.Choice = TEXT("pay_tab");
+        Done.Outcome = TEXT("tab_paid");
+        Done.bRewardPaid = true;
+        Done.Flags.Add(TEXT("ledger_initials_recognized"), true);
+        FMarburgumStoredReceipt Receipt;
+        Receipt.Character = TEXT("simon");
+        Receipt.Kind = TEXT("mission_completed");
+        Receipt.Granted.Add(TEXT("brass_key"), 1);
+        Receipt.MoneyDelta = -20;
+        Receipt.SkillXp.Add(TEXT("reputation"), 15);
+        Next.Receipts.Add(TEXT("OP"), Receipt);
+        TestTrue(TEXT("schema 4 commit"), Store.Commit(Next, Error));
+    }
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("schema 4 reload"), Store.Load(Error));
+        TestEqual(TEXT("xp kept"), Store.Get().Skills.FindRef(TEXT("simon")).FindRef(TEXT("fishing")), int64(44));
+        TestEqual(TEXT("money kept"), Store.Get().Money.FindRef(TEXT("simon")), int64(30));
+        const FMarburgumStoredMission Done = Store.Get().Missions.FindRef(TEXT("simon")).FindRef(TEXT("kiosk_67_customer_stopped_coming"));
+        TestTrue(TEXT("completed kept"), Done.bCompleted && Done.bRewardPaid);
+        TestEqual(TEXT("outcome kept"), Done.Outcome, FString(TEXT("tab_paid")));
+        TestTrue(TEXT("flag kept"), Done.Flags.FindRef(TEXT("ledger_initials_recognized")));
+        const FMarburgumStoredReceipt Receipt = Store.Get().Receipts.FindRef(TEXT("OP"));
+        TestEqual(TEXT("receipt money"), Receipt.MoneyDelta, int64(-20));
+        TestEqual(TEXT("receipt grant"), Receipt.Granted.FindRef(TEXT("brass_key")), 1);
+        TestEqual(TEXT("receipt xp"), Receipt.SkillXp.FindRef(TEXT("reputation")), int64(15));
+    }
+    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":3,\"revision\":2,")
+        TEXT("\"missions\":{\"simon\":{\"lent_first_catch\":{\"stage\":\"catch_first_fish\",\"started_revision\":1}}}}"), *Path);
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("schema 3 mission loads"), Store.Load(Error));
+        TestFalse(TEXT("schema 3 mission under way"), Store.Get().Missions.FindRef(TEXT("simon")).FindRef(TEXT("lent_first_catch")).bCompleted);
+        TestTrue(TEXT("schema 3 has no skills"), Store.Get().Skills.IsEmpty() && Store.Get().Money.IsEmpty());
+    }
+
     // A schema this build does not know is refused rather than reinterpreted.
-    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":4,\"revision\":1}"), *Path);
+    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":5,\"revision\":1}"), *Path);
     {
         FMarburgumWorldStore Store(Path);
         TestFalse(TEXT("future schema refused"), Store.Load(Error));

@@ -7,7 +7,9 @@
 #include "MarburgumGameplayContract.h"
 #include "MarburgumCharacter.h"
 #include "MarburgumInteractable.h"
+#include "MarburgumMissionLogic.h"
 #include "MarburgumNetworkContract.h"
+#include "MarburgumPlayerState.h"
 #include "MarburgumVehicle.h"
 #include "MarburgumVehicleContract.h"
 #include "MarburgumVehicleDynamics.h"
@@ -51,6 +53,21 @@ void AMarburgumPlayerController::SetupInputComponent()
         InputComponent->BindKey(EKeys::I, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleInventory);
         InputComponent->BindKey(EKeys::J, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleJournal);
         InputComponent->BindKey(EKeys::C, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleCharacter);
+        InputComponent->BindKey(EKeys::K, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleSkills);
+        // Number keys pick an option in an open choice panel (ADR-049).
+        const FKey Numbers[] = { EKeys::One, EKeys::Two, EKeys::Three, EKeys::Four, EKeys::Five, EKeys::Six };
+        for (int32 Index = 0; Index < UE_ARRAY_COUNT(Numbers); ++Index)
+        {
+            FInputKeyBinding Binding(FInputChord(Numbers[Index]), IE_Pressed);
+            Binding.KeyDelegate.GetDelegateForManualSet().BindWeakLambda(this, [this, Index]()
+            {
+                if (IsLocalController())
+                {
+                    FMarburgumClientUiHooks::OnNumberKeyPressed().Broadcast(this, Index + 1);
+                }
+            });
+            InputComponent->KeyBindings.Add(Binding);
+        }
     }
 }
 
@@ -67,6 +84,14 @@ void AMarburgumPlayerController::RequestToggleJournal()
     if (IsLocalController())
     {
         FMarburgumClientUiHooks::OnJournalToggleRequested().Broadcast(this);
+    }
+}
+
+void AMarburgumPlayerController::RequestToggleSkills()
+{
+    if (IsLocalController())
+    {
+        FMarburgumClientUiHooks::OnSkillsToggleRequested().Broadcast(this);
     }
 }
 
@@ -125,8 +150,74 @@ void AMarburgumPlayerController::RequestInteract()
     }
     if (AMarburgumInteractable* Target = FindInteractionCandidate())
     {
+        // A decision due here is made in the choice panel, which sends the choice itself.
+        FMarburgumMissionPreview Preview;
+        if (PlanMissionInteraction(*Target, Preview)
+            && Preview.Action == static_cast<uint8>(MarburgumII::Missions::EPlanAction::ChoiceRequired))
+        {
+            FMarburgumClientUiHooks::OnMissionChoiceRequested().Broadcast(this, Target, Preview.MissionId);
+            return;
+        }
         SubmitInteraction(FGuid::NewGuid(), Target);
     }
+}
+
+bool AMarburgumPlayerController::PlanMissionInteraction(const AMarburgumInteractable& Target, FMarburgumMissionPreview& OutPreview) const
+{
+    using namespace MarburgumII::Missions;
+    const AMarburgumPlayerState* State = GetPlayerState<AMarburgumPlayerState>();
+    if (!State || !State->AreMissionsKnown() || !State->IsInventoryKnown() || Target.IsItemSource())
+    {
+        return false;
+    }
+    TMap<FString, FProgressView> Views;
+    for (const FMarburgumMissionState& Progress : State->GetMissions())
+    {
+        Views.Add(Progress.MissionId.ToString(), { Progress.StageId.ToString(), Progress.bCompleted });
+    }
+    const FPlan Plan = PlanInteraction(Target.InteractableId.ToString(),
+        [&Views](const FString& Mission) { return Views.Find(Mission); },
+        [State](const FString& Item) { return State->CountItem(FName(*Item)); });
+    OutPreview.Action = static_cast<uint8>(Plan.Action);
+    OutPreview.MissionId = Plan.Mission ? FName(Plan.Mission->Id) : NAME_None;
+    OutPreview.StageId = Plan.Stage ? FName(Plan.Stage->Id) : NAME_None;
+    OutPreview.MissingItem = Plan.MissingItem.IsEmpty() ? NAME_None : FName(*Plan.MissingItem);
+    OutPreview.Prerequisite = Plan.Prerequisite.IsEmpty() ? NAME_None : FName(*Plan.Prerequisite);
+    return true;
+}
+
+void AMarburgumPlayerController::SubmitMissionChoice(const FGuid& OperationId, AMarburgumInteractable* Target, FName MissionId, FName ChoiceId)
+{
+    if (!IsLocalController())
+    {
+        return;
+    }
+    PendingOperationId = OperationId;
+    PendingTarget = Target;
+    PendingSinceSeconds = FPlatformTime::Seconds();
+    ServerRequestMissionChoice(OperationId, Target, MissionId, ChoiceId);
+}
+
+void AMarburgumPlayerController::ServerRequestMissionChoice_Implementation(FGuid OperationId, AMarburgumInteractable* Target,
+    FName MissionId, FName ChoiceId)
+{
+    UWorld* World = GetWorld();
+    if (!World || !AdmitRequest(TEXT("choice")))
+    {
+        return;
+    }
+    FMarburgumInteractionReceipt Receipt;
+    if (UMarburgumAuthorityService* Authority = UMarburgumAuthorityService::Get(World))
+    {
+        Receipt = Authority->HandleMissionChoice(*this, OperationId, Target, MissionId, ChoiceId);
+    }
+    else
+    {
+        Receipt.OperationId = OperationId;
+        Receipt.Outcome = EMarburgumRequestOutcome::Rejected;
+        Receipt.Reason = EMarburgumInteractionReason::AuthorityUnavailable;
+    }
+    ClientReceiveInteractionReceipt(Receipt);
 }
 
 void AMarburgumPlayerController::SubmitInteraction(const FGuid& OperationId, AMarburgumInteractable* Target)

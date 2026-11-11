@@ -29,3 +29,21 @@ FMarburgumLocalPlayerUiEvent& FMarburgumClientUiHooks::OnCharacterToggleRequeste
     static FMarburgumLocalPlayerUiEvent Event;
     return Event;
 }
+
+FMarburgumLocalPlayerUiEvent& FMarburgumClientUiHooks::OnSkillsToggleRequested()
+{
+    static FMarburgumLocalPlayerUiEvent Event;
+    return Event;
+}
+
+FMarburgumChoiceUiEvent& FMarburgumClientUiHooks::OnMissionChoiceRequested()
+{
+    static FMarburgumChoiceUiEvent Event;
+    return Event;
+}
+
+FMarburgumNumberKeyUiEvent& FMarburgumClientUiHooks::OnNumberKeyPressed()
+{
+    static FMarburgumNumberKeyUiEvent Event;
+    return Event;
+}

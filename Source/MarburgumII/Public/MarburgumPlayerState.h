@@ -9,8 +9,8 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumInventoryChanged, class AMarburgum
 DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumPlayerStateChanged, class AMarburgumPlayerState*);
 
 /**
- * Network-visible per-player state. The development character key, inventory, missions, current area
- * and condition are server-owned and replicate to their owner only (custody and progress are private),
+ * Network-visible per-player state. The development character key, inventory, missions, current area,
+ * condition, skills, money and fishing are server-owned and replicate to their owner only (custody and progress are private),
  * never to other players.
  * Account identity is not implemented: the key is an unauthenticated development identity (ADR-014).
  */
@@ -86,6 +86,30 @@ public:
     /** Server only: increments on every RestoreConditionAuthority, so a pawn knows to adopt it again. */
     int32 GetConditionRestoreCount() const { return ConditionRestoreCount; }
 
+    /**
+     * Owner-visible: skill XP and money from the durable record (ADR-047, ADR-049). Only meaningful once
+     * IsProgressKnown(). Skills with no XP are absent; level and progress come from MarburgumSkillCurve.
+     */
+    bool IsProgressKnown() const { return bProgressKnown; }
+    const TArray<FMarburgumSkillProgress>& GetSkills() const { return Skills; }
+    int64 GetSkillXp(FName SkillId) const;
+    int64 GetMoney() const { return Money; }
+
+    /** Authority only: replace the replicated skills and money with the durable record. */
+    void SetProgressAuthority(const TArray<FMarburgumSkillProgress>& InSkills, int64 InMoney);
+
+    /** Fired on the owning client when replicated skills or money change, and on the server when set. */
+    static FMarburgumPlayerStateChanged& OnProgressChanged();
+
+    /** Owner-visible: the character's line in the water (ADR-048). */
+    const FMarburgumFishingStatus& GetFishing() const { return Fishing; }
+
+    /** Authority only. No-op when nothing changed. */
+    void SetFishingAuthority(const FMarburgumFishingStatus& InFishing);
+
+    /** Fired on the owning client when the replicated fishing status changes, and on the server when set. */
+    static FMarburgumPlayerStateChanged& OnFishingChanged();
+
 protected:
     UFUNCTION()
     void OnRep_Inventory();
@@ -98,6 +122,12 @@ protected:
 
     UFUNCTION()
     void OnRep_Condition();
+
+    UFUNCTION()
+    void OnRep_Progress();
+
+    UFUNCTION()
+    void OnRep_Fishing();
 
 private:
     FString CharacterKey;
@@ -130,4 +160,16 @@ private:
     FMarburgumCondition Condition;
 
     int32 ConditionRestoreCount = 0;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Progress)
+    bool bProgressKnown = false;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Progress)
+    TArray<FMarburgumSkillProgress> Skills;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Progress)
+    int64 Money = 0;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Fishing)
+    FMarburgumFishingStatus Fishing;
 };

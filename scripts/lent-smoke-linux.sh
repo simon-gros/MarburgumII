@@ -18,7 +18,7 @@
 # ground of any seconds the server itself simulated it running (ADR-020), between its walk start and the
 # server placing it in Lent; the server must have detected F's clock and no other.
 # Honest walkers also fail on their own if their world clock ran ahead of real time.
-# The server is stopped and the store file checked: schema 3, one commit (the mission start).
+# The server is stopped and the store file checked: schema 4, one commit (the mission start).
 # Phase 2 (same store, server restarted):
 #   M2 M's character: mission, pinned objective and start item restored; the replay is a Duplicate.
 #   T  a new character walks from the bridge into Lent: the location banner appears.
@@ -198,7 +198,7 @@ store_check=0
 read -r revision stage < "$out_dir/store-check.txt" || true
 store_hash="$(sha256sum "$store" 2>/dev/null | cut -d' ' -f1 || true)"
 fault_left="$(tr -d '[:space:]' < "$store.fail" 2>/dev/null || true)"
-echo "  store after phase 1: schema 3, revision=${revision:-none} stage=${stage:-none} (want 1, catch_first_fish), injected faults left=$fault_left"
+echo "  store after phase 1: schema 4, revision=${revision:-none} stage=${stage:-none} (want 1, catch_first_fish), injected faults left=$fault_left"
 [[ "$fault_left" == "0" ]] || status=1
 applied_1=$(grep -ac "MB2INTERACT role=server event=interaction .* outcome=applied" "$out_dir/server-1.log" || true)
 commit_failed=$(grep -ac "MB2INTERACT role=server event=commit_failed" "$out_dir/server-1.log" || true)
@@ -233,9 +233,9 @@ echo "  server phase 2: time_discrepancy=$detected_2 (want 0)"
 [[ "$detected_2" -eq 0 ]] || status=1
 
 applied_2=$(grep -ac "MB2INTERACT role=server event=interaction .* outcome=applied" "$out_dir/server-2.log" || true)
-loaded=$(grep -ac "MB2INTERACT role=server event=store_loaded .* schema=3 revision=1 " "$out_dir/server-2.log" || true)
+loaded=$(grep -ac "MB2INTERACT role=server event=store_loaded .* schema=4 revision=1 " "$out_dir/server-2.log" || true)
 store_hash_2="$(sha256sum "$store" 2>/dev/null | cut -d' ' -f1 || true)"
-echo "  server phase 2: store_loaded(schema 3, revision 1)=$loaded applied=$applied_2 (want 0)"
+echo "  server phase 2: store_loaded(schema 4, revision 1)=$loaded applied=$applied_2 (want 0)"
 [[ "$loaded" -eq 1 && "$applied_2" -eq 0 ]] || status=1
 if [[ "$store_hash" == "$store_hash_2" ]]; then
     echo "  store unchanged by phase 2: yes"

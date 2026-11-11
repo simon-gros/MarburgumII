@@ -9,6 +9,7 @@
 #include "Components/VerticalBox.h"
 #include "MarburgumCharacter.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumMissionLogic.h"
 #include "MarburgumInteractable.h"
 #include "MarburgumVehicle.h"
 #include "MarburgumVehicleContract.h"
@@ -164,9 +165,14 @@ void UMarburgumInteractionPrompt::Refresh()
     const bool bWaiting = Controller->GetPendingInteraction(PendingId, PendingTarget) && PendingTarget.Get() == Target;
     const AMarburgumPlayerState* State = Controller->GetPlayerState<AMarburgumPlayerState>();
     const bool bHasCharacter = State && State->HasCharacter();
-    if (const AMarburgumNpc* Npc = Cast<AMarburgumNpc>(Target))
+    if (MarburgumII::Gameplay::FindFishingSpot(Target->InteractableId.ToString()))
     {
-        RefreshNpc(*Npc, State, bWaiting);
+        RefreshFishing(*Target, State, bWaiting);
+        return;
+    }
+    if (!Target->IsItemSource())
+    {
+        RefreshAuthored(*Target, *Controller, State, bWaiting);
         return;
     }
     const int32 Stock = Target->GetRemainingStock();
@@ -222,62 +228,43 @@ void UMarburgumInteractionPrompt::Refresh()
     Apply(*Target, Verb, Detail, Tone, bKeyActive);
 }
 
-void UMarburgumInteractionPrompt::RefreshNpc(const AMarburgumNpc& Npc, const AMarburgumPlayerState* State, bool bWaiting)
+void UMarburgumInteractionPrompt::RefreshAuthored(const AMarburgumInteractable& Target, const AMarburgumPlayerController& Controller,
+    const AMarburgumPlayerState* State, bool bWaiting)
 {
     using namespace MarburgumII::Gameplay;
+    using MarburgumII::Missions::EPlanAction;
     // What the server would decide is mirrored here only to choose words; the server still decides.
-    const FMissionDefinition* Offer = FindMissionOfferedBy(Npc.InteractableId.ToString());
-    const FMissionDefinition* StageMission = nullptr;
-    const FMissionStageDefinition* Stage = nullptr;
-    bool bHasRequired = true;
-    if (State && State->AreMissionsKnown())
-    {
-        for (const FMarburgumMissionState& Progress : State->GetMissions())
-        {
-            const FMissionDefinition* Mission = FindMission(Progress.MissionId.ToString());
-            const FMissionStageDefinition* Current = Mission ? FindStage(*Mission, Progress.StageId.ToString()) : nullptr;
-            if (Current && Npc.InteractableId.ToString() == Current->CompleteTarget)
-            {
-                StageMission = Mission;
-                Stage = Current;
-                break;
-            }
-        }
-        if (Offer && State->FindMission(FName(Offer->Id)))
-        {
-            Offer = nullptr; // Already taken up.
-        }
-    }
-    if (Stage && Stage->RequiredAnyItemCount > 0)
-    {
-        bHasRequired = false;
-        for (int32 Index = 0; Index < Stage->RequiredAnyItemCount && !bHasRequired; ++Index)
-        {
-            bHasRequired = State->CountItem(FName(Stage->RequiredAnyItems[Index])) > 0;
-        }
-    }
+    FMarburgumMissionPreview Preview;
+    const bool bKnown = Controller.PlanMissionInteraction(Target, Preview);
+    const FMissionDefinition* Mission = Preview.MissionId.IsNone() ? nullptr : FindMission(Preview.MissionId.ToString());
+    const FMissionStageDefinition* Stage = Mission && !Preview.StageId.IsNone() ? FindStage(*Mission, Preview.StageId.ToString()) : nullptr;
+    const EPlanAction Action = static_cast<EPlanAction>(Preview.Action);
 
-    enum class EState : uint8 { Waiting, NoCharacter, Unknown, Offer, Stage, StageBlocked, Idle };
+    enum class EState : uint8 { Waiting, NoCharacter, Unknown, Plan };
     const EState Mode = bWaiting ? EState::Waiting
         : !(State && State->HasCharacter()) ? EState::NoCharacter
-        : !State->AreMissionsKnown() ? EState::Unknown
-        : Offer ? EState::Offer
-        : Stage ? (bHasRequired ? EState::Stage : EState::StageBlocked)
-        : EState::Idle;
+        : !bKnown ? EState::Unknown
+        : EState::Plan;
 
-    const FString Signature = FString::Printf(TEXT("npc|%s|%d|%s"), *Npc.InteractableId.ToString(),
-        static_cast<int32>(Mode), Stage ? Stage->Id : TEXT("-"));
+    const FString Signature = FString::Printf(TEXT("authored|%s|%d|%d|%s|%s|%s"), *Target.InteractableId.ToString(), static_cast<int32>(Mode),
+        Preview.Action, *Preview.MissionId.ToString(), *Preview.StageId.ToString(), *Preview.MissingItem.ToString());
     if (Signature == LastSignature)
     {
         return;
     }
     LastSignature = Signature;
-    Shown = const_cast<AMarburgumNpc*>(&Npc);
+    Shown = const_cast<AMarburgumInteractable*>(&Target);
 
-    FText Verb = Npc.Verb.IsEmpty() ? LOCTEXT("TalkVerb", "Talk") : Npc.Verb;
+    const bool bPerson = Target.IsA<AMarburgumNpc>();
+    FText Verb = Target.Verb.IsEmpty() ? (bPerson ? LOCTEXT("TalkVerb", "Talk") : LOCTEXT("InspectVerb", "Inspect")) : Target.Verb;
     FText Detail;
     ETone Tone = ETone::Accent;
     bool bKeyActive = true;
+    auto ItemName = [](const FName& Item)
+    {
+        const FItemDefinition* Definition = FindItem(Item.ToString());
+        return FText::FromString(Definition ? Definition->DisplayName : Item.ToString());
+    };
     switch (Mode)
     {
     case EState::Waiting:
@@ -295,35 +282,96 @@ void UMarburgumInteractionPrompt::RefreshNpc(const AMarburgumNpc& Npc, const AMa
         Tone = ETone::Neutral;
         bKeyActive = false;
         break;
-    case EState::Offer:
-        Detail = FText::Format(LOCTEXT("Offer", "Has a job for you  \u00B7  {0}"), FText::FromString(Offer->Name));
-        break;
-    case EState::Stage:
-        Verb = FText::FromString(Stage->Action);
-        Detail = FText::Format(LOCTEXT("StageReady", "{0}  \u00B7  next step"), FText::FromString(StageMission->Name));
-        break;
-    case EState::StageBlocked:
-    {
-        Verb = FText::FromString(Stage->Action);
-        TArray<FString> Names;
-        for (int32 Index = 0; Index < Stage->RequiredAnyItemCount; ++Index)
+    case EState::Plan:
+        switch (Action)
         {
-            const FItemDefinition* Item = FindItem(Stage->RequiredAnyItems[Index]);
-            Names.Add(Item ? Item->DisplayName : Stage->RequiredAnyItems[Index]);
+        case EPlanAction::StartMission:
+            Detail = FText::Format(LOCTEXT("Offer", "Has a job for you  \u00B7  {0}"), FText::FromString(Mission->Name));
+            break;
+        case EPlanAction::CompleteStage:
+            Verb = FText::FromString(Stage->Action);
+            Detail = FText::Format(LOCTEXT("StageReady", "{0}  \u00B7  next step"), FText::FromString(Mission->Name));
+            break;
+        case EPlanAction::ChoiceRequired:
+            Verb = FText::FromString(Stage->Action);
+            Detail = FText::Format(LOCTEXT("ChoiceDue", "{0}  \u00B7  a decision is yours to make"), FText::FromString(Mission->Name));
+            break;
+        case EPlanAction::RequirementNotMet:
+            Verb = FText::FromString(Stage->Action);
+            Detail = Stage->Objective == EObjectiveType::InventoryAny
+                ? FText::Format(LOCTEXT("NeedsAny", "Bring {0} first."), ItemName(Preview.MissingItem))
+                : FText::Format(LOCTEXT("Needs", "You need {0} for this."), ItemName(Preview.MissingItem));
+            Tone = ETone::Neutral;
+            bKeyActive = false;
+            break;
+        case EPlanAction::PrerequisiteIncomplete:
+        {
+            const FMissionDefinition* Before = FindMission(Preview.Prerequisite.ToString());
+            Detail = FText::Format(LOCTEXT("Later", "Not yet. Finish \u201C{0}\u201D first."),
+                FText::FromString(Before ? Before->Name : Preview.Prerequisite.ToString()));
+            Tone = ETone::Neutral;
+            break;
         }
-        Detail = FText::Format(LOCTEXT("StageBlocked", "Needs one fish: {0}. Fishing is not in this build yet."),
-            FText::FromString(FString::Join(Names, TEXT(", "))));
-        Tone = ETone::Neutral;
-        bKeyActive = false;
+        case EPlanAction::NothingToDo:
+            Detail = bPerson ? LOCTEXT("Idle", "Nothing more to discuss for now.") : LOCTEXT("IdlePlace", "Nothing more to find here for now.");
+            Tone = ETone::Neutral;
+            break;
+        }
         break;
     }
-    case EState::Idle:
-        Detail = LOCTEXT("Idle", "Nothing more to discuss for now.");
+    Apply(Target, Verb, Detail, Tone, bKeyActive);
+}
+
+void UMarburgumInteractionPrompt::RefreshFishing(const AMarburgumInteractable& Spot, const AMarburgumPlayerState* State, bool bWaiting)
+{
+    using namespace MarburgumII::Gameplay;
+    const FMarburgumFishingStatus Fishing = State ? State->GetFishing() : FMarburgumFishingStatus();
+    const bool bRod = State && State->IsInventoryKnown() && State->CountItem(FName(FishingRodItem)) > 0;
+    const FString Signature = FString::Printf(TEXT("fishing|%s|%d|%d|%d|%d"), *Spot.InteractableId.ToString(), bWaiting ? 1 : 0,
+        static_cast<int32>(Fishing.Phase), Fishing.Attempt, bRod ? 1 : 0);
+    if (Signature == LastSignature)
+    {
+        return;
+    }
+    LastSignature = Signature;
+    Shown = const_cast<AMarburgumInteractable*>(&Spot);
+
+    FText Verb;
+    FText Detail;
+    ETone Tone = ETone::Accent;
+    bool bKeyActive = true;
+    if (bWaiting)
+    {
+        Verb = LOCTEXT("WaitingVerb", "Waiting for the server");
+        Detail = LOCTEXT("Waiting", "Request sent. Nothing changes until the server confirms it.");
+        Tone = ETone::Info;
+        bKeyActive = false;
+    }
+    else if (Fishing.Phase == EMarburgumFishingPhase::Bite)
+    {
+        Verb = LOCTEXT("StrikeVerb", "Strike!");
+        Detail = LOCTEXT("Bite", "Something has taken the bait. Strike now.");
+        Tone = ETone::Success;
+    }
+    else if (Fishing.Phase == EMarburgumFishingPhase::Waiting)
+    {
+        Verb = LOCTEXT("WaitVerb", "Wait for a bite");
+        Detail = LOCTEXT("LineIn", "Line in the water. Striking before a bite loses the cast; walking off ends it.");
+        Tone = ETone::Neutral;
+    }
+    else if (!bRod)
+    {
+        Verb = LOCTEXT("FishVerb", "Fish");
+        Detail = LOCTEXT("NoRod", "You need a fishing rod.");
         Tone = ETone::Neutral;
         bKeyActive = false;
-        break;
     }
-    Apply(Npc, Verb, Detail, Tone, bKeyActive);
+    else
+    {
+        Verb = LOCTEXT("CastVerb", "Cast");
+        Detail = LOCTEXT("Cast", "Cast your line and wait for a bite, then strike.");
+    }
+    Apply(Spot, Verb, Detail, Tone, bKeyActive);
 }
 
 void UMarburgumInteractionPrompt::RefreshVehicle(const AMarburgumVehicle& Vehicle, FName Seat, bool bSeated, bool bWaiting)

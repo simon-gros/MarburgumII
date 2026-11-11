@@ -36,7 +36,9 @@ protected:
 
 private:
     void Refresh();
-    void RefreshNpc(const AMarburgumNpc& Npc, const AMarburgumPlayerState* State, bool bWaiting);
+    void RefreshAuthored(const AMarburgumInteractable& Target, const AMarburgumPlayerController& Controller,
+        const AMarburgumPlayerState* State, bool bWaiting);
+    void RefreshFishing(const AMarburgumInteractable& Spot, const AMarburgumPlayerState* State, bool bWaiting);
     void RefreshVehicle(const AMarburgumVehicle& Vehicle, FName Seat, bool bSeated, bool bWaiting);
     void Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone, bool bKeyActive);
     void ApplyTo(const AActor& Target, const FText& Subject, bool bFixture, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone,

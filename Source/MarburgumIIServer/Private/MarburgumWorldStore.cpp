@@ -57,9 +57,39 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
         const TMap<FString, FMarburgumStoredMission>& Owned = Source.Missions[Character];
         for (const FString& Mission : SortedKeys(Owned))
         {
+            const FMarburgumStoredMission& State = Owned[Mission];
             TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
-            Entry->SetStringField(TEXT("stage"), Owned[Mission].Stage);
-            Entry->SetNumberField(TEXT("started_revision"), static_cast<double>(Owned[Mission].StartedRevision));
+            if (!State.Choice.IsEmpty())
+            {
+                Entry->SetStringField(TEXT("choice"), State.Choice);
+            }
+            if (State.bCompleted)
+            {
+                Entry->SetBoolField(TEXT("completed"), true);
+            }
+            if (!State.Flags.IsEmpty())
+            {
+                TSharedRef<FJsonObject> Flags = MakeShared<FJsonObject>();
+                for (const FString& Flag : SortedKeys(State.Flags))
+                {
+                    Flags->SetBoolField(Flag, State.Flags[Flag]);
+                }
+                Entry->SetObjectField(TEXT("flags"), Flags);
+            }
+            if (!State.JournalEntry.IsEmpty())
+            {
+                Entry->SetStringField(TEXT("journal_entry"), State.JournalEntry);
+            }
+            if (!State.Outcome.IsEmpty())
+            {
+                Entry->SetStringField(TEXT("outcome"), State.Outcome);
+            }
+            if (State.bRewardPaid)
+            {
+                Entry->SetBoolField(TEXT("reward_paid"), true);
+            }
+            Entry->SetStringField(TEXT("stage"), State.Stage);
+            Entry->SetNumberField(TEXT("started_revision"), static_cast<double>(State.StartedRevision));
             Progress->SetObjectField(Mission, Entry);
         }
         Missions->SetObjectField(Character, Progress);
@@ -83,6 +113,26 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
     }
     Root->SetObjectField(TEXT("conditions"), Conditions);
 
+    TSharedRef<FJsonObject> Skills = MakeShared<FJsonObject>();
+    for (const FString& Character : SortedKeys(Source.Skills))
+    {
+        TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+        const TMap<FString, int64>& Owned = Source.Skills[Character];
+        for (const FString& Skill : SortedKeys(Owned))
+        {
+            Entry->SetNumberField(Skill, static_cast<double>(Owned[Skill]));
+        }
+        Skills->SetObjectField(Character, Entry);
+    }
+    Root->SetObjectField(TEXT("skills"), Skills);
+
+    TSharedRef<FJsonObject> Money = MakeShared<FJsonObject>();
+    for (const FString& Character : SortedKeys(Source.Money))
+    {
+        Money->SetNumberField(Character, static_cast<double>(Source.Money[Character]));
+    }
+    Root->SetObjectField(TEXT("money"), Money);
+
     TSharedRef<FJsonObject> Receipts = MakeShared<FJsonObject>();
     for (const FString& Operation : SortedKeys(Source.Receipts))
     {
@@ -97,6 +147,33 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
         {
             Entry->SetStringField(TEXT("mission"), Receipt.Mission);
             Entry->SetStringField(TEXT("stage"), Receipt.Stage);
+        }
+        if (!Receipt.Granted.IsEmpty())
+        {
+            TSharedRef<FJsonObject> Granted = MakeShared<FJsonObject>();
+            for (const FString& Item : SortedKeys(Receipt.Granted))
+            {
+                Granted->SetNumberField(Item, Receipt.Granted[Item]);
+            }
+            Entry->SetObjectField(TEXT("granted"), Granted);
+        }
+        if (!Receipt.Choice.IsEmpty())
+        {
+            Entry->SetStringField(TEXT("choice"), Receipt.Choice);
+            Entry->SetStringField(TEXT("outcome"), Receipt.Outcome);
+        }
+        if (Receipt.MoneyDelta != 0)
+        {
+            Entry->SetNumberField(TEXT("money_delta"), static_cast<double>(Receipt.MoneyDelta));
+        }
+        if (!Receipt.SkillXp.IsEmpty())
+        {
+            TSharedRef<FJsonObject> Xp = MakeShared<FJsonObject>();
+            for (const FString& Skill : SortedKeys(Receipt.SkillXp))
+            {
+                Xp->SetNumberField(Skill, static_cast<double>(Receipt.SkillXp[Skill]));
+            }
+            Entry->SetObjectField(TEXT("skill_xp"), Xp);
         }
         Entry->SetNumberField(TEXT("revision"), static_cast<double>(Receipt.Revision));
         Entry->SetStringField(TEXT("committed_utc"), Receipt.CommittedUtc);
@@ -180,6 +257,23 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
                 FMarburgumStoredMission State;
                 State.Stage = Entry->GetStringField(TEXT("stage"));
                 State.StartedRevision = static_cast<int64>(Entry->GetNumberField(TEXT("started_revision")));
+                Entry->TryGetBoolField(TEXT("completed"), State.bCompleted);
+                Entry->TryGetStringField(TEXT("choice"), State.Choice);
+                Entry->TryGetStringField(TEXT("outcome"), State.Outcome);
+                Entry->TryGetBoolField(TEXT("reward_paid"), State.bRewardPaid);
+                Entry->TryGetStringField(TEXT("journal_entry"), State.JournalEntry);
+                const TSharedPtr<FJsonObject>* Flags = nullptr;
+                if (Entry->TryGetObjectField(TEXT("flags"), Flags))
+                {
+                    for (const auto& Flag : (*Flags)->Values)
+                    {
+                        bool bValue = false;
+                        if (Flag.Value->TryGetBool(bValue))
+                        {
+                            State.Flags.Add(FString(*Flag.Key), bValue);
+                        }
+                    }
+                }
                 Owned.Add(FString(*Mission.Key), MoveTemp(State));
             }
         }
@@ -213,6 +307,40 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
             Parsed.Conditions.Add(FString(*Character.Key), Condition);
         }
     }
+    const TSharedPtr<FJsonObject>* Skills = nullptr;
+    if (Root->TryGetObjectField(TEXT("skills"), Skills))
+    {
+        for (const auto& Character : (*Skills)->Values)
+        {
+            const TSharedPtr<FJsonObject> Entry = Character.Value->AsObject();
+            if (!Entry.IsValid())
+            {
+                continue;
+            }
+            TMap<FString, int64>& Owned = Parsed.Skills.Add(FString(*Character.Key));
+            for (const auto& Skill : Entry->Values)
+            {
+                double Xp = 0.0;
+                // XP never goes below zero, and a value too large for the curve is not trusted.
+                if (Skill.Value->TryGetNumber(Xp) && FMath::IsFinite(Xp) && Xp > 0.0 && Xp < 9.0e15)
+                {
+                    Owned.Add(FString(*Skill.Key), static_cast<int64>(Xp));
+                }
+            }
+        }
+    }
+    const TSharedPtr<FJsonObject>* Money = nullptr;
+    if (Root->TryGetObjectField(TEXT("money"), Money))
+    {
+        for (const auto& Character : (*Money)->Values)
+        {
+            double Amount = 0.0;
+            if (Character.Value->TryGetNumber(Amount) && FMath::IsFinite(Amount) && Amount > 0.0 && Amount < 9.0e15)
+            {
+                Parsed.Money.Add(FString(*Character.Key), static_cast<int64>(Amount));
+            }
+        }
+    }
     const TSharedPtr<FJsonObject>* Receipts = nullptr;
     if (Root->TryGetObjectField(TEXT("receipts"), Receipts))
     {
@@ -235,6 +363,29 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
             Receipt.Quantity = static_cast<int32>(Entry->GetNumberField(TEXT("quantity")));
             Entry->TryGetStringField(TEXT("mission"), Receipt.Mission);
             Entry->TryGetStringField(TEXT("stage"), Receipt.Stage);
+            const TSharedPtr<FJsonObject>* Granted = nullptr;
+            if (Entry->TryGetObjectField(TEXT("granted"), Granted))
+            {
+                for (const auto& Item : (*Granted)->Values)
+                {
+                    Receipt.Granted.Add(FString(*Item.Key), static_cast<int32>(Item.Value->AsNumber()));
+                }
+            }
+            Entry->TryGetStringField(TEXT("choice"), Receipt.Choice);
+            Entry->TryGetStringField(TEXT("outcome"), Receipt.Outcome);
+            double MoneyDelta = 0.0;
+            if (Entry->TryGetNumberField(TEXT("money_delta"), MoneyDelta))
+            {
+                Receipt.MoneyDelta = static_cast<int64>(MoneyDelta);
+            }
+            const TSharedPtr<FJsonObject>* Xp = nullptr;
+            if (Entry->TryGetObjectField(TEXT("skill_xp"), Xp))
+            {
+                for (const auto& Skill : (*Xp)->Values)
+                {
+                    Receipt.SkillXp.Add(FString(*Skill.Key), static_cast<int64>(Skill.Value->AsNumber()));
+                }
+            }
             Receipt.Revision = static_cast<int64>(Entry->GetNumberField(TEXT("revision")));
             Receipt.CommittedUtc = Entry->GetStringField(TEXT("committed_utc"));
             Parsed.Receipts.Add(FString(*Pair.Key), MoveTemp(Receipt));

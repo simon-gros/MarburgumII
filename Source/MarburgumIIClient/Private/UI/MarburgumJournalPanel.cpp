@@ -136,8 +136,22 @@ void UMarburgumJournalPanel::Rebuild()
     }
 
     const FMarburgumMissionState* Pinned = UMarburgumPinnedObjective::FindPinned(*State);
+    // Missions under way first (oldest first, as pinned), then the completed ones.
+    TArray<const FMarburgumMissionState*> Ordered;
     for (const FMarburgumMissionState& Progress : State->GetMissions())
     {
+        Ordered.Add(&Progress);
+    }
+    Ordered.StableSort([](const FMarburgumMissionState& A, const FMarburgumMissionState& B)
+    {
+        return A.bCompleted != B.bCompleted ? !A.bCompleted : A.StartedRevision < B.StartedRevision;
+    });
+    int32 Active = 0;
+    int32 Completed = 0;
+    for (const FMarburgumMissionState* ProgressPtr : Ordered)
+    {
+        const FMarburgumMissionState& Progress = *ProgressPtr;
+        (Progress.bCompleted ? Completed : Active) += 1;
         const FMissionDefinition* Mission = FindMission(Progress.MissionId.ToString());
         const FMissionStageDefinition* Stage = Mission ? FindStage(*Mission, Progress.StageId.ToString()) : nullptr;
         UVerticalBox* Card = B.Column();
@@ -145,32 +159,65 @@ void UMarburgumJournalPanel::Rebuild()
         UHorizontalBox* Header = B.Row();
         FBuilder::Inline(Header, B.Text(Mission && FCString::Strcmp(Mission->Category, TEXT("story")) == 0
             ? LOCTEXT("Story", "STORY") : LOCTEXT("Mission", "MISSION"), ETypeRole::Overline, T.Color.TextSecondary), T.Space.S, true);
-        FBuilder::Inline(Header, B.Pill(LOCTEXT("InProgress", "IN PROGRESS"), ETone::Info), T.Space.XS);
+        FBuilder::Inline(Header, Progress.bCompleted ? B.Pill(LOCTEXT("Completed", "COMPLETED"), ETone::Success)
+            : B.Pill(LOCTEXT("InProgress", "IN PROGRESS"), ETone::Info), T.Space.XS);
         if (&Progress == Pinned)
         {
             FBuilder::Inline(Header, B.Pill(LOCTEXT("Pinned", "PINNED"), ETone::Accent), 0.f);
         }
         FBuilder::Stack(Card, Header, T.Space.S);
         FBuilder::Stack(Card, B.Text(Mission ? FText::FromString(Mission->Name) : FText::FromName(Progress.MissionId), ETypeRole::Heading), T.Space.XS);
-        if (Mission)
+        if (Mission && !Progress.bCompleted)
         {
             UTextBlock* Summary = B.Text(FText::FromString(Mission->Summary), ETypeRole::Caption);
             Summary->SetWrapTextAt(CardTextWidth(T));
             FBuilder::Stack(Card, Summary, T.Space.M);
         }
 
-        FBuilder::Stack(Card, B.Text(LOCTEXT("Current", "CURRENT OBJECTIVE"), ETypeRole::Overline, T.Color.Accent), T.Space.XS);
-        UTextBlock* Objective = B.Text(Stage ? FText::FromString(Stage->ObjectiveText)
-            : LOCTEXT("UnknownStage", "The next step is not known to this client version."), ETypeRole::Body, T.Color.TextPrimary);
-        Objective->SetWrapTextAt(CardTextWidth(T));
-        FBuilder::Stack(Card, Objective, T.Space.M);
+        if (Progress.bCompleted)
+        {
+            // What the mission left behind: the journal entry it unlocked and the decision taken.
+            if (Mission && *Mission->JournalEntryId)
+            {
+                FBuilder::Stack(Card, B.Text(FText::FromString(FString(Mission->JournalEntryTitle).ToUpper()), ETypeRole::Overline, T.Color.Accent),
+                    T.Space.XS);
+                UTextBlock* Entry = B.Text(FText::FromString(Mission->JournalEntryText), ETypeRole::Body, T.Color.TextPrimary);
+                Entry->SetWrapTextAt(CardTextWidth(T));
+                FBuilder::Stack(Card, Entry, T.Space.M);
+            }
+            const FMissionChoiceDefinition* Choice =
+                Stage && !Progress.Choice.IsNone() ? FindChoice(*Stage, Progress.Choice.ToString()) : nullptr;
+            if (Choice)
+            {
+                FBuilder::Stack(Card, B.Text(LOCTEXT("Decision", "YOUR DECISION"), ETypeRole::Overline, T.Color.TextSecondary), T.Space.XS);
+                UTextBlock* Chosen = B.Text(FText::FromString(Choice->Label), ETypeRole::Body, T.Color.TextPrimary);
+                Chosen->SetWrapTextAt(CardTextWidth(T));
+                FBuilder::Stack(Card, Chosen, T.Space.XS);
+                UTextBlock* After = B.Text(FText::FromString(Choice->CompletionText), ETypeRole::Caption);
+                After->SetWrapTextAt(CardTextWidth(T));
+                FBuilder::Stack(Card, After, T.Space.M);
+            }
+            else if (Stage && *Stage->CompletionText)
+            {
+                UTextBlock* After = B.Text(FText::FromString(Stage->CompletionText), ETypeRole::Caption);
+                After->SetWrapTextAt(CardTextWidth(T));
+                FBuilder::Stack(Card, After, T.Space.M);
+            }
+        }
+        else
+        {
+            FBuilder::Stack(Card, B.Text(LOCTEXT("Current", "CURRENT OBJECTIVE"), ETypeRole::Overline, T.Color.Accent), T.Space.XS);
+            UTextBlock* Objective = B.Text(Stage ? FText::FromString(Stage->ObjectiveText)
+                : LOCTEXT("UnknownStage", "The next step is not known to this client version."), ETypeRole::Body, T.Color.TextPrimary);
+            Objective->SetWrapTextAt(CardTextWidth(T));
+            FBuilder::Stack(Card, Objective, T.Space.M);
+        }
         FBuilder::Stack(Card, B.Text(LOCTEXT("Saved", "Saved by the server  ·  survives a restart"),
             ETypeRole::Caption, T.Color.TextMuted), 0.f);
 
         FBuilder::Stack(Rows, B.Surface(ESurfaceKind::Raised, Pad(T.Space.L, T.Space.M), Card), T.Space.S);
     }
-    SummaryLabel->SetText(FText::Format(LOCTEXT("Summary", "{0} {0}|plural(one=mission,other=missions) in progress. Completed missions and collected evidence will be listed here as later chapters arrive."),
-        FText::AsNumber(State->GetMissions().Num())));
+    SummaryLabel->SetText(FText::Format(LOCTEXT("Summary", "{0} in progress  \u00B7  {1} completed."), FText::AsNumber(Active), FText::AsNumber(Completed)));
 }
 
 #undef LOCTEXT_NAMESPACE

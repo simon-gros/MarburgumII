@@ -25,6 +25,12 @@ public:
             this, &FMarburgumIIClientModule::HandleJournal);
         CharacterHandle = FMarburgumClientUiHooks::OnCharacterToggleRequested().AddRaw(
             this, &FMarburgumIIClientModule::HandleCharacter);
+        SkillsHandle = FMarburgumClientUiHooks::OnSkillsToggleRequested().AddRaw(
+            this, &FMarburgumIIClientModule::HandleSkills);
+        ChoiceHandle = FMarburgumClientUiHooks::OnMissionChoiceRequested().AddRaw(
+            this, &FMarburgumIIClientModule::HandleChoice);
+        NumberHandle = FMarburgumClientUiHooks::OnNumberKeyPressed().AddRaw(
+            this, &FMarburgumIIClientModule::HandleNumber);
     }
 
     virtual void ShutdownModule() override
@@ -34,6 +40,9 @@ public:
         FMarburgumClientUiHooks::OnInventoryToggleRequested().Remove(InventoryHandle);
         FMarburgumClientUiHooks::OnJournalToggleRequested().Remove(JournalHandle);
         FMarburgumClientUiHooks::OnCharacterToggleRequested().Remove(CharacterHandle);
+        FMarburgumClientUiHooks::OnSkillsToggleRequested().Remove(SkillsHandle);
+        FMarburgumClientUiHooks::OnMissionChoiceRequested().Remove(ChoiceHandle);
+        FMarburgumClientUiHooks::OnNumberKeyPressed().Remove(NumberHandle);
     }
 
 private:
@@ -42,6 +51,33 @@ private:
     FDelegateHandle InventoryHandle;
     FDelegateHandle JournalHandle;
     FDelegateHandle CharacterHandle;
+    FDelegateHandle SkillsHandle;
+    FDelegateHandle ChoiceHandle;
+    FDelegateHandle NumberHandle;
+
+    void HandleSkills(APlayerController* Player)
+    {
+        if (UMarburgumUISubsystem* UI = GetUI(Player))
+        {
+            UI->ToggleSkills();
+        }
+    }
+
+    void HandleChoice(APlayerController* Player, AMarburgumInteractable* Target, FName MissionId)
+    {
+        if (UMarburgumUISubsystem* UI = GetUI(Player))
+        {
+            UI->ToggleChoice(Target, MissionId);
+        }
+    }
+
+    void HandleNumber(APlayerController* Player, int32 Number)
+    {
+        if (UMarburgumUISubsystem* UI = GetUI(Player))
+        {
+            UI->ChooseOption(Number);
+        }
+    }
 
     static UMarburgumUISubsystem* GetUI(APlayerController* Player)
     {

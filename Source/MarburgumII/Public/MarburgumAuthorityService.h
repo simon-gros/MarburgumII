@@ -25,6 +25,11 @@ public:
         AMarburgumPlayerController& Requester, const FGuid& OperationId, AMarburgumInteractable* Target)
         PURE_VIRTUAL(UMarburgumAuthorityService::HandleInteraction, return FMarburgumInteractionReceipt(););
 
+    /** Validate and, if allowed, durably commit the requesting player's decision at a mission choice stage. */
+    virtual FMarburgumInteractionReceipt HandleMissionChoice(AMarburgumPlayerController& Requester, const FGuid& OperationId,
+        AMarburgumInteractable* Target, FName MissionId, FName ChoiceId)
+        PURE_VIRTUAL(UMarburgumAuthorityService::HandleMissionChoice, return FMarburgumInteractionReceipt(););
+
     /** The active service of a world, if any. */
     static UMarburgumAuthorityService* Get(const UWorld* World);
 };

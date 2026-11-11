@@ -21,7 +21,7 @@ fn finish(problems: Problems, summary: String) -> u8 {
 }
 
 fn is_store(doc: &Value) -> bool {
-    doc["format"] == "marburgumii.world_store" && doc["schema_version"] == 3
+    doc["format"] == "marburgumii.world_store" && doc["schema_version"] == 4
 }
 
 /// No character's condition was saved (the Gate 1 and Lent smoke clients never run).
@@ -126,6 +126,47 @@ fn check_condition(doc: &Value, key_r: &str, key_c: &str, key_s: &str, phase: &s
         if runner["winded"] == true { 1 } else { 0 }))
 }
 
+/// Missions, fishing and skills (scripts/mission-smoke-linux.sh), after phase 1.
+/// Prints "<money> <fishing xp> <reputation xp>".
+pub fn missions(store: &str, key: &str) -> u8 {
+    let doc = match load(store) {
+        Ok(doc) => doc,
+        Err(error) => return finish(Problems(vec![error]), "0 0 0".to_string()),
+    };
+    check_missions(&doc, key)
+}
+
+fn check_missions(doc: &Value, key: &str) -> u8 {
+    let mut problems = Problems::default();
+    problems.expect(is_store(doc), "format");
+    problems.expect(no_conditions(doc), format!("conditions={}", doc["conditions"]));
+    let item = |id: &str| doc["inventories"][key][id].as_i64().unwrap_or(0);
+    for id in ["fishing_rod", "brass_key", "drava_cashbox", "water_damaged_accounting_page",
+        "torn_gate_photograph", "faded_transport_ticket", "carbon_copy_receipt"]
+    {
+        problems.expect(item(id) == 1, format!("{id}={}", item(id)));
+    }
+    for id in ["chub", "roach", "perch"] {
+        problems.expect(item(id) == 0, format!("fish_left {id}={}", item(id)));
+    }
+    let first = &doc["missions"][key]["lent_first_catch"];
+    problems.expect(first["completed"] == true && first["stage"] == "meet_vera" && first["reward_paid"] == true
+        && first["journal_entry"] == "blue_ledger_r90",
+        format!("first_catch={first}"));
+    let kiosk = &doc["missions"][key]["kiosk_67_customer_stopped_coming"];
+    problems.expect(kiosk["completed"] == true && kiosk["stage"] == "resolution" && kiosk["choice"] == "pay_tab"
+        && kiosk["outcome"] == "tab_paid" && kiosk["journal_entry"] == "kiosk_67_missing_customer"
+        && kiosk["flags"]["ledger_initials_recognized"] == true,
+        format!("kiosk={kiosk}"));
+    let money = doc["money"][key].as_i64().unwrap_or(0);
+    let fishing = doc["skills"][key]["fishing"].as_i64().unwrap_or(0);
+    let reputation = doc["skills"][key]["reputation"].as_i64().unwrap_or(0);
+    problems.expect(money == 30, format!("money={money}"));
+    problems.expect([16, 20, 24].contains(&fishing), format!("fishing_xp={fishing}"));
+    problems.expect(reputation == 15, format!("reputation_xp={reputation}"));
+    finish(problems, format!("{money} {fishing} {reputation}"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -133,7 +174,7 @@ mod tests {
 
     fn lent_store() -> Value {
         json!({
-            "format": "marburgumii.world_store", "schema_version": 3, "revision": 1, "stocks": {}, "conditions": {},
+            "format": "marburgumii.world_store", "schema_version": 4, "revision": 1, "stocks": {}, "conditions": {},
             "inventories": { "m": { "fishing_rod": 1 } },
             "missions": { "m": { "lent_first_catch": { "stage": "catch_first_fish", "started_revision": 1 } } },
             "receipts": { "OP": { "character": "m", "kind": "mission_started", "interactable": "lent_angler",
@@ -162,7 +203,7 @@ mod tests {
 
     fn condition_store(revision: i64, conditions: Value) -> Value {
         json!({
-            "format": "marburgumii.world_store", "schema_version": 3, "revision": revision, "stocks": {},
+            "format": "marburgumii.world_store", "schema_version": 4, "revision": revision, "stocks": {},
             "inventories": {}, "missions": {}, "conditions": conditions, "receipts": {}
         })
     }
@@ -195,7 +236,7 @@ mod tests {
     #[test]
     fn interaction_store_counts_three_grants() {
         let doc = json!({
-            "format": "marburgumii.world_store", "schema_version": 3, "revision": 3, "conditions": {},
+            "format": "marburgumii.world_store", "schema_version": 4, "revision": 3, "conditions": {},
             "stocks": { "dev_supply_crate": 0 },
             "inventories": { "a": { "fishing_rod": 2 }, "b": { "fishing_rod": 1 } },
             "receipts": { "OP": { "character": "a" }, "X": { "character": "a" }, "Y": { "character": "b" } }
@@ -204,5 +245,37 @@ mod tests {
         let mut tampered = doc.clone();
         tampered["stocks"]["dev_supply_crate_far"] = json!(1);
         assert_eq!(check_interaction(&tampered, "a", "b", "OP"), 1);
+    }
+
+    #[test]
+    fn mission_store_after_the_opening_and_the_kiosk_passes() {
+        let doc = json!({
+            "format": "marburgumii.world_store", "schema_version": 4, "revision": 12,
+            "stocks": {}, "conditions": {},
+            "inventories": { "p": {
+                "fishing_rod": 1, "brass_key": 1, "drava_cashbox": 1,
+                "water_damaged_accounting_page": 1, "torn_gate_photograph": 1,
+                "faded_transport_ticket": 1, "carbon_copy_receipt": 1
+            }},
+            "missions": { "p": {
+                "lent_first_catch": {
+                    "stage": "meet_vera", "started_revision": 1, "completed": true,
+                    "reward_paid": true, "journal_entry": "blue_ledger_r90"
+                },
+                "kiosk_67_customer_stopped_coming": {
+                    "stage": "resolution", "started_revision": 7, "completed": true,
+                    "choice": "pay_tab", "outcome": "tab_paid",
+                    "journal_entry": "kiosk_67_missing_customer",
+                    "flags": { "ledger_initials_recognized": true }
+                }
+            }},
+            "skills": { "p": { "fishing": 20, "reputation": 15 } },
+            "money": { "p": 30 },
+            "receipts": {}
+        });
+        assert_eq!(check_missions(&doc, "p"), 0);
+        let mut short = doc.clone();
+        short["money"]["p"] = json!(50);
+        assert_eq!(check_missions(&short, "p"), 1);
     }
 }

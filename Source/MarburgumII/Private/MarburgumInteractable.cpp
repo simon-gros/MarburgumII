@@ -2,6 +2,7 @@
 
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "MarburgumGameplayContract.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -27,6 +28,39 @@ void AMarburgumInteractable::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AMarburgumInteractable, RemainingStock);
+    DOREPLIFETIME_CONDITION(AMarburgumInteractable, CatalogueId, COND_InitialOnly);
+}
+
+void AMarburgumInteractable::SetCatalogueIdAuthority(FName Id)
+{
+    check(HasAuthority());
+    CatalogueId = Id;
+    ConfigureFromCatalogue();
+}
+
+void AMarburgumInteractable::OnRep_CatalogueId()
+{
+    ConfigureFromCatalogue();
+    OnChanged().Broadcast(this);
+}
+
+void AMarburgumInteractable::ConfigureFromCatalogue()
+{
+    const MarburgumII::Gameplay::FInteractableDefinition* Entry =
+        CatalogueId.IsNone() ? nullptr : MarburgumII::Gameplay::FindInteractable(CatalogueId.ToString());
+    if (!Entry)
+    {
+        return;
+    }
+    InteractableId = CatalogueId;
+    DisplayName = FText::FromString(Entry->DisplayName);
+    Verb = FText::FromString(Entry->Verb);
+    Dialogue = FText::FromString(Entry->Dialogue);
+    InteractionRange = Entry->RangeCm;
+    bTestFixture = false;
+    // An authored place is a marker the body walks through, not an obstacle on the promenade.
+    Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    Mesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 }
 
 void AMarburgumInteractable::BeginPlay()

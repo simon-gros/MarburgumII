@@ -55,6 +55,20 @@ public:
     /** Whether this grants items from a stock (true for a placed item source with a GrantedItemId). */
     virtual bool IsItemSource() const { return !GrantedItemId.IsNone(); }
 
+    /**
+     * Server, before FinishSpawning: make this the catalogue's interactable Id (MarburgumGameplayCatalogue.h). The id
+     * replicates and every client configures the same name, verb, range, dialogue and look from its own copy of
+     * the catalogue, so a server-spawned NPC or place needs no other replicated text (ADR-049).
+     */
+    void SetCatalogueIdAuthority(FName Id);
+
+    /** The catalogue entry this was configured from, if any. */
+    FName GetCatalogueId() const { return CatalogueId; }
+
+    /** The line shown when the server accepts an interaction here (NPCs and authored places). */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Marburgum|Interaction")
+    FText Dialogue;
+
     /** Current stock; -1 until the server has applied its durable record. */
     int32 GetRemainingStock() const { return RemainingStock; }
     bool IsStockKnown() const { return RemainingStock >= 0; }
@@ -69,10 +83,19 @@ protected:
     UFUNCTION()
     void OnRep_RemainingStock();
 
+    UFUNCTION()
+    void OnRep_CatalogueId();
+
+    /** Apply CatalogueId's definition; subclasses add their look. */
+    virtual void ConfigureFromCatalogue();
+
     UPROPERTY(VisibleAnywhere, Category = "Marburgum|Interaction")
     TObjectPtr<UStaticMeshComponent> Mesh;
 
 private:
     UPROPERTY(ReplicatedUsing = OnRep_RemainingStock)
     int32 RemainingStock = -1;
+
+    UPROPERTY(ReplicatedUsing = OnRep_CatalogueId)
+    FName CatalogueId;
 };

@@ -4,6 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "MarburgumGameplayContract.h"
 #include "UObject/ConstructorHelpers.h"
 
 namespace
@@ -69,6 +70,31 @@ void AMarburgumNpc::OnConstruction(const FTransform& Transform)
 void AMarburgumNpc::BeginPlay()
 {
     Super::BeginPlay();
+    ApplyLook();
+}
+
+void AMarburgumNpc::ConfigureFromCatalogue()
+{
+    Super::ConfigureFromCatalogue();
+    const MarburgumII::Gameplay::FInteractableDefinition* Entry =
+        MarburgumII::Gameplay::FindInteractable(GetCatalogueId().ToString());
+    if (!Entry)
+    {
+        return;
+    }
+    // A person stands in the way like the angler does; only places are walked through.
+    Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    Mesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+    PrimaryColor = FLinearColor(Entry->PrimaryColor[0], Entry->PrimaryColor[1], Entry->PrimaryColor[2]);
+    SecondaryColor = FLinearColor(Entry->SecondaryColor[0], Entry->SecondaryColor[1], Entry->SecondaryColor[2]);
+    if (HasActorBegunPlay())
+    {
+        ApplyLook();
+    }
+}
+
+void AMarburgumNpc::ApplyLook()
+{
     Rod->SetVisibility(bHoldsRod);
     if (GetNetMode() == NM_DedicatedServer)
     {

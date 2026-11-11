@@ -3,6 +3,7 @@
 //! files around the native build. Exit codes: 0 ok, 1 check failed, 2 usage error or blocked.
 
 mod engine;
+mod generate;
 mod movement_check;
 mod playtest;
 mod render_probe;
@@ -18,6 +19,7 @@ Usage: mb2 <command>
 
   validate <ui-ontology|chat|gameplay|vehicles|combat|street|python-free|all>
                          Source-only contract checks (no Unreal build).
+  generate gameplay      Write MarburgumGameplayCatalogue.h from Data/Gameplay/gameplay.v0.1.json.
   engine-version <engine_root>
                          Check Engine/Build/Build.version against .unreal-engine-version.
   playtest <build|verify|launch> --profile <file>
@@ -29,6 +31,7 @@ Usage: mb2 <command>
   store-check interaction <store> <key_a> <key_b> <first_op>
   store-check lent <store> <key_m> <key_w> <first_op>
   store-check condition <store> <key_r> <key_c> <key_s> <1|2>
+  store-check missions <store> <key>
                          Check a world-store file after a phase of a smoke test.
   movement-check <server log> <client log> <role> <character key> <honest|adversary> <DefaultGame.ini>
                          ADR-019 bound on how far a Lent smoke walker moved on the server.";
@@ -38,6 +41,7 @@ fn main() -> ExitCode {
     let words: Vec<&str> = args.iter().map(String::as_str).collect();
     let code = match words.as_slice() {
         ["validate", which] => validate::run(which),
+        ["generate", which] => generate::run(which),
         ["engine-version", engine_root] => engine::run(&PathBuf::from(engine_root)),
         ["playtest", action, "--profile", profile] => playtest::run(action, &PathBuf::from(profile)),
         ["render-probe"] => render_probe::run(None),
@@ -49,6 +53,7 @@ fn main() -> ExitCode {
         ["store-check", "interaction", store, a, b, op] => store_check::interaction(store, a, b, op),
         ["store-check", "lent", store, m, w, op] => store_check::lent(store, m, w, op),
         ["store-check", "condition", store, r, c, s, phase] => store_check::condition(store, r, c, s, phase),
+        ["store-check", "missions", store, key] => store_check::missions(store, key),
         ["movement-check", server, client, role, key, kind, ini] => movement_check::run(server, client, role, key, kind, ini),
         _ => {
             eprintln!("{USAGE}");

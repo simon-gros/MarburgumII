@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "MarburgumGameState.h"
+#include "MarburgumInteractionTypes.h"
 #include "Session/MarburgumSessionSubsystem.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "MarburgumUISubsystem.generated.h"
@@ -57,12 +58,24 @@ public:
     bool ToggleCharacter();
     bool IsCharacterOpen() const;
 
+    /** Show or hide the skills_panel (K key, ADR-047). */
+    bool ToggleSkills();
+    bool IsSkillsOpen() const;
+
+    /** Open the decision for Mission at Target, or close it when it is already open there (ADR-049). */
+    bool ToggleChoice(class AMarburgumInteractable* Target, FName MissionId);
+    /** Pick option Number in the open decision; false when none is open or it cannot be chosen. */
+    bool ChooseOption(int32 Number);
+    bool IsChoiceOpen() const;
+
     /** Mounted HUD modules, for evidence capture; null until the session is admitted. */
     const UMarburgumLocationBanner* GetLocationBanner() const { return Banner; }
     const UMarburgumPinnedObjective* GetPinnedObjective() const { return Objective; }
     const UMarburgumPlayerCondition* GetPlayerCondition() const { return Condition; }
     const UMarburgumVehicleStatus* GetVehicleStatus() const { return VehicleStatus; }
     const UMarburgumCharacterPanel* GetCharacterPanel() const { return CharacterPanel; }
+    const class UMarburgumSkillsPanel* GetSkillsPanel() const { return SkillsPanel; }
+    const class UMarburgumChoicePanel* GetChoicePanel() const { return ChoicePanel; }
 
     /** Independent UI scale on top of DPI scaling (0.5 - 3.0). */
     static void SetInterfaceScale(float Scale);
@@ -79,6 +92,7 @@ private:
     void HandleRequestResult(const FGuid& OperationId, EMarburgumRequestOutcome Outcome);
     void HandleInteractionReceipt(const FMarburgumInteractionReceipt& Receipt);
     void HandleCombatResult(const struct FMarburgumCombatResult& Result);
+    void HandleFishingChanged(class AMarburgumPlayerState* State);
     void MountGameplayHud(APlayerController* Player);
     /** Closes every open management screen except Keep (nullptr closes all). */
     void CloseScreensExcept(const UObject* Keep);
@@ -95,6 +109,11 @@ private:
     UPROPERTY(Transient) TObjectPtr<UMarburgumPlayerCondition> Condition;
     UPROPERTY(Transient) TObjectPtr<UMarburgumVehicleStatus> VehicleStatus;
     UPROPERTY(Transient) TObjectPtr<UMarburgumCharacterPanel> CharacterPanel;
+    UPROPERTY(Transient) TObjectPtr<class UMarburgumSkillsPanel> SkillsPanel;
+    UPROPERTY(Transient) TObjectPtr<class UMarburgumChoicePanel> ChoicePanel;
+    FDelegateHandle FishingHandle;
+    int32 LastFishingAttempt = 0;
+    EMarburgumFishingEnd LastFishingEnd = EMarburgumFishingEnd::None;
 
     TWeakObjectPtr<APlayerController> PendingChatOwner;
     TWeakObjectPtr<class AMarburgumPlayerController> ReceiptController;

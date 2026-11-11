@@ -16,6 +16,12 @@ struct FMarburgumStoredReceipt
     int32 Quantity = 0;
     FString Mission;
     FString Stage;
+    /** Schema 4: further items handed over, the decision taken, money paid or spent and XP awarded. */
+    TMap<FString, int32> Granted;
+    FString Choice;
+    FString Outcome;
+    int64 MoneyDelta = 0;
+    TMap<FString, int64> SkillXp;
     int64 Revision = 0;
     FString CommittedUtc;
 };
@@ -25,6 +31,15 @@ struct FMarburgumStoredMission
 {
     FString Stage;
     int64 StartedRevision = 0;
+    /** Schema 4 (ADR-049): the final stage is done; Stage is the last one. Older documents are all under way. */
+    bool bCompleted = false;
+    FString Choice;
+    FString Outcome;
+    /** Story flags set by the mission's stages and choices, for later dialogue and missions to read. */
+    TMap<FString, bool> Flags;
+    bool bRewardPaid = false;
+    /** Journal entry unlocked when the mission completed. */
+    FString JournalEntry;
 };
 
 /** A character's saved condition (ADR-020). Absent from the record means a full, rested body. */
@@ -43,7 +58,7 @@ struct FMarburgumStoredCondition
     }
 };
 
-/** Durable authoritative world state for one map (schema `marburgumii.world_store` v3). */
+/** Durable authoritative world state for one map (schema `marburgumii.world_store` v4). */
 struct FMarburgumWorldRecord
 {
     int64 Revision = 0;
@@ -55,6 +70,10 @@ struct FMarburgumWorldRecord
     TMap<FString, TMap<FString, FMarburgumStoredMission>> Missions;
     /** Character key -> condition, for characters whose body is not full and rested. */
     TMap<FString, FMarburgumStoredCondition> Conditions;
+    /** Schema 4 (ADR-047): character key -> skill id -> XP. Skills with no XP are absent. */
+    TMap<FString, TMap<FString, int64>> Skills;
+    /** Schema 4 (ADR-049): character key -> money. A character with none is absent. */
+    TMap<FString, int64> Money;
     /** Operation id (32 hex digits) -> committed operation. */
     TMap<FString, FMarburgumStoredReceipt> Receipts;
 };
@@ -72,8 +91,8 @@ public:
 
     /**
      * A missing file is an empty world. A present but unreadable file is an error, never overwritten.
-     * Older documents load as-is (schema 1 has no missions, schema 2 no conditions) and the next commit
-     * rewrites them at the current schema.
+     * Older documents load as-is (schema 1 has no missions, schema 2 no conditions, schema 3 no skills, money
+     * or mission outcomes) and the next commit rewrites them at the current schema.
      */
     bool Load(FString& OutError);
 

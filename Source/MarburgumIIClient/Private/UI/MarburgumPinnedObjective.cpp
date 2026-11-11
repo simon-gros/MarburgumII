@@ -28,6 +28,11 @@ const FMarburgumMissionState* UMarburgumPinnedObjective::FindPinned(const AMarbu
     const FMarburgumMissionState* Pinned = nullptr;
     for (const FMarburgumMissionState& Mission : State.GetMissions())
     {
+        // A completed mission has no objective left to pin (ADR-049).
+        if (Mission.bCompleted)
+        {
+            continue;
+        }
         if (!Pinned || Mission.StartedRevision < Pinned->StartedRevision)
         {
             Pinned = &Mission;

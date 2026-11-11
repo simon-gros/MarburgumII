@@ -1,8 +1,8 @@
 {
   "format": "marburgumii.gameplay_catalogue",
-  "version": "0.1.0",
-  "status": "stage1_lent_runtime_subset",
-  "description": "Item, area, NPC and mission definitions and interactables that the Unreal runtime actually uses. Mirrors MarburgumIIShared/Public/MarburgumGameplayContract.h, scripts/editor/create_net_smoke_map.py and scripts/editor/create_lent_map.py; scripts/validate-gameplay-contract.py keeps them in step.",
+  "version": "0.2.0",
+  "status": "stage1_lent_runtime_with_fishing_skills_and_missions",
+  "description": "Item, skill, fishing, interactable and mission definitions the Unreal runtime uses. `mb2 generate gameplay` writes Source/MarburgumIIShared/Public/MarburgumGameplayCatalogue.h from this file, and `mb2 validate gameplay` fails when the two differ (ADR-049).",
   "items": [
     {
       "id": "fishing_rod",
@@ -10,6 +10,7 @@
         "en": "Fishing rod"
       },
       "stacking": "fungible_stack",
+      "kind": "tool",
       "provenance": {
         "source": "original Marburgum project/data/items.json",
         "source_version": 3,
@@ -22,10 +23,11 @@
         "en": "European chub"
       },
       "stacking": "fungible_stack",
+      "kind": "fish",
       "provenance": {
         "source": "original Marburgum project/data/items.json",
         "source_version": 3,
-        "note": "Registered because lent_first_catch stage 1 requires an ordinary fish; nothing in this build grants one (fishing is Stage 2)."
+        "note": "Identifier and English name carried forward; no legacy code or asset."
       }
     },
     {
@@ -34,10 +36,11 @@
         "en": "Common roach"
       },
       "stacking": "fungible_stack",
+      "kind": "fish",
       "provenance": {
         "source": "original Marburgum project/data/items.json",
         "source_version": 3,
-        "note": "As chub."
+        "note": "Identifier and English name carried forward; no legacy code or asset."
       }
     },
     {
@@ -46,13 +49,588 @@
         "en": "European perch"
       },
       "stacking": "fungible_stack",
+      "kind": "fish",
       "provenance": {
         "source": "original Marburgum project/data/items.json",
         "source_version": 3,
-        "note": "As chub."
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "bream",
+      "name": {
+        "en": "Common bream"
+      },
+      "stacking": "fungible_stack",
+      "kind": "fish",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "barbel",
+      "name": {
+        "en": "Common barbel"
+      },
+      "stacking": "fungible_stack",
+      "kind": "fish",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "carp",
+      "name": {
+        "en": "Common carp"
+      },
+      "stacking": "fungible_stack",
+      "kind": "fish",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "drava_cashbox",
+      "name": {
+        "en": "Battered cashbox"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "brass_key",
+      "name": {
+        "en": "Small brass key"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "water_damaged_accounting_page",
+      "name": {
+        "en": "Water-damaged accounting page"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "torn_gate_photograph",
+      "name": {
+        "en": "Torn black-and-white photograph"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "faded_transport_ticket",
+      "name": {
+        "en": "Faded transport ticket"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "carbon_copy_receipt",
+      "name": {
+        "en": "Carbon-copy receipt"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "brown_paper_parcel",
+      "name": {
+        "en": "Brown-paper parcel"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "hall_three_plate_photos",
+      "name": {
+        "en": "Hall Three machine-plate photographs"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "hall_three_keyring",
+      "name": {
+        "en": "Hall Three keyring"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "raeda_transport_maintenance_book",
+      "name": {
+        "en": "Raeda transport-maintenance book"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "raeda_directory_copy",
+      "name": {
+        "en": "Copied Raeda directory entry"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "successor_company_notice",
+      "name": {
+        "en": "Successor-company notice"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "returned_raeda_envelope",
+      "name": {
+        "en": "Returned Raeda envelope"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "raeda_newspaper_clipping",
+      "name": {
+        "en": "Raeda successor newspaper clipping"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "storefront_layer_one_photo",
+      "name": {
+        "en": "Photograph of first hidden storefront sign"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "storefront_layer_two_photo",
+      "name": {
+        "en": "Photograph of second hidden storefront sign"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "storefront_layer_three_photo",
+      "name": {
+        "en": "Photograph of third hidden storefront sign"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "storefront_oldest_lettering_photo",
+      "name": {
+        "en": "Photograph of oldest storefront lettering"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "storefront_archived_advertisements",
+      "name": {
+        "en": "Archived storefront advertisements"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "tone_vogrin_locker_card",
+      "name": {
+        "en": "Tone Vogrin locker card"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "kainach_serial_photos",
+      "name": {
+        "en": "Kainach truck serial photographs"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "yard_vehicle_log",
+      "name": {
+        "en": "Melje yard vehicle log"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "raeda_yard_archive_boxes",
+      "name": {
+        "en": "Raeda yard archive boxes"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "corrected_yard_schedule",
+      "name": {
+        "en": "Corrected Melje yard property schedule"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "exchange_counterfoil_copy",
+      "name": {
+        "en": "Tabor exchange counterfoil copy"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "kainach_contract_reference",
+      "name": {
+        "en": "Kainach contract reference"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "prehod_classified_clippings",
+      "name": {
+        "en": "Prehod classified clippings"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "pohorska_bank_file_locator",
+      "name": {
+        "en": "Pohorska banka archive-file locator"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "k67_raeda_concession_copy",
+      "name": {
+        "en": "K67 Raeda concession copy"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; no legacy code or asset."
       }
     }
   ],
+  "skills": {
+    "curve": {
+      "min_level": 0,
+      "max_level": 1990,
+      "level_cost": "20 + round(0.06 * (level + 1)^1.5), exact halves to even; integer-only",
+      "provenance": {
+        "source": "original Marburgum src/shared/skill_curve.cpp and UnrealMarburgum MarburgumSkillCurve",
+        "note": "Integer port, byte-for-byte equivalent in behaviour (ADR-047)."
+      }
+    },
+    "entries": [
+      {
+        "id": "fishing",
+        "name": {
+          "en": "Fishing"
+        },
+        "reversible": false,
+        "provenance": {
+          "source": "original Marburgum project/data/skills.json",
+          "source_version": 1
+        }
+      },
+      {
+        "id": "photography",
+        "name": {
+          "en": "Photography"
+        },
+        "reversible": false,
+        "provenance": {
+          "source": "original Marburgum project/data/skills.json",
+          "source_version": 1
+        }
+      },
+      {
+        "id": "housing",
+        "name": {
+          "en": "Housing"
+        },
+        "reversible": false,
+        "provenance": {
+          "source": "original Marburgum project/data/skills.json",
+          "source_version": 1
+        }
+      },
+      {
+        "id": "trading",
+        "name": {
+          "en": "Trading"
+        },
+        "reversible": false,
+        "provenance": {
+          "source": "original Marburgum project/data/skills.json",
+          "source_version": 1
+        }
+      },
+      {
+        "id": "reputation",
+        "name": {
+          "en": "Reputation"
+        },
+        "reversible": true,
+        "provenance": {
+          "source": "original Marburgum project/data/skills.json",
+          "source_version": 1
+        }
+      }
+    ]
+  },
+  "fishing": {
+    "timing": {
+      "min_wait_ms": 1500,
+      "max_wait_ms": 4000,
+      "bite_window_ms": 1800,
+      "min_cast_interval_ms": 1000,
+      "move_cancel_cm": 75,
+      "provenance": {
+        "source": "original Marburgum src/shared/protocol.h (FISHING_MIN_WAIT_MSEC, FISHING_MAX_WAIT_MSEC, FISHING_BITE_MSEC, MIN_FISHING_INTERVAL_MSEC) and UnrealMarburgum MarburgumFishingRules.cpp",
+        "note": "The original's purchasable fishing ranks (patience, strike, reading the water) are excluded with that system (ADR-004): every cast uses the original's base rule. Walking off ends a cast; the 75 cm allowance is Marburgum II's."
+      }
+    },
+    "spots": [
+      {
+        "id": "drava_fishing_spot",
+        "name": {
+          "en": "Drava — Lent bank"
+        },
+        "water": "Drava, Lent bank",
+        "habitat": "Slow water against the old town bank, shaded by the promenade wall.",
+        "species": [
+          {
+            "item": "chub",
+            "weight": 5,
+            "xp": 20
+          },
+          {
+            "item": "roach",
+            "weight": 4,
+            "xp": 16
+          },
+          {
+            "item": "perch",
+            "weight": 3,
+            "xp": 24
+          }
+        ],
+        "evidence": [
+          "Govedič & Janžekovič (2003), Great Cormorant diet on the Drava at Miklavž, material from March 1996: chub, roach and perch (52.5 % of the fish) among 14 species (docs/FISHING_SKILL_ROADMAP.md §2)",
+          "Ribiška družina Maribor, revir Drava 7 (Mariborski otok to the Melje weir) lists klen (chub) and rdečeoka (roach) (https://www.ribiskekarte.si/rd-maribor/drava-7, checked 2026-10-20)"
+        ],
+        "provenance": {
+          "source": "original Marburgum project/data/fishing.json",
+          "source_commit": "2cd67691801ae1a1878e0b04736a01c12b57e483",
+          "note": "Species weights and XP unchanged."
+        }
+      },
+      {
+        "id": "drava_melje_weir_fishing_spot",
+        "name": {
+          "en": "Drava — above the Melje weir"
+        },
+        "water": "Drava, above the Melje weir",
+        "habitat": "Deep, slow water held back by the Melje weir (1968), fished from the steep, wooded right bank beside the field track; a deep bottom-fishing pool, not the shaded town bank.",
+        "species": [
+          {
+            "item": "bream",
+            "weight": 5,
+            "xp": 22
+          },
+          {
+            "item": "chub",
+            "weight": 3,
+            "xp": 20
+          },
+          {
+            "item": "barbel",
+            "weight": 3,
+            "xp": 28
+          },
+          {
+            "item": "carp",
+            "weight": 1,
+            "xp": 36
+          }
+        ],
+        "evidence": [
+          "Govedič & Janžekovič (2003), Great Cormorant diet on the Drava at Miklavž, material from March 1996: barbel, common bream, common carp and chub among 14 species (docs/FISHING_SKILL_ROADMAP.md §2)",
+          "Ribiška družina Maribor, revir Drava 7: slow water to the Melje weir, 3 to 7 m deep, fished from relatively steep banks; many large barbel, common chub, and ploščič and krap on its species list (https://www.ribiskekarte.si/rd-maribor/drava-7, checked 2026-10-20)",
+          "Jez Melje completed 1968, raising the Drava 7.5 m (DEM zbornik, https://www.dem.si/mma/Zbornik_-_2.pdf/2019102214313484/1571747458, checked 2026-10-20)",
+          "FISHING_SKILL_ROADMAP.md §5: slower and deeper stretches hold bream, carp and catfish; current seams barbel and chub"
+        ],
+        "provenance": {
+          "source": "original Marburgum project/data/fishing.json",
+          "source_commit": "2cd67691801ae1a1878e0b04736a01c12b57e483",
+          "note": "Species weights and XP unchanged."
+        }
+      }
+    ]
+  },
   "interactables": [
     {
       "id": "dev_supply_crate",
@@ -108,14 +686,1377 @@
         "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
         "source_version": 3,
         "note": "Id, name, position (height levelled to the blockout promenade), range, dialogue and parka colours carried forward; placeholder figure, not a character model."
+      },
+      "placement": "map"
+    },
+    {
+      "id": "drava_fishing_spot",
+      "kind": "fishing_spot",
+      "display_name": {
+        "en": "Drava — Lent bank"
+      },
+      "verb": "fish",
+      "godot_position_m": [
+        -130.0,
+        2.1,
+        -58.0
+      ],
+      "range_cm": 500,
+      "placement": "angler_relative",
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "drava_melje_weir_fishing_spot",
+      "kind": "fishing_spot",
+      "display_name": {
+        "en": "Drava — above the Melje weir"
+      },
+      "verb": "fish",
+      "godot_position_m": [
+        1971.0,
+        3.4,
+        -252.5
+      ],
+      "range_cm": 500,
+      "placement": "unplaced",
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "drava_cashbox_debris",
+      "kind": "clue",
+      "display_name": {
+        "en": "Debris caught against the bank"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -134.0,
+        2.1,
+        -61.0
+      ],
+      "range_cm": 300,
+      "placement": "angler_relative",
+      "dialogue": {
+        "en": "Branches, wire and river rubbish have collected here. Something metal is wedged underneath."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "petra_kralj",
+      "kind": "npc",
+      "display_name": {
+        "en": "Petra Kralj"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -102.0,
+        2.1,
+        -65.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "If an address has changed names twice, somebody at a kiosk usually remembers the older one."
+      },
+      "colors": {
+        "primary": [
+          0.427,
+          0.325,
+          0.384
+        ],
+        "secondary": [
+          0.188,
+          0.22,
+          0.271
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "raeda_service_room",
+      "kind": "location",
+      "display_name": {
+        "en": "Shuttered service room"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -72.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "The narrow door has an old lock. Dust around the frame suggests it has been opened more recently than the sign above it."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "vera_horvat",
+      "kind": "npc",
+      "display_name": {
+        "en": "Vera Horvat"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -42.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Paper survives people more often than people expect. That does not mean it tells the truth by itself."
+      },
+      "colors": {
+        "primary": [
+          0.4,
+          0.365,
+          0.306
+        ],
+        "secondary": [
+          0.208,
+          0.196,
+          0.18
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "kiosk_67_bus_regular",
+      "kind": "npc",
+      "display_name": {
+        "en": "Kiosk 67 bus-stop regular"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -110.0,
+        2.1,
+        -58.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "He stopped waiting here a few days ago. Last time I saw him, he headed toward the café instead of taking his usual bus."
+      },
+      "colors": {
+        "primary": [
+          0.361,
+          0.396,
+          0.439
+        ],
+        "secondary": [
+          0.173,
+          0.192,
+          0.212
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "kiosk_67_cafe_regular",
+      "kind": "npc",
+      "display_name": {
+        "en": "Kiosk 67 café regular"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -102.0,
+        2.1,
+        -58.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "He was counting coins, asking whether anybody needed a few days of work. Then he left in a hurry."
+      },
+      "colors": {
+        "primary": [
+          0.478,
+          0.325,
+          0.267
+        ],
+        "secondary": [
+          0.227,
+          0.196,
+          0.173
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "kiosk_67_neighbour",
+      "kind": "npc",
+      "display_name": {
+        "en": "Kiosk 67 customer's neighbour"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -94.0,
+        2.1,
+        -58.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "He did not come home that evening. Someone said he had gone to the hospital, but nobody knew whether it was serious."
+      },
+      "colors": {
+        "primary": [
+          0.416,
+          0.408,
+          0.282
+        ],
+        "secondary": [
+          0.2,
+          0.196,
+          0.157
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "kiosk_67_customer",
+      "kind": "npc",
+      "display_name": {
+        "en": "Kiosk 67 missing customer"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -86.0,
+        2.1,
+        -58.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "I'm all right. I just needed a few days away from the usual questions. Those initials, though—I remember them from paperwork around the machine hall."
+      },
+      "colors": {
+        "primary": [
+          0.431,
+          0.353,
+          0.282
+        ],
+        "secondary": [
+          0.196,
+          0.173,
+          0.149
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "lent_dispatcher",
+      "kind": "npc",
+      "display_name": {
+        "en": "Lent delivery clerk"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -118.0,
+        2.1,
+        -69.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "This parcel should have gone out before lunch. The workshop is west along the river. The hatchback nearby is free if you would rather drive."
+      },
+      "colors": {
+        "primary": [
+          0.259,
+          0.369,
+          0.42
+        ],
+        "secondary": [
+          0.153,
+          0.2,
+          0.227
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "lent_workshop_mechanic",
+      "kind": "npc",
+      "display_name": {
+        "en": "West Lent mechanic"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -225.0,
+        2.1,
+        -68.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "You made it. Good. Hand me the parcel and we'll settle the delivery fee."
+      },
+      "colors": {
+        "primary": [
+          0.208,
+          0.294,
+          0.345
+        ],
+        "secondary": [
+          0.141,
+          0.169,
+          0.188
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "matej_hall_three",
+      "kind": "npc",
+      "display_name": {
+        "en": "Matej — Hall Three custodian"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -214.0,
+        2.1,
+        -68.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Friday is the handover. Before I return these keys, I want one inventory I can actually defend."
+      },
+      "colors": {
+        "primary": [
+          0.349,
+          0.376,
+          0.298
+        ],
+        "secondary": [
+          0.176,
+          0.192,
+          0.161
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "hall_three_machine_plate",
+      "kind": "location",
+      "display_name": {
+        "en": "Hall Three machine plates"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -218.0,
+        2.1,
+        -68.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Stamped plates carry serial numbers, service dates and layers of grime from years of use."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "hall_three_labelled_boxes",
+      "kind": "location",
+      "display_name": {
+        "en": "Hall Three labelled boxes"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -222.0,
+        2.1,
+        -68.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Company labels overlap older names written directly onto cardboard and wooden cases."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "hall_three_worker",
+      "kind": "npc",
+      "display_name": {
+        "en": "Hall Three worker"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -226.0,
+        2.1,
+        -68.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "We were told the hand tools would stay with us. Nobody bothered to put that promise on the official sheet."
+      },
+      "colors": {
+        "primary": [
+          0.306,
+          0.353,
+          0.388
+        ],
+        "secondary": [
+          0.169,
+          0.188,
+          0.208
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "hall_three_key_hook",
+      "kind": "location",
+      "display_name": {
+        "en": "Hall Three inspection board"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -222.0,
+        2.1,
+        -64.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Behind the inspection board, a metal keyring hangs from a bent nail."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "hall_three_night_guard",
+      "kind": "npc",
+      "display_name": {
+        "en": "Hall Three night guard"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -218.0,
+        2.1,
+        -64.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Small cases, yes. Big machines, no. I wrote down what I saw, but nobody asked for the notebook."
+      },
+      "colors": {
+        "primary": [
+          0.192,
+          0.227,
+          0.259
+        ],
+        "secondary": [
+          0.122,
+          0.141,
+          0.157
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "hall_three_steel_cabinet",
+      "kind": "location",
+      "display_name": {
+        "en": "Hall Three steel cabinet"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -214.0,
+        2.1,
+        -64.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "A narrow steel cabinet is wedged behind the machine line. Its lock is older than the surrounding equipment."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "raeda_directory_entry",
+      "kind": "clue",
+      "display_name": {
+        "en": "Old telephone-directory entry"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -38.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "A pencilled mark circles an old service address and a landline number under the Raeda name."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "raeda_successor_sign",
+      "kind": "location",
+      "display_name": {
+        "en": "Layered successor-company signs"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -34.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Newer plaques cover older lettering. Two unit numbers share the address that the directory lists as one Raeda service premise."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "marija_sever",
+      "kind": "npc",
+      "display_name": {
+        "en": "Marija Sever"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -30.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Addresses change more slowly than names. For a while we returned letters, then forwarded them, then returned them again under another company."
+      },
+      "colors": {
+        "primary": [
+          0.243,
+          0.361,
+          0.345
+        ],
+        "secondary": [
+          0.141,
+          0.18,
+          0.173
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "mariborski_glas_archive",
+      "kind": "location",
+      "display_name": {
+        "en": "Mariborski Glas archive desk"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -26.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Bound newspaper copies, classified pages and dated notices make it possible to compare when each business name actually appeared in print."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "maja_koren",
+      "kind": "npc",
+      "display_name": {
+        "en": "Maja Koren"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -22.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "A changed company name is not a crime and an old address is not proof. If you want me involved, bring me a chronology I can defend."
+      },
+      "colors": {
+        "primary": [
+          0.235,
+          0.275,
+          0.345
+        ],
+        "secondary": [
+          0.141,
+          0.157,
+          0.188
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "nika_vidmar",
+      "kind": "npc",
+      "display_name": {
+        "en": "Nika Vidmar"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -17.36,
+        11.48,
+        -166.96
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "A print without a date is only a picture. If you still have the negative, I can tell you whether the light matches the year you think it does."
+      },
+      "colors": {
+        "primary": [
+          0.29,
+          0.251,
+          0.235
+        ],
+        "secondary": [
+          0.165,
+          0.149,
+          0.141
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "drago_potocnik",
+      "kind": "npc",
+      "display_name": {
+        "en": "Drago Potočnik"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -225.0,
+        1.74,
+        -74.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Half this city remembers a blue hatchback. That is not the same as remembering which one. The yard is open if you came about a starter noise or a delivery that does not add up."
+      },
+      "colors": {
+        "primary": [
+          0.227,
+          0.29,
+          0.337
+        ],
+        "secondary": [
+          0.133,
+          0.157,
+          0.173
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "alenka_pahor",
+      "kind": "npc",
+      "display_name": {
+        "en": "Alenka Pahor"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        56.4,
+        16.04,
+        149.2
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "Visiting hours are on the door. If you mean the man who stopped buying his paper, he sat in this waiting room this morning and would not say which ward."
+      },
+      "colors": {
+        "primary": [
+          0.427,
+          0.478,
+          0.447
+        ],
+        "secondary": [
+          0.18,
+          0.204,
+          0.196
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "lara_mlinar",
+      "kind": "npc",
+      "display_name": {
+        "en": "Lara Mlinar"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -200.1,
+        23.7,
+        844.84
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "The last bus toward Tabor left while I was still on the steps. I am not getting into a stranger's car, and I am not sleeping at the stop either."
+      },
+      "colors": {
+        "primary": [
+          0.353,
+          0.239,
+          0.306
+        ],
+        "secondary": [
+          0.165,
+          0.133,
+          0.157
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "sara_vidic",
+      "kind": "npc",
+      "display_name": {
+        "en": "Sara Vidic"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -232.86,
+        23.66,
+        953.7
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "The rehearsal room is two floors up and the amplifier is older than the band. Take a flyer if you came for the night. If you came about the volume, the neighbours already have my number."
+      },
+      "colors": {
+        "primary": [
+          0.173,
+          0.18,
+          0.2
+        ],
+        "secondary": [
+          0.11,
+          0.118,
+          0.133
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "ivana_zupan",
+      "kind": "npc",
+      "display_name": {
+        "en": "Ivana Zupan"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -50.2,
+        22.31,
+        958.8
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "The spare room is let to a student. He pays, mostly. The telephone is the argument. My husband kept old office letters in the storage cage, if that is what you actually came for."
+      },
+      "colors": {
+        "primary": [
+          0.478,
+          0.416,
+          0.361
+        ],
+        "secondary": [
+          0.227,
+          0.204,
+          0.18
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "tine_kolar",
+      "kind": "npc",
+      "display_name": {
+        "en": "Tine Kolar"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -53.13,
+        22.29,
+        965.87
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "I study, I pay the rent, and I use the phone after ten because that is when the line is cheap. The modem is loud. I unplug it when she knocks."
+      },
+      "colors": {
+        "primary": [
+          0.302,
+          0.384,
+          0.455
+        ],
+        "secondary": [
+          0.165,
+          0.192,
+          0.22
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "franc_kos",
+      "kind": "npc",
+      "display_name": {
+        "en": "Franc Kos"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -136.3,
+        23.6,
+        803.9
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "The blue one by the school gate is mine. It starts. That is the whole advertisement. The papers in the glovebox are older than the pupils who keep asking whose car it is."
+      },
+      "colors": {
+        "primary": [
+          0.306,
+          0.345,
+          0.251
+        ],
+        "secondary": [
+          0.165,
+          0.18,
+          0.141
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "milena_ferk",
+      "kind": "npc",
+      "display_name": {
+        "en": "Milena Ferk"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        72.8,
+        22.79,
+        1050.8
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "He says the old debt was paid in marks. The receipt in my till says tolars. Both can be true, and I am still short. If you can make the years agree, I will listen."
+      },
+      "colors": {
+        "primary": [
+          0.416,
+          0.306,
+          0.345
+        ],
+        "secondary": [
+          0.196,
+          0.157,
+          0.173
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "under_paint_new_owner",
+      "kind": "npc",
+      "display_name": {
+        "en": "New storefront owner"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -156.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "The old sign has to come down before we reopen. If you can help strip it, try not to make the wall worse than it already is."
+      },
+      "colors": {
+        "primary": [
+          0.384,
+          0.353,
+          0.31
+        ],
+        "secondary": [
+          0.204,
+          0.188,
+          0.169
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "under_paint_layer_one",
+      "kind": "location",
+      "display_name": {
+        "en": "Storefront sign — first hidden layer"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -158.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Fresh paint has lifted away from an older business name and a telephone number underneath."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "under_paint_layer_two",
+      "kind": "location",
+      "display_name": {
+        "en": "Storefront sign — second hidden layer"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -160.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "A second name emerges in older lettering. Part of the street number survives near the edge."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "under_paint_layer_three",
+      "kind": "location",
+      "display_name": {
+        "en": "Storefront sign — third hidden layer"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -162.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "The third layer carries faded opening hours and a telephone prefix from an earlier numbering scheme."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "under_paint_layer_four",
+      "kind": "location",
+      "display_name": {
+        "en": "Storefront sign — oldest hidden layer"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -164.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "The oldest lettering is fragile but legible. The company name matches an address from Vera's records."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "brane_sign_painter",
+      "kind": "npc",
+      "display_name": {
+        "en": "Brane — sign painter"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -150.0,
+        2.1,
+        -62.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "I painted over one of those names myself. Which year? That's the problem. Jobs blur together unless somebody kept the advertisement."
+      },
+      "colors": {
+        "primary": [
+          0.306,
+          0.349,
+          0.384
+        ],
+        "secondary": [
+          0.169,
+          0.188,
+          0.208
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "melje_yard_gate",
+      "kind": "location",
+      "display_name": {
+        "en": "Raeda Melje yard gate"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        1378.0,
+        1.1,
+        -72.0
+      ],
+      "range_cm": 500,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "The old industrial gate opens onto the fictional Raeda transport yard. Layers of paint, patched asphalt and changing notices show repeated reuse; none of them is evidence by itself."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "melje_dispatch_lockers",
+      "kind": "location",
+      "display_name": {
+        "en": "Melje dispatch lockers"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        1390.0,
+        1.1,
+        -58.0
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "A row of dented lockers still carries pencilled names, route numbers and shift notes. One metal card names Tone Vogrin."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "melje_kainach_trucks",
+      "kind": "location",
+      "display_name": {
+        "en": "Abandoned Kainach trucks"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        1410.0,
+        1.1,
+        -58.0
+      ],
+      "range_cm": 500,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "Two weathered trucks retain readable serial plates. Their presence proves a vehicle can be documented here; it does not explain who owned the yard."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "melje_vehicle_log_shelf",
+      "kind": "location",
+      "display_name": {
+        "en": "Melje vehicle-log shelf"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        1430.0,
+        1.1,
+        -58.0
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "A dispatch shelf holds a surviving vehicle log with dates, service marks and handwritten route abbreviations."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "melje_archive_boxes",
+      "kind": "location",
+      "display_name": {
+        "en": "Melje clearance boxes"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        1450.0,
+        1.1,
+        -58.0
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "Clearance boxes contain ordinary schedules, duplicate forms and worn office files. One box is marked for Hall Three rather than disposal."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "tabor_exchange_counter",
+      "kind": "location",
+      "display_name": {
+        "en": "Former Tabor exchange counter"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        66.5,
+        22.8,
+        1050.5
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "An old counterfoil book survives among routine exchange-office records. The carbon receipt supplies the date and amount to look for."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "irena_vogrin",
+      "kind": "npc",
+      "display_name": {
+        "en": "Irena Vogrin"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        82.0,
+        22.8,
+        1050.0
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "That counterfoil is familiar. The books were always cleaner than the transactions. I can tell you which contract number to ask for, not what conclusion to draw."
+      },
+      "colors": {
+        "primary": [
+          0.365,
+          0.345,
+          0.384
+        ],
+        "secondary": [
+          0.188,
+          0.188,
+          0.22
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "pohorska_bank_archive_desk",
+      "kind": "location",
+      "display_name": {
+        "en": "Pohorska banka archive desk"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        98.0,
+        22.8,
+        1049.0
+      ],
+      "range_cm": 400,
+      "placement": "unplaced",
+      "dialogue": {
+        "en": "The fictional bank archive index lists an annual Raeda file and a Kainach-related reference. The file itself is restricted; knowing that it exists is not the same as reading it."
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json",
+        "source_version": 3
+      }
+    },
+    {
+      "id": "milan_solar",
+      "kind": "npc",
+      "display_name": {
+        "en": "Milan Šolar"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -420.0,
+        2.1,
+        -70.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "I bought the Pristan lease from the owner the registry named. I also stood at the Melje gate in 1990. Both things are true. If you want the old access schedules, ask me directly."
+      },
+      "colors": {
+        "primary": [
+          0.275,
+          0.333,
+          0.396
+        ],
+        "secondary": [
+          0.157,
+          0.184,
+          0.212
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
+        "source_version": 3
       }
     }
   ],
   "world_store": {
     "format": "marburgumii.world_store",
-    "schema_version": 3,
+    "schema_version": 4,
     "oldest_readable_schema": 1,
-    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition (ADR-020)"
+    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition (ADR-020); schema 4 adds skill XP, money and mission outcomes (ADR-047, ADR-049)"
   },
   "condition": {
     "walk_speed_mps": 2.2,
@@ -130,7 +2071,12 @@
     "breath_hold_seconds": 60,
     "lethal_water_impact_m": 45,
     "recovery_seconds": 60,
-    "persisted": ["vitality", "stamina", "winded", "recovery_s"],
+    "persisted": [
+      "vitality",
+      "stamina",
+      "winded",
+      "recovery_s"
+    ],
     "provenance": {
       "source": "original Marburgum src/shared/combat.h (DEFAULT_VITALITY, DEFAULT_STAMINA, RUN_DRAIN_PER_SECOND, STAMINA_RECOVERY_PER_SECOND, RUN_RESUME_STAMINA, BREATH_HOLD_SECONDS, MOUTH_HEIGHT, LETHAL_WATER_IMPACT_METRES) and src/shared/protocol.h (WALK_SPEED, RUN_SPEED, SWIM_SPEED, RESPAWN_WAIT_SECONDS); swimming, sinking, climbing out and drowning in src/server/world_simulation.cpp (tick_water, tick_combat, send_to_graveyard); body save/restore in the same file",
       "review": "Running and its breath cost carried forward (ADR-020). Swimming, held breath and drowning carried forward (ADR-032): drowning is the only thing that changes vitality yet; a drowned body waits at the recovery start instead of the original's graveyard. Falls onto ground and fights are not implemented."
@@ -175,6 +2121,8 @@
       },
       "category": "story",
       "offer_target": "lent_angler",
+      "story_family": "The City in the Ledger",
+      "requires_completed": [],
       "summary": {
         "en": "An ordinary Fishing assignment on the Drava has turned into a trail of old records, addresses and people."
       },
@@ -184,9 +2132,12 @@
           "quantity": 1
         }
       ],
-      "registered_stages": [
+      "stages": [
         {
           "id": "catch_first_fish",
+          "objective_text": {
+            "en": "Catch one ordinary fish from the nearby Drava spot, then show it to the riverside angler."
+          },
           "complete_target": "lent_angler",
           "action": {
             "en": "Show the catch"
@@ -201,12 +2152,16 @@
             "quantity": 1,
             "consume": true
           },
-          "objective_text": {
-            "en": "Catch one ordinary fish from the nearby Drava spot, then show it to the riverside angler."
+          "final": false,
+          "completion_text": {
+            "en": "As you compare the catch, the angler points out something metallic caught in debris along the bank."
           }
         },
         {
           "id": "recover_cashbox",
+          "objective_text": {
+            "en": "Inspect the debris beside the Drava and pull out the battered metal cashbox."
+          },
           "complete_target": "drava_cashbox_debris",
           "action": {
             "en": "Pull out the cashbox"
@@ -215,20 +2170,1613 @@
             "type": "interaction",
             "target": "drava_cashbox_debris"
           },
+          "grant_items": [
+            {
+              "id": "drava_cashbox",
+              "quantity": 1
+            },
+            {
+              "id": "brass_key",
+              "quantity": 1
+            },
+            {
+              "id": "water_damaged_accounting_page",
+              "quantity": 1
+            },
+            {
+              "id": "torn_gate_photograph",
+              "quantity": 1
+            },
+            {
+              "id": "faded_transport_ticket",
+              "quantity": 1
+            },
+            {
+              "id": "carbon_copy_receipt",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Inside are a water-damaged accounting page, a brass key, a torn photograph, a faded transport ticket, a carbon-copy receipt, pencilled initials and the mark R-90."
+          }
+        },
+        {
+          "id": "identify_address",
           "objective_text": {
-            "en": "Inspect the debris beside the Drava and pull out the battered metal cashbox."
+            "en": "Ask Petra Kralj at the K67 kiosk about the pencilled address found in the cashbox."
+          },
+          "complete_target": "petra_kralj",
+          "action": {
+            "en": "Ask about the address"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "petra_kralj"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Petra recognizes the old address format and points you toward a shuttered service room further along Lent."
+          }
+        },
+        {
+          "id": "open_service_room",
+          "objective_text": {
+            "en": "Find the shuttered service room and try the small brass key from the cashbox."
+          },
+          "complete_target": "raeda_service_room",
+          "action": {
+            "en": "Try the brass key"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "raeda_service_room"
+          },
+          "required_items": [
+            {
+              "id": "brass_key",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The key fits. Inside, an empty shelf leaves a clean rectangle on the wall where a blue binder stood until recently."
+          }
+        },
+        {
+          "id": "meet_vera",
+          "objective_text": {
+            "en": "Show the accounting page to Vera Horvat and ask what R-90 means."
+          },
+          "complete_target": "vera_horvat",
+          "action": {
+            "en": "Show Vera the page"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "vera_horvat"
+          },
+          "required_items": [
+            {
+              "id": "water_damaged_accounting_page",
+              "quantity": 1
+            }
+          ],
+          "final": true,
+          "completion_text": {
+            "en": "Vera recognizes the page. The records were supposed to be gone. R-90 is enough for her to know that at least part of the old Blue Ledger survived."
           }
         }
       ],
-      "unregistered_stages": [
-        "identify_address",
-        "open_service_room",
-        "meet_vera"
-      ],
+      "reward_money": 50,
+      "journal_entry": {
+        "id": "blue_ledger_r90",
+        "title": {
+          "en": "Blue Ledger — R-90"
+        },
+        "text": {
+          "en": "Vera Horvat recognized the water-damaged accounting page from a late-1980s municipal-industrial records network. The pencilled address led to a shuttered service room where a blue binder had recently been removed. The mark R-90 may identify a surviving part of what office staff once called the Blue Ledger."
+        }
+      },
       "provenance": {
         "source": "original Marburgum project/data/missions.json",
-        "source_version": 1,
-        "note": "Stages 1-2 of 5 registered. Stage 1 cannot complete until fishing exists; the stage 2 debris is not placed. Stage grant items and the 50-money reward are not carried yet."
+        "source_version": 4,
+        "source_commit": "2cd67691801ae1a1878e0b04736a01c12b57e483",
+        "note": "Every stage, requirement, grant, flag, choice, reward and journal entry carried forward (ADR-049)."
+      }
+    },
+    {
+      "id": "kiosk_67_customer_stopped_coming",
+      "name": {
+        "en": "Kiosk 67 — The Customer Who Stopped Coming"
+      },
+      "category": "side_story",
+      "offer_target": "petra_kralj",
+      "story_family": "The City in the Ledger",
+      "requires_completed": [],
+      "summary": {
+        "en": "Petra Kralj has noticed that one of Kiosk 67's regular customers abruptly stopped appearing. Following his ordinary daily route reveals a small personal crisis tied to the same industrial records network surfacing elsewhere in Maribor."
+      },
+      "start_items": [],
+      "stages": [
+        {
+          "id": "bus_stop",
+          "objective_text": {
+            "en": "Ask the regular at the nearby bus stop when the missing customer was last seen."
+          },
+          "complete_target": "kiosk_67_bus_regular",
+          "action": {
+            "en": "Ask about the customer"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "kiosk_67_bus_regular"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "The bus-stop regular remembers him changing his routine and heading toward a café instead of home."
+          }
+        },
+        {
+          "id": "cafe",
+          "objective_text": {
+            "en": "Speak to the café regular about the customer's recent visits."
+          },
+          "complete_target": "kiosk_67_cafe_regular",
+          "action": {
+            "en": "Ask what happened"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "kiosk_67_cafe_regular"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "The café regular says he was worried about money and had been asking about temporary work."
+          }
+        },
+        {
+          "id": "neighbour",
+          "objective_text": {
+            "en": "Find the customer's neighbour and ask whether he returned home."
+          },
+          "complete_target": "kiosk_67_neighbour",
+          "action": {
+            "en": "Ask the neighbour"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "kiosk_67_neighbour"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "The neighbour says he never returned that evening and mentions a hospital visit."
+          }
+        },
+        {
+          "id": "hospital",
+          "objective_text": {
+            "en": "Find the missing customer and ask what happened."
+          },
+          "complete_target": "kiosk_67_customer",
+          "action": {
+            "en": "Speak to the customer"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "kiosk_67_customer"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "He is safe. While explaining where he worked, he recognizes initials in a Blue Ledger photograph from an old machine-hall records chain."
+          }
+        },
+        {
+          "id": "resolution",
+          "objective_text": {
+            "en": "Decide how to handle the customer's unpaid kiosk tab and immediate problem."
+          },
+          "complete_target": "kiosk_67_customer",
+          "action": {
+            "en": "Choose a response"
+          },
+          "objective": {
+            "type": "choice"
+          },
+          "set_flags": {
+            "ledger_initials_recognized": true
+          },
+          "choices": [
+            {
+              "id": "pay_tab",
+              "label": {
+                "en": "Pay his kiosk tab yourself."
+              },
+              "money_delta": -20,
+              "skill_xp": {
+                "reputation": 15
+              },
+              "outcome": "tab_paid",
+              "completion_text": {
+                "en": "You cover the debt. Petra later notes that the customer has begun appearing at the kiosk again."
+              }
+            },
+            {
+              "id": "find_work",
+              "label": {
+                "en": "Help him find temporary work."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "reputation": 25
+              },
+              "outcome": "temporary_work",
+              "completion_text": {
+                "en": "You connect him with temporary work and give him room to recover without erasing the debt."
+              }
+            },
+            {
+              "id": "erase_debt",
+              "label": {
+                "en": "Ask Petra to erase the debt."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "reputation": 15
+              },
+              "outcome": "debt_erased",
+              "completion_text": {
+                "en": "Petra agrees to strike the old tab from her ledger."
+              }
+            },
+            {
+              "id": "sell_object",
+              "label": {
+                "en": "Help him sell an object to cover the debt."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "trading": 20,
+                "reputation": 10
+              },
+              "outcome": "object_sold",
+              "completion_text": {
+                "en": "You arrange a small sale that covers the kiosk debt without charity."
+              }
+            },
+            {
+              "id": "leave_alone",
+              "label": {
+                "en": "Leave the matter alone."
+              },
+              "money_delta": 0,
+              "skill_xp": {},
+              "outcome": "left_alone",
+              "completion_text": {
+                "en": "You decide not to intervene further. The customer remains absent from his old routine."
+              }
+            }
+          ],
+          "final": true
+        }
+      ],
+      "reward_money": 0,
+      "journal_entry": {
+        "id": "kiosk_67_missing_customer",
+        "title": {
+          "en": "Kiosk 67 — The Customer Who Stopped Coming"
+        },
+        "text": {
+          "en": "A missing regular from Kiosk 67 was traced through his bus stop, café, neighbour and hospital visit. He recognized initials connected to the Blue Ledger network; how his immediate problem was resolved is now part of the persistent mission record."
+        }
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/missions.json",
+        "source_version": 4,
+        "source_commit": "2cd67691801ae1a1878e0b04736a01c12b57e483",
+        "note": "Every stage, requirement, grant, flag, choice, reward and journal entry carried forward (ADR-049)."
+      }
+    },
+    {
+      "id": "lent_late_delivery",
+      "name": {
+        "en": "Late Delivery"
+      },
+      "category": "urban_delivery",
+      "offer_target": "lent_dispatcher",
+      "story_family": "Registered",
+      "requires_completed": [],
+      "summary": {
+        "en": "A delivery clerk in Lent handed you an overdue brown-paper parcel of spare parts for a workshop farther west along the Drava."
+      },
+      "start_items": [
+        {
+          "id": "brown_paper_parcel",
+          "quantity": 1
+        }
+      ],
+      "stages": [
+        {
+          "id": "deliver_parcel",
+          "objective_text": {
+            "en": "Deliver the brown-paper parcel to the West Lent mechanic. Walk the promenade or use the hatchback parked near the delivery clerk."
+          },
+          "complete_target": "lent_workshop_mechanic",
+          "action": {
+            "en": "Hand over parcel"
+          },
+          "objective": {
+            "type": "inventory_any",
+            "items": [
+              "brown_paper_parcel"
+            ],
+            "quantity": 1,
+            "consume": true
+          },
+          "final": false,
+          "completion_text": {
+            "en": "The mechanic opens the parcel, confirms the parts are finally here, and counts out the delivery fee."
+          }
+        },
+        {
+          "id": "resolve_fee",
+          "objective_text": {
+            "en": "Decide how to handle the 90 delivery fee."
+          },
+          "complete_target": "lent_workshop_mechanic",
+          "action": {
+            "en": "Choose fee outcome"
+          },
+          "objective": {
+            "type": "choice"
+          },
+          "choices": [
+            {
+              "id": "take_full_fee",
+              "label": {
+                "en": "Take the full 90."
+              },
+              "money_delta": 90,
+              "skill_xp": {},
+              "outcome": "full_fee_taken",
+              "completion_text": {
+                "en": "You take the full delivery fee. The clerk remains responsible for the delay."
+              }
+            },
+            {
+              "id": "leave_clerk_share",
+              "label": {
+                "en": "Leave 30 for the clerk."
+              },
+              "money_delta": 60,
+              "skill_xp": {
+                "reputation": 25
+              },
+              "outcome": "clerk_share_left",
+              "completion_text": {
+                "en": "You leave 30 of the fee for the clerk and gain local goodwill."
+              }
+            }
+          ],
+          "final": true
+        }
+      ],
+      "reward_money": 0,
+      "journal_entry": {
+        "id": "late_delivery",
+        "title": {
+          "en": "Late Delivery"
+        },
+        "text": {
+          "en": "The overdue parcel reached the West Lent workshop. The way the delivery fee was handled became part of the mission record and changed how the clerk remembers the run."
+        }
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/missions.json",
+        "source_version": 4,
+        "source_commit": "2cd67691801ae1a1878e0b04736a01c12b57e483",
+        "note": "Every stage, requirement, grant, flag, choice, reward and journal entry carried forward (ADR-049)."
+      }
+    },
+    {
+      "id": "hall_three_last_shift",
+      "name": {
+        "en": "Last Shift — Keys to Hall Three"
+      },
+      "category": "side_story",
+      "offer_target": "matej_hall_three",
+      "story_family": "The City in the Ledger",
+      "requires_completed": [],
+      "summary": {
+        "en": "Matej has to return the keys to Hall Three by Friday, but before the building changes hands he wants one last inventory of the tools, boxes and disputed equipment inside."
+      },
+      "start_items": [],
+      "stages": [
+        {
+          "id": "photograph_plates",
+          "objective_text": {
+            "en": "Photograph the identification plates on the remaining machines in Hall Three."
+          },
+          "complete_target": "hall_three_machine_plate",
+          "action": {
+            "en": "Photograph machine plates"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "hall_three_machine_plate"
+          },
+          "grant_items": [
+            {
+              "id": "hall_three_plate_photos",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The plates are recorded. Several serial numbers do not match the handwritten inventory sheet Matej was given."
+          }
+        },
+        {
+          "id": "sort_boxes",
+          "objective_text": {
+            "en": "Check the labelled boxes and separate company stock from items marked with workers' names."
+          },
+          "complete_target": "hall_three_labelled_boxes",
+          "action": {
+            "en": "Sort labelled boxes"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "hall_three_labelled_boxes"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Most boxes are clear, but a few carry old personal names over newer company labels."
+          }
+        },
+        {
+          "id": "check_ownership",
+          "objective_text": {
+            "en": "Ask a Hall Three worker which disputed tools were personally owned, borrowed or promised to workers."
+          },
+          "complete_target": "hall_three_worker",
+          "action": {
+            "en": "Ask about the tools"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "hall_three_worker"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "The worker insists that several tools were promised to the crew when the hall closed, but the paperwork never recorded the agreement."
+          }
+        },
+        {
+          "id": "find_keys",
+          "objective_text": {
+            "en": "Find the missing Hall Three keyring before the handover."
+          },
+          "complete_target": "hall_three_key_hook",
+          "action": {
+            "en": "Search for the keys"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "hall_three_key_hook"
+          },
+          "grant_items": [
+            {
+              "id": "hall_three_keyring",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The missing keyring is hanging behind an old inspection board, including one unlabelled steel-cabinet key."
+          }
+        },
+        {
+          "id": "talk_guard",
+          "objective_text": {
+            "en": "Ask the night guard what has been leaving Hall Three after closing time."
+          },
+          "complete_target": "hall_three_night_guard",
+          "action": {
+            "en": "Question the night guard"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "hall_three_night_guard"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "The guard has seen workers carrying small tool cases out, but says nobody has tried to move company machinery."
+          }
+        },
+        {
+          "id": "open_cabinet",
+          "objective_text": {
+            "en": "Try the unlabelled key on the locked steel cabinet behind the machine line."
+          },
+          "complete_target": "hall_three_steel_cabinet",
+          "action": {
+            "en": "Open steel cabinet"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "hall_three_steel_cabinet"
+          },
+          "required_items": [
+            {
+              "id": "hall_three_keyring",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "raeda_transport_maintenance_book",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Inside is an old transport-maintenance book carrying Raeda Network routing marks and workshop references absent from the formal inventory."
+          }
+        },
+        {
+          "id": "resolve_inventory",
+          "objective_text": {
+            "en": "Decide how Matej should settle the disputed tools before Hall Three changes hands."
+          },
+          "complete_target": "matej_hall_three",
+          "action": {
+            "en": "Settle the inventory"
+          },
+          "objective": {
+            "type": "choice"
+          },
+          "set_flags": {
+            "raeda_transport_book_found": true
+          },
+          "choices": [
+            {
+              "id": "formal_inventory",
+              "label": {
+                "en": "Insist on the formal inventory."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "reputation": 10
+              },
+              "outcome": "hall_empty",
+              "completion_text": {
+                "en": "The official inventory wins. Disputed tools stay with the property and Hall Three is cleared under the formal handover."
+              }
+            },
+            {
+              "id": "negotiate_settlement",
+              "label": {
+                "en": "Negotiate a settlement with the workers."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "reputation": 25
+              },
+              "outcome": "cooperative_run",
+              "completion_text": {
+                "en": "Matej records a negotiated settlement. Several tools remain with workers under a written cooperative arrangement."
+              }
+            },
+            {
+              "id": "buy_selected_tools",
+              "label": {
+                "en": "Buy selected tools legitimately."
+              },
+              "money_delta": -80,
+              "skill_xp": {
+                "trading": 25,
+                "reputation": 10
+              },
+              "outcome": "small_workshops",
+              "completion_text": {
+                "en": "You put money behind the disputed claims and document the sale. The tools later seed several small workshops."
+              }
+            },
+            {
+              "id": "side_with_worker",
+              "label": {
+                "en": "Let one worker take the disputed tools."
+              },
+              "money_delta": 0,
+              "skill_xp": {},
+              "outcome": "hall_sealed",
+              "completion_text": {
+                "en": "You side with the worker despite the unresolved paperwork. The immediate dispute ends, but future trust around the hall is damaged."
+              }
+            }
+          ],
+          "final": true
+        }
+      ],
+      "reward_money": 0,
+      "journal_entry": {
+        "id": "hall_three_last_shift",
+        "title": {
+          "en": "Last Shift — Keys to Hall Three"
+        },
+        "text": {
+          "en": "Hall Three's final inventory exposed ambiguous ownership claims, missing keys and an old Raeda Network transport-maintenance book hidden behind a machine. The settlement chosen for the disputed tools remains part of the industrial branch record."
+        }
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/missions.json",
+        "source_version": 4,
+        "source_commit": "2cd67691801ae1a1878e0b04736a01c12b57e483",
+        "note": "Every stage, requirement, grant, flag, choice, reward and journal entry carried forward (ADR-049)."
+      }
+    },
+    {
+      "id": "raeda_names_no_longer_match",
+      "name": {
+        "en": "Names That No Longer Match"
+      },
+      "category": "story",
+      "offer_target": "vera_horvat",
+      "story_family": "The City in the Ledger",
+      "requires_completed": [
+        "lent_first_catch"
+      ],
+      "summary": {
+        "en": "Vera's R-90 page points beyond the shuttered service room. Old addresses, changed company names, returned post and newspaper records may show how the Raeda Network was split among successor arrangements."
+      },
+      "start_items": [],
+      "stages": [
+        {
+          "id": "trace_directory",
+          "objective_text": {
+            "en": "Check the old telephone-directory entry Vera marked beside R-90."
+          },
+          "complete_target": "raeda_directory_entry",
+          "action": {
+            "en": "Copy the directory entry"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "raeda_directory_entry"
+          },
+          "grant_items": [
+            {
+              "id": "raeda_directory_copy",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The directory still lists the old Raeda service address and a telephone number under a name no longer used on the building."
+          }
+        },
+        {
+          "id": "check_successor_sign",
+          "objective_text": {
+            "en": "Compare the old directory entry with the businesses now using the Raeda address."
+          },
+          "complete_target": "raeda_successor_sign",
+          "action": {
+            "en": "Compare the names"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "raeda_successor_sign"
+          },
+          "required_items": [
+            {
+              "id": "raeda_directory_copy",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "successor_company_notice",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The old Raeda name has been covered by newer company plates. Unit numbers and a pasted notice suggest the premises were split rather than transferred as one block."
+          }
+        },
+        {
+          "id": "trace_returned_mail",
+          "objective_text": {
+            "en": "Ask Marija Sever what happened to post addressed to the old Raeda service name."
+          },
+          "complete_target": "marija_sever",
+          "action": {
+            "en": "Ask about returned mail"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "marija_sever"
+          },
+          "grant_items": [
+            {
+              "id": "returned_raeda_envelope",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Marija remembers repeated returns and forwarding instructions under different successor names. She keeps one undeliverable envelope as an example of the address transition."
+          }
+        },
+        {
+          "id": "check_kiosk_records",
+          "objective_text": {
+            "en": "Ask Petra whether newspapers or classified notices mentioned the successor names."
+          },
+          "complete_target": "petra_kralj",
+          "action": {
+            "en": "Check Petra's clippings"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "petra_kralj"
+          },
+          "grant_items": [
+            {
+              "id": "raeda_newspaper_clipping",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Petra finds a clipped notice that uses one successor name months before another source claims the old Raeda name disappeared."
+          }
+        },
+        {
+          "id": "compare_newspaper_archive",
+          "objective_text": {
+            "en": "Compare Petra's clipping with the dated copies at the Mariborski Glas archive."
+          },
+          "complete_target": "mariborski_glas_archive",
+          "action": {
+            "en": "Check the archive"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "mariborski_glas_archive"
+          },
+          "required_items": [
+            {
+              "id": "raeda_newspaper_clipping",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The archive confirms the clipping date. The Raeda Network was broken into several successor arrangements whose names overlapped during the transition."
+          }
+        },
+        {
+          "id": "decide_maja",
+          "objective_text": {
+            "en": "Maja Koren is nearby. Decide whether to tell her what the records show or keep the investigation private for now."
+          },
+          "complete_target": "maja_koren",
+          "action": {
+            "en": "Decide what to tell Maja"
+          },
+          "objective": {
+            "type": "choice"
+          },
+          "choices": [
+            {
+              "id": "tell_maja",
+              "label": {
+                "en": "Tell Maja what you have found."
+              },
+              "money_delta": 0,
+              "skill_xp": {},
+              "outcome": "maja_informed",
+              "set_flags": {
+                "maja_informed": true,
+                "investigation_private": false
+              },
+              "completion_text": {
+                "en": "You give Maja the chronology but stress that the papers show overlapping successor arrangements, not proof of wrongdoing. She agrees to treat it as a lead, not a conclusion."
+              }
+            },
+            {
+              "id": "keep_private",
+              "label": {
+                "en": "Keep the investigation private for now."
+              },
+              "money_delta": 0,
+              "skill_xp": {},
+              "outcome": "investigation_private",
+              "set_flags": {
+                "maja_informed": false,
+                "investigation_private": true
+              },
+              "completion_text": {
+                "en": "You keep the chronology out of the newspaper for now. Maja accepts that you are not ready to share the documents, but remembers the refusal."
+              }
+            }
+          ],
+          "final": true
+        }
+      ],
+      "reward_money": 0,
+      "journal_entry": {
+        "id": "blue_ledger_names_no_longer_match",
+        "title": {
+          "en": "Blue Ledger — Names That No Longer Match"
+        },
+        "text": {
+          "en": "The first Raeda addresses led through a telephone-directory copy, changed signage, returned post, kiosk records and a newspaper archive. Together they show that the network was divided among several successor arrangements rather than simply disappearing. Your decision about whether to brief Maja Koren is preserved with the investigation."
+        }
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/missions.json",
+        "source_version": 4,
+        "source_commit": "2cd67691801ae1a1878e0b04736a01c12b57e483",
+        "note": "Every stage, requirement, grant, flag, choice, reward and journal entry carried forward (ADR-049)."
+      }
+    },
+    {
+      "id": "under_the_paint_four_names",
+      "name": {
+        "en": "Under the Paint — Four Names on One Wall"
+      },
+      "category": "side_story",
+      "offer_target": "under_paint_new_owner",
+      "story_family": "The City in the Ledger",
+      "requires_completed": [],
+      "summary": {
+        "en": "A new storefront owner wants an old painted sign removed. Each layer reveals an older business name, turning routine renovation into a reconstruction of who occupied the address and when."
+      },
+      "start_items": [],
+      "stages": [
+        {
+          "id": "reveal_first_name",
+          "objective_text": {
+            "en": "Help strip the newest painted layer and photograph the first older business name before more paint is removed."
+          },
+          "complete_target": "under_paint_layer_one",
+          "action": {
+            "en": "Photograph first layer"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "under_paint_layer_one"
+          },
+          "grant_items": [
+            {
+              "id": "storefront_layer_one_photo",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The first hidden name is photographed. Its lettering is newer than the wall beneath it and includes a different telephone number."
+          }
+        },
+        {
+          "id": "reveal_second_name",
+          "objective_text": {
+            "en": "Remove the next layer carefully and photograph the second hidden business name."
+          },
+          "complete_target": "under_paint_layer_two",
+          "action": {
+            "en": "Photograph second layer"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "under_paint_layer_two"
+          },
+          "grant_items": [
+            {
+              "id": "storefront_layer_two_photo",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "A second business name appears beneath the first, with older typography and a partially visible street number."
+          }
+        },
+        {
+          "id": "reveal_third_name",
+          "objective_text": {
+            "en": "Continue the removal and photograph the third business name before it is damaged."
+          },
+          "complete_target": "under_paint_layer_three",
+          "action": {
+            "en": "Photograph third layer"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "under_paint_layer_three"
+          },
+          "grant_items": [
+            {
+              "id": "storefront_layer_three_photo",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The third layer survives well enough to record a business name, telephone prefix and faded opening-hours panel."
+          }
+        },
+        {
+          "id": "reveal_oldest_name",
+          "objective_text": {
+            "en": "Expose and photograph the oldest surviving lettering on the wall."
+          },
+          "complete_target": "under_paint_layer_four",
+          "action": {
+            "en": "Photograph oldest layer"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "under_paint_layer_four"
+          },
+          "grant_items": [
+            {
+              "id": "storefront_oldest_lettering_photo",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The oldest painted name matches an address in Vera Horvat's records, but the lettering alone does not establish the date."
+          }
+        },
+        {
+          "id": "ask_brane",
+          "objective_text": {
+            "en": "Show the documented lettering to Brane, the sign painter, and ask what he remembers."
+          },
+          "complete_target": "brane_sign_painter",
+          "action": {
+            "en": "Ask Brane about the signs"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "brane_sign_painter"
+          },
+          "required_items": [
+            {
+              "id": "storefront_oldest_lettering_photo",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Brane remembers repainting over one of the middle names, but cannot place the year precisely. He points you toward old advertisements instead."
+          }
+        },
+        {
+          "id": "check_maja_archive",
+          "objective_text": {
+            "en": "Ask Maja Koren whether Mariborski Glas has advertisements from the businesses uncovered on the wall."
+          },
+          "complete_target": "maja_koren",
+          "action": {
+            "en": "Compare archived advertisements"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "maja_koren"
+          },
+          "required_items": [
+            {
+              "id": "storefront_layer_one_photo",
+              "quantity": 1
+            },
+            {
+              "id": "storefront_layer_two_photo",
+              "quantity": 1
+            },
+            {
+              "id": "storefront_layer_three_photo",
+              "quantity": 1
+            },
+            {
+              "id": "storefront_oldest_lettering_photo",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "storefront_archived_advertisements",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Maja finds advertisements from two of the businesses. Their publication dates narrow the sequence but leave one transition unresolved."
+          }
+        },
+        {
+          "id": "ask_petra_phone",
+          "objective_text": {
+            "en": "Ask Petra when the storefront telephone number changed."
+          },
+          "complete_target": "petra_kralj",
+          "action": {
+            "en": "Ask about the old number"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "petra_kralj"
+          },
+          "required_items": [
+            {
+              "id": "storefront_archived_advertisements",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Petra remembers the old number disappearing before the disputed lease date. Together with the advertisements and photographed lettering, the chronology is strong enough to challenge the lease claim."
+          }
+        },
+        {
+          "id": "decide_sign_window",
+          "objective_text": {
+            "en": "Return to the new owner and decide whether to preserve a small exposed window of the old sign layers or cover the wall completely."
+          },
+          "complete_target": "under_paint_new_owner",
+          "action": {
+            "en": "Decide what to preserve"
+          },
+          "objective": {
+            "type": "choice"
+          },
+          "set_flags": {
+            "oldest_tenant_occupancy_proven": true
+          },
+          "choices": [
+            {
+              "id": "preserve_layers",
+              "label": {
+                "en": "Preserve a small window showing the older signs."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "reputation": 20
+              },
+              "outcome": "sign_window_preserved",
+              "completion_text": {
+                "en": "The owner agrees to frame a small exposed section. Four names remain visible together as a permanent trace of the building's commercial history."
+              }
+            },
+            {
+              "id": "cover_layers",
+              "label": {
+                "en": "Finish the repaint and cover the old signs."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "reputation": 5
+              },
+              "outcome": "sign_layers_documented_only",
+              "completion_text": {
+                "en": "The wall is repainted. The physical layers disappear, but the photographs and corroborating records preserve the evidence."
+              }
+            }
+          ],
+          "final": true
+        }
+      ],
+      "reward_money": 0,
+      "journal_entry": {
+        "id": "under_the_paint_four_names",
+        "title": {
+          "en": "Under the Paint — Four Names on One Wall"
+        },
+        "text": {
+          "en": "Four generations of storefront lettering were documented before repainting. Brane, Maja Koren and Petra Kralj helped establish a chronology, and the oldest hidden name proved that a company occupied the premises earlier than a disputed lease claims."
+        }
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/missions.json",
+        "source_version": 4,
+        "source_commit": "2cd67691801ae1a1878e0b04736a01c12b57e483",
+        "note": "Every stage, requirement, grant, flag, choice, reward and journal entry carried forward (ADR-049)."
+      }
+    },
+    {
+      "id": "raeda_last_shift",
+      "name": {
+        "en": "The Last Shift"
+      },
+      "category": "story",
+      "offer_target": "matej_hall_three",
+      "story_family": "The City in the Ledger",
+      "requires_completed": [
+        "raeda_names_no_longer_match"
+      ],
+      "summary": {
+        "en": "Matej wants the surviving dispatch paperwork out of the Melje yard before clearance. The Blue Ledger lead depends on comparing ordinary lockers, truck plates, vehicle logs and a corrected property schedule rather than treating any one object as proof."
+      },
+      "start_items": [],
+      "stages": [
+        {
+          "id": "yard_access",
+          "objective_text": {
+            "en": "Go to the Melje transport yard and inspect the gate before the clearance proceeds."
+          },
+          "complete_target": "melje_yard_gate",
+          "action": {
+            "en": "Inspect the yard gate"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "melje_yard_gate"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "The yard is accessible without force. Clearance notices and reused industrial fabric establish the setting, not guilt."
+          }
+        },
+        {
+          "id": "dispatch_lockers",
+          "objective_text": {
+            "en": "Inspect the old dispatch lockers for names that connect the yard to Vera's 1990 records."
+          },
+          "complete_target": "melje_dispatch_lockers",
+          "action": {
+            "en": "Inspect the lockers"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "melje_dispatch_lockers"
+          },
+          "grant_items": [
+            {
+              "id": "tone_vogrin_locker_card",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "One surviving locker card names Tone Vogrin, tying Irena's household to the drivers who expected the yard to remain operational."
+          }
+        },
+        {
+          "id": "photograph_serials",
+          "objective_text": {
+            "en": "Photograph the serial plates on the two abandoned Kainach trucks."
+          },
+          "complete_target": "melje_kainach_trucks",
+          "action": {
+            "en": "Photograph truck serials"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "melje_kainach_trucks"
+          },
+          "grant_items": [
+            {
+              "id": "kainach_serial_photos",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The serial plates are documented. They establish that Kainach vehicles were physically present, contradicting the later claim that they never entered Raeda service."
+          }
+        },
+        {
+          "id": "recover_maintenance_log",
+          "objective_text": {
+            "en": "Recover the yard vehicle log and compare its dates with the photographed truck plates."
+          },
+          "complete_target": "melje_vehicle_log_shelf",
+          "action": {
+            "en": "Recover vehicle log"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "melje_vehicle_log_shelf"
+          },
+          "required_items": [
+            {
+              "id": "kainach_serial_photos",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "yard_vehicle_log",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The vehicle log records service and movement entries for the same Kainach serials. The contradiction is stronger, but it still does not prove why the property record changed."
+          }
+        },
+        {
+          "id": "move_boxes",
+          "objective_text": {
+            "en": "Secure the clearance boxes marked for Hall Three before the remaining office papers are discarded."
+          },
+          "complete_target": "melje_archive_boxes",
+          "action": {
+            "en": "Secure archive boxes"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "melje_archive_boxes"
+          },
+          "grant_items": [
+            {
+              "id": "raeda_yard_archive_boxes",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The boxes are heavy with routine paperwork: duplicate schedules, shift sheets and obsolete forms. Their ordinariness is exactly why one altered schedule survived."
+          }
+        },
+        {
+          "id": "find_yard_schedule",
+          "objective_text": {
+            "en": "Bring the Melje clearance boxes to Matej and unpack the property schedules with him."
+          },
+          "complete_target": "matej_hall_three",
+          "action": {
+            "en": "Unpack the clearance boxes"
+          },
+          "objective": {
+            "type": "inventory_any",
+            "items": [
+              "raeda_yard_archive_boxes"
+            ],
+            "quantity": 1,
+            "consume": true
+          },
+          "required_items": [
+            {
+              "id": "yard_vehicle_log",
+              "quantity": 1
+            },
+            {
+              "id": "raeda_yard_archive_boxes",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "corrected_yard_schedule",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Held to the light, the transferee line beneath white correction fluid reads 'Delavska prevozna zadruga (v ustanavljanju)'. PREHOD d.o.o. was typed over it."
+          }
+        },
+        {
+          "id": "show_vera",
+          "objective_text": {
+            "en": "Take the corrected yard schedule, vehicle log and truck photographs to Vera."
+          },
+          "complete_target": "vera_horvat",
+          "action": {
+            "en": "Review the Melje evidence"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "vera_horvat"
+          },
+          "required_items": [
+            {
+              "id": "tone_vogrin_locker_card",
+              "quantity": 1
+            },
+            {
+              "id": "kainach_serial_photos",
+              "quantity": 1
+            },
+            {
+              "id": "yard_vehicle_log",
+              "quantity": 1
+            },
+            {
+              "id": "corrected_yard_schedule",
+              "quantity": 1
+            }
+          ],
+          "final": true,
+          "completion_text": {
+            "en": "Vera studies the correction and refuses the easy conclusion: 'A correction is not a crime. People corrected everything in 1990. Find me why.'"
+          }
+        }
+      ],
+      "reward_money": 0,
+      "journal_entry": {
+        "id": "blue_ledger_last_shift",
+        "title": {
+          "en": "Blue Ledger — The Last Shift"
+        },
+        "text": {
+          "en": "The Melje yard preserved a driver locker card, Kainach truck serials, a vehicle log and a corrected property schedule. Beneath correction fluid, the transferee line still reads as a drivers' cooperative in founding before PREHOD d.o.o. was typed over it. Vera refuses to call the alteration a crime without motive or corroboration."
+        }
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/missions.json",
+        "source_version": 4,
+        "source_commit": "2cd67691801ae1a1878e0b04736a01c12b57e483",
+        "note": "Every stage, requirement, grant, flag, choice, reward and journal entry carried forward (ADR-049)."
+      }
+    },
+    {
+      "id": "raeda_city_for_sale",
+      "name": {
+        "en": "The City for Sale"
+      },
+      "category": "story",
+      "offer_target": "vera_horvat",
+      "story_family": "The City in the Ledger",
+      "requires_completed": [
+        "raeda_last_shift"
+      ],
+      "summary": {
+        "en": "Vera wants the corrected Melje schedule tested against money and public records. A Tabor exchange counterfoil, Irena's contract reference, newspaper classifieds, a restricted fictional bank-file locator and Milan Šolar's account begin to explain how PREHOD acquired a paper trail."
+      },
+      "start_items": [],
+      "stages": [
+        {
+          "id": "trace_counterfoil",
+          "objective_text": {
+            "en": "Take the carbon-copy receipt from the Drava cashbox to the former Tabor exchange counter and find its counterfoil."
+          },
+          "complete_target": "tabor_exchange_counter",
+          "action": {
+            "en": "Find the exchange counterfoil"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "tabor_exchange_counter"
+          },
+          "required_items": [
+            {
+              "id": "carbon_copy_receipt",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "exchange_counterfoil_copy",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The counterfoil records a March 1990 Deutsche Mark payment by Prehod-Kainach. It supplies a date and amount, not an explanation."
+          }
+        },
+        {
+          "id": "meet_irena",
+          "objective_text": {
+            "en": "Ask Irena Vogrin to identify the bookkeeping reference on the exchange counterfoil."
+          },
+          "complete_target": "irena_vogrin",
+          "action": {
+            "en": "Ask Irena about the payment"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "irena_vogrin"
+          },
+          "required_items": [
+            {
+              "id": "exchange_counterfoil_copy",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "kainach_contract_reference",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Irena recognizes the bookkeeping convention and gives you the Kainach contract reference used by the office. She treats it as routine accounting and offers no accusation."
+          }
+        },
+        {
+          "id": "check_classifieds",
+          "objective_text": {
+            "en": "Use the contract date to search Mariborski Glas classifieds for Prehod-Kainach and later Prehod notices."
+          },
+          "complete_target": "mariborski_glas_archive",
+          "action": {
+            "en": "Search the classifieds"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "mariborski_glas_archive"
+          },
+          "required_items": [
+            {
+              "id": "kainach_contract_reference",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "prehod_classified_clippings",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Dated classifieds first seek drivers with international experience, then advertise warehouse space in Pristan under the shorter Prehod name."
+          }
+        },
+        {
+          "id": "locate_bank_file",
+          "objective_text": {
+            "en": "Check the fictional Pohorska banka archive index for the Raeda annual file referenced by the payment trail."
+          },
+          "complete_target": "pohorska_bank_archive_desk",
+          "action": {
+            "en": "Check the archive index"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "pohorska_bank_archive_desk"
+          },
+          "required_items": [
+            {
+              "id": "exchange_counterfoil_copy",
+              "quantity": 1
+            },
+            {
+              "id": "kainach_contract_reference",
+              "quantity": 1
+            },
+            {
+              "id": "prehod_classified_clippings",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "pohorska_bank_file_locator",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The index confirms a Raeda 1989 annual file and a related Kainach reference. The contents remain restricted, preserving a later corroboration route rather than handing over a magic answer."
+          }
+        },
+        {
+          "id": "hear_milan",
+          "objective_text": {
+            "en": "Meet Milan Šolar in Pristan and ask how he obtained the warehouse lease."
+          },
+          "complete_target": "milan_solar",
+          "action": {
+            "en": "Hear Milan's account"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "milan_solar"
+          },
+          "required_items": [
+            {
+              "id": "prehod_classified_clippings",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Milan says he paid the entity the registry named, that he stood at the Melje gate in 1990, and that real jobs depended on the transport business. His account complicates the ownership dispute instead of resolving it."
+          }
+        },
+        {
+          "id": "check_k67_concession",
+          "objective_text": {
+            "en": "Ask Petra whether Kiosk 67 also sits inside the old Raeda property network."
+          },
+          "complete_target": "petra_kralj",
+          "action": {
+            "en": "Check the K67 concession"
+          },
+          "objective": {
+            "type": "interaction",
+            "target": "petra_kralj"
+          },
+          "grant_items": [
+            {
+              "id": "k67_raeda_concession_copy",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Petra produces a concession copy showing that K67 traces back to Raeda Aprovizacija. The settlement is no longer abstract: any broad property ruling could touch her livelihood."
+          }
+        },
+        {
+          "id": "decide_milan",
+          "objective_text": {
+            "en": "Return to Milan and decide whether to treat him as a working source or keep the investigation at arm's length."
+          },
+          "complete_target": "milan_solar",
+          "action": {
+            "en": "Decide how to work with Milan"
+          },
+          "objective": {
+            "type": "choice"
+          },
+          "choices": [
+            {
+              "id": "trust_milan",
+              "label": {
+                "en": "Treat Milan as a working source."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "reputation": 10
+              },
+              "outcome": "milan_trusted",
+              "set_flags": {
+                "milan_trusted": true,
+                "milan_kept_at_distance": false
+              },
+              "completion_text": {
+                "en": "You tell Milan exactly which records you are testing and accept his offer to help locate old access schedules. Cooperation may open later evidence, but it also ties the investigation more closely to his interests."
+              }
+            },
+            {
+              "id": "keep_milan_at_distance",
+              "label": {
+                "en": "Keep Milan at a distance."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "reputation": 10
+              },
+              "outcome": "milan_kept_at_distance",
+              "set_flags": {
+                "milan_trusted": false,
+                "milan_kept_at_distance": true
+              },
+              "completion_text": {
+                "en": "You keep the document trail separate from Milan's files for now. Worker and cultural contacts will have less reason to suspect that the investigation is being steered by the developer."
+              }
+            }
+          ],
+          "final": true
+        }
+      ],
+      "reward_money": 0,
+      "journal_entry": {
+        "id": "blue_ledger_city_for_sale",
+        "title": {
+          "en": "Blue Ledger — The City for Sale"
+        },
+        "text": {
+          "en": "The first Mark payment, a Kainach contract reference and dated Prehod classifieds establish a chronology that public records alone could not show. Pohorska banka's fictional archive index confirms that a Raeda annual file exists but remains restricted. Milan Šolar says he bought the Pristan lease from the registered owner and stood at the Melje gate in 1990. Your decision to trust him or keep him at a distance is now part of the investigation."
+        }
+      },
+      "provenance": {
+        "source": "original Marburgum project/data/missions.json",
+        "source_version": 4,
+        "source_commit": "2cd67691801ae1a1878e0b04736a01c12b57e483",
+        "note": "Every stage, requirement, grant, flag, choice, reward and journal entry carried forward (ADR-049)."
       }
     }
   ]

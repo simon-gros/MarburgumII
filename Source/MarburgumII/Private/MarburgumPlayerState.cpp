@@ -15,6 +15,10 @@ void AMarburgumPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, AreaId, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, bConditionKnown, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Condition, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, bProgressKnown, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Skills, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Money, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Fishing, COND_OwnerOnly);
 }
 
 void AMarburgumPlayerState::SetCharacterKeyAuthority(const FString& Key)
@@ -140,6 +144,58 @@ void AMarburgumPlayerState::OnRep_Condition()
 }
 
 FMarburgumPlayerStateChanged& AMarburgumPlayerState::OnConditionChanged()
+{
+    static FMarburgumPlayerStateChanged Event;
+    return Event;
+}
+
+int64 AMarburgumPlayerState::GetSkillXp(FName SkillId) const
+{
+    const FMarburgumSkillProgress* Found =
+        Skills.FindByPredicate([SkillId](const FMarburgumSkillProgress& Progress) { return Progress.SkillId == SkillId; });
+    return Found ? Found->Xp : 0;
+}
+
+void AMarburgumPlayerState::SetProgressAuthority(const TArray<FMarburgumSkillProgress>& InSkills, int64 InMoney)
+{
+    check(HasAuthority());
+    Skills = InSkills;
+    Money = InMoney;
+    bProgressKnown = true;
+    ForceNetUpdate();
+    OnProgressChanged().Broadcast(this);
+}
+
+void AMarburgumPlayerState::OnRep_Progress()
+{
+    OnProgressChanged().Broadcast(this);
+}
+
+FMarburgumPlayerStateChanged& AMarburgumPlayerState::OnProgressChanged()
+{
+    static FMarburgumPlayerStateChanged Event;
+    return Event;
+}
+
+void AMarburgumPlayerState::SetFishingAuthority(const FMarburgumFishingStatus& InFishing)
+{
+    check(HasAuthority());
+    if (Fishing == InFishing)
+    {
+        return;
+    }
+    Fishing = InFishing;
+    // A bite lasts under two seconds; it must not wait for the next scheduled update.
+    ForceNetUpdate();
+    OnFishingChanged().Broadcast(this);
+}
+
+void AMarburgumPlayerState::OnRep_Fishing()
+{
+    OnFishingChanged().Broadcast(this);
+}
+
+FMarburgumPlayerStateChanged& AMarburgumPlayerState::OnFishingChanged()
 {
     static FMarburgumPlayerStateChanged Event;
     return Event;

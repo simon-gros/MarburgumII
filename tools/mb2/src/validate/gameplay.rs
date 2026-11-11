@@ -72,16 +72,29 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
         return Vec::new();
     }
 
-    // Items: the C++ registry and the catalogue list the same ids and English names.
-    let cpp_items = pairs(block(&contract, "Items", problems));
+    // The generated catalogue header is exactly what the JSON produces (ADR-049).
+    crate::generate::check(root, &catalogue, problems);
+
+    // Items: snake_case ids with provenance.
     let json_items: BTreeMap<String, String> = list(&catalogue, "items").iter()
         .map(|item| (text(&item["id"]).to_string(), text(&item["name"]["en"]).to_string())).collect();
-    problems.expect(cpp_items == json_items, format!("item registry mismatch: C++ {cpp_items:?} vs catalogue {json_items:?}"));
     let snake = Regex::new(r"^[a-z0-9_]+$").unwrap();
     for item in list(&catalogue, "items") {
         let id = text(&item["id"]);
         problems.expect(snake.is_match(id), format!("item id not snake_case: {id}"));
         problems.expect(item.get("provenance").is_some(), format!("item without provenance: {id}"));
+    }
+    let skills: Vec<&str> = list(&catalogue["skills"], "entries").iter().map(|s| text(&s["id"])).collect();
+    problems.expect(skills.contains(&"fishing"), "the Fishing skill is not registered");
+    for spot in list(&catalogue["fishing"], "spots") {
+        let id = text(&spot["id"]);
+        problems.expect(list(&catalogue, "interactables").iter().any(|e| e["id"] == spot["id"] && e["kind"] == "fishing_spot"),
+            format!("fishing spot {id} has no interactable"));
+        for species in list(spot, "species") {
+            problems.expect(json_items.contains_key(text(&species["item"])), format!("fishing spot {id}: unknown fish {}", text(&species["item"])));
+            problems.expect(species["weight"].as_i64().unwrap_or(0) > 0 && species["xp"].as_i64().unwrap_or(0) > 0,
+                format!("fishing spot {id}: weight and XP must be positive"));
+        }
     }
 
     // Areas: the C++ registry, the catalogue and the Lent map agree.
@@ -112,33 +125,69 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
             format!("{}={} missing from catalogue", &found[1], &found[2]));
     }
     let missions = list(&catalogue, "missions");
+    let ids: Vec<&str> = list(&catalogue, "interactables").iter().map(|e| text(&e["id"])).collect();
     for entry in list(&catalogue, "interactables") {
         let id = text(&entry["id"]);
         let name = text(&entry["display_name"]["en"]);
-        if entry["kind"] == "npc" {
-            let p = list(entry, "position_m");
-            let placed = p.len() == 3 && maps.contains(&format!("Ue({}, {}, {}), FRotator", metres(&p[0]), metres(&p[1]), metres(&p[2])));
-            problems.expect(placed && maps.contains(&format!("InteractableId = FName(TEXT(\"{id}\"))")),
-                format!("{id}: not placed at its catalogue position by the map commandlet"));
+        if entry["kind"] == "test_fixture" {
+            let granted = text(&entry["grants"]["item"]);
+            problems.expect(json_items.contains_key(granted), format!("{id}: grants unknown item {granted}"));
+            let crate_call = Regex::new(&format!(r#"Crate\(World, TEXT\("\w+"\), TEXT\("{}"\), TEXT\("([^"]+)"\), (\d+),"#, regex::escape(id))).unwrap();
+            match crate_call.captures(&maps) {
+                Some(placed) => {
+                    problems.expect(&placed[1] == name, format!("{id}: display name differs from the map commandlet"));
+                    problems.expect(placed[2].parse::<i64>().ok() == entry["initial_stock"].as_i64(),
+                        format!("{id}: initial stock differs from the map commandlet"));
+                }
+                None => problems.0.push(format!("{id}: not placed by the map commandlet")),
+            }
+            continue;
+        }
+        problems.expect(entry.get("provenance").is_some(), format!("{id}: interactable without provenance"));
+        if entry["placement"] == "map" {
+            // The map commandlet places these (the angler); its values must be the catalogue's.
+            problems.expect(maps.contains(&format!("InteractableId = FName(TEXT(\"{id}\"))")), format!("{id}: not placed by the map commandlet"));
             problems.expect(maps.contains(&format!("DisplayName = FText::FromString(TEXT(\"{name}\"))")), format!("{id}: display name differs"));
             problems.expect(maps.contains(&format!("InteractionRange = {};", metres(&entry["range_cm"]))), format!("{id}: range differs"));
             problems.expect(maps.contains(text(&entry["dialogue"]["en"])), format!("{id}: dialogue differs"));
-            problems.expect(missions.iter().any(|m| m["id"] == entry["offers_mission"]), format!("{id}: offers an unknown mission"));
-            problems.expect(entry.get("provenance").is_some(), format!("{id}: npc without provenance"));
-            continue;
+        } else {
+            problems.expect(list(entry, "godot_position_m").len() == 3, format!("{id}: needs an original position"));
         }
-        problems.expect(entry["kind"] == "test_fixture", format!("{id}: item sources are labeled test fixtures so far"));
-        let granted = text(&entry["grants"]["item"]);
-        problems.expect(json_items.contains_key(granted), format!("{id}: grants unknown item {granted}"));
-        let crate_call = Regex::new(&format!(r#"Crate\(World, TEXT\("\w+"\), TEXT\("{}"\), TEXT\("([^"]+)"\), (\d+),"#, regex::escape(id))).unwrap();
-        match crate_call.captures(&maps) {
-            Some(placed) => {
-                problems.expect(&placed[1] == name, format!("{id}: display name differs from the map commandlet"));
-                problems.expect(placed[2].parse::<i64>().ok() == entry["initial_stock"].as_i64(),
-                    format!("{id}: initial stock differs from the map commandlet"));
+    }
+    // Every mission's offer and stage targets exist; every item it names is registered.
+    let mission_ids: Vec<&str> = missions.iter().map(|m| text(&m["id"])).collect();
+    for mission in missions {
+        let id = text(&mission["id"]);
+        problems.expect(ids.contains(&text(&mission["offer_target"])), format!("mission {id}: unknown offer target"));
+        for required in list(mission, "requires_completed") {
+            problems.expect(mission_ids.contains(&text(required)), format!("mission {id}: requires unknown mission {}", text(required)));
+        }
+        let stages = list(mission, "stages");
+        problems.expect(!stages.is_empty(), format!("mission {id}: no stages"));
+        for stage in stages {
+            let stage_id = text(&stage["id"]);
+            problems.expect(ids.contains(&text(&stage["complete_target"])), format!("mission {id}: stage {stage_id} has an unknown target"));
+            let mut named: Vec<&str> = list(&stage["objective"], "items").iter().map(text).collect();
+            for key in ["required_items", "grant_items"] {
+                named.extend(list(stage, key).iter().map(|q| text(&q["id"])));
             }
-            None => problems.0.push(format!("{id}: not placed by the map commandlet")),
+            for item in named {
+                problems.expect(json_items.contains_key(item), format!("mission {id}: stage {stage_id} names unregistered item {item}"));
+            }
+            let choice = stage["objective"]["type"] == "choice";
+            problems.expect(choice == !list(stage, "choices").is_empty(), format!("mission {id}: stage {stage_id}: choices and objective disagree"));
+            for option in list(stage, "choices") {
+                for skill in option["skill_xp"].as_object().map(|o| o.keys().cloned().collect::<Vec<_>>()).unwrap_or_default() {
+                    problems.expect(skills.contains(&skill.as_str()), format!("mission {id}: choice awards unknown skill {skill}"));
+                }
+            }
         }
+        problems.expect(stages.last().map_or(false, |s| s["final"] == true) || stages.iter().all(|s| s["final"] != true),
+            format!("mission {id}: only the last stage may be final"));
+        for start in list(mission, "start_items") {
+            problems.expect(json_items.contains_key(text(&start["id"])), format!("mission {id}: unknown start item {}", text(&start["id"])));
+        }
+        problems.expect(mission.get("provenance").is_some(), format!("mission {id} without provenance"));
     }
     problems.expect(maps.contains("GrantedItemId = FName(TEXT(\"fishing_rod\"))"), "map commandlet grants an unexpected item");
     problems.expect(maps.contains("bTestFixture = true;"), "map fixtures are not marked as test fixtures");
@@ -169,34 +218,9 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     problems.expect(contract.contains("BreathDrainPerSecond = DefaultStamina / BreathHoldSeconds;"),
         "held breath does not drain the whole bar in BreathHoldSeconds");
 
-    // Missions: registry entries match the catalogue's names, offer targets, start items and registered stages.
-    for mission in missions {
-        let id = text(&mission["id"]);
-        problems.expect(contract.contains(&format!("{{ TEXT(\"{id}\"), TEXT(\"{}\"), TEXT(\"{}\"), TEXT(\"{}\"),",
-            text(&mission["name"]["en"]), text(&mission["category"]), text(&mission["offer_target"]))),
-            format!("mission {id}: name/category/offer target differ from the contract"));
-        problems.expect(contract.contains(text(&mission["summary"]["en"])), format!("mission {id}: summary differs"));
-        for start in list(mission, "start_items") {
-            let item = text(&start["id"]);
-            problems.expect(json_items.contains_key(item), format!("mission {id}: unknown start item {item}"));
-            problems.expect(contract.contains(&format!("TEXT(\"{item}\"), {}, ", start["quantity"])), format!("mission {id}: start item differs"));
-        }
-        for stage in list(mission, "registered_stages") {
-            let stage_id = text(&stage["id"]);
-            problems.expect(contract.contains(&format!("TEXT(\"{stage_id}\"),")) && contract.contains(text(&stage["objective_text"]["en"])),
-                format!("mission {id}: stage {stage_id} differs"));
-            problems.expect(contract.contains(&format!("TEXT(\"{}\"), TEXT(\"{}\")", text(&stage["complete_target"]), text(&stage["action"]["en"]))),
-                format!("mission {id}: stage {stage_id} target/action differ"));
-            for item in list(&stage["objective"], "items") {
-                problems.expect(json_items.contains_key(text(item)), format!("mission {id}: stage {stage_id} needs unregistered item {}", text(item)));
-            }
-        }
-        problems.expect(mission.get("provenance").is_some(), format!("mission {id} without provenance"));
-    }
-
     // Authority boundary: the reducers and store are ServerOnly; nothing else includes them.
     let sources = source_files(root);
-    for name in ["MarburgumWorldAuthority", "MarburgumWorldStore", "MarburgumMissionRules"] {
+    for name in ["MarburgumWorldAuthority", "MarburgumWorldStore", "MarburgumMissionRules", "MarburgumFishingRules"] {
         let owners: Vec<&String> = sources.iter().map(|(path, _)| path)
             .filter(|path| Path::new(path).file_stem().and_then(|s| s.to_str()) == Some(name)).collect();
         problems.expect(!owners.is_empty() && owners.iter().all(|p| p.starts_with("Source/MarburgumIIServer/")),
@@ -211,7 +235,8 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
 
     // Privacy: custody, mission progress and location replicate to their owner only.
     let player_state = read(root, "Source/MarburgumII/Private/MarburgumPlayerState.cpp", problems);
-    for property in ["Inventory", "bInventoryKnown", "bHasCharacter", "Missions", "bMissionsKnown", "AreaId", "bLocationKnown", "Condition"] {
+    for property in ["Inventory", "bInventoryKnown", "bHasCharacter", "Missions", "bMissionsKnown", "AreaId", "bLocationKnown", "Condition",
+        "bProgressKnown", "Skills", "Money", "Fishing"] {
         problems.expect(player_state.contains(&format!("DOREPLIFETIME_CONDITION(AMarburgumPlayerState, {property}, COND_OwnerOnly)")),
             format!("{property} is not replicated COND_OwnerOnly"));
     }
@@ -233,7 +258,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     }
 
     // Excluded systems never enter the gameplay slice.
-    for path in ["Data/Gameplay/gameplay.v0.1.json", CONTRACT, MAPS] {
+    for path in ["Data/Gameplay/gameplay.v0.1.json", CONTRACT, MAPS, crate::generate::HEADER] {
         let body = read(root, path, problems).to_lowercase();
         for banned in ["talent", "wanted", "pursuit"] {
             problems.expect(!body.contains(banned), format!("{path} mentions excluded system '{banned}'"));
@@ -241,7 +266,9 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     }
 
     vec![format!(
-        "Gameplay contract check passed: {} item(s), {} area(s), {} interactable(s), {} mission(s), {reasons} refusal reasons, \
-         server-only authority and owner-only custody, progress, location and condition.",
-        json_items.len(), json_areas.len(), list(&catalogue, "interactables").len(), missions.len())]
+        "Gameplay contract check passed: {} item(s), {} skill(s), {} fishing spot(s), {} area(s), {} interactable(s), {} mission(s), \
+         {reasons} refusal reasons, generated catalogue current, server-only authority and owner-only custody, progress, location, \
+         condition, skills, money and fishing.",
+        json_items.len(), skills.len(), list(&catalogue["fishing"], "spots").len(), json_areas.len(), list(&catalogue, "interactables").len(),
+        missions.len())]
 }

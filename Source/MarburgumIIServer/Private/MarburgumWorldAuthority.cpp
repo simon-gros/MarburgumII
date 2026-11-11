@@ -6,10 +6,15 @@
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerStart.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumArea.h"
+#include "MarburgumCharacter.h"
 #include "MarburgumCharacterMovement.h"
+#include "MarburgumCombatContract.h"
+#include "MarburgumFishingRules.h"
 #include "MarburgumInteractable.h"
+#include "MarburgumMissionLogic.h"
 #include "MarburgumMissionRules.h"
 #include "MarburgumNetworkContract.h"
 #include "MarburgumNpc.h"
@@ -64,6 +69,9 @@ namespace
                 State.MissionId = FName(*Id);
                 State.StageId = FName(*(*Owned)[Id].Stage);
                 State.StartedRevision = (*Owned)[Id].StartedRevision;
+                State.bCompleted = (*Owned)[Id].bCompleted;
+                State.Choice = (*Owned)[Id].Choice.IsEmpty() ? NAME_None : FName(*(*Owned)[Id].Choice);
+                State.Outcome = (*Owned)[Id].Outcome.IsEmpty() ? NAME_None : FName(*(*Owned)[Id].Outcome);
             }
         }
         return States;
@@ -79,13 +87,64 @@ namespace
         return Stored;
     }
 
+    TArray<FMarburgumSkillProgress> ToSkills(const TMap<FString, int64>* Owned)
+    {
+        TArray<FMarburgumSkillProgress> Skills;
+        if (Owned)
+        {
+            TArray<FString> Ids;
+            Owned->GetKeys(Ids);
+            Ids.Sort();
+            for (const FString& Id : Ids)
+            {
+                Skills.Add({ FName(*Id), (*Owned)[Id] });
+            }
+        }
+        return Skills;
+    }
+
+    TArray<FMarburgumItemStack> ToStacks(const TMap<FString, int32>& Items)
+    {
+        return ToStacks(&Items);
+    }
+
+    TArray<FMarburgumSkillProgress> ToSkillAwards(const TMap<FString, int64>& Xp)
+    {
+        return ToSkills(&Xp);
+    }
+
+    FString Describe(const TArray<FMarburgumItemStack>& Stacks)
+    {
+        TArray<FString> Parts;
+        for (const FMarburgumItemStack& Stack : Stacks)
+        {
+            Parts.Add(FString::Printf(TEXT("%s:%d"), *Stack.ItemId.ToString(), Stack.Quantity));
+        }
+        return Parts.IsEmpty() ? TEXT("-") : FString::Join(Parts, TEXT(","));
+    }
+
+    FString Describe(const TArray<FMarburgumSkillProgress>& Skills)
+    {
+        TArray<FString> Parts;
+        for (const FMarburgumSkillProgress& Skill : Skills)
+        {
+            Parts.Add(FString::Printf(TEXT("%s:%lld"), *Skill.SkillId.ToString(), Skill.Xp));
+        }
+        return Parts.IsEmpty() ? TEXT("-") : FString::Join(Parts, TEXT(","));
+    }
+
     // Condition evidence lines share the movement component's prefix (scripts/condition-smoke-linux.sh).
     constexpr const TCHAR* ConditionLogPrefix = TEXT("MB2COND");
+    // Fishing evidence lines (scripts/mission-smoke-linux.sh).
+    constexpr const TCHAR* FishLogPrefix = TEXT("MB2FISH");
+    // How often the server advances casts: the original's 10 Hz world tick.
+    constexpr float FishingTickSeconds = 0.1f;
 
     EMarburgumInteractionEffect EffectFromKind(const FString& Kind)
     {
         for (const EMarburgumInteractionEffect Effect : { EMarburgumInteractionEffect::ItemGranted,
-                 EMarburgumInteractionEffect::MissionStarted, EMarburgumInteractionEffect::StageCompleted })
+                 EMarburgumInteractionEffect::MissionStarted, EMarburgumInteractionEffect::StageCompleted,
+                 EMarburgumInteractionEffect::MissionCompleted, EMarburgumInteractionEffect::FishCaught })
         {
             if (Kind == ToString(Effect))
             {
@@ -116,6 +175,11 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
     // Location does not depend on the store: it is derived from pawn positions and never persisted.
     InWorld.GetTimerManager().SetTimer(LocationTimer, FTimerDelegate::CreateUObject(this, &UMarburgumWorldAuthority::UpdateLocations),
         LocationUpdateSeconds, true);
+    InWorld.GetTimerManager().SetTimer(FishingTimer, FTimerDelegate::CreateUObject(this, &UMarburgumWorldAuthority::TickFishing),
+        FishingTickSeconds, true);
+    // Bites and catches are the server's dice; nothing a client sends feeds them.
+    Rolls.Initialize(static_cast<int32>(FDateTime::UtcNow().GetTicks() & 0x7fffffff));
+    SpawnAuthoredContent(InWorld);
 
     FString Path;
     if (!FParse::Value(FCommandLine::Get(), TEXT("MB2WorldStore="), Path) || Path.IsEmpty())
@@ -176,7 +240,9 @@ void UMarburgumWorldAuthority::Deinitialize()
     if (UWorld* World = GetWorld())
     {
         World->GetTimerManager().ClearTimer(LocationTimer);
+        World->GetTimerManager().ClearTimer(FishingTimer);
     }
+    Casts.Reset();
     FGameModeEvents::GameModePostLoginEvent.Remove(PostLoginHandle);
     FGameModeEvents::GameModeLogoutEvent.Remove(LogoutHandle);
     FWorldDelegates::OnWorldBeginTearDown.Remove(TearDownHandle);
@@ -212,6 +278,8 @@ void UMarburgumWorldAuthority::HandleLogout(AGameModeBase* GameMode, AController
     {
         return;
     }
+    Casts.Remove(Cast<AMarburgumPlayerController>(Exiting));
+    LastCastAt.Remove(Cast<AMarburgumPlayerController>(Exiting));
     // The pawn is already gone at logout; the player state holds the last simulated condition.
     if (const AMarburgumPlayerState* State = Exiting->GetPlayerState<AMarburgumPlayerState>())
     {
@@ -299,6 +367,8 @@ void UMarburgumWorldAuthority::ApplyInventory(AMarburgumPlayerState& State) cons
     const FString& Key = State.GetCharacterKey();
     State.SetInventoryAuthority(ToStacks(Key.IsEmpty() ? nullptr : Store->Get().Inventories.Find(Key)));
     State.SetMissionsAuthority(ToMissions(Key.IsEmpty() ? nullptr : Store->Get().Missions.Find(Key)));
+    State.SetProgressAuthority(ToSkills(Key.IsEmpty() ? nullptr : Store->Get().Skills.Find(Key)),
+        Key.IsEmpty() ? 0 : Store->Get().Money.FindRef(Key));
 }
 
 void UMarburgumWorldAuthority::ApplyStocks() const
@@ -368,7 +438,7 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::Finish(FMarburgumInteract
 {
     const AMarburgumPlayerState* State = Requester.GetPlayerState<AMarburgumPlayerState>();
     UE_LOG(LogMarburgumNet, Log,
-        TEXT("%s role=server event=interaction player=%d character=%s op=%s target=%s outcome=%s reason=%s effect=%s mission=%s stage=%s item=%s quantity=%d stock=%d revision=%lld"),
+        TEXT("%s role=server event=interaction player=%d character=%s op=%s target=%s outcome=%s reason=%s effect=%s mission=%s stage=%s item=%s quantity=%d stock=%d revision=%lld granted=%s choice=%s choice_outcome=%s money=%lld xp=%s"),
         InteractLogPrefix,
         State ? State->GetPlayerId() : -1,
         State && !State->GetCharacterKey().IsEmpty() ? *State->GetCharacterKey() : TEXT("-"),
@@ -378,23 +448,22 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::Finish(FMarburgumInteract
         Receipt.MissionId.IsNone() ? TEXT("-") : *Receipt.MissionId.ToString(),
         Receipt.MissionStage.IsNone() ? TEXT("-") : *Receipt.MissionStage.ToString(),
         Receipt.ItemId.IsNone() ? TEXT("-") : *Receipt.ItemId.ToString(),
-        Receipt.Quantity, Receipt.StockRemaining, Receipt.WorldRevision);
+        Receipt.Quantity, Receipt.StockRemaining, Receipt.WorldRevision, *Describe(Receipt.ItemsGranted),
+        Receipt.Choice.IsNone() ? TEXT("-") : *Receipt.Choice.ToString(),
+        Receipt.ChoiceOutcome.IsNone() ? TEXT("-") : *Receipt.ChoiceOutcome.ToString(), Receipt.MoneyDelta, *Describe(Receipt.SkillXp));
     return Receipt;
 }
 
-FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
-    AMarburgumPlayerController& Requester, const FGuid& OperationId, AMarburgumInteractable* Target)
+bool UMarburgumWorldAuthority::Admit(FMarburgumInteractionReceipt& Receipt, AMarburgumPlayerController& Requester,
+    AMarburgumInteractable* Target, AMarburgumPlayerState*& OutState)
 {
-    FMarburgumInteractionReceipt Receipt;
-    Receipt.OperationId = OperationId;
     Receipt.Outcome = EMarburgumRequestOutcome::Rejected;
-    auto Refuse = [this, &Receipt, &Requester](EMarburgumInteractionReason Reason)
+    auto Refuse = [&Receipt](EMarburgumInteractionReason Reason)
     {
         Receipt.Reason = Reason;
-        return Finish(Receipt, Requester);
+        return false;
     };
-
-    if (!OperationId.IsValid())
+    if (!Receipt.OperationId.IsValid())
     {
         return Refuse(EMarburgumInteractionReason::InvalidOperation);
     }
@@ -412,10 +481,9 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
         return Refuse(EMarburgumInteractionReason::NoCharacter);
     }
     const FString& Character = State->GetCharacterKey();
-    const FMarburgumWorldRecord& Current = Store->Get();
 
     // Idempotency survives restarts: committed receipts live in the durable record.
-    if (const FMarburgumStoredReceipt* Prior = Current.Receipts.Find(OperationKey(OperationId)))
+    if (const FMarburgumStoredReceipt* Prior = Store->Get().Receipts.Find(OperationKey(Receipt.OperationId)))
     {
         Receipt.InteractableId = FName(*Prior->Interactable);
         if (Prior->Character != Character)
@@ -428,20 +496,25 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
         Receipt.Quantity = Prior->Quantity;
         Receipt.MissionId = Prior->Mission.IsEmpty() ? NAME_None : FName(*Prior->Mission);
         Receipt.MissionStage = Prior->Stage.IsEmpty() ? NAME_None : FName(*Prior->Stage);
+        Receipt.ItemsGranted = ToStacks(Prior->Granted);
+        Receipt.Choice = Prior->Choice.IsEmpty() ? NAME_None : FName(*Prior->Choice);
+        Receipt.ChoiceOutcome = Prior->Outcome.IsEmpty() ? NAME_None : FName(*Prior->Outcome);
+        Receipt.MoneyDelta = Prior->MoneyDelta;
+        Receipt.SkillXp = ToSkillAwards(Prior->SkillXp);
         Receipt.WorldRevision = Prior->Revision;
         const AMarburgumInteractable* PriorTarget = FindInteractable(Prior->Interactable);
         Receipt.StockRemaining = PriorTarget && PriorTarget->IsItemSource() ? CurrentStock(*PriorTarget) : -1;
-        return Finish(Receipt, Requester);
+        return false;
     }
 
-    AMarburgumNpc* Npc = Cast<AMarburgumNpc>(Target);
-    if (!Target || Target->GetWorld() != GetWorld() || Target->InteractableId.IsNone()
-        || (!Npc && !FindItem(Target->GrantedItemId.ToString())))
+    const bool bKnownTarget = Target && Target->GetWorld() == GetWorld() && !Target->InteractableId.IsNone()
+        && (Target->IsItemSource() ? FindItem(Target->GrantedItemId.ToString()) != nullptr
+                                   : Cast<AMarburgumNpc>(Target) || MarburgumII::Gameplay::FindInteractable(Target->InteractableId.ToString()));
+    if (!bKnownTarget)
     {
         return Refuse(EMarburgumInteractionReason::UnknownTarget);
     }
     Receipt.InteractableId = Target->InteractableId;
-    const FString TargetId = Target->InteractableId.ToString();
 
     const APawn* Body = Requester.GetPawn();
     const float Reach = Target->InteractionRange + RangeToleranceCm;
@@ -449,20 +522,60 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
     {
         return Refuse(EMarburgumInteractionReason::OutOfRange);
     }
-    if (Npc)
+    OutState = State;
+    return true;
+}
+
+bool UMarburgumWorldAuthority::Commit(FMarburgumInteractionReceipt& Receipt, FMarburgumWorldRecord& Next, const FMarburgumStoredReceipt& Stored)
+{
+    FMarburgumStoredReceipt Entry = Stored;
+    Entry.Revision = Next.Revision;
+    Entry.CommittedUtc = FDateTime::UtcNow().ToIso8601();
+    Next.Receipts.Add(OperationKey(Receipt.OperationId), Entry);
+    FString Error;
+    if (!Store->Commit(Next, Error))
     {
-        return HandleNpc(Receipt, Requester, *State, *Npc);
+        UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=commit_failed op=%s error=\"%s\""),
+            InteractLogPrefix, *OperationKey(Receipt.OperationId), *Error);
+        Receipt.Outcome = EMarburgumRequestOutcome::Rejected;
+        Receipt.Reason = EMarburgumInteractionReason::StoreWriteFailed;
+        return false;
+    }
+    Receipt.WorldRevision = Next.Revision;
+    return true;
+}
+
+FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
+    AMarburgumPlayerController& Requester, const FGuid& OperationId, AMarburgumInteractable* Target)
+{
+    FMarburgumInteractionReceipt Receipt;
+    Receipt.OperationId = OperationId;
+    AMarburgumPlayerState* State = nullptr;
+    if (!Admit(Receipt, Requester, Target, State))
+    {
+        return Finish(Receipt, Requester);
+    }
+    if (FindFishingSpot(Target->InteractableId.ToString()))
+    {
+        return HandleFishing(Receipt, Requester, *State, *Target);
+    }
+    if (!Target->IsItemSource())
+    {
+        return HandleMissionTarget(Receipt, Requester, *State, *Target);
     }
 
+    const FString& Character = State->GetCharacterKey();
+    const FString TargetId = Target->InteractableId.ToString();
     const int32 Stock = CurrentStock(*Target);
     Receipt.StockRemaining = Stock;
     if (Stock <= 0)
     {
-        return Refuse(EMarburgumInteractionReason::OutOfStock);
+        Receipt.Reason = EMarburgumInteractionReason::OutOfStock;
+        return Finish(Receipt, Requester);
     }
 
     // One all-or-nothing transition: stock, custody and receipt change together.
-    FMarburgumWorldRecord Next = Current;
+    FMarburgumWorldRecord Next = Store->Get();
     ++Next.Revision;
     Next.Stocks.Add(TargetId, Stock - 1);
     const FString Item = Target->GrantedItemId.ToString();
@@ -473,16 +586,9 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
     Stored.Interactable = TargetId;
     Stored.Item = Item;
     Stored.Quantity = 1;
-    Stored.Revision = Next.Revision;
-    Stored.CommittedUtc = FDateTime::UtcNow().ToIso8601();
-    Next.Receipts.Add(OperationKey(OperationId), Stored);
-
-    FString Error;
-    if (!Store->Commit(Next, Error))
+    if (!Commit(Receipt, Next, Stored))
     {
-        UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=commit_failed op=%s error=\"%s\""),
-            InteractLogPrefix, *OperationKey(OperationId), *Error);
-        return Refuse(EMarburgumInteractionReason::StoreWriteFailed);
+        return Finish(Receipt, Requester);
     }
 
     // Durable first, visible second.
@@ -494,44 +600,40 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
     Receipt.ItemId = Target->GrantedItemId;
     Receipt.Quantity = 1;
     Receipt.StockRemaining = Stock - 1;
-    Receipt.WorldRevision = Next.Revision;
     return Finish(Receipt, Requester);
 }
 
-FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleNpc(FMarburgumInteractionReceipt Receipt,
-    const AMarburgumPlayerController& Requester, AMarburgumPlayerState& State, const AMarburgumNpc& Npc)
+FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleMissionTarget(FMarburgumInteractionReceipt Receipt,
+    const AMarburgumPlayerController& Requester, AMarburgumPlayerState& State, const AMarburgumInteractable& Target)
 {
     const FString& Character = State.GetCharacterKey();
     FMarburgumWorldRecord Next;
-    const FMarburgumNpcDecision Decision =
-        MarburgumII::Missions::DecideNpcInteraction(Store->Get(), Character, Npc.InteractableId.ToString(), Next);
+    const FMarburgumMissionDecision Decision =
+        MarburgumII::Missions::DecideInteraction(Store->Get(), Character, Target.InteractableId.ToString(), Next);
     Receipt.MissionId = Decision.Mission.IsEmpty() ? NAME_None : FName(*Decision.Mission);
     Receipt.MissionStage = Decision.Stage.IsEmpty() ? NAME_None : FName(*Decision.Stage);
     if (!Decision.bApplied)
     {
         Receipt.Reason = Decision.Reason;
+        // On RequirementNotMet the item names what is missing; nothing was granted.
+        Receipt.ItemId = Decision.Item.IsEmpty() ? NAME_None : FName(*Decision.Item);
         return Finish(Receipt, Requester);
     }
 
-    // Mission progress and any item it grants or consumes are one all-or-nothing transition.
+    // Mission progress and every item, coin and flag it moves are one all-or-nothing transition.
     FMarburgumStoredReceipt Stored;
     Stored.Character = Character;
     Stored.Kind = ToString(Decision.Effect);
-    Stored.Interactable = Npc.InteractableId.ToString();
+    Stored.Interactable = Target.InteractableId.ToString();
     Stored.Item = Decision.Item;
     Stored.Quantity = Decision.Quantity;
     Stored.Mission = Decision.Mission;
     Stored.Stage = Decision.Stage;
-    Stored.Revision = Next.Revision;
-    Stored.CommittedUtc = FDateTime::UtcNow().ToIso8601();
-    Next.Receipts.Add(OperationKey(Receipt.OperationId), Stored);
-
-    FString Error;
-    if (!Store->Commit(Next, Error))
+    Stored.Granted = Decision.Granted;
+    Stored.MoneyDelta = Decision.MoneyDelta;
+    Stored.SkillXp = Decision.SkillXp;
+    if (!Commit(Receipt, Next, Stored))
     {
-        UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=commit_failed op=%s error=\"%s\""),
-            InteractLogPrefix, *OperationKey(Receipt.OperationId), *Error);
-        Receipt.Reason = EMarburgumInteractionReason::StoreWriteFailed;
         return Finish(Receipt, Requester);
     }
 
@@ -542,6 +644,323 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleNpc(FMarburgumInter
     Receipt.Effect = Decision.Effect;
     Receipt.ItemId = Decision.Item.IsEmpty() ? NAME_None : FName(*Decision.Item);
     Receipt.Quantity = Decision.Quantity;
-    Receipt.WorldRevision = Next.Revision;
+    Receipt.ItemsGranted = ToStacks(Decision.Granted);
+    Receipt.MoneyDelta = Decision.MoneyDelta;
+    Receipt.SkillXp = ToSkillAwards(Decision.SkillXp);
     return Finish(Receipt, Requester);
+}
+
+FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleMissionChoice(AMarburgumPlayerController& Requester,
+    const FGuid& OperationId, AMarburgumInteractable* Target, FName MissionId, FName ChoiceId)
+{
+    FMarburgumInteractionReceipt Receipt;
+    Receipt.OperationId = OperationId;
+    Receipt.MissionId = MissionId;
+    Receipt.Choice = ChoiceId;
+    AMarburgumPlayerState* State = nullptr;
+    if (!Admit(Receipt, Requester, Target, State))
+    {
+        return Finish(Receipt, Requester);
+    }
+    const FString& Character = State->GetCharacterKey();
+    FMarburgumWorldRecord Next;
+    const FMarburgumMissionDecision Decision = MarburgumII::Missions::DecideChoice(
+        Store->Get(), Character, Target->InteractableId.ToString(), MissionId.ToString(), ChoiceId.ToString(), Next);
+    Receipt.MissionStage = Decision.Stage.IsEmpty() ? NAME_None : FName(*Decision.Stage);
+    if (!Decision.bApplied)
+    {
+        Receipt.Reason = Decision.Reason;
+        return Finish(Receipt, Requester);
+    }
+
+    FMarburgumStoredReceipt Stored;
+    Stored.Character = Character;
+    Stored.Kind = ToString(Decision.Effect);
+    Stored.Interactable = Target->InteractableId.ToString();
+    Stored.Mission = Decision.Mission;
+    Stored.Stage = Decision.Stage;
+    Stored.Choice = Decision.Choice;
+    Stored.Outcome = Decision.Outcome;
+    Stored.MoneyDelta = Decision.MoneyDelta;
+    Stored.SkillXp = Decision.SkillXp;
+    if (!Commit(Receipt, Next, Stored))
+    {
+        return Finish(Receipt, Requester);
+    }
+    ApplyInventory(*State);
+
+    Receipt.Outcome = EMarburgumRequestOutcome::Applied;
+    Receipt.Effect = Decision.Effect;
+    Receipt.Choice = FName(*Decision.Choice);
+    Receipt.ChoiceOutcome = FName(*Decision.Outcome);
+    Receipt.MoneyDelta = Decision.MoneyDelta;
+    Receipt.SkillXp = ToSkillAwards(Decision.SkillXp);
+    return Finish(Receipt, Requester);
+}
+
+// ---- Fishing (ADR-048) ----
+
+const TCHAR* UMarburgumWorldAuthority::WhyCannotFish(const AMarburgumPlayerController& Player) const
+{
+    const AMarburgumCharacter* Body = Cast<AMarburgumCharacter>(Player.GetPawn());
+    const AMarburgumPlayerState* State = Player.GetPlayerState<AMarburgumPlayerState>();
+    if (!Body || !State)
+    {
+        return TEXT("no_body");
+    }
+    if (Body->GetSeatedVehicle())
+    {
+        return TEXT("seated");
+    }
+    const FMarburgumCondition& Condition = State->GetCondition();
+    if (Condition.IsDown())
+    {
+        return TEXT("down");
+    }
+    if (Condition.bSwimming)
+    {
+        return TEXT("swimming");
+    }
+    return nullptr;
+}
+
+FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleFishing(FMarburgumInteractionReceipt Receipt,
+    AMarburgumPlayerController& Requester, AMarburgumPlayerState& State, const AMarburgumInteractable& Spot)
+{
+    const FString& Character = State.GetCharacterKey();
+    const FString SpotId = Spot.InteractableId.ToString();
+    const double Now = GetWorld()->GetTimeSeconds();
+    if (FCast* Line = Casts.Find(&Requester))
+    {
+        if (!Line->bBite)
+        {
+            // Struck at nothing: the fish, if any, is gone (the original's too_early).
+            EndCast(Requester, EMarburgumFishingEnd::TooEarly, NAME_None, TEXT("too_early"));
+            Receipt.Reason = EMarburgumInteractionReason::TooEarly;
+            return Finish(Receipt, Requester);
+        }
+        const FString LineSpot = Line->Spot;
+        FMarburgumWorldRecord Next;
+        const FMarburgumCatchDecision Catch =
+            MarburgumII::Fishing::DecideCatch(Store->Get(), Character, LineSpot, static_cast<int64>(Rolls.GetUnsignedInt()), Next);
+        if (!Catch.bApplied)
+        {
+            EndCast(Requester, EMarburgumFishingEnd::Escaped, NAME_None, TEXT("no_species"));
+            Receipt.Reason = EMarburgumInteractionReason::NothingToDo;
+            return Finish(Receipt, Requester);
+        }
+        FMarburgumStoredReceipt Stored;
+        Stored.Character = Character;
+        Stored.Kind = ToString(EMarburgumInteractionEffect::FishCaught);
+        Stored.Interactable = LineSpot;
+        Stored.Item = Catch.Item;
+        Stored.Quantity = 1;
+        Stored.SkillXp.Add(FishingSkill, Catch.Xp);
+        if (!Commit(Receipt, Next, Stored))
+        {
+            // The line stays in the water: a strike that could not be saved can be tried again inside the window.
+            return Finish(Receipt, Requester);
+        }
+        ApplyInventory(State);
+        EndCast(Requester, EMarburgumFishingEnd::Caught, FName(*Catch.Item), TEXT("caught"));
+        Receipt.Outcome = EMarburgumRequestOutcome::Applied;
+        Receipt.Effect = EMarburgumInteractionEffect::FishCaught;
+        Receipt.ItemId = FName(*Catch.Item);
+        Receipt.Quantity = 1;
+        Receipt.SkillXp = { { FName(FishingSkill), Catch.Xp } };
+        return Finish(Receipt, Requester);
+    }
+
+    const TMap<FString, int32>* Owned = Store->Get().Inventories.Find(Character);
+    if (!Owned || Owned->FindRef(FishingRodItem) <= 0)
+    {
+        Receipt.Reason = EMarburgumInteractionReason::NoRod;
+        return Finish(Receipt, Requester);
+    }
+    if (const TCHAR* Why = WhyCannotFish(Requester))
+    {
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=cast_refused character=%s spot=%s why=%s"), FishLogPrefix, *Character, *SpotId, Why);
+        Receipt.Reason = EMarburgumInteractionReason::CannotFishNow;
+        return Finish(Receipt, Requester);
+    }
+    if (const double* Last = LastCastAt.Find(&Requester); Last && Now - *Last < FishingMinCastIntervalMs / 1000.0)
+    {
+        Receipt.Reason = EMarburgumInteractionReason::TooSoon;
+        return Finish(Receipt, Requester);
+    }
+
+    FCast Line;
+    Line.Spot = SpotId;
+    Line.CastAt = Requester.GetPawn()->GetActorLocation();
+    Line.BiteAt = Now + MarburgumII::Fishing::BiteDelaySeconds(Rolls.GetUnsignedInt());
+    Casts.Add(&Requester, Line);
+    LastCastAt.Add(&Requester, Now);
+
+    FMarburgumFishingStatus Status = State.GetFishing();
+    Status.SpotId = Spot.InteractableId;
+    Status.Phase = EMarburgumFishingPhase::Waiting;
+    ++Status.Attempt;
+    State.SetFishingAuthority(Status);
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=cast character=%s spot=%s attempt=%d bite_in_s=%.2f"), FishLogPrefix,
+        *Character, *SpotId, Status.Attempt, Line.BiteAt - Now);
+
+    Receipt.Outcome = EMarburgumRequestOutcome::Applied;
+    Receipt.Effect = EMarburgumInteractionEffect::FishingCast;
+    Receipt.WorldRevision = Store->Get().Revision;
+    return Finish(Receipt, Requester);
+}
+
+void UMarburgumWorldAuthority::EndCast(AMarburgumPlayerController& Player, EMarburgumFishingEnd End, FName Catch, const TCHAR* Why)
+{
+    Casts.Remove(&Player);
+    AMarburgumPlayerState* State = Player.GetPlayerState<AMarburgumPlayerState>();
+    if (!State)
+    {
+        return;
+    }
+    FMarburgumFishingStatus Status = State->GetFishing();
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=cast_end character=%s spot=%s attempt=%d end=%s why=%s catch=%s"), FishLogPrefix,
+        State->GetCharacterKey().IsEmpty() ? TEXT("-") : *State->GetCharacterKey(), *Status.SpotId.ToString(), Status.Attempt,
+        ToString(End), Why, Catch.IsNone() ? TEXT("-") : *Catch.ToString());
+    Status.Phase = EMarburgumFishingPhase::None;
+    Status.SpotId = NAME_None;
+    Status.LastEnd = End;
+    Status.LastCatch = Catch;
+    State->SetFishingAuthority(Status);
+}
+
+void UMarburgumWorldAuthority::TickFishing()
+{
+    if (Casts.IsEmpty())
+    {
+        return;
+    }
+    const double Now = GetWorld()->GetTimeSeconds();
+    TArray<TWeakObjectPtr<AMarburgumPlayerController>> Players;
+    Casts.GetKeys(Players);
+    for (const TWeakObjectPtr<AMarburgumPlayerController>& Weak : Players)
+    {
+        AMarburgumPlayerController* Player = Weak.Get();
+        FCast* Line = Casts.Find(Weak);
+        if (!Player || !Line)
+        {
+            Casts.Remove(Weak);
+            continue;
+        }
+        const APawn* Body = Player->GetPawn();
+        if (const TCHAR* Why = WhyCannotFish(*Player))
+        {
+            EndCast(*Player, EMarburgumFishingEnd::Cancelled, NAME_None, Why);
+            continue;
+        }
+        // Fishing needs both feet on the bank: walking off ends it (the original's movement-intent rule).
+        if (FVector::DistSquared2D(Body->GetActorLocation(), Line->CastAt) > FMath::Square(FishingMoveCancelCm))
+        {
+            EndCast(*Player, EMarburgumFishingEnd::Cancelled, NAME_None, TEXT("moved"));
+            continue;
+        }
+        if (!Line->bBite && Now >= Line->BiteAt)
+        {
+            Line->bBite = true;
+            Line->EscapeAt = Now + MarburgumII::Fishing::BiteWindowSeconds();
+            if (AMarburgumPlayerState* State = Player->GetPlayerState<AMarburgumPlayerState>())
+            {
+                FMarburgumFishingStatus Status = State->GetFishing();
+                Status.Phase = EMarburgumFishingPhase::Bite;
+                State->SetFishingAuthority(Status);
+                UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=bite character=%s spot=%s attempt=%d"), FishLogPrefix,
+                    *State->GetCharacterKey(), *Line->Spot, Status.Attempt);
+            }
+            continue;
+        }
+        if (Line->bBite && Now >= Line->EscapeAt)
+        {
+            EndCast(*Player, EMarburgumFishingEnd::Escaped, NAME_None, TEXT("window_passed"));
+        }
+    }
+}
+
+// ---- Authored content (ADR-049) ----
+
+void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
+{
+    using namespace MarburgumII::Gameplay;
+    // The original's mission people and places stand on the original Lent level; the blockout and test maps
+    // have none of them.
+    if (UWorld::RemovePIEPrefix(InWorld.GetOutermost()->GetName()) != TEXT("/Game/World/lent"))
+    {
+        return;
+    }
+    const AMarburgumInteractable* Angler = FindInteractable(LentAnglerId);
+    // The angler's original position: where the anchored content was laid out around him.
+    const double AnglerOriginal[3] = { -127.0, 2.1, -58.0 };
+    const FVector AnglerOriginalUe = MarburgumII::Combat::GodotPositionToUnreal(AnglerOriginal);
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumAuthoredGround), true);
+    int32 Spawned = 0;
+    for (const FInteractableDefinition& Entry : MarburgumII::Gameplay::Interactables)
+    {
+        if (Entry.Placement != EPlacement::Original && Entry.Placement != EPlacement::AnglerRelative)
+        {
+            continue;
+        }
+        FVector Planned = MarburgumII::Combat::GodotPositionToUnreal(Entry.GodotPosition);
+        if (Entry.Placement == EPlacement::AnglerRelative)
+        {
+            if (!Angler)
+            {
+                UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=content_skipped id=%s reason=no_angler"), InteractLogPrefix, Entry.Id);
+                continue;
+            }
+            // The map keeps the original axes, so the original offset from the angler carries over unrotated.
+            Planned = Angler->GetActorLocation() + (Planned - AnglerOriginalUe);
+        }
+        FHitResult Ground;
+        bool bGround = false;
+        for (const double Above : { 300.0, 1500.0 })
+        {
+            bGround = bGround
+                || InWorld.LineTraceSingleByChannel(Ground, Planned + FVector(0.0, 0.0, Above), Planned - FVector(0.0, 0.0, 1500.0),
+                    ECC_Visibility, Params);
+        }
+        if (!bGround)
+        {
+            UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=content_skipped id=%s reason=no_ground planned=%s"), InteractLogPrefix,
+                Entry.Id, *Planned.ToString());
+            continue;
+        }
+        const bool bPerson = Entry.Kind == EInteractableKind::Npc;
+        // People stand on their feet; a place marker sits half sunk so it reads as a post, crate or sign.
+        const FVector At = Ground.ImpactPoint + FVector(0.0, 0.0, bPerson ? 0.0 : 25.0);
+        // Everyone faces the river (the original's -z in Unreal's -X) unless the angler shows otherwise.
+        const FRotator Facing = Angler ? Angler->GetActorRotation() : FRotator(0.0, 180.0, 0.0);
+        const FTransform Spot(Facing, At, bPerson ? FVector::OneVector : FVector(0.5));
+        UClass* Class = bPerson ? AMarburgumNpc::StaticClass() : AMarburgumInteractable::StaticClass();
+        AMarburgumInteractable* Placed = InWorld.SpawnActorDeferred<AMarburgumInteractable>(Class, Spot, nullptr, nullptr,
+            ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+        if (!Placed)
+        {
+            continue;
+        }
+        Placed->SetCatalogueIdAuthority(FName(Entry.Id));
+        Placed->FinishSpawning(Spot);
+        ++Spawned;
+
+        // A development start a few steps inland of it, facing it (?MB2Start=mission_<id>), like the fight cast's.
+        const FVector Ahead = At - Facing.Vector() * 250.0;
+        FHitResult StartGround;
+        if (InWorld.LineTraceSingleByChannel(StartGround, Ahead + FVector(0.0, 0.0, 300.0), Ahead - FVector(0.0, 0.0, 600.0), ECC_Visibility, Params))
+        {
+            FActorSpawnParameters StartParams;
+            StartParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+            const FVector StartAt = StartGround.ImpactPoint + FVector(0.0, 0.0, 96.0);
+            if (APlayerStart* Start = InWorld.SpawnActor<APlayerStart>(StartAt, (At - StartAt).GetSafeNormal2D().Rotation(), StartParams))
+            {
+                Start->PlayerStartTag = FName(*FString::Printf(TEXT("mission_%s"), Entry.Id));
+            }
+        }
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=content_spawned id=%s kind=%s at=%.0f,%.0f,%.0f placement=%s"), InteractLogPrefix,
+            Entry.Id, bPerson ? TEXT("npc") : Entry.Kind == EInteractableKind::FishingSpot ? TEXT("fishing_spot") : TEXT("place"),
+            At.X, At.Y, At.Z, Entry.Placement == EPlacement::AnglerRelative ? TEXT("angler_relative") : TEXT("original"));
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=content_ready spawned=%d"), InteractLogPrefix, Spawned);
 }

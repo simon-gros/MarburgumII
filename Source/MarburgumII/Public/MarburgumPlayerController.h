@@ -11,6 +11,17 @@
 class AMarburgumInteractable;
 class AMarburgumVehicle;
 
+/** The client's mirror of what interacting with a mission target would do (MarburgumMissionLogic.h). */
+struct FMarburgumMissionPreview
+{
+    /** MarburgumII::Missions::EPlanAction as a number, so this header needs no shared-module include. */
+    uint8 Action = 0;
+    FName MissionId;
+    FName StageId;
+    FName MissingItem;
+    FName Prerequisite;
+};
+
 DECLARE_MULTICAST_DELEGATE_TwoParams(FMarburgumRequestResultEvent, const FGuid& /*OperationId*/, EMarburgumRequestOutcome /*Outcome*/);
 DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumInteractionReceiptEvent, const FMarburgumInteractionReceipt& /*Receipt*/);
 /** The server's answer to getting into or out of a car: action enter|exit, a wire reason when refused. */
@@ -67,6 +78,18 @@ public:
      */
     void SubmitInteraction(const FGuid& OperationId, AMarburgumInteractable* Target);
 
+    /**
+     * Client: decide at a mission choice stage (ADR-049). Like SubmitInteraction: the same id is safe to resend,
+     * and the answer arrives as an interaction receipt.
+     */
+    void SubmitMissionChoice(const FGuid& OperationId, AMarburgumInteractable* Target, FName MissionId, FName ChoiceId);
+
+    /**
+     * Client: what pressing E at Target would mean for this player's missions, mirrored from the server's rule
+     * (MarburgumMissionLogic.h) so the prompt and the choice panel can say it. The server still decides.
+     */
+    bool PlanMissionInteraction(const AMarburgumInteractable& Target, struct FMarburgumMissionPreview& OutPreview) const;
+
     /** Client: the request awaiting a receipt, if any (expires after ReceiptTimeoutSeconds). */
     bool GetPendingInteraction(FGuid& OutOperationId, TWeakObjectPtr<AMarburgumInteractable>& OutTarget) const;
 
@@ -120,6 +143,10 @@ protected:
     UFUNCTION(Server, Reliable)
     void ServerRequestInteraction(FGuid OperationId, AMarburgumInteractable* Target);
 
+    /** The client names the decision; the server checks it is due, affordable and in reach. */
+    UFUNCTION(Server, Reliable)
+    void ServerRequestMissionChoice(FGuid OperationId, AMarburgumInteractable* Target, FName MissionId, FName ChoiceId);
+
     UFUNCTION(Client, Reliable)
     void ClientReceiveInteractionReceipt(const FMarburgumInteractionReceipt& Receipt);
 
@@ -150,6 +177,7 @@ private:
     void RequestToggleInventory();
     void RequestToggleJournal();
     void RequestToggleCharacter();
+    void RequestToggleSkills();
 
     /** Shared request budget for interactions and vehicle requests (MaxRequestsPerSecond). */
     bool AdmitRequest(const TCHAR* What);
