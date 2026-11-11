@@ -505,8 +505,8 @@ void AMarburgumCharacter::ResolveSwingAuthority(bool bHeavy, const TCHAR* Refusa
     }
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=swing player=%d character=%s heavy=%d ok=%d reason=%s outcome=%s target=%s damage=%.1f target_vitality=%d"),
         CombatLogPrefix, State ? State->GetPlayerId() : -1, State && !State->GetCharacterKey().IsEmpty() ? *State->GetCharacterKey() : TEXT("-"),
-        bHeavy ? 1 : 0, Result.bOk ? 1 : 0, Result.Reason.IsNone() ? TEXT("-") : *Result.Reason.ToString(),
-        Result.Outcome.IsNone() ? TEXT("-") : *Result.Outcome.ToString(), Result.TargetId.IsNone() ? TEXT("-") : *Result.TargetId.ToString(),
+        bHeavy ? 1 : 0, Result.bOk ? 1 : 0, WireWord(Result.Reason),
+        WireWord(Result.Outcome), Result.TargetId.IsNone() ? TEXT("-") : *Result.TargetId.ToString(),
         Result.Damage, Result.TargetVitality);
     if (AMarburgumPlayerController* Owner = Cast<AMarburgumPlayerController>(GetController()))
     {

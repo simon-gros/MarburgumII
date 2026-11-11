@@ -201,7 +201,7 @@ namespace MarburgumFightSound
         }
         // Evidence for the combat smoke, which runs without an audio device: which sounds this blow chose.
         UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=impact outcome=%s heavy=%d floored=%d sound=%s fall=%s at=%.0f,%.0f,%.0f"),
-            Combat::CombatLogPrefix, *Outcome.ToString(), bHeavy ? 1 : 0, bFloored ? 1 : 0, Blow ? *Blow->GetName() : TEXT("-"),
+            Combat::CombatLogPrefix, Combat::WireWord(Outcome), bHeavy ? 1 : 0, bFloored ? 1 : 0, Blow ? *Blow->GetName() : TEXT("-"),
             Fall ? *Fall->GetName() : TEXT("-"), At.X, At.Y, At.Z);
     }
 }

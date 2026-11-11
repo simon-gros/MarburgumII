@@ -305,8 +305,8 @@ void AMarburgumPlayerController::ClientReceiveVehicleResult_Implementation(bool 
 void AMarburgumPlayerController::ClientReceiveCombatResult_Implementation(const FMarburgumCombatResult& Result)
 {
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=result heavy=%d ok=%d reason=%s outcome=%s target=%s damage=%.1f target_vitality=%d"),
-        MarburgumII::Combat::CombatLogPrefix, Result.bHeavy ? 1 : 0, Result.bOk ? 1 : 0, Result.Reason.IsNone() ? TEXT("-") : *Result.Reason.ToString(),
-        Result.Outcome.IsNone() ? TEXT("-") : *Result.Outcome.ToString(), Result.TargetId.IsNone() ? TEXT("-") : *Result.TargetId.ToString(),
+        MarburgumII::Combat::CombatLogPrefix, Result.bHeavy ? 1 : 0, Result.bOk ? 1 : 0, MarburgumII::Combat::WireWord(Result.Reason),
+        MarburgumII::Combat::WireWord(Result.Outcome), Result.TargetId.IsNone() ? TEXT("-") : *Result.TargetId.ToString(),
         Result.Damage, Result.TargetVitality);
     OnCombatResult.Broadcast(Result);
 }

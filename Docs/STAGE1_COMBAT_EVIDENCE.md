@@ -1,6 +1,6 @@
 # Stage 1 evidence — unarmed fighting, Linux, 2026-11-11
 
-**Result:** fighting **passes an automated two-client test** with a dedicated server on the launch map `/Game/World/lent`.
+**Result:** fighting **passes an automated two-client test** on a packaged dedicated server with packaged clients, on the launch map `/Game/World/lent`.
 
 - **The people:** the server spawns the original's Lent fight cast at their original positions: the Belligerent drinker and the Evening walker on the promenade beside the hatchback, and the Newspaper reader on the square.
 - **Swings:** a jab out of reach misses, and he is left alone. In reach, a jab lands for 7. A second at once is refused as too soon, and a committed swing lands for 14.7. Every swing costs its stamina, and the server picks every target.
@@ -15,10 +15,10 @@ Per [ADR-008](DECISIONS.md) the status is `implemented_awaiting_owner_playtest`.
 
 | Item | Value |
 | --- | --- |
-| Source | `b2493ed` on `330163b` (ADR-040, the rebuilt Lent ground); the editor build the runs used differs from it only by a renamed file-local constant (a unity-build clash) |
+| Source | The commit that adds this line, on `b2493ed` (ADR-041) and `330163b` (ADR-040, the rebuilt Lent ground) |
 | Engine / host | UE **5.8.3** source build; CachyOS Linux 6.18.60 x86_64; NVIDIA GeForce RTX 5080 |
-| Processes | An editor-mode headless dedicated server on a fresh world store; client B (`-nullrhi`) and then client A (rendered offscreen at 1920×1080), both joined with `?MB2Start=fight_lent_drunk` |
-| Command | `scripts/combat-smoke-linux.sh editor`, port 27741. Run `Saved/CombatSmoke/20261111T133345Z`, with `20261111T133140Z` and `20261111T133247Z` also passing on this tree. Before the rebase onto ADR-040, five runs in a row passed (`20261111T131951Z` to `20261111T132351Z`) |
+| Processes | Packaged headless `MarburgumIIServer` on a fresh world store; client B (`-nullrhi`) and then client A (rendered offscreen at 1920×1080), both packaged `MarburgumIIClient` sessions joined with `?MB2Start=fight_lent_drunk` |
+| Command | `scripts/combat-smoke-linux.sh staged`, port 27741. Run `Saved/CombatSmoke/20261111T140129Z`; `20261111T140343Z` passed staged too. In editor mode it passed three times on `b2493ed` and five times in a row before the rebase onto ADR-040 |
 | Other checks | `mb2 validate all` (including `Combat contract OK: 26 rules and 3 people (1 hostile)`); automation tests `Marburgum.*` (7, including `Marburgum.Gameplay.CombatRules`) |
 
 ## What runs
@@ -37,22 +37,23 @@ Per [ADR-008](DECISIONS.md) the status is `implemented_awaiting_owner_playtest`.
 | B in reach jabs | Hit `lent_drunk` for 7.0 (85 → 78); the drinker staggers, then turns hostile | PASS |
 | B is beaten down | Hands down, B falls after 17.7 s: vitality 0, `down`, its clip the fall; server `beaten` once; a swing from the floor is refused `incapacitated` | PASS |
 | He gives up on B | The drinker goes back to idle once B is down | PASS |
-| A out of reach | 2.79 m away, a jab is a miss; the drinker stays idle | PASS |
-| A in reach | 1.38 m: a jab lands for 7.0 (78 → 71); a second at once is `too_soon` | PASS |
-| He turns on A | `hostile`, intent `strike`; the walker's intent `avoid`, and he steps from 6.9 m to 12.1 m away | PASS |
+| A out of reach | 3.00 m away, a jab is a miss; the drinker stays idle | PASS |
+| A in reach | 1.40 m: a jab lands for 7.0 (78 → 71); a second at once is `too_soon` | PASS |
+| He turns on A | `hostile`, intent `strike`; the walker's intent `avoid`, and he steps from 6.1 m to 12.0 m away | PASS |
 | Guard | Guard up, clip `guard`: his blow is `blocked`, 1.5 damage, 14 stamina paid (server `struck outcome=blocked damage=1.5`) | PASS |
 | No guard | Hands down: his next blow lands in full, 6.0 | PASS |
-| Committed swing | Lands for 14.7, the clip `heavy`; swings thrown inside the cooldown are refused `too_soon` (9 in the run) | PASS |
+| Committed swing | Lands for 14.7, the clip `heavy`; swings thrown inside the cooldown are refused `too_soon` (7 in the run) | PASS |
 | The drinker goes down | The fifth heavy swing takes him from 13 to 0: `incapacitated`, his clip the fall; feed "Belligerent drinker goes down." | PASS |
 | After | A jab at him on the floor is a miss | PASS |
 | Sounds | 12 landed-blow impacts (`impactPunch_medium_*` for jabs, `impactPunch_heavy_*` for swings), 1 blocked (`impactSoft_medium_*`), falls `impactSoft_heavy_*`; no sound for a miss | PASS |
-| Server | 19 swings ruled, 24 strikes by the drinker, 1 blocked by the guard, 1 player beaten, the drinker down once | PASS |
+| Server | 17 swings ruled, 24 strikes by the drinker, 1 blocked by the guard, 1 player beaten, the drinker down once | PASS |
 
 The fight clips were also checked against the original's own numbers. The shoulder-to-hand direction of each arm, read back from the saved mannequin clip at every key, matches the same direction computed from the original's skeleton (`player_male_a.glb`) and keys to within 0.06 per axis. For example, the guard's left arm is (0.70, 0.33, −0.63) against (0.71, 0.28, −0.64).
 
 ## Found and fixed by this test
 
 - **A swing could be lost.** A swing first rode on one move's flag. The engine skips a move whose time comes out zero (time-discrepancy resolution and forced-update resync), so at high client frame rates the first swing sometimes never reached the server. Swings are now a request count carried in every move, and the server throws one for each new count.
+- **Wire words came out with the wrong case in the packaged build.** An FName compares without case but prints with the casing its name was first registered with, and the cooked game already holds `Hit` and `bLocked`; the first staged run logged `outcome=Hit`, while the game itself behaved correctly. Outcomes and refusals are now written from the contract's words (`Combat::WireWord`).
 - **A blow that was already on its way was taken for a failed guard.** The drinker answers a hit at once, as in the original. That unguarded blow's replicated condition could arrive after the guard went up. The driver (not the game) was wrong, and it now waits for blows in flight before it raises the guard.
 
 ## Captures
@@ -64,8 +65,8 @@ The fight clips were also checked against the original's own numbers. The should
 | ![Jab](Captures/stage1-combat/combat-a-jab.jpg) | ![Heavy](Captures/stage1-combat/combat-a-heavy.jpg) |
 | A's jab | A winds up a committed swing while the drinker strikes |
 | ![Down](Captures/stage1-combat/combat-a-down.jpg) | |
-| The drinker falls; feed "Belligerent drinker goes down."; A at 63 vitality, 42 stamina | |
+| The drinker falls; feed "Belligerent drinker goes down."; A at 63 vitality, 41 stamina | |
 
 ## Not covered
 
-The owner playtest. A staged (packaged) run. Fighting other players (the original had none). Weapons. Perception: NPCs do not notice a fight at a distance. Arrests, or any other consequence of violence beyond the fight itself. Hit reactions on the struck body (the original's were GTA placeholders). Closed fists: the original keyed no fingers, so the mannequin's hands stay open. NPC pathfinding: fighters steer straight and sidestep. NPC condition is not saved across a server restart. A downed NPC getting up after 60 s is in the code but not in this test.
+The owner playtest. Fighting other players (the original had none). Weapons. Perception: NPCs do not notice a fight at a distance. Arrests, or any other consequence of violence beyond the fight itself. Hit reactions on the struck body (the original's were GTA placeholders). Closed fists: the original keyed no fingers, so the mannequin's hands stay open. NPC pathfinding: fighters steer straight and sidestep. NPC condition is not saved across a server restart. A downed NPC getting up after 60 s is in the code but not in this test.

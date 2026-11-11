@@ -495,7 +495,7 @@ void AMarburgumFighter::Strike(AMarburgumCharacter& Person)
     SetStateAndIntent(EMarburgumFighterState::Hostile, EMarburgumFighterIntent::Strike);
     Person.MulticastImpact(Person.GetActorLocation() + FVector(0.0, 0.0, ChestCm), Outcome, false, Movement->IsDown());
     LogEvent(TEXT("npc_strike"), FString::Printf(TEXT("target=%s outcome=%s damage=%.1f target_vitality=%.1f target_down=%d"),
-        *Person.GetName(), *Outcome.ToString(), Damage, Movement->GetVitality(), Movement->IsDown() ? 1 : 0));
+        *Person.GetName(), WireWord(Outcome), Damage, Movement->GetVitality(), Movement->IsDown() ? 1 : 0));
 }
 
 FName AMarburgumFighter::ReceiveBlowAuthority(AMarburgumCharacter* Attacker, float BlowDamage, float StaggerFor, bool bHeavy)

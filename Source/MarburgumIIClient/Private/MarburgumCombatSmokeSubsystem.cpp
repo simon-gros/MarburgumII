@@ -151,7 +151,7 @@ void UMarburgumCombatSmokeSubsystem::OnCombatResult(const FMarburgumCombatResult
 {
     Answers.Add(Result);
     MB2_COMBAT_SMOKE_LOG("event=answer heavy=%d ok=%d reason=%s outcome=%s target=%s damage=%.1f target_vitality=%d", Result.bHeavy ? 1 : 0,
-        Result.bOk ? 1 : 0, Result.Reason.IsNone() ? TEXT("-") : *Result.Reason.ToString(), Result.Outcome.IsNone() ? TEXT("-") : *Result.Outcome.ToString(),
+        Result.bOk ? 1 : 0, Combat::WireWord(Result.Reason), Combat::WireWord(Result.Outcome),
         Result.TargetId.IsNone() ? TEXT("-") : *Result.TargetId.ToString(), Result.Damage, Result.TargetVitality);
 }
 

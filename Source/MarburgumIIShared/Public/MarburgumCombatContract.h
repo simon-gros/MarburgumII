@@ -48,6 +48,28 @@ namespace MarburgumII::Combat
     inline constexpr const TCHAR* ErrorIncapacitated = TEXT("incapacitated");
     inline constexpr const TCHAR* ErrorSeated = TEXT("seated");
 
+    /**
+     * The wire word for an outcome or refusal carried as an FName, or "-" for none. An FName compares without
+     * case but prints with the casing its name was first registered with, and a cooked build may already hold
+     * "Hit" or "bLocked"; text leaving the game is written from these constants instead.
+     */
+    inline const TCHAR* WireWord(FName Name)
+    {
+        if (Name.IsNone())
+        {
+            return TEXT("-");
+        }
+        for (const TCHAR* Word : { OutcomeHit, OutcomeBlocked, OutcomeMiss, ErrorNoCharacter, ErrorTooSoon, ErrorExhausted,
+                 ErrorIncapacitated, ErrorSeated })
+        {
+            if (Name == Word)
+            {
+                return Word;
+            }
+        }
+        return TEXT("unknown");
+    }
+
     // ---- Numbers (combat.h) ----
 
     // Fists hurt, but slowly: long enough to change your mind and short enough that a fight is never background
