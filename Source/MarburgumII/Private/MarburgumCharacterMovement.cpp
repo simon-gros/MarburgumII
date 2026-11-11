@@ -7,11 +7,14 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/PhysicsVolume.h"
 #include "GameFramework/PlayerStart.h"
+#include "MarburgumCharacter.h"
+#include "MarburgumCombatContract.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumNetworkContract.h"
 #include "MarburgumPlayerState.h"
 
 using namespace MarburgumII::Gameplay;
+namespace Combat = MarburgumII::Combat;
 
 namespace
 {
@@ -19,13 +22,20 @@ namespace
     constexpr const TCHAR* ConditionLogPrefix = TEXT("MB2COND");
 }
 
-/** One client move, with the run request and the breath before and after it. */
+/** One client move, with the run, guard and swing requests and the breath before and after it. */
 class FMarburgumSavedMove : public FSavedMove_Character
 {
 public:
     using Super = FSavedMove_Character;
 
     bool bSavedWantsToRun = false;
+    bool bSavedWantsToGuard = false;
+    uint8 SavedSwingRequest = 0;
+    bool bSavedSwingHeavy = false;
+    uint8 StartSwingsHandled = 0;
+    uint8 EndSwingsHandled = 0;
+    float StartSwingCooldown = 0.f;
+    float StartSwingRemaining = 0.f;
     float StartStamina = 0.f;
     bool bStartWinded = false;
     float StartFallTopFeetZ = 0.f;
@@ -37,22 +47,29 @@ public:
     virtual void Clear() override
     {
         Super::Clear();
-        bSavedWantsToRun = false;
+        bSavedWantsToRun = bSavedWantsToGuard = false;
+        SavedSwingRequest = StartSwingsHandled = EndSwingsHandled = 0;
+        bSavedSwingHeavy = false;
+        StartSwingCooldown = StartSwingRemaining = 0.f;
         StartStamina = EndStamina = StartFallTopFeetZ = 0.f;
         bStartWinded = bEndWinded = bStartDown = bEndDown = false;
     }
 
     virtual uint8 GetCompressedFlags() const override
     {
-        return Super::GetCompressedFlags() | (bSavedWantsToRun ? FLAG_Custom_0 : 0);
+        // Custom_1 holds the guard up. Swings are not flags: a flag lives in one move, and the engine may skip a
+        // move (one whose time comes out zero), so they travel as a request count in every move's data.
+        return Super::GetCompressedFlags() | (bSavedWantsToRun ? FLAG_Custom_0 : 0) | (bSavedWantsToGuard ? FLAG_Custom_1 : 0);
     }
 
     virtual bool CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const override
     {
         // A move in which the body became winded or got its breath back stays a move of its own.
         const FMarburgumSavedMove* Other = static_cast<const FMarburgumSavedMove*>(NewMove.Get());
-        // So does a move in which the body drowned, or that started down.
-        return bSavedWantsToRun == Other->bSavedWantsToRun && bStartWinded == bEndWinded && !bStartDown && !bEndDown
+        // So does a move in which the body drowned, or that started down, and every swing.
+        return bSavedWantsToRun == Other->bSavedWantsToRun && bSavedWantsToGuard == Other->bSavedWantsToGuard
+            && SavedSwingRequest == Other->SavedSwingRequest && StartSwingsHandled == EndSwingsHandled
+            && bStartWinded == bEndWinded && !bStartDown && !bEndDown
             && Super::CanCombineWith(NewMove, InCharacter, MaxDelta);
     }
 
@@ -62,6 +79,9 @@ public:
         if (const UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(C->GetCharacterMovement()))
         {
             bSavedWantsToRun = Movement->WantsToRun();
+            bSavedWantsToGuard = Movement->WantsToGuard();
+            SavedSwingRequest = Movement->SwingRequest;
+            bSavedSwingHeavy = Movement->bSwingRequestHeavy;
         }
     }
 
@@ -74,6 +94,9 @@ public:
             bStartWinded = Movement->IsWinded();
             bStartDown = Movement->IsDown();
             StartFallTopFeetZ = Movement->FallTopFeetZ;
+            StartSwingCooldown = Movement->SwingCooldown;
+            StartSwingRemaining = Movement->SwingRemaining;
+            StartSwingsHandled = Movement->SwingsHandled;
         }
     }
 
@@ -85,7 +108,8 @@ public:
         const FMarburgumSavedMove* Old = static_cast<const FMarburgumSavedMove*>(OldMove);
         if (UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(InCharacter->GetCharacterMovement()))
         {
-            Movement->RestoreStaminaForCombine(Old->StartStamina, Old->bStartWinded);
+            Movement->RestoreStaminaForCombine(Old->StartStamina, Old->bStartWinded, Old->StartSwingCooldown, Old->StartSwingRemaining);
+            Movement->SwingsHandled = Old->StartSwingsHandled;
             Movement->FallTopFeetZ = Old->StartFallTopFeetZ;
         }
     }
@@ -99,6 +123,18 @@ public:
             EndStamina = Movement->IsIgnoringStaminaForTest() ? DefaultStamina : Movement->GetStamina();
             bEndWinded = Movement->IsIgnoringStaminaForTest() ? false : Movement->IsWinded();
             bEndDown = Movement->IsDown();
+            EndSwingsHandled = Movement->SwingsHandled;
+        }
+    }
+
+    virtual void PrepMoveFor(ACharacter* C) override
+    {
+        Super::PrepMoveFor(C);
+        // A replayed move asks for what it asked for when it was made.
+        if (UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(C->GetCharacterMovement()))
+        {
+            Movement->SwingRequest = SavedSwingRequest;
+            Movement->bSwingRequestHeavy = bSavedSwingHeavy;
         }
     }
 };
@@ -117,7 +153,10 @@ public:
 void FMarburgumNetworkMoveData::ClientFillNetworkMoveData(const FSavedMove_Character& ClientMove, ENetworkMoveType MoveType)
 {
     FCharacterNetworkMoveData::ClientFillNetworkMoveData(ClientMove, MoveType);
-    Stamina = static_cast<const FMarburgumSavedMove&>(ClientMove).EndStamina;
+    const FMarburgumSavedMove& Move = static_cast<const FMarburgumSavedMove&>(ClientMove);
+    Stamina = Move.EndStamina;
+    SwingRequest = Move.SavedSwingRequest;
+    bSwingHeavy = Move.bSavedSwingHeavy;
 }
 
 bool FMarburgumNetworkMoveData::Serialize(UCharacterMovementComponent& CharacterMovement, FArchive& Ar, UPackageMap* PackageMap, ENetworkMoveType MoveType)
@@ -127,6 +166,8 @@ bool FMarburgumNetworkMoveData::Serialize(UCharacterMovementComponent& Character
         return false;
     }
     Ar << Stamina;
+    Ar << SwingRequest;
+    Ar.SerializeBits(&bSwingHeavy, 1);
     return !Ar.IsError();
 }
 
@@ -144,6 +185,8 @@ void FMarburgumMoveResponseDataContainer::ServerFillResponseData(const UCharacte
     Stamina = Movement.Stamina;
     bWinded = Movement.bWinded;
     bDown = Movement.bDown;
+    SwingCooldown = Movement.SwingCooldown;
+    SwingsHandled = Movement.SwingsHandled;
 }
 
 bool FMarburgumMoveResponseDataContainer::Serialize(UCharacterMovementComponent& CharacterMovement, FArchive& Ar, UPackageMap* PackageMap)
@@ -158,6 +201,8 @@ bool FMarburgumMoveResponseDataContainer::Serialize(UCharacterMovementComponent&
         Ar << Stamina;
         Ar.SerializeBits(&bWinded, 1);
         Ar.SerializeBits(&bDown, 1);
+        Ar << SwingCooldown;
+        Ar << SwingsHandled;
     }
     return !Ar.IsError();
 }
@@ -367,6 +412,9 @@ void UMarburgumCharacterMovement::GoDown(const TCHAR* Why)
     bDown = true;
     Vitality = 0.f;
     bRunning = false;
+    bGuarding = false;
+    SwingRemaining = 0.f;
+    StaggerRemaining = 0.f;
     if (CharacterOwner && CharacterOwner->HasAuthority())
     {
         bAtRecoveryPoint = false;
@@ -421,20 +469,133 @@ void UMarburgumCharacterMovement::TickRecoveryAuthority(float DeltaTime)
     }
 }
 
+void UMarburgumCharacterMovement::MoveAutonomous(float ClientTimeStamp, float DeltaTime, uint8 CompressedFlags, const FVector& NewAccel)
+{
+    // The server takes the swing request from the move it is running; a replaying client set it in PrepMoveFor.
+    if (CharacterOwner && CharacterOwner->HasAuthority())
+    {
+        if (const FMarburgumNetworkMoveData* Move = static_cast<const FMarburgumNetworkMoveData*>(GetCurrentNetworkMoveData()))
+        {
+            SwingRequest = Move->SwingRequest;
+            bSwingRequestHeavy = Move->bSwingHeavy;
+        }
+    }
+    Super::MoveAutonomous(ClientTimeStamp, DeltaTime, CompressedFlags, NewAccel);
+}
+
 void UMarburgumCharacterMovement::UpdateFromCompressedFlags(uint8 Flags)
 {
     Super::UpdateFromCompressedFlags(Flags);
     bWantsToRun = (Flags & FSavedMove_Character::FLAG_Custom_0) != 0;
+    bWantsToGuard = (Flags & FSavedMove_Character::FLAG_Custom_1) != 0;
 }
 
 bool UMarburgumCharacterMovement::ClientUpdatePositionAfterServerUpdate()
 {
-    // Replaying saved moves sets the run request from each move's flags; the key the player is holding
-    // now is what counts afterwards (the engine does the same for crouch).
+    // Replaying saved moves sets the run, guard and swing requests from each move; the keys the player is
+    // holding now, and the latest swing asked for, are what count afterwards (the engine does the same for
+    // crouch).
     const bool bRealWantsToRun = bWantsToRun;
+    const bool bRealWantsToGuard = bWantsToGuard;
+    const uint8 RealSwingRequest = SwingRequest;
+    const bool bRealSwingHeavy = bSwingRequestHeavy;
     const bool bResult = Super::ClientUpdatePositionAfterServerUpdate();
     bWantsToRun = bRealWantsToRun;
+    bWantsToGuard = bRealWantsToGuard;
+    SwingRequest = RealSwingRequest;
+    bSwingRequestHeavy = bRealSwingHeavy;
     return bResult;
+}
+
+void UMarburgumCharacterMovement::RequestSwing(EMarburgumSwing Swing)
+{
+    // One swing at a time: a second press before the first has been simulated does not queue a combination.
+    if (Swing != EMarburgumSwing::None && SwingRequest == SwingsHandled)
+    {
+        ++SwingRequest;
+        bSwingRequestHeavy = Swing == EMarburgumSwing::Heavy;
+    }
+}
+
+void UMarburgumCharacterMovement::UpdateSwing(float DeltaSeconds)
+{
+    // Every move carries the latest request; the first move simulated with a new one throws it, once.
+    if (SwingRequest == SwingsHandled)
+    {
+        return;
+    }
+    SwingsHandled = SwingRequest;
+    const bool bHeavy = bSwingRequestHeavy;
+
+    Combat::FSwingAsk Ask;
+    Ask.bHasCharacter = bConditionSynced;
+    Ask.bDown = bDown;
+    // Timers here count down to zero, so "now" is always zero and "not yet" is anything still left.
+    Ask.Now = 0.0;
+    Ask.NextSwingAt = SwingCooldown;
+    Ask.StaggeredUntil = StaggerRemaining;
+    Ask.Stamina = Stamina;
+    Ask.bHeavy = bHeavy;
+    const TCHAR* Refusal = Combat::SwingRefusal(Ask);
+    if (!Refusal)
+    {
+        // The swing happens whether or not it finds anybody, and costs the same either way. You cannot
+        // punch from behind your own guard.
+        Stamina -= Combat::SwingStaminaCost(bHeavy);
+        SwingCooldown = Combat::SwingCooldownSeconds(bHeavy);
+        SwingRemaining = bHeavy ? Combat::HeavySwingSeconds : Combat::SwingSeconds;
+        bGuarding = false;
+        bRunning = false;
+        if (!CharacterOwner || !CharacterOwner->bClientUpdating)
+        {
+            // A replayed move re-spends the breath but is not a new swing to draw.
+            ++SwingSeq;
+            bLastSwingHeavy = bHeavy;
+        }
+    }
+    if (CharacterOwner && CharacterOwner->HasAuthority())
+    {
+        if (AMarburgumCharacter* Body = Cast<AMarburgumCharacter>(CharacterOwner))
+        {
+            Body->ResolveSwingAuthority(bHeavy, Refusal);
+        }
+    }
+}
+
+const TCHAR* UMarburgumCharacterMovement::ReceiveBlowAuthority(float Damage, float StaggerSeconds, bool bHeavy)
+{
+    if (bDown)
+    {
+        return Combat::OutcomeHit;
+    }
+    // A guard is paid for in stamina. One that cannot be paid for breaks, and the blow it was meant to stop
+    // arrives in full.
+    const bool bWasGuarding = bGuarding;
+    const Combat::FGuardPayment Guard =
+        Combat::PayForGuard(bGuarding, Stamina, bHeavy ? Combat::HeavyGuardStaminaCost : Combat::GuardStaminaCost);
+    Stamina = Guard.StaminaAfter;
+    bGuarding = Guard.bGuarded;
+    const Combat::FBlowResult Blow = Combat::ResolveBlow(Vitality, Damage, Guard.bGuarded, StaggerSeconds);
+    Vitality = Blow.VitalityAfter;
+    StaggerRemaining = FMath::Max(StaggerRemaining, Blow.StaggerSeconds);
+    LogCombat(TEXT("struck"), FString::Printf(TEXT("outcome=%s heavy=%d damage=%.1f guard_broke=%d stagger_s=%.2f vitality=%.1f stamina=%.1f"),
+        Blow.Outcome, bHeavy ? 1 : 0, Blow.Applied, bWasGuarding && !Guard.bGuarded ? 1 : 0, Blow.StaggerSeconds, Vitality, Stamina));
+    if (Blow.bIncapacitated)
+    {
+        GoDown(TEXT("beaten"));
+    }
+    if (AMarburgumPlayerState* State = GetMarburgumPlayerState(); State && bConditionSynced)
+    {
+        State->UpdateConditionAuthority(MakeCondition(*State));
+    }
+    return Blow.Outcome;
+}
+
+void UMarburgumCharacterMovement::LogCombat(const TCHAR* Event, const FString& Detail) const
+{
+    const AMarburgumPlayerState* State = GetMarburgumPlayerState();
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=%s player=%d character=%s %s"), Combat::CombatLogPrefix, Event,
+        State ? State->GetPlayerId() : -1, State && !State->GetCharacterKey().IsEmpty() ? *State->GetCharacterKey() : TEXT("-"), *Detail);
 }
 
 void UMarburgumCharacterMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -477,6 +638,14 @@ void UMarburgumCharacterMovement::SyncConditionFromPlayerState()
             Stamina = FMath::Max(Stamina, static_cast<float>(State->GetCondition().Stamina));
             bWinded = State->GetCondition().bWinded;
         }
+        // Nor for being beaten down while standing still: nothing this client predicted disagrees with it.
+        else if (bConditionSynced && CharacterOwner->IsLocallyControlled() && !bDown && State->GetCondition().IsDown())
+        {
+            bDown = true;
+            Vitality = 0.f;
+            bRunning = false;
+            bGuarding = false;
+        }
         return;
     }
     else if (bIgnoreStaminaForTest)
@@ -498,10 +667,13 @@ void UMarburgumCharacterMovement::SyncConditionFromPlayerState()
     bConditionSynced = true;
 }
 
-void UMarburgumCharacterMovement::RestoreStaminaForCombine(float StartStamina, bool bStartWinded)
+void UMarburgumCharacterMovement::RestoreStaminaForCombine(float StartStamina, bool bStartWinded, float StartSwingCooldown,
+    float StartSwingRemaining)
 {
     Stamina = StartStamina;
     bWinded = bStartWinded;
+    SwingCooldown = StartSwingCooldown;
+    SwingRemaining = StartSwingRemaining;
 }
 
 void UMarburgumCharacterMovement::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
@@ -515,6 +687,9 @@ void UMarburgumCharacterMovement::UpdateCharacterStateBeforeMovement(float Delta
     }
     // No breath, or winded and not yet back to RunResumeStamina (winded clears there): the body walks.
     bRunning = bConditionSynced && bWantsToRun && bMoving && Stamina > 0.f && !bWinded;
+    UpdateSwing(DeltaSeconds);
+    // Nothing to raise while on the floor, in the water or throwing a blow, or with nothing left to raise it with.
+    bGuarding = bConditionSynced && bWantsToGuard && !bDown && !IsSwimming() && SwingRemaining <= 0.f && Stamina > 0.f;
 }
 
 void UMarburgumCharacterMovement::UpdateCharacterStateAfterMovement(float DeltaSeconds)
@@ -557,6 +732,15 @@ void UMarburgumCharacterMovement::UpdateCharacterStateAfterMovement(float DeltaS
             }
         }
     }
+    else if (bGuarding)
+    {
+        // Holding a guard up costs a trickle and rests nothing; with none left the hands come down.
+        Stamina = FMath::Max(0.f, Stamina - Combat::GuardDrainPerSecond * DeltaSeconds);
+        if (Stamina <= 0.f)
+        {
+            bGuarding = false;
+        }
+    }
     else
     {
         Stamina = FMath::Min(DefaultStamina, Stamina + StaminaRecoveryPerSecond * DeltaSeconds);
@@ -566,10 +750,15 @@ void UMarburgumCharacterMovement::UpdateCharacterStateAfterMovement(float DeltaS
         }
     }
 
+    // The swing timers run on the move clock, the same on every machine that simulates the move.
+    SwingCooldown = FMath::Max(0.f, SwingCooldown - DeltaSeconds);
+    SwingRemaining = FMath::Max(0.f, SwingRemaining - DeltaSeconds);
+
     if (!CharacterOwner || !CharacterOwner->HasAuthority())
     {
         return;
     }
+    StaggerRemaining = FMath::Max(0.f, StaggerRemaining - DeltaSeconds);
     if (bRunning)
     {
         ServerRunSeconds += DeltaSeconds;
@@ -639,6 +828,8 @@ void UMarburgumCharacterMovement::ClientHandleMoveResponse(const FCharacterMoveR
             Stamina = Response.Stamina;
             bWinded = Response.bWinded;
             bDown = Response.bDown;
+            SwingCooldown = Response.SwingCooldown;
+            SwingsHandled = Response.SwingsHandled;
             Vitality = bDown ? 0.f : FMath::Max(Vitality, 1.f);
         }
     }

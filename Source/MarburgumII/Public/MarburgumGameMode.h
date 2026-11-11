@@ -16,6 +16,10 @@ class AMarburgumPlayerState;
  * Spawn selection: a development join option ?MB2Start=<tag> picks a PlayerStart with that
  * PlayerStartTag; otherwise starts tagged `arrival`, otherwise any start. Among candidates the first
  * one nobody is standing on wins, so test clients land in predictable places.
+ *
+ * Fighting NPCs (ADR-041): on Lent the server spawns the original's fight cast (MarburgumII::Combat::Npcs) at
+ * their original spots when play starts, each on the ground found there, with a start tagged fight_<id> a
+ * few steps in front of them for test clients. They are not saved in the map, so the map stays the world's.
  */
 UCLASS()
 class MARBURGUMII_API AMarburgumGameMode : public AGameModeBase
@@ -29,11 +33,13 @@ public:
     virtual FString InitNewPlayer(APlayerController* NewPlayerController, const FUniqueNetIdRepl& UniqueId, const FString& Options, const FString& Portal = TEXT("")) override;
     virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
     virtual void Logout(AController* Exiting) override;
+    virtual void StartPlay() override;
 
 private:
     /** Empty when the key may be admitted; otherwise the refusal shown to the client. */
     FString CheckCharacterKey(const FString& Key) const;
     AMarburgumPlayerState* FindPlayerByCharacterKey(const FString& Key) const;
+    void SpawnFighters();
 
     /** ?MB2Start= of players still being admitted; read by ChoosePlayerStart. */
     TMap<TObjectKey<AController>, FName> RequestedStarts;

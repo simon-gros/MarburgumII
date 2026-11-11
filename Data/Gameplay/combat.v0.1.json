@@ -1,0 +1,95 @@
+{
+  "format": "marburgumii.combat",
+  "version": "0.1.0",
+  "status": "stage1_lent_unarmed_combat",
+  "description": "Unarmed combat carried forward from the original Marburgum: the numbers of its combat.h and the people of its npcs.json who can be in a fight. Mirrors MarburgumIIShared/Public/MarburgumCombatContract.h; `mb2 validate combat` keeps them in step. Distances in metres and times in milliseconds as the original publishes them; positions and facings in the original's Godot Lent frame (x east and z south of the middle of Stari most, y up; facing 0 looks along -z).",
+  "provenance": {
+    "source": "original Marburgum (magna-raedarum-marburgum e3b2dd48) src/shared/combat.h; src/server/world_simulation.cpp attack, set_guard, apply_damage, melee_target, tick_combat; project/data/npcs.json (version 1) and npc_visual_profiles.json (version 2); fight and guard clips tools/build_character.gd _guard_animation and _fight_animation; keys project/project.godot attack, heavy_attack, guard; messages src/client/game_hud.cpp on_combat. Cross-checked against UnrealMarburgum MarburgumCombatRules.cpp.",
+    "review": "Rules and people copied unchanged (ADR-041). Not carried: the Unreal port's San Andreas wanted level and police pursuit (MarburgumWanted, reverse-engineered from GTA San Andreas, and excluded by Data/Ontology/ui_hud.v0.1.json excluded_features); GTA III / SA DE fight, hit, get-up clips and blow and body-fall sounds (docs/PLACEHOLDER_ASSETS.md), which are placeholders owned by Rockstar. Sounds are Kenney Impact Sounds 1.0 (CC0) instead; see SourceArt/Audio/Combat/README.md. The Tabor walkers wait for a Tabor map."
+  },
+  "rules": {
+    "fist_damage": 7.0,
+    "heavy_multiplier": 2.1,
+    "guard_damage_share": 0.25,
+    "guard_stamina_cost": 14.0,
+    "heavy_guard_stamina_cost": 30.0,
+    "fist_reach": 2.0,
+    "fist_arc_degrees": 75.0,
+    "fist_stamina_cost": 9.0,
+    "heavy_stamina_cost": 22.0,
+    "guard_drain_per_second": 3.5,
+    "fist_cooldown_msec": 350,
+    "heavy_cooldown_msec": 900,
+    "stagger_msec": 200,
+    "heavy_stagger_msec": 650,
+    "guard_expiry_msec": 400,
+    "swing_msec": 420,
+    "heavy_swing_msec": 750,
+    "tick_rate": 10,
+    "npc_company_range": 16.0,
+    "npc_watch_range": 11.0,
+    "npc_wander_radius": 1.2,
+    "npc_avoid_range": 12.0,
+    "npc_avoid_home": 11.0,
+    "npc_home_arrive": 0.45,
+    "npc_wander_ticks": 28,
+    "npc_pause_ticks": 40
+  },
+  "controls": {
+    "jab": "F",
+    "heavy": "R",
+    "guard": "G (held)"
+  },
+  "npcs": [
+    {
+      "id": "lent_drunk",
+      "name": "Belligerent drinker",
+      "role": "hostile",
+      "position": [-118.0, 1.8, -62.0],
+      "facing": 1.5708,
+      "vitality": 85.0,
+      "stamina": 90.0,
+      "damage": 6.0,
+      "reach": 1.9,
+      "attack_interval_msec": 1100,
+      "pursuit_range": 26.0,
+      "primary_color": "#5a3a3a",
+      "secondary_color": "#2a2222",
+      "scale": 1.04
+    },
+    {
+      "id": "lent_passerby",
+      "name": "Evening walker",
+      "role": "civilian",
+      "position": [-112.0, 1.8, -64.5],
+      "facing": -1.5708,
+      "vitality": 70.0,
+      "stamina": 60.0,
+      "primary_color": "#4e5c68",
+      "secondary_color": "#2a3036",
+      "scale": 0.99
+    },
+    {
+      "id": "lent_square_reader",
+      "name": "Newspaper reader",
+      "role": "civilian",
+      "position": [-12.0, 11.36, -188.0],
+      "facing": 0.4,
+      "vitality": 72.0,
+      "stamina": 55.0,
+      "primary_color": "#5a5348",
+      "secondary_color": "#2e2c28",
+      "scale": 1.0
+    }
+  ],
+  "npc_defaults": {
+    "damage": 6.0,
+    "reach": 1.9,
+    "attack_interval_msec": 1100,
+    "pursuit_range": 26.0
+  },
+  "additions": {
+    "npc_recovery_seconds": 60.0,
+    "note": "Marburgum II only: a downed NPC gets up at home after the wait a downed player has. The original's NPCs stay down until its server restarts."
+  }
+}

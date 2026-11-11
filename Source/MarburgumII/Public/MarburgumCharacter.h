@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "MarburgumCombatTypes.h"
 #include "MarburgumCharacter.generated.h"
 
 class AMarburgumVehicle;
@@ -50,6 +51,12 @@ struct FMarburgumSeating
  * plays the original's enter clip at the door, then is hidden in the seat as the original did, and plays the
  * exit clip where it steps out. The camera pulls back behind the car and swings round to follow it unless
  * the player has looked around in the last few seconds.
+ *
+ * Fighting (ADR-041): F throws a jab, R a committed swing and G holds a guard, as in the original. The
+ * movement component carries them to the server, which rules each swing here: the nearest fighting NPC within
+ * reach and arc in front of the body takes the blow (players never fight players), the player is told how it
+ * went, and everyone nearby hears it. Other machines see swings, the guard and a body on the floor through a
+ * replicated fight pose; the owner draws its own prediction.
  */
 UCLASS()
 class MARBURGUMII_API AMarburgumCharacter : public ACharacter
@@ -87,6 +94,30 @@ public:
     /** Presentation evidence: the body is drawn (false while hidden in a seat). */
     bool IsBodyShown() const;
 
+    // ---- Fighting (ADR-041) ----
+
+    /**
+     * Server only, from the movement component: this move threw a swing (Refusal null) or asked for one the
+     * rules refused. Picks who it reaches, applies the blow and tells the player.
+     */
+    void ResolveSwingAuthority(bool bHeavy, const TCHAR* Refusal);
+
+    /** Everyone: a blow landed on (or was blocked by) this body; play its sound here. */
+    UFUNCTION(NetMulticast, Unreliable)
+    void MulticastImpact(FVector_NetQuantize At, FName Outcome, bool bHeavy, bool bFloored);
+
+    /** What other machines are told about this body's fighting; the owner reads its movement instead. */
+    FMarburgumFightPose GetFightPose() const;
+
+    /** Presentation evidence: the fight clip this body is playing (guard, jab, heavy, down), or None. */
+    FName GetPlayingFightClip() const;
+
+    /** Owning client, and the combat smoke: throw a jab or a committed swing, hold or drop the guard. */
+    void Jab();
+    void HeavySwing();
+    void StartGuard();
+    void StopGuard();
+
 private:
     void MoveForward(float Value);
     void MoveRight(float Value);
@@ -104,6 +135,13 @@ private:
     TObjectPtr<UCameraComponent> Camera;
 
     void UpdateSwimPresentation();
+    void UpdateFightPresentation();
+
+    UPROPERTY(Replicated)
+    FMarburgumFightPose FightPose;
+
+    /** Owns the fight montages on this machine's body; idle on a dedicated server. */
+    FMarburgumFightAnimator FightAnimator;
 
     UPROPERTY()
     TObjectPtr<UAnimSequenceBase> SwimClip;

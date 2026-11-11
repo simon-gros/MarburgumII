@@ -78,6 +78,7 @@ private:
     void BindReceipts();
     void HandleRequestResult(const FGuid& OperationId, EMarburgumRequestOutcome Outcome);
     void HandleInteractionReceipt(const FMarburgumInteractionReceipt& Receipt);
+    void HandleCombatResult(const struct FMarburgumCombatResult& Result);
     void MountGameplayHud(APlayerController* Player);
     /** Closes every open management screen except Keep (nullptr closes all). */
     void CloseScreensExcept(const UObject* Keep);

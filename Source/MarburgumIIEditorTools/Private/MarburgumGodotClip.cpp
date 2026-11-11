@@ -162,8 +162,56 @@ namespace MarburgumGodotClip
             + (-P0 + 3.0 * P1 - 3.0 * P2 + P3) * U * U * U);
     }
 
+    FVector SampleTimed(const TArray<FVector>& Keys, const TArray<double>& Times, double T)
+    {
+        if (Keys.Num() == 0 || Keys.Num() != Times.Num())
+        {
+            return Keys.Num() > 0 ? Keys[0] : FVector::ZeroVector;
+        }
+        const int32 Last = Keys.Num() - 1;
+        if (T <= Times[0] || Last == 0)
+        {
+            return Keys[0];
+        }
+        if (T >= Times[Last])
+        {
+            return Keys[Last];
+        }
+        int32 From = 0;
+        while (From < Last - 1 && T >= Times[From + 1])
+        {
+            ++From;
+        }
+        const int32 To = From + 1;
+        const int32 Pre = FMath::Max(From - 1, 0);
+        const int32 Post = FMath::Min(To + 1, Last);
+        // Math::cubic_interpolate_in_time, times relative to the key the segment starts from.
+        const double ToT = Times[To] - Times[From];
+        const double PreT = Times[Pre] - Times[From];
+        const double PostT = Times[Post] - Times[From];
+        const double Local = T - Times[From];
+        const FVector A1 = FMath::Lerp(Keys[Pre], Keys[From], PreT == 0.0 ? 0.0 : (Local - PreT) / -PreT);
+        const FVector A2 = FMath::Lerp(Keys[From], Keys[To], ToT == 0.0 ? 0.5 : Local / ToT);
+        const FVector A3 = FMath::Lerp(Keys[To], Keys[Post], PostT - ToT == 0.0 ? 1.0 : (Local - ToT) / (PostT - ToT));
+        const FVector B1 = FMath::Lerp(A1, A2, ToT - PreT == 0.0 ? 0.0 : (Local - PreT) / (ToT - PreT));
+        const FVector B2 = FMath::Lerp(A2, A3, PostT == 0.0 ? 1.0 : Local / PostT);
+        return FMath::Lerp(B1, B2, ToT == 0.0 ? 0.5 : Local / ToT);
+    }
+
     UAnimSequence* Build(const FClip& Clip, const TCHAR* LogTag)
     {
+        if (Clip.KeyTimes.Num() > 0)
+        {
+            for (const FTrack& Track : Clip.Tracks)
+            {
+                if (Track.Keys.Num() != Clip.KeyTimes.Num())
+                {
+                    UE_LOG(LogMarburgumGodotClip, Error, TEXT("%s track %s has %d keys for %d key times"), LogTag, Track.GodotBone,
+                        Track.Keys.Num(), Clip.KeyTimes.Num());
+                    return nullptr;
+                }
+            }
+        }
         USkeleton* Skeleton = LoadObject<USkeleton>(nullptr, SkeletonPath);
         USkeletalMesh* Preview = LoadObject<USkeletalMesh>(nullptr, PreviewMeshPath);
         if (!Skeleton)
@@ -245,7 +293,10 @@ namespace MarburgumGodotClip
                 const FString* Parent = GodotParents.Find(GodotBone);
                 const FQuat ParentTurn = Parent ? GodotTurn.FindChecked(*Parent) : FQuat::Identity;
                 const FTrack* const* Track = TrackByBone.Find(GodotBone);
-                const FQuat Own = Track ? GodotEulerToMannequin(Sample((*Track)->Keys, T, Clip.LengthSeconds, Clip.bLoop)) : FQuat::Identity;
+                const FVector Euler = !Track ? FVector::ZeroVector
+                    : Clip.KeyTimes.Num() > 0 ? SampleTimed((*Track)->Keys, Clip.KeyTimes, T)
+                    : Sample((*Track)->Keys, T, Clip.LengthSeconds, Clip.bLoop);
+                const FQuat Own = Track ? GodotEulerToMannequin(Euler) : FQuat::Identity;
                 GodotTurn.Add(GodotBone, ParentTurn * Own);
             }
 

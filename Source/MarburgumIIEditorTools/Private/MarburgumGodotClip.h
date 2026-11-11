@@ -17,7 +17,10 @@ class UAnimSequence;
  */
 namespace MarburgumGodotClip
 {
-    /** One Godot bone's keys, evenly spaced over the clip; a looping clip's last key equals its first. */
+    /**
+     * One Godot bone's keys, evenly spaced over the clip unless the clip lists KeyTimes; a looping clip's last
+     * key equals its first.
+     */
     struct FTrack
     {
         const TCHAR* GodotBone;
@@ -35,6 +38,11 @@ namespace MarburgumGodotClip
         TArray<FTrack> Tracks;
         /** Displacement of the hips from rest, Godot model-space metres, evenly spaced keys (may be empty). */
         TArray<FVector> HipsOffsets;
+        /**
+         * Seconds of each key, shared by every track, when they are not evenly spaced (the fight clips key at
+         * 0, 28 % or 32 %, 50 % or 55 % and the end). Empty means evenly spaced. Hips offsets stay even.
+         */
+        TArray<double> KeyTimes;
     };
 
     inline constexpr int32 FramesPerSecond = 30;
@@ -51,6 +59,12 @@ namespace MarburgumGodotClip
      * loop and holding the end keys of a one-shot.
      */
     FVector Sample(const TArray<FVector>& Keys, double T, double LengthSeconds, bool bLoop);
+
+    /**
+     * Godot's cubic track over keys at the given times (Animation::_interpolate with cubic_interpolate_in_time,
+     * a one-shot: the end keys stand in for the missing neighbours, with no time between them).
+     */
+    FVector SampleTimed(const TArray<FVector>& Keys, const TArray<double>& Times, double T);
 
     /** Builds the clip on SK_Mannequin and saves it; nullptr (after logging under LogTag) on failure. */
     UAnimSequence* Build(const FClip& Clip, const TCHAR* LogTag);

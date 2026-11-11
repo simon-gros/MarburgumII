@@ -9,6 +9,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "MarburgumChatWidget.h"
+#include "MarburgumCombatContract.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumNetworkContract.h"
 #include "MarburgumPlayerController.h"
@@ -173,9 +174,11 @@ void UMarburgumUISubsystem::BindReceipts()
     {
         Previous->OnRequestResult.RemoveAll(this);
         Previous->OnInteractionReceipt.RemoveAll(this);
+        Previous->OnCombatResult.RemoveAll(this);
     }
     Controller->OnRequestResult.AddUObject(this, &UMarburgumUISubsystem::HandleRequestResult);
     Controller->OnInteractionReceipt.AddUObject(this, &UMarburgumUISubsystem::HandleInteractionReceipt);
+    Controller->OnCombatResult.AddUObject(this, &UMarburgumUISubsystem::HandleCombatResult);
     ReceiptController = Controller;
 }
 
@@ -480,6 +483,54 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
     }
     // A mission step that is not possible yet is guidance, not an error.
     Feed->Push(Key, Tone == MarburgumUI::ETone::Info ? LOCTEXT("NotYetKind", "NOT YET") : LOCTEXT("RefusedKind", "REFUSED"), Message, Tone);
+}
+
+void UMarburgumUISubsystem::HandleCombatResult(const FMarburgumCombatResult& Result)
+{
+    using namespace MarburgumII::Combat;
+    if (!Feed)
+    {
+        return;
+    }
+    // The original's game_hud on_combat lines. One toast slot: a quick flurry refreshes it rather than stacking.
+    const FName Key(TEXT("combat"));
+    const FText Kind = LOCTEXT("FightKind", "FIGHT");
+    if (!Result.bOk)
+    {
+        if (Result.Reason == ErrorExhausted)
+        {
+            Feed->Push(Key, Kind, LOCTEXT("FightExhausted", "Not enough breath."), MarburgumUI::ETone::Warning);
+        }
+        else if (Result.Reason == ErrorSeated)
+        {
+            Feed->Push(Key, Kind, LOCTEXT("FightSeated", "Get out before you swing."), MarburgumUI::ETone::Warning);
+        }
+        else if (Result.Reason == ErrorIncapacitated)
+        {
+            Feed->Push(Key, Kind, LOCTEXT("FightDown", "You cannot swing from the ground."), MarburgumUI::ETone::Warning);
+        }
+        // Too soon is the rhythm of a fight, not news; the original says nothing.
+        return;
+    }
+    const FText Name = Result.TargetName.IsEmpty() ? LOCTEXT("FightSomeone", "Someone") : FText::FromString(Result.TargetName);
+    if (Result.Outcome == OutcomeMiss)
+    {
+        Feed->Push(Key, Kind, Result.bHeavy ? LOCTEXT("FightHeavyMissed", "The heavy blow missed.") : LOCTEXT("FightJabMissed", "The jab missed."),
+            MarburgumUI::ETone::Neutral);
+    }
+    else if (Result.Outcome == OutcomeBlocked)
+    {
+        Feed->Push(Key, Kind, FText::Format(LOCTEXT("FightBlocked", "{0} kept their hands up."), Name), MarburgumUI::ETone::Info);
+    }
+    else if (Result.TargetVitality == 0)
+    {
+        Feed->Push(Key, Kind, FText::Format(LOCTEXT("FightFloored", "{0} goes down."), Name), MarburgumUI::ETone::Warning);
+    }
+    else
+    {
+        Feed->Push(Key, Kind, FText::Format(LOCTEXT("FightHit", "{0}. {1}."), Name, FText::AsNumber(FMath::RoundToInt(Result.Damage))),
+            MarburgumUI::ETone::Accent);
+    }
 }
 
 void UMarburgumUISubsystem::HandleRequestResult(const FGuid& OperationId, EMarburgumRequestOutcome Outcome)

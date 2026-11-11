@@ -9,11 +9,18 @@
 #include "Components/InputComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/SkeletalMesh.h"
+#include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputCoreTypes.h"
 #include "MarburgumCharacterMovement.h"
+#include "MarburgumCombatContract.h"
+#include "MarburgumFighter.h"
+#include "MarburgumFightPresentation.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumNetworkContract.h"
+#include "MarburgumPlayerController.h"
+#include "MarburgumPlayerState.h"
 #include "MarburgumVehicle.h"
 #include "MarburgumVehicleContract.h"
 #include "Net/UnrealNetwork.h"
@@ -125,14 +132,21 @@ void AMarburgumCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AMarburgumCharacter, Seating);
+    // The owner draws its own prediction from its movement component.
+    DOREPLIFETIME_CONDITION(AMarburgumCharacter, FightPose, COND_SkipOwner);
 }
 
 void AMarburgumCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+    if (HasAuthority())
+    {
+        FightPose = GetFightPose();
+    }
     if (GetNetMode() != NM_DedicatedServer)
     {
         UpdateSwimPresentation();
+        UpdateFightPresentation();
         const float Target = SwimMontage && !bTreading ? SwimLiftCm : 0.f;
         SwimLift = FMath::FInterpConstantTo(SwimLift, Target, DeltaSeconds, SwimLiftCmPerSecond);
         if (!Seating.Vehicle)
@@ -401,6 +415,143 @@ void AMarburgumCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
     PlayerInputComponent->BindKey(EKeys::SpaceBar, IE_Released, this, &ACharacter::StopJumping);
     PlayerInputComponent->BindKey(EKeys::LeftShift, IE_Pressed, this, &AMarburgumCharacter::StartRunning);
     PlayerInputComponent->BindKey(EKeys::LeftShift, IE_Released, this, &AMarburgumCharacter::StopRunning);
+    // The original's attack, heavy_attack and guard keys (project.godot).
+    PlayerInputComponent->BindKey(EKeys::F, IE_Pressed, this, &AMarburgumCharacter::Jab);
+    PlayerInputComponent->BindKey(EKeys::R, IE_Pressed, this, &AMarburgumCharacter::HeavySwing);
+    PlayerInputComponent->BindKey(EKeys::G, IE_Pressed, this, &AMarburgumCharacter::StartGuard);
+    PlayerInputComponent->BindKey(EKeys::G, IE_Released, this, &AMarburgumCharacter::StopGuard);
+}
+
+// ---- Fighting ----
+
+void AMarburgumCharacter::Jab()
+{
+    UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(GetCharacterMovement());
+    // In a car the keys mean nothing; the original refuses a swing from a seat before asking the server.
+    if (Movement && !Seating.Vehicle)
+    {
+        Movement->RequestSwing(EMarburgumSwing::Jab);
+    }
+}
+
+void AMarburgumCharacter::HeavySwing()
+{
+    UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(GetCharacterMovement());
+    if (Movement && !Seating.Vehicle)
+    {
+        Movement->RequestSwing(EMarburgumSwing::Heavy);
+    }
+}
+
+void AMarburgumCharacter::StartGuard()
+{
+    if (UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(GetCharacterMovement()))
+    {
+        Movement->SetWantsToGuard(true);
+    }
+}
+
+void AMarburgumCharacter::StopGuard()
+{
+    if (UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(GetCharacterMovement()))
+    {
+        Movement->SetWantsToGuard(false);
+    }
+}
+
+void AMarburgumCharacter::ResolveSwingAuthority(bool bHeavy, const TCHAR* Refusal)
+{
+    using namespace MarburgumII::Combat;
+    FMarburgumCombatResult Result;
+    Result.bHeavy = bHeavy;
+    const AMarburgumPlayerState* State = GetPlayerState<AMarburgumPlayerState>();
+    if (!Refusal && State && State->GetCharacterKey().IsEmpty())
+    {
+        // A connection without a character still moves, but it has nobody to fight with.
+        Refusal = ErrorNoCharacter;
+    }
+    if (Refusal)
+    {
+        Result.Reason = Refusal;
+    }
+    else
+    {
+        Result.bOk = true;
+        // melee_target(): the nearest standing fighter within reach and no more than the arc off the nose.
+        AMarburgumFighter* Target = nullptr;
+        double Best = FistReachCm;
+        for (TActorIterator<AMarburgumFighter> It(GetWorld()); It; ++It)
+        {
+            double Distance = 0.0;
+            if (!It->IsDown() && InSwingReach(GetActorLocation(), GetActorRotation().Yaw, It->GetActorLocation(), Distance)
+                && Distance <= Best)
+            {
+                Best = Distance;
+                Target = *It;
+            }
+        }
+        if (!Target)
+        {
+            Result.Outcome = OutcomeMiss;
+        }
+        else
+        {
+            Result.Damage = SwingDamage(bHeavy);
+            Result.Outcome = Target->ReceiveBlowAuthority(this, Result.Damage, SwingStaggerSeconds(bHeavy), bHeavy);
+            Result.TargetId = Target->GetNpcId();
+            Result.TargetName = Target->GetDisplayName();
+            Result.TargetVitality = Target->GetVitalityPoints();
+        }
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=swing player=%d character=%s heavy=%d ok=%d reason=%s outcome=%s target=%s damage=%.1f target_vitality=%d"),
+        CombatLogPrefix, State ? State->GetPlayerId() : -1, State && !State->GetCharacterKey().IsEmpty() ? *State->GetCharacterKey() : TEXT("-"),
+        bHeavy ? 1 : 0, Result.bOk ? 1 : 0, Result.Reason.IsNone() ? TEXT("-") : *Result.Reason.ToString(),
+        Result.Outcome.IsNone() ? TEXT("-") : *Result.Outcome.ToString(), Result.TargetId.IsNone() ? TEXT("-") : *Result.TargetId.ToString(),
+        Result.Damage, Result.TargetVitality);
+    if (AMarburgumPlayerController* Owner = Cast<AMarburgumPlayerController>(GetController()))
+    {
+        Owner->ClientReceiveCombatResult(Result);
+    }
+}
+
+void AMarburgumCharacter::MulticastImpact_Implementation(FVector_NetQuantize At, FName Outcome, bool bHeavy, bool bFloored)
+{
+    MarburgumFightSound::PlayImpact(GetWorld(), At, Outcome, bHeavy, bFloored);
+}
+
+FMarburgumFightPose AMarburgumCharacter::GetFightPose() const
+{
+    const UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(GetCharacterMovement());
+    if (!Movement || (!HasAuthority() && !IsLocallyControlled()))
+    {
+        return FightPose;
+    }
+    FMarburgumFightPose Pose;
+    Pose.SwingSeq = Movement->GetSwingSeq();
+    Pose.bHeavy = Movement->WasLastSwingHeavy();
+    Pose.bGuarding = Movement->IsGuarding();
+    Pose.bDown = Movement->IsDown();
+    return Pose;
+}
+
+void AMarburgumCharacter::UpdateFightPresentation()
+{
+    UAnimInstance* Anim = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
+    if (Seating.Vehicle)
+    {
+        FightAnimator.Stop(Anim);
+        return;
+    }
+    // A body that drowned is the swim clip's until the server takes it out of the water.
+    const bool bSwimming = GetCharacterMovement()->IsSwimming();
+    FMarburgumFightPose Pose = GetFightPose();
+    Pose.bDown = Pose.bDown && !bSwimming;
+    FightAnimator.Update(Anim, Pose, GetVelocity().Size2D(), !bSwimming);
+}
+
+FName AMarburgumCharacter::GetPlayingFightClip() const
+{
+    return FightAnimator.GetPlaying(GetMesh() ? GetMesh()->GetAnimInstance() : nullptr);
 }
 
 void AMarburgumCharacter::StartRunning()

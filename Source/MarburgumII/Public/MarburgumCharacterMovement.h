@@ -3,15 +3,21 @@
 #include "CoreMinimal.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/CharacterMovementReplication.h"
+#include "MarburgumCombatTypes.h"
 #include "MarburgumInteractionTypes.h"
 #include "MarburgumCharacterMovement.generated.h"
 
 class AMarburgumPlayerState;
 
-/** Client -> server move data: the engine's, plus the stamina the client predicted at the end of the move. */
+/**
+ * Client -> server move data: the engine's, plus the stamina the client predicted at the end of the move and the
+ * latest swing it has asked for (a count, so a move the engine skips cannot lose one).
+ */
 struct FMarburgumNetworkMoveData : public FCharacterNetworkMoveData
 {
     float Stamina = 0.f;
+    uint8 SwingRequest = 0;
+    bool bSwingHeavy = false;
 
     virtual void ClientFillNetworkMoveData(const FSavedMove_Character& ClientMove, ENetworkMoveType MoveType) override;
     virtual bool Serialize(UCharacterMovementComponent& CharacterMovement, FArchive& Ar, UPackageMap* PackageMap, ENetworkMoveType MoveType) override;
@@ -25,12 +31,17 @@ private:
     FMarburgumNetworkMoveData Moves[3];
 };
 
-/** Server -> client move response: a correction also carries the server's stamina, winded and down state. */
+/**
+ * Server -> client move response: a correction also carries the server's stamina, winded and down state, and
+ * how long until its next swing.
+ */
 struct FMarburgumMoveResponseDataContainer : public FCharacterMoveResponseDataContainer
 {
     float Stamina = 0.f;
     bool bWinded = false;
     bool bDown = false;
+    float SwingCooldown = 0.f;
+    uint8 SwingsHandled = 0;
 
     virtual void ServerFillResponseData(const UCharacterMovementComponent& CharacterMovement, const FClientAdjustment& PendingAdjustment) override;
     virtual bool Serialize(UCharacterMovementComponent& CharacterMovement, FArchive& Ar, UPackageMap* PackageMap) override;
@@ -54,6 +65,16 @@ struct FMarburgumMoveResponseDataContainer : public FCharacterMoveResponseDataCo
  * climbs out. While the mouth is under, stamina is the breath being held; none left is drowning, which
  * takes all vitality. A body with none is down: the server takes it to the recovery point, it cannot
  * move, and after RecoverySeconds it is alive again with full vitality and breath.
+ *
+ * Fighting (ADR-041, the original's attack, set_guard and tick_combat): a held guard (G) travels as a move
+ * flag; a jab (F) or committed swing (R) as a request count in every move's data, thrown by the first move
+ * simulated with a new count. Every machine that simulates the move spends the same stamina and starts the same
+ * cooldown; a swing needs its stamina and an expired cooldown, and is refused while down
+ * or while somebody's blow is still going through the body (a stagger only the server knows). Holding a
+ * guard drains stamina instead of resting; it drops while a swing is being thrown and when the bar is empty.
+ * The server alone picks who a swing reaches (AMarburgumCharacter) and applies blows to this body:
+ * ReceiveBlowAuthority pays for a guard, takes vitality and staggers, and a body with none left is down,
+ * as a drowned one is.
  *
  * Condition: the server mirrors the simulation into AMarburgumPlayerState (whole points, owner-only)
  * and adopts the saved condition the world authority restores there. Time-discrepancy detection and
@@ -81,8 +102,35 @@ public:
     bool IsInWaterBody() const { return MovementMode == MOVE_Swimming; }
     bool IsSubmerged() const { return bSubmerged; }
 
-    /** No vitality: drowned. The body does not move until it recovers. */
+    /** No vitality: drowned or beaten. The body does not move until it recovers. */
     bool IsDown() const { return bDown; }
+
+    // ---- Fighting (ADR-041) ----
+
+    /** Owning client: hold to keep a guard up (sent as a move flag). */
+    void SetWantsToGuard(bool bWants) { bWantsToGuard = bWants; }
+    bool WantsToGuard() const { return bWantsToGuard; }
+
+    /** Owning client: throw a jab or a committed swing in the next move; ignored while one is still unthrown. */
+    void RequestSwing(EMarburgumSwing Swing);
+
+    /** The simulation's view: the guard is up in the last move. Predicted on the owner. */
+    bool IsGuarding() const { return bGuarding; }
+    /** Seconds until the next swing may be thrown, and of the swing being thrown now. */
+    float GetSwingCooldown() const { return SwingCooldown; }
+    bool IsSwinging() const { return SwingRemaining > 0.f; }
+    /** Counts accepted swings (fresh moves only, never replays), and whether the last one was committed. */
+    uint8 GetSwingSeq() const { return SwingSeq; }
+    bool WasLastSwingHeavy() const { return bLastSwingHeavy; }
+
+    /** Exact vitality as this machine simulates it (the server's is authoritative). */
+    float GetVitality() const { return Vitality; }
+
+    /**
+     * Server only: a blow from somebody else lands on this body (apply_damage). Pays for a held guard if it
+     * can, takes vitality, staggers, and puts the body down when none is left. Returns the outcome word.
+     */
+    const TCHAR* ReceiveBlowAuthority(float Damage, float StaggerSeconds, bool bHeavy);
 
     /** The surface of the water the body is in, or 0 when it is not in water. */
     float GetWaterSurfaceZ() const;
@@ -110,8 +158,11 @@ public:
     virtual void OnTimeDiscrepancyDetected(float CurrentTimeDiscrepancy, float LifetimeRawTimeDiscrepancy, float Lifetime,
         float CurrentMoveError) override;
 
+    /** Server: the swing request from the move being run, then the engine's MoveAutonomous. */
+    virtual void MoveAutonomous(float ClientTimeStamp, float DeltaTime, uint8 CompressedFlags, const FVector& NewAccel) override;
+
     /** Saved-move hooks: the start of a move (to undo it when moves combine) and adopting a correction. */
-    void RestoreStaminaForCombine(float StartStamina, bool bStartWinded);
+    void RestoreStaminaForCombine(float StartStamina, bool bStartWinded, float StartSwingCooldown, float StartSwingRemaining);
 
 protected:
     virtual void UpdateFromCompressedFlags(uint8 Flags) override;
@@ -137,6 +188,9 @@ private:
     bool TryClimbOut(float SurfaceZ, const FVector& Stroke);
     void GoDown(const TCHAR* Why);
     void TickRecoveryAuthority(float DeltaTime);
+    /** attack(): this move's swing, if any, accepted or refused by the rules; the server also resolves it. */
+    void UpdateSwing(float DeltaSeconds);
+    void LogCombat(const TCHAR* Event, const FString& Detail) const;
 
     FMarburgumNetworkMoveDataContainer MoveDataContainer;
     FMarburgumMoveResponseDataContainer MoveResponseContainer;
@@ -155,6 +209,20 @@ private:
     float Vitality = 100.f;
     bool bAtRecoveryPoint = false;
     float RecoveryRemaining = 0.f;
+
+    // Fighting (ADR-041). Simulated on every machine that runs a move, except the stagger, which only the
+    // server knows (a refusal it causes reaches the client as a correction).
+    bool bWantsToGuard = false;
+    // Input: requests made (wraps), and whether the latest is a committed swing. State: requests acted on.
+    uint8 SwingRequest = 0;
+    bool bSwingRequestHeavy = false;
+    uint8 SwingsHandled = 0;
+    bool bGuarding = false;
+    float SwingCooldown = 0.f;
+    float SwingRemaining = 0.f;
+    uint8 SwingSeq = 0;
+    bool bLastSwingHeavy = false;
+    float StaggerRemaining = 0.f;
 
     bool bConditionSynced = false;
     int32 AdoptedRestoreCount = 0;

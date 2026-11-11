@@ -16,7 +16,7 @@ use std::process::ExitCode;
 const USAGE: &str = "\
 Usage: mb2 <command>
 
-  validate <ui-ontology|chat|gameplay|vehicles|python-free|all>
+  validate <ui-ontology|chat|gameplay|vehicles|combat|python-free|all>
                          Source-only contract checks (no Unreal build).
   engine-version <engine_root>
                          Check Engine/Build/Build.version against .unreal-engine-version.

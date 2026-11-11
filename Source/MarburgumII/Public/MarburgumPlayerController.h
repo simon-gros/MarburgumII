@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "MarburgumChatTypes.h"
+#include "MarburgumCombatTypes.h"
 #include "MarburgumGameState.h"
 #include "MarburgumInteractionTypes.h"
 #include "MarburgumPlayerController.generated.h"
@@ -14,6 +15,8 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FMarburgumRequestResultEvent, const FGuid& 
 DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumInteractionReceiptEvent, const FMarburgumInteractionReceipt& /*Receipt*/);
 /** The server's answer to getting into or out of a car: action enter|exit, a wire reason when refused. */
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FMarburgumVehicleResultEvent, bool /*bOk*/, FName /*Action*/, FName /*Reason*/);
+/** The server's ruling on one of this player's swings (ADR-041). */
+DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumCombatResultEvent, const FMarburgumCombatResult& /*Result*/);
 
 /**
  * Player-owned RPC boundary: the server derives sender identity from PlayerState,
@@ -94,6 +97,13 @@ public:
 
     /** Client-local notification when the server answers a vehicle request. */
     FMarburgumVehicleResultEvent OnVehicleResult;
+
+    /** Client-local notification when the server rules on one of this player's swings. */
+    FMarburgumCombatResultEvent OnCombatResult;
+
+    /** Server -> owning client: how a swing went. Sent by the pawn, which rules it. */
+    UFUNCTION(Client, Reliable)
+    void ClientReceiveCombatResult(const FMarburgumCombatResult& Result);
 
     /** Server-approved deliveries only. Local history is bounded and nonpersistent. */
     UPROPERTY(BlueprintAssignable, Category = "Marburgum|Chat")
