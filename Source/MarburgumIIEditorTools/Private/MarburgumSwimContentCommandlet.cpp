@@ -19,6 +19,7 @@
 #include "FileHelpers.h"
 #include "GameFramework/PhysicsVolume.h"
 #include "Landscape.h"
+#include "MarburgumGodotClip.h"
 #include "Misc/PackageName.h"
 #include "UObject/Package.h"
 
@@ -399,6 +400,12 @@ namespace
             }
         }
 
+        // The template's foot IK pulls each foot to its IK bone, so those bones follow the drawn feet (ADR-042).
+        if (!MarburgumGodotClip::FollowFeetWithIkBones(Reference, Frames, Positions, Rotations, Scales, TEXT("MB2SWIM")))
+        {
+            return false;
+        }
+
         UObject* Existing = nullptr;
         UPackage* Package = PreparePackage(Clip.Package, UAnimSequence::StaticClass(), Existing);
         UAnimSequence* Sequence = Cast<UAnimSequence>(Existing);
@@ -418,7 +425,7 @@ namespace
         Controller.RemoveAllBoneTracks(false);
         Controller.SetFrameRate(FFrameRate(FramesPerSecond, 1), false);
         Controller.SetNumberOfFrames(FFrameNumber(Frames), false);
-        for (const TPair<FName, FString>& Pair : MannequinToGodot)
+        for (const TPair<FName, TArray<FQuat>>& Pair : Rotations)
         {
             Controller.AddBoneCurve(Pair.Key, false);
             if (!Controller.SetBoneTrackKeys(Pair.Key, Positions[Pair.Key], Rotations[Pair.Key], Scales[Pair.Key], false))
@@ -440,7 +447,7 @@ namespace
             return false;
         }
         UE_LOG(LogMarburgumSwim, Display, TEXT("MB2SWIM saved %s frames=%d length=%.2fs tracks=%d"), Clip.Package, Frames,
-            Sequence->GetPlayLength(), MannequinToGodot.Num());
+            Sequence->GetPlayLength(), Rotations.Num());
 
         // Evidence: limb directions read back from the saved clip, in the original's model axes (x right,
         // y up, z back), to compare with the same directions computed from the original's own clip.
@@ -458,7 +465,7 @@ namespace
             for (int32 Bone = 0; Bone < BoneCount; ++Bone)
             {
                 FTransform Local = LocalRest[Bone];
-                if (MannequinToGodot.Contains(Reference.GetBoneName(Bone)))
+                if (Rotations.Contains(Reference.GetBoneName(Bone)))
                 {
                     Sequence->GetBoneTransform(Local, FSkeletonPoseBoneIndex(Bone), FAnimExtractContext(T), true);
                 }

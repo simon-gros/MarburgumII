@@ -56,6 +56,8 @@ private:
     FString HudState() const;
     void ExpectHud(const TCHAR* Prefix, const TCHAR* What);
     void Advance(int32 Next, double Now);
+    void SetWaterSheetHidden(bool bHidden);
+    double FeetUnderPelvisCm() const;
     void Report(const TCHAR* Event, double Now);
     void Pass();
     void Fail(const FString& Reason);

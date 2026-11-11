@@ -418,4 +418,70 @@ namespace MarburgumGodotClip
                 Torso.X, Torso.Y, Torso.Z, ArmL.X, ArmL.Y, ArmL.Z, ArmR.X, ArmR.Y, ArmR.Z, LegL.X, LegL.Y, LegL.Z);
         }
     }
+
+    bool FollowFeetWithIkBones(const FReferenceSkeleton& Reference, int32 Frames, TMap<FName, TArray<FVector>>& Positions,
+        TMap<FName, TArray<FQuat>>& Rotations, TMap<FName, TArray<FVector>>& Scales, const TCHAR* LogTag)
+    {
+        const int32 BoneCount = Reference.GetRawBoneNum();
+        const TArray<FTransform>& LocalRest = Reference.GetRawRefBonePose();
+        const int32 IkRoot = Reference.FindRawBoneIndex(TEXT("ik_foot_root"));
+        const TPair<FName, FName> Feet[] = { { TEXT("foot_l"), TEXT("ik_foot_l") }, { TEXT("foot_r"), TEXT("ik_foot_r") } };
+        if (IkRoot == INDEX_NONE)
+        {
+            UE_LOG(LogMarburgumGodotClip, Error, TEXT("%s mannequin has no bone ik_foot_root"), LogTag);
+            return false;
+        }
+        for (const TPair<FName, FName>& Foot : Feet)
+        {
+            if (Reference.FindRawBoneIndex(Foot.Key) == INDEX_NONE || Reference.FindRawBoneIndex(Foot.Value) == INDEX_NONE)
+            {
+                UE_LOG(LogMarburgumGodotClip, Error, TEXT("%s mannequin has no bone %s or %s"), LogTag, *Foot.Key.ToString(),
+                    *Foot.Value.ToString());
+                return false;
+            }
+        }
+        // Any keys the IK bones had are replaced; they are written after every frame is read.
+        for (const TPair<FName, FName>& Foot : Feet)
+        {
+            Positions.Remove(Foot.Value);
+            Rotations.Remove(Foot.Value);
+            Scales.Remove(Foot.Value);
+        }
+        TMap<FName, TArray<FVector>> IkPositions;
+        TMap<FName, TArray<FQuat>> IkRotations;
+        for (int32 Frame = 0; Frame <= Frames; ++Frame)
+        {
+            // Component space at this frame: keyed bones take their keys, the rest their reference pose.
+            TArray<FTransform> Global;
+            Global.SetNum(BoneCount);
+            for (int32 Bone = 0; Bone < BoneCount; ++Bone)
+            {
+                const FName Name = Reference.GetBoneName(Bone);
+                FTransform Local = LocalRest[Bone];
+                if (const TArray<FQuat>* Keyed = Rotations.Find(Name))
+                {
+                    Local = FTransform((*Keyed)[Frame], Positions[Name][Frame], Scales[Name][Frame]);
+                }
+                const int32 Parent = Reference.GetRawParentIndex(Bone);
+                Global[Bone] = Parent == INDEX_NONE ? Local : Local * Global[Parent];
+            }
+            for (const TPair<FName, FName>& Foot : Feet)
+            {
+                const int32 Bone = Reference.FindRawBoneIndex(Foot.Value);
+                const int32 Parent = Reference.GetRawParentIndex(Bone);
+                const FTransform Local = Global[Reference.FindRawBoneIndex(Foot.Key)].GetRelativeTransform(Global[Parent]);
+                IkPositions.FindOrAdd(Foot.Value).Add(Local.GetLocation());
+                IkRotations.FindOrAdd(Foot.Value).Add(Local.GetRotation().GetNormalized());
+            }
+        }
+        for (const TPair<FName, FName>& Foot : Feet)
+        {
+            const FVector Scale = LocalRest[Reference.FindRawBoneIndex(Foot.Value)].GetScale3D();
+            Positions.Add(Foot.Value, IkPositions[Foot.Value]);
+            Rotations.Add(Foot.Value, IkRotations[Foot.Value]);
+            Scales.Add(Foot.Value, TArray<FVector>());
+            Scales[Foot.Value].Init(Scale, Frames + 1);
+        }
+        return true;
+    }
 }

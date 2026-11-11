@@ -58,7 +58,7 @@ Per [ADR-008](DECISIONS.md) the status is `implemented_awaiting_owner_playtest`.
 
 ## Captures
 
-The two swimming captures are from the ADR-033 rerun (`scripts/swim-smoke-linux.sh editor`, 2026-11-10, PASS): the prone pose with the body lifted 32 cm. The treading capture is from the ADR-036 rerun (editor, PASS), half a second after letting go. The others are from the packaged run above.
+The swimming and treading captures, and the two with the river sheet hidden, are from the ADR-042 rerun (`scripts/swim-smoke-linux.sh editor`, 2026-11-11, PASS): drawn feet 112–139 cm above the capsule's feet against a pelvis at 126 cm while stroking, 2–3 cm against 80 cm while treading. Before ADR-042 the foot IK held the stroke's feet 85 cm under the pelvis. The others are from the packaged run above.
 
 | | |
 | --- | --- |
@@ -68,6 +68,8 @@ The two swimming captures are from the ADR-033 rerun (`scripts/swim-smoke-linux.
 | Under, camera at the surface, HOLDING BREATH, stamina 83 | Wading out, the clip blending out |
 | ![treading](Captures/stage1-swim/swim-w-treading.jpg) | |
 | Let go: upright, treading water, slipping under (ADR-036) | |
+| ![swimming, river hidden](Captures/stage1-swim/swim-w-swimming-xray.jpg) | ![treading, river hidden](Captures/stage1-swim/swim-w-treading-xray.jpg) |
+| The stroke with the river sheet hidden: the legs lie along the body (ADR-042) | Treading water with the river sheet hidden |
 | ![down](Captures/stage1-swim/swim-w-down.jpg) | ![recovered](Captures/stage1-swim/swim-w2-recovered.jpg) |
 | Drowned, at the recovery point, DROWNED · 58 s | Phase 2, recovered and walking |
 

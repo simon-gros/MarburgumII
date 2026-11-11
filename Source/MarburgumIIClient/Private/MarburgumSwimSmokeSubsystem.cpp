@@ -1,6 +1,9 @@
 #include "MarburgumSwimSmokeSubsystem.h"
 
+#include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Engine/GameInstance.h"
+#include "Engine/StaticMeshActor.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "HAL/FileManager.h"
@@ -34,6 +37,10 @@ namespace MarburgumSwimSmoke
     // Swim speed is 1.1 m/s; generous for the start of a stroke and frame timing.
     constexpr double SwimMin = 0.85;
     constexpr double SwimMax = 1.35;
+    // Feet against pelvis in the drawn pose (ADR-042): lying along the water the clip keeps them within
+    // about 20 cm of it; a standing stance has them about 90 cm under it.
+    constexpr double LyingFeetUnderPelvisMaxCm = 40.0;
+    constexpr double UprightFeetUnderPelvisMinCm = 60.0;
     // A minute of breath per bar: ten seconds under costs about 16.7 points.
     constexpr double UnderSeconds = 10.0;
     constexpr int32 UnderCostMin = 13;
@@ -229,6 +236,52 @@ void UMarburgumSwimSmokeSubsystem::Report(const TCHAR* Event, double Now)
         Moving && Moving->IsSubmerged() ? 1 : 0, Moving ? Moving->GetStamina() : -1.f, Condition.bSwimming ? 1 : 0,
         Condition.bSubmerged ? 1 : 0, Condition.Stamina, Condition.Vitality, Condition.RecoverySeconds,
         Character && Character->IsSwimClipPlaying() ? 1 : 0, Character && Character->IsTreadingWater() ? 1 : 0, *HudState());
+    if (Character)
+    {
+        // The drawn pose, after the whole animation graph: bone heights above the capsule's feet. Lying
+        // along the water the feet are about as high as the pelvis; upright they are a metre under it.
+        const USkeletalMeshComponent* Mesh = Character->GetMesh();
+        const double Feet = At.Z - Character->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+        const auto Height = [Mesh, Feet](const TCHAR* Bone) { return Mesh->GetBoneLocation(Bone).Z - Feet; };
+        MB2_SWIM_LOG("event=%s_pose pelvis=%.0f head=%.0f foot_l=%.0f foot_r=%.0f hand_l=%.0f", Event, Height(TEXT("pelvis")),
+            Height(TEXT("head")), Height(TEXT("foot_l")), Height(TEXT("foot_r")), Height(TEXT("hand_l")));
+    }
+}
+
+double UMarburgumSwimSmokeSubsystem::FeetUnderPelvisCm() const
+{
+    // The drawn pose after the whole animation graph, foot IK included (ADR-042).
+    const AMarburgumCharacter* Character = Body();
+    if (!Character)
+    {
+        return -1.0;
+    }
+    const USkeletalMeshComponent* Mesh = Character->GetMesh();
+    const double Feet = 0.5 * (Mesh->GetBoneLocation(TEXT("foot_l")).Z + Mesh->GetBoneLocation(TEXT("foot_r")).Z);
+    return Mesh->GetBoneLocation(TEXT("pelvis")).Z - Feet;
+}
+
+void UMarburgumSwimSmokeSubsystem::SetWaterSheetHidden(bool bHidden)
+{
+    // Evidence only: the river sheet is opaque, so the legs are drawn in a second capture without it.
+    // The sheet is the one wide static mesh whose top is the water surface.
+    UWorld* World = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr;
+    const UMarburgumCharacterMovement* Moving = Movement();
+    if (!World || !Moving)
+    {
+        return;
+    }
+    const float Surface = Moving->GetWaterSurfaceZ();
+    for (TActorIterator<AStaticMeshActor> It(World); It; ++It)
+    {
+        FVector Origin;
+        FVector Extent;
+        It->GetActorBounds(false, Origin, Extent);
+        if (FMath::Abs(Origin.Z + Extent.Z - Surface) < 10.0 && Extent.X > 2000.0 && Extent.Y > 2000.0 && Extent.Z < 50.0)
+        {
+            It->SetActorHiddenInGame(bHidden);
+        }
+    }
 }
 
 bool UMarburgumSwimSmokeSubsystem::Tick(float DeltaTime)
@@ -321,6 +374,8 @@ void UMarburgumSwimSmokeSubsystem::TickW(double Now)
         Expect(Condition.bSwimming && !Condition.bSubmerged, TEXT("server_swimmer_not_at_surface"));
         Expect(Character->IsSwimClipPlaying(), TEXT("swim_clip_not_playing"));
         Expect(!Character->IsTreadingWater(), TEXT("treading_while_swimming"));
+        // Lying along the water: the feet about as high as the pelvis, not a standing stance under it.
+        Expect(FeetUnderPelvisCm() < LyingFeetUnderPelvisMaxCm, FString::Printf(TEXT("legs_hanging=%.0f"), FeetUnderPelvisCm()));
         ExpectHud(TEXT("SWIMMING"), TEXT("swimming"));
         Shot(TEXT("swimming"));
         Advance(30, Now);
@@ -332,7 +387,19 @@ void UMarburgumSwimSmokeSubsystem::TickW(double Now)
             Local->SetControlRotation(FRotator(-6.f, 90.f, 0.f));
         }
         if (Now - StepSeconds < 0.6) return;
+        Report(TEXT("swimming_side"), Now);
         Shot(TEXT("swimming-side"));
+        Advance(33, Now);
+        return;
+    case 33:
+        // The same stroke with the river sheet hidden, so the legs show.
+        SetWaterSheetHidden(true);
+        if (Now - StepSeconds < 0.2) return;
+        Shot(TEXT("swimming-xray"));
+        Advance(34, Now);
+        return;
+    case 34:
+        SetWaterSheetHidden(false);
         Advance(3, Now);
         return;
     case 3:
@@ -351,7 +418,19 @@ void UMarburgumSwimSmokeSubsystem::TickW(double Now)
         }
         if (Now - StepSeconds < 0.5) return;
         Report(TEXT("treading"), Now);
+        // Upright: the feet hang under the pelvis.
+        Expect(FeetUnderPelvisCm() > UprightFeetUnderPelvisMinCm, FString::Printf(TEXT("not_upright=%.0f"), FeetUnderPelvisCm()));
         Shot(TEXT("treading"));
+        Advance(35, Now);
+        return;
+    case 35:
+        SetWaterSheetHidden(true);
+        if (Now - StepSeconds < 0.2) return;
+        Shot(TEXT("treading-xray"));
+        Advance(36, Now);
+        return;
+    case 36:
+        SetWaterSheetHidden(false);
         Advance(32, Now);
         return;
     case 32:

@@ -66,6 +66,17 @@ namespace MarburgumGodotClip
      */
     FVector SampleTimed(const TArray<FVector>& Keys, const TArray<double>& Times, double T);
 
+    /**
+     * Keys ik_foot_l and ik_foot_r onto the feet the clip draws (ADR-042). The template animation blueprint's
+     * foot IK (CR_Mannequin_FootIK) runs after the montage slot and pulls each foot to its IK bone; a clip
+     * that does not key those bones leaves them at the reference pose, under a standing body, so the legs
+     * are dragged down to a standing stance whatever the clip does. Positions, Rotations and Scales hold
+     * the clip's local keys per bone, Frames + 1 of each; a bone without keys is at its reference pose.
+     * Returns false (after logging under LogTag) when the skeleton lacks the bones.
+     */
+    bool FollowFeetWithIkBones(const FReferenceSkeleton& Reference, int32 Frames, TMap<FName, TArray<FVector>>& Positions,
+        TMap<FName, TArray<FQuat>>& Rotations, TMap<FName, TArray<FVector>>& Scales, const TCHAR* LogTag);
+
     /** Builds the clip on SK_Mannequin and saves it; nullptr (after logging under LogTag) on failure. */
     UAnimSequence* Build(const FClip& Clip, const TCHAR* LogTag);
 
