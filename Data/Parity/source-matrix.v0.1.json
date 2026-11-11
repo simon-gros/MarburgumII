@@ -3,7 +3,7 @@
   "scope": "Design parity matrix: source-of-intent, not an import manifest or proof of working functionality",
   "original_repository": "simon-gros/magna-raedarum-marburgum",
   "target_repository": "simon-gros/MarburgumII",
-  "source_reference": "original/main reviewed 2026-11-08; MarburgumII implementation statuses reviewed 2026-11-11 at af2d0b3",
+  "source_reference": "original/main as reviewed 2026-11-08; MarburgumII reconciled through 2026-11-11 19:52 UTC (976f80c9), including ADR-040–045",
   "rules": [
     "Preserve original Marburgum gameplay identity by default.",
     "Rebuild runtime technology, networking and implementation rather than copying code.",
@@ -12,7 +12,7 @@
     "Any intentional redesign requires an ADR and explicit parity-matrix update.",
     "Explicit exclusions override original parity: no wanted stars, wanted levels, police pursuit/chases, or generated talent UI.",
     "Every major playable feature requires personal in-game owner playtest and recorded approval.",
-    "The default launch world is currently original Unreal /Game/World/lent. TurboSquid product 1639711 is an unpurchased commercial candidate, never an automatic default or public raw source; evaluate under license/period/geospatial/gameplay/owner gate."
+    "Current default /Game/World/lent now spans nine original 512 m windows with survey-based LiDAR ground and OSM paved collision (ADR-040/045). Reverted ADR-026 concerned LiDAR-generated building-map replacement, not use of LiDAR terrain heights. TurboSquid 1639711 remains unpurchased candidate requiring separate license and owner-approved migration."
   ],
   "entries": [
     {
@@ -26,9 +26,9 @@
         "project/data/landmarks.json"
       ],
       "intent": "A recognizably Maribor-based 1990s fictional city with the Drava, districts, places, buildings and route geography.",
-      "migration": "Current launch map is the original Unreal /Game/World/lent (ADR-027), with repaired facades/roofs (ADR-034). LiDAR-shell replacement reverted; paid TurboSquid source 1639711 is a future candidate pending license, 1990s geospatial/mission crosswalk and owner approval.",
+      "migration": "ADR-027 remains one /Game/World/lent default, now extended by ADR-040/045 to a 1,536 m square: nine original 512 m windows, 870 closed building shells (751 added), LiDAR 2014 heightfield, OSM collision paving, neighbouring Drava/bridges. 4,089,551 saved paving collision samples and selected editor-mode game smokes passed; streaming/World Partition, packaged performance, 1990s corrections and owner approval pending. ADR-026 generated LiDAR building-shell replacement reverted; paid TurboSquid model remains unpurchased candidate.",
       "stage": "1-3",
-      "status": "original_unreal_lent_map_active_commercial_candidate_unpurchased_owner_acceptance_pending",
+      "status": "nine_original_windows_survey_ground_closed_buildings_editor_verified_owner_and_perf_pending",
       "planned_geometry_source": "Data/World/source-selection.v0.1.json"
     },
     {
@@ -53,9 +53,9 @@
         "project/data/population_groups.json"
       ],
       "intent": "Individual NPCs and broader simulated community with neighborhoods, schedules, social roles and contextual reactions.",
-      "migration": "Original Lent riverside angler is an interactable first mission contact; the original's Lent fight cast (Belligerent drinker, Evening walker, Newspaper reader) stands at its authored spots with the original's fight/avoid/wander behaviour (ADR-041). Wider city virtual population and NPC schedules are not yet implemented.",
+      "migration": "Original Lent angler, three fight cast NPCs and new ADR-044 ambient street people using author-owned groups, looks and decision tables plus independent spawn/cull and car collision logic. Pavement walk graph, server pedestrian replication, reactions to fights, body and run-over, panic/dodge are editor-tested with one client; staged multi-client, density, schedules and owner review are pending.",
       "stage": "1-3",
-      "status": "original_angler_first_npc_awaiting_owner_playtest"
+      "status": "angler_three_fighters_and_server_street_pedestrians_one_client_editor_verified"
     },
     {
       "id": "skills",
@@ -154,9 +154,9 @@
         "docs/COMBAT_ROADMAP.md"
       ],
       "intent": "Close-quarters fistfights with a jab, a committed swing and a held guard paid in stamina; NPCs that answer violence (a hostile fights whoever hits it, civilians step away); a fight ends at incapacitated, never death.",
-      "migration": "Original combat numbers and fight rules in Data/Gameplay/combat.v0.1.json and the shared contract; server-ruled swings and guard in the predicted movement; the Lent fight cast (drinker, walker, reader) as mannequin fighters at their original spots; the original guard/jab/swing clips; CC0 impact sounds; beaten -> down -> recovery (ADR-041). Redesign: a downed NPC gets up after 60 s. GTA hit/get-up clips and fight sounds and the Unreal port's wanted level and police not imported. No weapons, perception, consequences or NPC pathfinding.",
+      "migration": "ADR-041 original jab/heavy/guard, stamina/cooldowns, server target and damage, Lent fighters, down/recovery, procedural animations and Kenney CC0 sounds; earlier packaged two-client smoke passed. ADR-043 corrects post-graph foot IK (tested in editor); new nine-window map needs fresh packaged run. No PvP, weapons, wanted/police, remote perception or broader consequences.",
       "stage": "1-3",
-      "status": "original_fight_rules_and_lent_cast_first_slice_awaiting_owner_playtest"
+      "status": "original_unarmed_fighting_packaged_two_client_smoke_ik_pose_editor_verified_owner_pending"
     },
     {
       "id": "vehicles",
@@ -167,9 +167,9 @@
         "docs/PHYSICS_MOVEMENT_VEHICLES_ROADMAP.md"
       ],
       "intent": "Period-appropriate driving, roads, public transit, vehicle state, logistics and movement convenience.",
-      "migration": "Original five vehicle definitions and authored Lent hatchback; ported procedural bodies/clips, four-raycast server dynamics, seat/door RPCs, replicated driving and passenger, km/h UI (ADR-039). No car persistence, ownership, fuel, traffic, damage or rights-cleared audio.",
+      "migration": "ADR-039 first authored car and dedicated server driving with seats/door/camera; ADR-040 parks on paved carriageway, ADR-043 fixes generated foot IK clip and ADR-044 applies server car/pedestrian strike/dodge. Earlier packaged vehicle smoke passed, new composite/collision and street scenarios only editor-tested. Vehicle save/ownership/fuel/traffic/physical damage/audio still absent.",
       "stage": "1-3",
-      "status": "five_car_catalogue_server_driving_first_slice_awaiting_owner_playtest"
+      "status": "server_driving_carriageway_run_over_and_corrected_ik_editor_street_pending"
     },
     {
       "id": "weather_time",
@@ -215,9 +215,9 @@
         "docs/PLAYER_EXPERIENCE_PLATFORM_QUALITY_ROADMAP.md"
       ],
       "intent": "Preserve original low-clutter HUD semantics, contextual prompts/location banner/objective/condition and notifications plus Character/Skills/Inventory/Journal, rebuilt immediately as a premium graphical, responsive UE 5.8.3 client interface for genuine public-facing gameplay captures. Module IDs, authority provenance, privacy/focus policy, status feedback, and later player layout profiles use the independent UI/HUD ontology.",
-      "migration": "UMG gallery/connection shell, live chat, receipt prompt/location/objective/condition/swim and vehicle status, first Character/Inventory/Journal. Skills, Settings, first-account login/character creator, UI scale/focus quality and owner acceptance still open.",
+      "migration": "UMG shell, chat, prompt/location/objective/condition/swim/car, first Character/Inventory/Journal; ADR-041 combat notification feed has real server event inputs. ADR-044 ambient people visible/reaction in world, not a shipped crowd UI; Skills/Settings, public login/creator, conflict-free F/R/G/E/chat/vehicle inputs and full responsive/owner acceptance pending.",
       "stage": "0C-3",
-      "status": "server_fed_umg_chat_hud_condition_swimming_vehicle_and_first_panels_awaiting_owner_playtest",
+      "status": "live_umg_with_combat_receipts_street_population_in_world_not_final_ui",
       "ontology": "Data/Ontology/ui_hud.v0.1.json",
       "roadmap": "Docs/UI_HUD_ROADMAP.md"
     },
