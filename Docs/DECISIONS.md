@@ -574,3 +574,40 @@ Bringing in the eight original window levels as they are would have brought thei
 - **Evidence in the street smoke.** `-MB2StreetProbe` also places a person on the pavement nearest the player with the river 4 m off it, scares them from the land side, so that running straight away would be into the Drava, and watches them for 6 s (`water_probe`, `water_probe_done … swam=`). `street_summary` counts people in the water (`swimming=`). `scripts/street-smoke-linux.sh` wants the graph checked for water, the probe dry and nobody ever swimming. With the step check switched off, the same run fails: the probe is in the river within 6 s.
 
 **Not covered.** An owner playtest and a staged (packaged) run. Water other than physics volumes marked as water. A body thrown into the river by a car swims to the nearest node it can reach; it does not choose the nearest bank.
+
+## ADR-047 — The original skill curve, saved with the character (accepted 2026-11-11)
+
+**Problem.** Fishing and missions award experience, and the original game already fixed how that experience becomes a level. Inventing a second curve would make the same XP mean two different things.
+
+**Decision.** Levels run from 0 to 1990. The step from level n to n + 1 costs `20 + round(0.06 * (n + 1)^1.5)` XP, and an exact half rounds to even. The arithmetic is integer-only (`MarburgumSkillCurve.h`), so the server and every client agree. The server stores XP per skill (schema 4, absent means none). Clients derive the level. The five skills in the catalogue are the original's registered set. Purchasable ranks stay out (ADR-004).
+
+**Evidence.** `Marburgum.Shared.SkillCurve` matches the original's own checks and golden totals (level 10 at 208 XP, level 100 at 4429, level 1990 at 4,282,249). `cargo test` covers the schema-4 store check.
+
+## ADR-048 — Fishing the Drava (accepted 2026-11-11)
+
+**Problem.** "Something in the Water" cannot be finished until a player can catch a fish and show it to the angler. The original's cast is a timed rule, not a menu.
+
+**Decision.**
+
+- A cast needs a fishing rod and a spot. The Lent bank spot and the Melje weir spot, their species, weights and XP, come from the original `fishing.json` unchanged.
+- The wait is the original's 1.5 to 4 seconds. The bite stays open for 1.8 seconds. A strike before the bite loses the cast (`too_early`). Another cast inside 1 second is refused (`too_soon`). Walking more than 75 cm ends the cast; that allowance is Marburgum II's.
+- The server draws the wait and the species. Landing the fish and its Fishing XP is one schema-4 commit. A cast itself is not saved. The purchasable patience, strike and reading-the-water ranks are excluded (ADR-004).
+- The player uses the same E interaction as everything else. The prompt follows the line: cast, wait, strike.
+
+**Evidence.** `Marburgum.Server.FishingRules` passes. The mission smoke (`scripts/mission-smoke-linux.sh`) casts three times: too early, a fish that gets away, then a bite and a catch.
+
+## ADR-049 — The Lent missions, including the first catch (accepted 2026-11-11)
+
+**Problem.** The angler already started "Something in the Water" and then stopped, because the next step needed a fish (ADR-017). The original's Lent missions after that, and the Kiosk 67 decision, were data without a rule.
+
+**Decision.**
+
+- One pure rule (`MarburgumMissionLogic.h`) decides what E means at a person or a place. Work already in hand comes before a new offer. A stage that is a decision cannot be completed by a plain interaction.
+- The server applies that answer in one commit: start, stage, choice, items, money, skill XP and the journal entry. Schema 4 adds completed missions, the choice taken, its outcome, flags, money and XP. Older stores still load.
+- The opening mission runs through: catch and show a fish, pull the cashbox from the debris, ask Petra Kralj, open the service room with the brass key, and show Vera Horvat the page. Completing it pays 50 and unlocks the Blue Ledger journal entry. Petra then offers Kiosk 67. Paying the customer's tab costs 20 (so 30 remains) and gives 15 Reputation.
+- The choice is a panel, not a chat line. Number keys pick an option. The Skills panel (K) shows level and progress from the server's XP. The journal and the pinned objective follow the saved stage, and a finished mission is no longer pinned.
+- People and places in the catalogue are spawned by the server on `/Game/World/lent`. Display text is the original's English.
+
+**Evidence.** `Marburgum.Server.MissionRules`, `Marburgum.Server.MissionChoices` and `Marburgum.Server.WorldStoreCondition` pass, with the other eight `Marburgum.*` tests (11/11). `mb2 validate gameplay` matches the generated catalogue. `scripts/mission-smoke-linux.sh editor` on port 27871 plays the opening mission and the kiosk decision against a dedicated server, restarts, and checks that money (30), Fishing XP (16), Reputation (15), the decision and the clues are still there and that the store did not change. Evidence: `Saved/MissionSmoke/20261111T213612Z`.
+
+**Not covered.** An owner playtest and a packaged run. The six later missions are in the catalogue and can be offered, but this slice does not play them through. Fishing has no animation or sound. Other cities' spots are not placed.
