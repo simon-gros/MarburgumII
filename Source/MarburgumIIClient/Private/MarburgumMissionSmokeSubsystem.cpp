@@ -458,7 +458,10 @@ void UMarburgumMissionSmokeSubsystem::TickCheck(double Now)
         if (Now - StepSeconds < SettleSeconds) return;
         const FMarburgumMissionState* First = Progress(FirstCatch);
         const FMarburgumMissionState* Kiosk = Progress(TEXT("kiosk_67_customer_stopped_coming"));
+        const FMarburgumMissionState* Names = Progress(TEXT("raeda_names_no_longer_match"));
         Expect(First && First->bCompleted, TEXT("first_catch_not_completed"));
+        Expect(Names && Names->bCompleted && Names->Choice == FName(TEXT("tell_maja")) && Names->Outcome == FName(TEXT("maja_informed")),
+            TEXT("names_decision_not_restored"));
         Expect(Kiosk && Kiosk->bCompleted && Kiosk->Choice == FName(TEXT("pay_tab")) && Kiosk->Outcome == FName(TEXT("tab_paid")),
             TEXT("kiosk_decision_not_restored"));
         Expect(State->GetMoney() == 30, FString::Printf(TEXT("money=%lld want 30"), State->GetMoney()));

@@ -158,6 +158,14 @@ fn check_missions(doc: &Value, key: &str) -> u8 {
         && kiosk["outcome"] == "tab_paid" && kiosk["journal_entry"] == "kiosk_67_missing_customer"
         && kiosk["flags"]["ledger_initials_recognized"] == true,
         format!("kiosk={kiosk}"));
+    let names = &doc["missions"][key]["raeda_names_no_longer_match"];
+    problems.expect(names["completed"] == true && names["stage"] == "decide_maja" && names["choice"] == "tell_maja"
+        && names["outcome"] == "maja_informed" && names["journal_entry"] == "blue_ledger_names_no_longer_match"
+        && names["flags"]["maja_informed"] == true,
+        format!("names={names}"));
+    for id in ["raeda_directory_copy", "successor_company_notice", "returned_raeda_envelope", "raeda_newspaper_clipping"] {
+        problems.expect(item(id) == 1, format!("{id}={}", item(id)));
+    }
     let money = doc["money"][key].as_i64().unwrap_or(0);
     let fishing = doc["skills"][key]["fishing"].as_i64().unwrap_or(0);
     let reputation = doc["skills"][key]["reputation"].as_i64().unwrap_or(0);
@@ -255,7 +263,9 @@ mod tests {
             "inventories": { "p": {
                 "fishing_rod": 1, "brass_key": 1, "drava_cashbox": 1,
                 "water_damaged_accounting_page": 1, "torn_gate_photograph": 1,
-                "faded_transport_ticket": 1, "carbon_copy_receipt": 1
+                "faded_transport_ticket": 1, "carbon_copy_receipt": 1,
+                "raeda_directory_copy": 1, "successor_company_notice": 1,
+                "returned_raeda_envelope": 1, "raeda_newspaper_clipping": 1
             }},
             "missions": { "p": {
                 "lent_first_catch": {
@@ -267,6 +277,12 @@ mod tests {
                     "choice": "pay_tab", "outcome": "tab_paid",
                     "journal_entry": "kiosk_67_missing_customer",
                     "flags": { "ledger_initials_recognized": true }
+                },
+                "raeda_names_no_longer_match": {
+                    "stage": "decide_maja", "started_revision": 6, "completed": true,
+                    "choice": "tell_maja", "outcome": "maja_informed",
+                    "journal_entry": "blue_ledger_names_no_longer_match",
+                    "flags": { "maja_informed": true, "investigation_private": false }
                 }
             }},
             "skills": { "p": { "fishing": 20, "reputation": 15 } },

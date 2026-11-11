@@ -145,6 +145,18 @@ step drava_cashbox_debris stage_completed
 step petra_kralj stage_completed
 step raeda_service_room stage_completed
 step vera_horvat mission_completed
+# Names No Longer Match (ADR-050): Vera offers it only once the first catch is done.
+step vera_horvat mission_started
+mv "$out_dir/client-step-vera_horvat.log" "$out_dir/client-step-vera_horvat-names.log" 2>/dev/null || true
+step raeda_directory_entry stage_completed
+step raeda_successor_sign stage_completed
+step marija_sever stage_completed
+step petra_kralj stage_completed
+mv "$out_dir/client-step-petra_kralj.log" "$out_dir/client-step-petra_kralj-names.log" 2>/dev/null || true
+step mariborski_glas_archive stage_completed
+# shellcheck disable=SC2046
+run names CHOICE mission_maja_koren $(shot names) -MB2MissionTarget=maja_koren \
+    -MB2MissionId=raeda_names_no_longer_match -MB2MissionChoice=tell_maja
 step petra_kralj mission_started
 mv "$out_dir/client-step-petra_kralj.log" "$out_dir/client-step-petra_kralj-kiosk.log" 2>/dev/null || true
 step kiosk_67_bus_regular stage_completed

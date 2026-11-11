@@ -610,4 +610,14 @@ Bringing in the eight original window levels as they are would have brought thei
 
 **Evidence.** `Marburgum.Server.MissionRules`, `Marburgum.Server.MissionChoices` and `Marburgum.Server.WorldStoreCondition` pass, with the other eight `Marburgum.*` tests (11/11). `mb2 validate gameplay` matches the generated catalogue. `scripts/mission-smoke-linux.sh editor` on port 27871 plays the opening mission and the kiosk decision against a dedicated server, restarts, and checks that money (30), Fishing XP (16), Reputation (15), the decision and the clues are still there and that the store did not change. Evidence: `Saved/MissionSmoke/20261111T213612Z`.
 
-**Not covered.** An owner playtest and a packaged run. The six later missions are in the catalogue and can be offered, but this slice does not play them through. Fishing has no animation or sound. Other cities' spots are not placed.
+**Not covered.** An owner playtest and a packaged run. Fishing has no animation or sound. The Melje yard and the Tabor and bank places sit outside the nine-window map, so those missions are not placed (ADR-050).
+
+## ADR-050 — Names No Longer Match, after the first catch (accepted 2026-11-11)
+
+**Problem.** Finishing "Something in the Water" is supposed to open the next story with Vera Horvat. The mission was in the catalogue, and the same rule could start it, but nothing played it through.
+
+**Decision.** No new rule. Once `lent_first_catch` is complete, talking to Vera starts `raeda_names_no_longer_match`. The directory, the successor's sign, Marija Sever's returned mail, Petra's clipping and the newspaper archive are the stages, in that order. Telling Maja what was found (`tell_maja`) completes it: outcome `maja_informed`, the Blue Ledger journal entry, and the papers stay in the character's custody. Before the first catch, the same talk is refused as a missing prerequisite. The Melje yard, Irena Vogrin and the bank desk stay unplaced: their original positions are outside the nine-window map, so the two missions after this one cannot be walked yet.
+
+**Evidence.** The editor mission smoke on port 27881 plays this chapter between Vera and the kiosk, then the restart still has the decision, the journal entry and the four papers. `Saved/MissionSmoke/20261111T215424Z`.
+
+**Not covered.** A packaged run and the owner playtest. Placing the Melje and Tabor content needs a wider map.
