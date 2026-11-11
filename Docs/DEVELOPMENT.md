@@ -80,6 +80,7 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --laz "$LAZ"
 ./scripts/swim-smoke-linux.sh         # Swimming (ADR-032): swim, sink, held breath, wade out, drown, recovery, saved wait, restart
 ./scripts/vehicle-smoke-linux.sh      # Driving (ADR-039): parked car, enter clip, driver + passenger, throttle, steer, brake, reverse, exits
 ./scripts/combat-smoke-linux.sh       # Fighting (ADR-041): the drinker fights back, guard, jab, heavy swing, too soon, NPC and player floored
+./scripts/street-smoke-linux.sh editor # Street people (ADR-044): pedestrian graph/spawn/walk, fights, incident responses, car run-over/dodge
 ```
 
 The smoke script starts one headless dedicated server on port 7777 (override with `MB2_SMOKE_PORT`). It runs one client through a refused mutation, an idempotent operation and a disconnect/reconnect, then two concurrent clients. Logs and `summary.txt` go to `Saved/NetSmoke/<UTC timestamp>/`. A nonzero exit means a failed expectation. Map generation is the editor-only C++ commandlet in `MarburgumIIEditorTools`; the PythonScriptPlugin and EditorScriptingUtilities plugins are disabled.
@@ -102,6 +103,24 @@ Server-side rules also have an editor automation test:
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -ExecCmds="Automation RunTests Marburgum;Quit" \
     -unattended -nullrhi -stdout -TestExit="Automation Test Queue Empty"   # Marburgum.Chat.TextPolicy, Marburgum.Server.MissionRules
 ```
+
+### Development qualifications for ADR-040–045 (11 November 2026)
+
+The commands above describe **regeneration order**, not proof that the whole map and all scripts pass as a single packaged release. The new default `/Game/World/lent` covers **nine 512 m original windows** in one 1,536 m square. Use an explicit original-game content root `$ORIGINAL` and locally available nine LiDAR LAZ tiles/orthophoto inputs. **Do not** commit unrelated licensed originals, full paid map source, raw proprietary files or private credentials when rebuilding.
+
+`lent-ground merge-buildings` must run before `MarburgumRebuildFacades`; the placed-building manifest must exist before generating ground and pedestrian walk graph. Generate ground/paving, then resample **all** Drava water volumes and re-place the hatchback after the ground changes. Regenerate swim, vehicle and combat animation assets after ADR-042/043's foot IK fixes before cooking. Include `Content/Marburgum/Street/lent_walk_graph.json` and any other non-`.uasset` staged game data in the source/cook hash manifest. `-Verify -Every=1` is the full paving check; record result counts and source SHA.
+
+**Evidence interpretation:**
+
+- ADR-040 first Lent-only pavement verification: **476,517** samples, before the expansion.
+- ADR-045 nine-window saved-level verification: **4,089,551** paved samples, 0 landscape-first and 0 sunk capsules; street, combat, swimming and vehicle **editor-mode** smokes passed. This is not a packaged/client-performance pass.
+- ADR-041 combat: a **packaged dedicated-server/two-client** smoke passed on an earlier revision. ADR-043's fixed rendered feet have separate **editor-mode** evidence; repackage for the current world.
+- ADR-044 ambient people: **one-client editor-mode** street smoke passed; `./scripts/street-smoke-linux.sh staged` and a separate two/three-client scenario are **future acceptance tests**, not recorded passes.
+- The original mission/condition smokes still use `/Game/Maps/Lent`, an older distinct test world. A successful fallback smoke cannot establish collision, population or authored contact positions across all nine windows.
+
+**Expanded-world P0 performance and multiplayer gate:** fresh client/server cook at an exact clean SHA, map and root-manifest hashes; run camera/travel and player/angler/car/swim routes across eight window edges; sample cold load, memory/VRAM, CPU/GPU frame-time p95/p99, draw calls and server tick. Stress a controlled 1/2/4/8-client population and capture remote street reactions, NPC duplication/relevance, body retention, collision, combat down/recovery, car dodge/run-over and reconnect. The expanded world is **a single always-loaded level with no World Partition**; do not claim streaming or MMO-scale performance until measured. Fourteen surveyed deep hollows require a recorded historical/gameplay decision, not an automatic fill.
+
+See [the 11 November change audit](DEVELOPMENT_UPDATE_2026-11-11.md), [ground and map decisions](DECISIONS.md), [street evidence](STAGE1_STREET_EVIDENCE.md), [combat evidence](STAGE1_COMBAT_EVIDENCE.md), and [freshness acceptance procedure](PLAYTEST_FRESHNESS.md).
 
 ### Playing the Lent slice by hand
 
