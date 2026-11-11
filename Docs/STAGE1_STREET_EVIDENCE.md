@@ -61,6 +61,8 @@ Runs: `Saved/StreetSmoke/20261111T200710Z` and `20261111T201119Z` ([summary](Cap
 
 `answered_body` is marginal. The car drives on, and new people appear round the player, about 57 m past the body. Only people already within 20 m of it can answer it, and the run-over has already alarmed most of them. Every earlier run had exactly one such answer. With these changes, 2 of 6 runs had none. The ADR-044 build (the `feat/street-people` worktree, unchanged) had none in 3 of 4 runs the same evening (`20261111T201412Z`, `201534Z`, `201645Z`; `201755Z` passed), so the water changes do not cause it. Keeping the car near the body, or the driver waiting there, would make the check reliable; that is left for the street work.
 
+**On the nine-window Lent (ADR-045), 2026-11-12.** Rerun on main at `2fac11f`, editor binaries rebuilt, `Saved/StreetSmoke/20261111T234755Z`. The graph is the regenerated 13,098-node one: `street_ready … nodes=12951/13098 … water_volumes=407 wet=14 edges_wet=0`. The river probe stays dry (`water_probe_done … swam=0 moved_m=22.1`), and every `street_summary` has `swimming=0`. Every water check passes. The run fails only `answered_body`, the marginal check above.
+
 ## Not covered
 
 - An owner playtest, and a staged (packaged) run.
