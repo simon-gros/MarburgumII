@@ -18,7 +18,7 @@
  * animation  /Game/Characters/Animations/A_EnterVehicle and A_ExitVehicle on the mannequin skeleton: the
  *            original's procedural door clips (tools/build_character.gd, _vehicle_animation).
  * place      the authored lent_hatchback in /Game/World/lent: at the original's position if that is clear,
- *            level ground, otherwise on the nearest such spot to the arrival start, parked along the river.
+ *            level carriageway (ADR-040), otherwise on the nearest such spot to it, parked along the river.
  */
 UCLASS()
 class UMarburgumVehicleContentCommandlet : public UCommandlet

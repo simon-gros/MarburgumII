@@ -2,11 +2,13 @@
 
 #include "MarburgumGodotClip.h"
 
+#include "AssetCompilingManager.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "CollisionQueryParams.h"
 #include "Dom/JsonObject.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
+#include "Materials/MaterialInterface.h"
 #include "Engine/StaticMeshSocket.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -1247,6 +1249,13 @@ namespace MarburgumVehicleContent
         using namespace MarburgumII::Vehicles;
         const FQuat Rotation(FRotator(0.0, Yaw, 0.0));
         FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumVehiclePlace), true);
+        Params.bReturnFaceIndex = true;
+        // Where the level has paved streets (ADR-040), every wheel must stand on carriageway asphalt.
+        bool bPavedStreets = false;
+        for (TActorIterator<AStaticMeshActor> It(&World); It && !bPavedStreets; ++It)
+        {
+            bPavedStreets = It->GetActorLabel().StartsWith(TEXT("MB2Ground_"));
+        }
         double Low = TNumericLimits<double>::Max();
         double High = -TNumericLimits<double>::Max();
         for (int32 Wheel = 0; Wheel < WheelCount; ++Wheel)
@@ -1258,6 +1267,17 @@ namespace MarburgumVehicleContent
             {
                 OutWhy = TEXT("no_ground");
                 return false;
+            }
+            if (bPavedStreets)
+            {
+                int32 Section = 0;
+                const UPrimitiveComponent* Component = Hit.GetComponent();
+                const UMaterialInterface* Surface = Component ? Component->GetMaterialFromCollisionFaceIndex(Hit.FaceIndex, Section) : nullptr;
+                if (!Surface || !Surface->GetName().Equals(TEXT("MI_LentAsphalt")))
+                {
+                    OutWhy = TEXT("off_road");
+                    return false;
+                }
             }
             for (TActorIterator<APhysicsVolume> It(&World); It; ++It)
             {
@@ -1275,7 +1295,8 @@ namespace MarburgumVehicleContent
             Low = FMath::Min(Low, Hit.ImpactPoint.Z);
             High = FMath::Max(High, Hit.ImpactPoint.Z);
         }
-        if (High - Low > 15.0)
+        // 5 cm: a car with one side up a 12 cm kerb (ADR-040) leans more than the 3 degrees a parked car may.
+        if (High - Low > 5.0)
         {
             OutWhy = TEXT("uneven");
             return false;
@@ -1317,6 +1338,9 @@ namespace MarburgumVehicleContent
             UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE cannot load %s"), LentMap);
             return false;
         }
+        // The spot traces must see the paved meshes' collision (ADR-040), not only the landscape under them.
+        World->UpdateWorldComponents(true, false);
+        FAssetCompilingManager::Get().FinishAllCompilation();
         TArray<AActor*> Previous;
         for (TActorIterator<AActor> It(World); It; ++It)
         {
@@ -1390,17 +1414,23 @@ namespace MarburgumVehicleContent
             {
                 UE_LOG(LogMarburgumVehicleContent, Display, TEXT("MB2VEHICLE place %s original=%s yaw=%.1f rejected=%s"), *Id, *Original.ToString(),
                     OriginalYaw, *Why);
-                // Nearest good spot to the arrival start, parked along the river, rings 1 m apart out to 60 m.
-                const FVector Start = Arrival->GetActorLocation();
-                const double AlongYaw = Along.Rotation().Yaw;
+                // Nearest good spot, parked along the river, rings 1 m apart out to 60 m.
+                // The original spot can now have a kerb or a pavement under it (ADR-040).
+                const FVector Start = Original;
+                // Along the river, heading the way the original car faced, so the river stays on the same side.
+                double AlongYaw = Along.Rotation().Yaw;
+                if (FMath::Abs(FMath::FindDeltaAngleDegrees(AlongYaw, OriginalYaw)) > 90.0)
+                {
+                    AlongYaw += 180.0;
+                }
                 double Best = TNumericLimits<double>::Max();
-                for (double Radius = 600.0; Radius <= 6000.0 && Source.IsEmpty(); Radius += 100.0)
+                for (double Radius = 100.0; Radius <= 6000.0 && Source.IsEmpty(); Radius += 100.0)
                 {
                     for (int32 Step = 0; Step < 72; ++Step)
                     {
                         const double Angle = Step * 5.0;
                         const FVector At = Start + FRotator(0.0, Angle, 0.0).RotateVector(FVector(Radius, 0.0, 0.0));
-                        for (const double Yaw : { AlongYaw, AlongYaw + 180.0 })
+                        for (const double Yaw : { AlongYaw })
                         {
                             double Z = 0.0;
                             FString Unused;
@@ -1410,7 +1440,7 @@ namespace MarburgumVehicleContent
                                 Chosen = At;
                                 ChosenYaw = Yaw;
                                 Ground = Z;
-                                Source = TEXT("near_arrival");
+                                Source = TEXT("near_original");
                             }
                         }
                     }

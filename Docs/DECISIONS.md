@@ -429,12 +429,13 @@ Of 125 placed footprints, 124 are rebuilt: 74 gabled, 30 hipped and 20 flat, 360
   - The paved meshes use `M_LentPaved` instances with the same anti-repeat variation. Roughness is remapped per surface so dry ground is not glossy.
 - **Junk removed.** `Roads_lent` and the photo landscape are removed. The player starts, the angler and the street signs keep their height above whatever they stood on. The bridge start, which sat under Stari most's deck, goes on top of it.
 - **Rebuild order.** After the ground, `-run=MarburgumSwimContent -Steps=water` re-fits the river volumes to the new bed, and `-run=MarburgumVehicleContent -Steps=place` re-parks the car on it.
+- **Parking (ADR-039).** The car's spot check now sees the paved meshes' collision. Where the level has paved streets, all four wheels must stand on carriageway asphalt and differ by at most 5 cm. The original spot straddles the promenade kerb, so the car parks 1 m from it on the carriageway, facing the original's way. Before this, the check traced the landscape under the paving, and the car stood half on the kerb, leaning 5.8°.
 
 **Evidence.** `-run=MarburgumRebuildGround -Verify` checks every walkable paved triangle in the saved level two ways:
 
 - A ray from above must hit that paving at its height, never the landscape.
 - A character-sized capsule (34 × 88 cm) dropped onto it must not end up inside it.
 
-All 476,517 pass: 0 landscape hits, 0 height mismatches over 1 cm, 0 capsules sunk. 1,292 samples hit something else first, a bridge deck or an eave. The landscape reads back within 4 mm of the data. The tool has unit tests for the projection, distance transform, in-painting, polygon operations, triangulation and winding (`cargo test --manifest-path tools/lent-ground/Cargo.toml`). Before and after captures are in [Captures/lent-ground](Captures/lent-ground/).
+All 476,517 pass: 0 landscape hits, 0 height mismatches over 1 cm, 0 capsules sunk. 1,292 samples hit something else first, a bridge deck or an eave. The Lent, swimming, condition, interaction and vehicle smokes pass in editor mode, and so do the six automation tests. The landscape reads back within 4 mm of the data. The tool has unit tests for the projection, distance transform, in-painting, polygon operations, triangulation and winding (`cargo test --manifest-path tools/lent-ground/Cargo.toml`). Before and after captures are in [Captures/lent-ground](Captures/lent-ground/).
 
 **Not covered.** Street furniture, trees, decals, manholes and the stone quay wall along the Drava (recommendation 4). Lane markings beyond centre lines and zebras. OSM shows the streets as mapped in 2026; 1990s corrections are still to do. The paved meshes have no LODs and no Nanite. Owner playtest.
