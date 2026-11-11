@@ -126,7 +126,7 @@ const TCHAR* AMarburgumPedestrian::MoodIntent(EMarburgumStreetMood Value)
     switch (Value)
     {
     case EMarburgumStreetMood::Flee: return IntentFlee;
-    case EMarburgumStreetMood::Watch: return IntentWatch;
+    case EMarburgumStreetMood::Watch: return MarburgumII::Street::IntentWatch;
     case EMarburgumStreetMood::Gather: return IntentGather;
     case EMarburgumStreetMood::Dodge: return IntentDodge;
     case EMarburgumStreetMood::Fight: return IntentFight;

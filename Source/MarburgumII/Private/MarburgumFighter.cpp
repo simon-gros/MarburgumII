@@ -121,7 +121,7 @@ const TCHAR* AMarburgumFighter::IntentName(EMarburgumFighterIntent Value)
     switch (Value)
     {
     case EMarburgumFighterIntent::Wander: return IntentWander;
-    case EMarburgumFighterIntent::Watch: return IntentWatch;
+    case EMarburgumFighterIntent::Watch: return MarburgumII::Combat::IntentWatch;
     case EMarburgumFighterIntent::Avoid: return IntentAvoid;
     case EMarburgumFighterIntent::Return: return IntentReturn;
     case EMarburgumFighterIntent::Close: return IntentClose;
