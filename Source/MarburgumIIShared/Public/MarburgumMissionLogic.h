@@ -10,11 +10,12 @@
  *
  * The rule, for a target:
  *  1. A mission under way whose current stage is completed here, and whose requirements are held: complete it.
- *     Registry order decides between two such missions.
+ *     A decision due here is the same kind of work: it is answered before any new offer. Registry order decides
+ *     between two such missions.
  *  2. Otherwise a mission offered here that the character has never started, whose prerequisites are complete:
  *     start it.
- *  3. Otherwise the first mission under way whose current stage is here but cannot be done yet explains why:
- *     a decision is due (ChoiceRequired) or something is missing (RequirementNotMet).
+ *  3. Otherwise the first mission under way whose current stage is here but is missing something
+ *     (RequirementNotMet).
  *  4. Otherwise an offer here waiting on another mission (PrerequisiteIncomplete), or nothing (NothingToDo).
  *
  * Work in hand comes before a new offer, so a character who reaches Petra Kralj while asking about the cashbox

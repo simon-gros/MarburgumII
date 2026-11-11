@@ -81,7 +81,9 @@ namespace MarburgumII::Missions
             Plan.Stage = Stage;
             if (Stage->Objective == EObjectiveType::Choice)
             {
+                // A decision due here is work in hand. It comes before a new offer at the same person.
                 Plan.Action = EPlanAction::ChoiceRequired;
+                return Plan;
             }
             else if (StageReady(*Stage, CountItem, Plan))
             {

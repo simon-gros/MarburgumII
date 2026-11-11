@@ -621,3 +621,16 @@ Bringing in the eight original window levels as they are would have brought thei
 **Evidence.** The editor mission smoke on port 27881 plays this chapter between Vera and the kiosk, then the restart still has the decision, the journal entry and the four papers. `Saved/MissionSmoke/20261111T215424Z`.
 
 **Not covered.** A packaged run and the owner playtest. Placing the Melje and Tabor content needs a wider map.
+
+## ADR-051 — The other missions that stand on this map (accepted 2026-11-11)
+
+**Problem.** Three more of the original's missions have every place inside the nine-window map, and nothing played them: the late parcel, Hall Three's last shift, and the four names under the paint. Playing Hall Three also showed a rule bug. Matej can offer the Melje shift once Names No Longer Match is done. A plain talk while Hall Three's decision was due started that shift instead of saying a decision was due.
+
+**Decision.**
+
+- A decision due at a person is work in hand. It is answered before any new mission that person could offer. A stage that is only missing an item still yields to a new offer, as before.
+- The editor smoke now also delivers the parcel and leaves the clerk his share (60, so 90 remains), negotiates Hall Three (Reputation 25), and keeps the painted layers (Reputation 20). Reputation ends at 85. The papers, the keyring and the maintenance book stay in custody. All of that is still there after a restart.
+
+**Evidence.** `Marburgum.Server.MissionRules` covers Matej's decision coming before the Melje offer. The editor smoke on port 27893 plays the three missions after the kiosk and passes, including the restart. `Saved/MissionSmoke/20261111T221606Z`.
+
+**Not covered.** A packaged run and the owner playtest. The Melje yard and the Tabor bank trail are still outside this map.

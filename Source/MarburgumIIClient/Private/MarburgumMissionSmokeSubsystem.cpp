@@ -464,9 +464,15 @@ void UMarburgumMissionSmokeSubsystem::TickCheck(double Now)
             TEXT("names_decision_not_restored"));
         Expect(Kiosk && Kiosk->bCompleted && Kiosk->Choice == FName(TEXT("pay_tab")) && Kiosk->Outcome == FName(TEXT("tab_paid")),
             TEXT("kiosk_decision_not_restored"));
-        Expect(State->GetMoney() == 30, FString::Printf(TEXT("money=%lld want 30"), State->GetMoney()));
+        const FMarburgumMissionState* Delivery = Progress(TEXT("lent_late_delivery"));
+        const FMarburgumMissionState* Hall = Progress(TEXT("hall_three_last_shift"));
+        const FMarburgumMissionState* Paint = Progress(TEXT("under_the_paint_four_names"));
+        Expect(Delivery && Delivery->bCompleted && Delivery->Choice == FName(TEXT("leave_clerk_share")), TEXT("delivery_not_restored"));
+        Expect(Hall && Hall->bCompleted && Hall->Choice == FName(TEXT("negotiate_settlement")), TEXT("hall_not_restored"));
+        Expect(Paint && Paint->bCompleted && Paint->Choice == FName(TEXT("preserve_layers")), TEXT("paint_not_restored"));
+        Expect(State->GetMoney() == 90, FString::Printf(TEXT("money=%lld want 90"), State->GetMoney()));
         Expect(State->GetSkillXp(TEXT("fishing")) > 0, TEXT("fishing_xp_lost"));
-        Expect(State->GetSkillXp(TEXT("reputation")) == 15, FString::Printf(TEXT("reputation=%lld want 15"), State->GetSkillXp(TEXT("reputation"))));
+        Expect(State->GetSkillXp(TEXT("reputation")) == 85, FString::Printf(TEXT("reputation=%lld want 85"), State->GetSkillXp(TEXT("reputation"))));
         Expect(Count(Rod) == 1 && Count(TEXT("brass_key")) == 1 && Count(TEXT("drava_cashbox")) == 1, TEXT("custody_not_restored"));
         MB2_MISSION_LOG("event=restored missions=%d money=%lld fishing_xp=%lld reputation_xp=%lld", State->GetMissions().Num(), State->GetMoney(),
             State->GetSkillXp(TEXT("fishing")), State->GetSkillXp(TEXT("reputation")));

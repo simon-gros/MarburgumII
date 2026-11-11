@@ -169,9 +169,26 @@ fn check_missions(doc: &Value, key: &str) -> u8 {
     let money = doc["money"][key].as_i64().unwrap_or(0);
     let fishing = doc["skills"][key]["fishing"].as_i64().unwrap_or(0);
     let reputation = doc["skills"][key]["reputation"].as_i64().unwrap_or(0);
-    problems.expect(money == 30, format!("money={money}"));
+    {
+        let mut done = |id: &str, stage: &str, choice: &str| {
+            let mission = &doc["missions"][key][id];
+            problems.expect(mission["completed"] == true && mission["stage"] == stage && mission["choice"] == choice,
+                format!("{id}={mission}"));
+        };
+        done("lent_late_delivery", "resolve_fee", "leave_clerk_share");
+        done("hall_three_last_shift", "resolve_inventory", "negotiate_settlement");
+        done("under_the_paint_four_names", "decide_sign_window", "preserve_layers");
+    }
+    problems.expect(item("brown_paper_parcel") == 0, "parcel_not_consumed");
+    for id in ["hall_three_plate_photos", "hall_three_keyring", "raeda_transport_maintenance_book",
+        "storefront_layer_one_photo", "storefront_layer_two_photo", "storefront_layer_three_photo",
+        "storefront_oldest_lettering_photo", "storefront_archived_advertisements"]
+    {
+        problems.expect(item(id) == 1, format!("{id}={}", item(id)));
+    }
+    problems.expect(money == 90, format!("money={money}"));
     problems.expect([16, 20, 24].contains(&fishing), format!("fishing_xp={fishing}"));
-    problems.expect(reputation == 15, format!("reputation_xp={reputation}"));
+    problems.expect(reputation == 85, format!("reputation_xp={reputation}"));
     finish(problems, format!("{money} {fishing} {reputation}"))
 }
 
@@ -265,7 +282,11 @@ mod tests {
                 "water_damaged_accounting_page": 1, "torn_gate_photograph": 1,
                 "faded_transport_ticket": 1, "carbon_copy_receipt": 1,
                 "raeda_directory_copy": 1, "successor_company_notice": 1,
-                "returned_raeda_envelope": 1, "raeda_newspaper_clipping": 1
+                "returned_raeda_envelope": 1, "raeda_newspaper_clipping": 1,
+                "hall_three_plate_photos": 1, "hall_three_keyring": 1, "raeda_transport_maintenance_book": 1,
+                "storefront_layer_one_photo": 1, "storefront_layer_two_photo": 1,
+                "storefront_layer_three_photo": 1, "storefront_oldest_lettering_photo": 1,
+                "storefront_archived_advertisements": 1
             }},
             "missions": { "p": {
                 "lent_first_catch": {
@@ -283,10 +304,22 @@ mod tests {
                     "choice": "tell_maja", "outcome": "maja_informed",
                     "journal_entry": "blue_ledger_names_no_longer_match",
                     "flags": { "maja_informed": true, "investigation_private": false }
+                },
+                "lent_late_delivery": {
+                    "stage": "resolve_fee", "started_revision": 13, "completed": true,
+                    "choice": "leave_clerk_share"
+                },
+                "hall_three_last_shift": {
+                    "stage": "resolve_inventory", "started_revision": 16, "completed": true,
+                    "choice": "negotiate_settlement"
+                },
+                "under_the_paint_four_names": {
+                    "stage": "decide_sign_window", "started_revision": 24, "completed": true,
+                    "choice": "preserve_layers"
                 }
             }},
-            "skills": { "p": { "fishing": 20, "reputation": 15 } },
-            "money": { "p": 30 },
+            "skills": { "p": { "fishing": 20, "reputation": 85 } },
+            "money": { "p": 90 },
             "receipts": {}
         });
         assert_eq!(check_missions(&doc, "p"), 0);

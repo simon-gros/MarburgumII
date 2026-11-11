@@ -128,6 +128,17 @@ bool FMarburgumMissionRulesTest::RunTest(const FString& Parameters)
     Decision = DecideInteraction(Started, Simon, TEXT("vera_horvat"), Unused);
     TestTrue(TEXT("prerequisite"), Decision.Reason == EMarburgumInteractionReason::PrerequisiteIncomplete);
 
+    // Matej's Hall Three decision comes before the Melje shift he can also offer.
+    FMarburgumWorldRecord AtMatej = Record;
+    FMarburgumStoredMission& Hall = AtMatej.Missions.FindOrAdd(Simon).FindOrAdd(TEXT("hall_three_last_shift"));
+    Hall.Stage = TEXT("resolve_inventory");
+    FMarburgumStoredMission& Names = AtMatej.Missions.FindOrAdd(Simon).FindOrAdd(TEXT("raeda_names_no_longer_match"));
+    Names.Stage = TEXT("decide_maja");
+    Names.bCompleted = true;
+    Decision = DecideInteraction(AtMatej, Simon, TEXT("matej_hall_three"), Unused);
+    TestTrue(TEXT("hall decision before the next offer"), Decision.Reason == EMarburgumInteractionReason::ChoiceRequired
+        && Decision.Mission == TEXT("hall_three_last_shift"));
+
     // Someone who offers nothing.
     Decision = DecideInteraction(Empty, Simon, TEXT("drago_potocnik"), Unused);
     TestTrue(TEXT("nothing to do"), Decision.Reason == EMarburgumInteractionReason::NothingToDo);

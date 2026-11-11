@@ -134,6 +134,11 @@ step() {
 # ---------------------------------------------------------------- phase 1
 echo "Phase 1: dedicated server ($mode) on $map, port $port, fresh store; evidence in $out_dir"
 start_server "$out_dir/server-1.log"
+# Spawn is logged after the ready line, and the dedicated-server log is block-buffered.
+for _ in $(seq 1 80); do
+    grep -aq 'event=content_ready' "$out_dir/server-1.log" && break
+    sleep 0.25
+done
 spawned=$(grep -aoc "MB2INTERACT role=server event=content_spawned" "$out_dir/server-1.log" || true)
 skipped=$(grep -aoc "MB2INTERACT role=server event=content_skipped" "$out_dir/server-1.log" || true)
 echo "  server: authored content spawned=$spawned skipped=$skipped"
@@ -166,6 +171,34 @@ step kiosk_67_customer stage_completed
 # shellcheck disable=SC2046
 run choice CHOICE mission_kiosk_67_customer $(shot choice) -MB2MissionTarget=kiosk_67_customer \
     -MB2MissionId=kiosk_67_customer_stopped_coming -MB2MissionChoice=pay_tab
+# The other three missions whose places stand on this map (ADR-051).
+step lent_dispatcher mission_started
+step lent_workshop_mechanic stage_completed
+# shellcheck disable=SC2046
+run fee CHOICE mission_lent_workshop_mechanic $(shot fee) -MB2MissionTarget=lent_workshop_mechanic \
+    -MB2MissionId=lent_late_delivery -MB2MissionChoice=leave_clerk_share
+step matej_hall_three mission_started
+step hall_three_machine_plate stage_completed
+step hall_three_labelled_boxes stage_completed
+step hall_three_worker stage_completed
+step hall_three_key_hook stage_completed
+step hall_three_night_guard stage_completed
+step hall_three_steel_cabinet stage_completed
+# shellcheck disable=SC2046
+run hall CHOICE mission_matej_hall_three $(shot hall) -MB2MissionTarget=matej_hall_three \
+    -MB2MissionId=hall_three_last_shift -MB2MissionChoice=negotiate_settlement
+step under_paint_new_owner mission_started
+step under_paint_layer_one stage_completed
+step under_paint_layer_two stage_completed
+step under_paint_layer_three stage_completed
+step under_paint_layer_four stage_completed
+step brane_sign_painter stage_completed
+step maja_koren stage_completed
+step petra_kralj stage_completed
+mv "$out_dir/client-step-petra_kralj.log" "$out_dir/client-step-petra_kralj-paint.log" 2>/dev/null || true
+# shellcheck disable=SC2046
+run sign CHOICE mission_under_paint_new_owner $(shot sign) -MB2MissionTarget=under_paint_new_owner \
+    -MB2MissionId=under_the_paint_four_names -MB2MissionChoice=preserve_layers
 sleep 1
 stop_server
 
