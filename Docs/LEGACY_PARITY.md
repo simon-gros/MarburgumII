@@ -1,6 +1,6 @@
 # Original Marburgum → MarburgumII parity register
 
-**Status:** Design traceability baseline (8 November 2026); runtime statuses updated 11 November 2026 after the [47-commit audit](DAILY_CHANGE_REVIEW_2026-11-10.md). Automated verification and owner approval remain separate.  
+**Status:** Baseline 8 November; implementation status updated through ADR-045 on 11 November 2026 ([earlier audit](DAILY_CHANGE_REVIEW_2026-11-10.md), [latest audit](DEVELOPMENT_UPDATE_2026-11-11.md)). Automated verification and owner approval remain separate.  
 **Companion data:** [`Data/Parity/source-matrix.v0.1.json`](../Data/Parity/source-matrix.v0.1.json).  
 **Authority:** [Vision](VISION.md), [Ontology](ONTOLOGY.md), [Network architecture](NETWORK_ARCHITECTURE.md), [Decisions](DECISIONS.md) and [Roadmap](ROADMAP.md).
 
@@ -16,9 +16,9 @@ Changes made explicitly in this restart take precedence: **Unreal Engine 5.8.3**
 
 | ID | Inherited design area | First target stage | MarburgumII status |
 | --- | --- | --- | --- |
-| `world_geography` | Marburgum geography and district identity | Stage 1 original Lent; Stage 3 city | Original Unreal `/Game/World/lent` default with repaired buildings; future commercial model not acquired |
+| `world_geography` | Marburgum geography and district identity | Stage 1 nine-window world; Stage 3 streaming | Active `/Game/World/lent` now covers nine 512 m windows; 870 closed shells, surveyed ground/pavement, crossings and Drava (ADR-040/045); performance, period correction and owner review outstanding |
 | `historical_state` | 1990s culture and period correctness | Stage 3 | Legacy design retained; implementation pending |
-| `characters_population` | Characters, NPCs and virtual population | Stage 1 named NPC; Stage 3 population | Riverside angler exists as the original first mission contact; the original Lent fight cast stands at its spots (ADR-041); broad population pending |
+| `characters_population` | Characters, NPCs and virtual population | Stage 1 street slice; Stage 3 population | Angler/three original fighters plus server-controlled pedestrians walking pavement and reacting to fights, bodies, cars and panic (ADR-041/044); one-client editor verification, no packaged/multi-client population qualification |
 | `skills` | Skill progression | Stage 2 | Legacy design retained; implementation pending |
 | `fishing` | Fishing | Stage 2 | Legacy design retained; implementation pending |
 | `missions_story` | Missions, story and evidence | Stage 1 start; Stage 2–5 completion/expansion | First mission starts, saves, grants rod and appears in Journal; fishing required to finish |
@@ -26,8 +26,8 @@ Changes made explicitly in this restart take precedence: **Unreal Engine 5.8.3**
 | `economy_trading` | Economy and trading | Stage 1-2 | Legacy design retained; implementation pending |
 | `inventory_items` | Items, clues and inventory | Stage 1 | First runtime slice: `fishing_rod` (original id) held in owner-only server custody, durable across restarts; awaiting owner playtest |
 | `housing` | Housing and property | Stage 3 | Legacy design retained; implementation pending |
-| `combat_fighting` | Unarmed fighting and NPCs answering violence | Stage 1 | Original fight rules and Lent fight cast, server-ruled jab/swing/guard, own fight clips, CC0 impacts, down/recovery and fight smoke (ADR-041); weapons, perception and consequences absent |
-| `vehicles` | Vehicles and transportation | Stage 1 drive; Stage 3 expansion | Five original car definitions, server physics, city hatchback, doors/seats and driving smoke; ownership/fuel/save/traffic/damage/audio absent |
+| `combat_fighting` | Unarmed fighting and NPCs answering violence | Stage 1 PvE | Server jab/heavy/guard, three fighters, down/recovery and CC0 audio; prior packaged two-client smoke (ADR-041), IK-corrected feet editor-tested later (ADR-043). Weapons/PvP/expanded consequences absent |
+| `vehicles` | Vehicles and transportation | Stage 1 drive and collisions; Stage 3 traffic | Five original cars, server driving/driver-passenger, parked hatchback on revised carriageway, foot-IK-fixed door clips and ambient NPC run-over/dodge (ADR-039/040/043/044); no persistence, ownership/fuel/traffic/vehicle damage/audio |
 | `weather_time` | City time, seasonal weather and environment | Stage 3 | Legacy design retained; implementation pending |
 | `interactions` | Unified urban interaction verbs | Stage 1 | First runtime slice: proximity prompt, client request → server validation → durable receipt on a test fixture; awaiting owner playtest |
 | `jobs_opportunity` | Employment, opportunity scarcity and fairness | Stage 2-4 | Legacy design retained; implementation pending |
@@ -38,7 +38,7 @@ The companion JSON contains the original source paths and explicit migration rul
 
 ## Current launch map and conditional future replacement
 
-The **original Unreal `/Game/World/lent` level is now active as the default** (ADR-027), with later façade and roof-shell repairs (ADR-034). The LiDAR replacement attempt was reverted. The old generated mesh pipeline is not the active default. The [licensed candidate Maribor map](WORLD_MAP_ADOPTION.md) is unpurchased, unimported and cannot replace the current level without separate owner acceptance. This change does **not** supersede the city's place IDs, authored mission contacts, vehicle routes, 1990s identity, vegetation/fish species or relevant ecology records. All those migrate by spatial crosswalk and provenance review. The original map pipeline remains reference/fallback, not the production default. Purchased commercial mesh/textures stay out of public repository and downloadable source artifacts.
+The **original Unreal `/Game/World/lent` level remains the default** (ADR-027), but ADR-040/045 rebuild its terrain/roads using 2014 LiDAR heights and OSM collidable paving and extend it across all eight adjoining original windows. **The reverted ADR-026 generated LiDAR building-shell replacement is distinct from the now-active LiDAR ground-height input**. The original level's spatial identities remain; period accuracy, geometry and licensed source provenance need separate review. The [licensed candidate Maribor map](WORLD_MAP_ADOPTION.md) is unpurchased, unimported and cannot replace the current level without separate owner acceptance. This change does **not** supersede the city's place IDs, authored mission contacts, vehicle routes, 1990s identity, vegetation/fish species or relevant ecology records. All those migrate by spatial crosswalk and provenance review. The original map pipeline remains reference/fallback, not the production default. Purchased commercial mesh/textures stay out of public repository and downloadable source artifacts.
 
 Every migrated major playable feature requires a **personal in-game owner playtest and explicit approval** (ADR-008) before acceptance. CI or screenshots from an agent alone do not satisfy this decision.
 
@@ -51,6 +51,14 @@ The original HUD's *interaction, place, condition, objective, notification, skil
 ## Image-generated visual supplements (conditionally permitted)
 
 The original plant and fish **species IDs and ecological semantics remain authoritative** even when their presentation meshes are newly authored. A local Hunyuan3D-2.1 image-to-geometry/PBR pipeline may be considered for individual visual variants after resolving its explicit EU license restriction, checking each input image's rights, retopology, material/import checks, accurate species identification and mandatory owner playtest. This workflow is distinct from transferring the original catalogues and is never a replacement for approved environmental data. See [ASSET_GENERATION_HUNYUAN3D.md](ASSET_GENERATION_HUNYUAN3D.md).
+
+## New implementation parity added 11 November (ADR-040–045)
+
+**Map and ground:** one 1,536 m square, nine adjoining original 512 m windows, closed-shell joined buildings, three additional crossings, connected Drava sheets, physical street/sidewalk collision and terrain derived from 2014 ARSO LiDAR plus separately sourced OSM geometry. The world remains **one always-loaded level**, with no streaming, finished period correction, packaged performance proof or owner acceptance ([review](DEVELOPMENT_UPDATE_2026-11-11.md)).
+
+**Combat and animation:** original author-owned jab/heavy/guard, 3-person Lent fight cast, server-owned targeting/damage and CC0 impacts; distinct earlier packaged two-client combat versus later editor-only IK feet checks. Swimming, door and fight clips key IK bones so the drawn pose matches their motion. No weapons, PvP or wanted/police consequences.
+
+**Ambient street people:** original author-owned groups, looks and incident decisions; new independent spawn/cull/response numbers replace Rockstar-derived material. The server moves replicated pedestrians on pavement and handles fights, bodies, panic, run-overs and dodge. **Only a one-client editor-mode runtime test currently qualifies street people**; not a full city-life or crowd simulation. No everyday routines, multi-client or staged validation.
 
 ## Additional original-game parity delivered during 10 November
 
@@ -87,4 +95,4 @@ For geographically grounded content, retain source IDs and transformation histor
 3. **Public-entry blocker:** secure email-verified accounts, username/password, First name/Last name/approved model character creation and authenticated world admission (Stage 0F). Development character keys are never production identity.
 4. **Next complete game loop:** real Drava fishing and `lent_first_catch` completion with replay/reconnect/restart safety; then Fishing skill, trade and larger city systems.
 
-A file, checklist, test result or ADR alone cannot close a major feature as owner-approved.
+**Updated immediate matrix:** repackage nine-window content and regenerated swim/door/fight assets, stage the latest street graph, run street/combat alongside all previous smokes with a real two/three-client integrated scenario, measure world performance and obtain the owner's fresh-build map and gameplay decision. A file, checklist, test result or ADR alone cannot close a major feature as owner-approved.
