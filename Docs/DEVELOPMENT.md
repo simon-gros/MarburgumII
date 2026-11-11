@@ -46,6 +46,15 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ./scripts/create-vehicle-content.sh   # regenerate the five catalogue cars (the original procedural bodywork), M_Vehicle, A_EnterVehicle/A_ExitVehicle and the lent_hatchback placement (`-run=MarburgumVehicleContent`, ADR-039)
 # Lent buildings (ADR-034): rebuild every /Game/World/lent building as a closed shell; -CheckOnly builds and checks without saving
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildFacades -unattended -nop4 -nosplash -nullrhi
+# Lent ground (ADR-040): heights, paving and surface mask from the survey and OpenStreetMap, then the level, the river volumes and the car.
+# The LiDAR tile comes from the original's tools/fetch_lidar.sh; the building list and orthophoto from its project/assets/terrain.
+cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --laz ~/marburgum-data/arso-2014/gkot/TM_549_157.laz \
+    --osm Data/World/lent_ground/osm_lent.json.gz --buildings "$ORIGINAL/project/assets/terrain/lent_buildings.json" \
+    --placed Data/World/lent_ground/placed_buildings.txt --ortho "$ORIGINAL/project/assets/terrain/lent_albedo.jpg" --out Data/World/lent_ground
+"$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildGround -unattended -nop4 -nosplash -nullrhi
+"$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumSwimContent -Steps=water -unattended -nop4 -nosplash -nullrhi
+"$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumVehicleContent -Steps=place -unattended -nop4 -nosplash -nullrhi
+"$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildGround -Verify -unattended -nop4 -nosplash -nullrhi   # every paved triangle: ray and capsule check
 # Fixed-camera screenshots of a level for before/after evidence (centimetres; name@eye@target@fov;...)
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor" "$PWD/MarburgumII.uproject" /Game/World/lent -game -RenderOffScreen -windowed -ForceRes -ResX=1920 -ResY=1080 \
     "-MB2ViewShots=overview@-6000,-6000,11000@17000,-6000,2000@60" -MB2ViewShotDir=/abs/dir

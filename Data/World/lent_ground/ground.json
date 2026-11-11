@@ -1,0 +1,97 @@
+{
+  "buildings": {
+    "landscape_points_raised": 36,
+    "paved_points_below_wall_base": 166,
+    "paving_points_lifted_to_walls": 1120,
+    "seated": 124
+  },
+  "format": "marburgumii.lent_ground",
+  "landscape": {
+    "col0": "west",
+    "half_extent_m": 256.0,
+    "max_m": 22.211252212524414,
+    "min_m": -2.5999999046325684,
+    "points": 1017,
+    "row0": "north",
+    "under_paving_m": 0.15000000596046448
+  },
+  "paved": {
+    "chunk_m": 64.0,
+    "chunks": 56,
+    "surfaces": [
+      "asphalt",
+      "yard_asphalt",
+      "pavers",
+      "setts",
+      "kerb",
+      "paint"
+    ],
+    "triangles": 649847,
+    "triangles_by_surface": [
+      52369,
+      10722,
+      298139,
+      113704,
+      167451,
+      7462
+    ]
+  },
+  "paving_edges": {
+    "landscape_points_lowered": 1524,
+    "points_next_to_paving_lowered": 46656
+  },
+  "plan": "metres; x east and y south of the middle of Stari most (D96/TM E 549527.8, N 157564.0); z above the Drava (252.98 m)",
+  "sources": [
+    {
+      "file": "TM_549_157.laz",
+      "licence": "ARSO/GURS open data, attribution",
+      "name": "ARSO LiDAR 2014, GKOT tile TM_549_157 (ground class)",
+      "role": "bare ground",
+      "sha256": "8f648bad2416e0e37ff9ebec411b7bb18896f5e7b1e1bc120e408f47d61373a7"
+    },
+    {
+      "licence": "ODbL 1.0, © OpenStreetMap contributors",
+      "name": "OpenStreetMap via Overpass, 2026-11-10T21:46:00Z",
+      "role": "streets and land use",
+      "sha256": "c5b02e69c03c80a0fc589fbd8dfb1dc129b17ec5e434fbdad20c00e1c0a84e65"
+    },
+    {
+      "name": "magna-raedarum-marburgum lent_buildings.json",
+      "role": "building footprints",
+      "sha256": "83752f7a46c37cb9c6aa7fb69797543ee83f940c92176270d257cd056c3b1a6c"
+    },
+    {
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "2ac0b8240b7ef6a0cbaaa5bc3396907fac2548e029924c11de2e5ac8bf0ea8fd"
+    }
+  ],
+  "streets": {
+    "carriageway_m2": 22095.0,
+    "crossings": 41,
+    "dropped_kerb_m": 0.03,
+    "kerb_m": 0.12,
+    "marked_crossings": 40,
+    "pavement_m2": 55323.0
+  },
+  "surface_mask": {
+    "channels": [
+      "grass",
+      "earth",
+      "gravel",
+      "river_stones"
+    ],
+    "points": 2048,
+    "remainder": "hard standing"
+  },
+  "survey": {
+    "blob_points_removed": 7274,
+    "filled_under_bridges": 7451,
+    "grid_points": 1034289,
+    "ground_points": 1166803,
+    "measured_grid_points": 458083,
+    "points_in_window": 2746698
+  },
+  "version": 1
+}

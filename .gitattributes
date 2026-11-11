@@ -13,3 +13,7 @@
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.flac filter=lfs diff=lfs merge=lfs -text
 *.glb filter=lfs diff=lfs merge=lfs -text
+SourceArt/Textures/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+Data/World/lent_ground/*.bin filter=lfs diff=lfs merge=lfs -text
+Data/World/lent_ground/*.png filter=lfs diff=lfs merge=lfs -text
+Data/World/lent_ground/*.json.gz filter=lfs diff=lfs merge=lfs -text

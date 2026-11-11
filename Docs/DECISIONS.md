@@ -398,3 +398,43 @@ Of 125 placed footprints, 124 are rebuilt: 74 gabled, 30 hipped and 20 flat, 360
 - **Evidence.** `scripts/vehicle-smoke-linux.sh` runs a dedicated server on `/Game/World/lent`, a rendered driver and a passenger.
 
 **Not covered.** Owner playtest. Engine, tyre and door sounds. Saving cars across a restart (the authored car returns to its spot), ownership, keys and fuel. Ambient traffic, parked-car promotion and carjacking, which the original had as later work. Damage, which the original's Unreal port started. Client-side prediction of the driver's own car: the driver sees the server's car about one round trip late, as in the original. Physical-surface semantics and weather for the surface response. Remote players' bodies in a seat are hidden, not seated in a sitting pose.
+
+## ADR-040 — Lent's ground is rebuilt from the survey, with paved streets you stand on (accepted 2026-11-11)
+
+**Problem.** The owner's playtest of ADR-034 found the buildings right and the ground wrong. Three things were wrong with it:
+
+- **You walked through the roads.** The roads were one flat sheet (`Roads_lent`, 9,966 triangles) with collision switched off. The character stood on the landscape underneath it, which was sometimes above the road and sometimes below it.
+- **The ground was a photograph.** One 2048² aerial photo (GURS DOF025, 2020–22) covered the 512 m landscape, which made 25 cm per pixel smeared over 0.9 m quads. It had the shadows of trees, buildings and cars printed into it, and it showed the city in 2020.
+- **The ground had junk in it.** The landscape had been built from survey points classed as ground. Under Stari most that included the bridge deck, which left mounds by the ramp, and gaps elsewhere had been filled with lumps.
+
+**Decision.** A new Rust tool, `tools/lent-ground`, builds the ground from source data. A new commandlet, `-run=MarburgumRebuildGround`, puts it in the level.
+
+- **Shape.** The heights come from the ARSO 2014 LiDAR tile TM_549_157 (ground class, 1.17 M points), resampled at 0.5 m (1017² points, 64 components of 2 × 63 quads).
+  - Under Stari most and the footbridge the survey classed the deck as ground and saw almost nothing beneath it. Every return inside a bridge outline is dropped, and each row is filled across from the survey on either side.
+  - Raised blobs narrower than about 4 m are removed by a grey-scale opening, and the rest of the ground is filled smoothly.
+  - The Drava bed is shaped from the shore: 0.4 m deep at the edge, falling 1 in 6 to 2.6 m.
+- **Streets.** Streets come from OpenStreetMap (an Overpass extract committed as `Data/World/lent_ground/osm_lent.json.gz`, ODbL).
+  - Carriageways are stroked to their mapped width, or else by lanes and class, and joined with 4 m kerb radii at junctions.
+  - Pavements combine mapped footways, sidewalk tags, pedestrian areas, a 0.6 m band round every carriageway, the strip in front of houses, and a 1.5 m apron round every building.
+  - Surfaces: asphalt carriageways, older asphalt for car parks, concrete pavers for pavements, and granite setts for squares and pedestrian streets.
+- **Paved meshes.** The paved surfaces are separate static meshes (56 chunks of 64 m, 650k triangles) whose triangles are the collision (complex as simple). You stand on what you see.
+  - Kerbs are 12 cm, dropping to 3 cm at the 40 mapped crossings.
+  - Kerb faces run down to the road, and an edging runs 35 cm under the landscape.
+  - Marked crossings have zebra stripes, and two-way main roads a dashed centre line.
+  - No paved triangle is longer than 1.5 m, so none can bridge a dip.
+- **Landscape and paving.** Under the paving, the landscape sits 15 cm below the drawn triangles, and next to a paved edge it is kept 5 cm below the lowest paving beside it. Where paving meets a wall it rises to cover the wall's bottom edge.
+- **Materials.** Every texture is a CC0 set from ambientCG (`SourceArt/Textures/Ground/README.md`). The landscape material (`M_LentTerrain`) blends old asphalt, earth, gravel, grass and river stones by a surface mask, with noise on the edges and a large brightness variation.
+  - The mask comes from OSM land use, the Drava's shore, slope (unmapped banks over about 20° are grass) and the orthophoto. The photo is used only to tell green from grey; it is no longer drawn.
+  - Ground steeper than about 45° is drawn as a stone retaining wall.
+  - The paved meshes use `M_LentPaved` instances with the same anti-repeat variation. Roughness is remapped per surface so dry ground is not glossy.
+- **Junk removed.** `Roads_lent` and the photo landscape are removed. The player starts, the angler and the street signs keep their height above whatever they stood on. The bridge start, which sat under Stari most's deck, goes on top of it.
+- **Rebuild order.** After the ground, `-run=MarburgumSwimContent -Steps=water` re-fits the river volumes to the new bed, and `-run=MarburgumVehicleContent -Steps=place` re-parks the car on it.
+
+**Evidence.** `-run=MarburgumRebuildGround -Verify` checks every walkable paved triangle in the saved level two ways:
+
+- A ray from above must hit that paving at its height, never the landscape.
+- A character-sized capsule (34 × 88 cm) dropped onto it must not end up inside it.
+
+All 476,517 pass: 0 landscape hits, 0 height mismatches over 1 cm, 0 capsules sunk. 1,292 samples hit something else first, a bridge deck or an eave. The landscape reads back within 4 mm of the data. The tool has unit tests for the projection, distance transform, in-painting, polygon operations, triangulation and winding (`cargo test --manifest-path tools/lent-ground/Cargo.toml`). Before and after captures are in [Captures/lent-ground](Captures/lent-ground/).
+
+**Not covered.** Street furniture, trees, decals, manholes and the stone quay wall along the Drava (recommendation 4). Lane markings beyond centre lines and zebras. OSM shows the streets as mapped in 2026; 1990s corrections are still to do. The paved meshes have no LODs and no Nanite. Owner playtest.
