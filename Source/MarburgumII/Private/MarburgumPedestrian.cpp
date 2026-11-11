@@ -24,6 +24,8 @@ namespace MarburgumStreetPerson
     // A walker back off the graph looks this far for a node.
     constexpr double RejoinCm = 2500.0;
     constexpr double RejoinHeightCm = 400.0;
+    // The nearest nodes tried for a way back that stays out of the water.
+    constexpr int32 RejoinTries = 8;
     // Crossing the road is less inviting than staying on the pavement.
     constexpr double CrossingWeight = 0.35;
     // Fleeing off the graph: a step this long straight away.
@@ -251,6 +253,16 @@ void AMarburgumPedestrian::MakeProbe(const FVector& At, double Seconds, bool bDo
     LogEvent(TEXT("probe"), FString::Printf(TEXT("dodges=%d vitality=%.0f"), bDodges ? 1 : 0, Vitality));
 }
 
+void AMarburgumPedestrian::MakeWaterProbe(const FVector& From, double Seconds)
+{
+    const double Now = Street() ? Street()->Now() : 0.0;
+    Edge = INDEX_NONE;
+    bRejoining = true;
+    BeginFlee(From, Now, Seconds);
+    bFleeOffGraph = true;
+    LogEvent(TEXT("probe"), FString::Printf(TEXT("water=1 from=%.0f,%.0f"), From.X, From.Y));
+}
+
 bool AMarburgumPedestrian::SenseCars(double Now)
 {
     if (Mood == EMarburgumStreetMood::Dodge)
@@ -277,7 +289,16 @@ bool AMarburgumPedestrian::SenseCars(double Now)
         const FVector2D Along = FVector2D(Car.Velocity).GetSafeNormal();
         const FVector2D Offset = FVector2D(Here) - FVector2D(Car.Location);
         const double Side = Along.X * Offset.Y - Along.Y * Offset.X >= 0.0 ? 1.0 : -1.0;
-        const FVector Away(-Along.Y * Side, Along.X * Side, 0.0);
+        FVector Away(-Along.Y * Side, Along.X * Side, 0.0);
+        // Never into the river (ADR-046): the other side of the car's line, or no jump at all.
+        if (!IsDryWay(Here + Away * DodgeStepCm))
+        {
+            Away = -Away;
+            if (!IsDryWay(Here + Away * DodgeStepCm))
+            {
+                continue;
+            }
+        }
         SetPace(FleePaceCm);
         WalkTo(Here + Away * DodgeStepCm);
         SetMood(EMarburgumStreetMood::Dodge, Now + DodgeSeconds);
@@ -514,7 +535,26 @@ void AMarburgumPedestrian::BeginGather(const FVector& Body, double Now)
     // Each onlooker has their own place round the body, on the side they came from.
     const FVector From = (GetActorLocation() - Body).GetSafeNormal2D();
     const double Spread = (static_cast<double>(Serial % 5) - 2.0) * 25.0;
-    GatherSpot = Body + FRotator(0.0, From.Rotation().Yaw + Spread, 0.0).Vector() * GatherOffsetCm;
+    // Round the body to the first place on dry ground (ADR-046); none, and they stand where they are.
+    GatherSpot = GetActorLocation();
+    for (double Turn = 0.0; Turn <= 180.0; Turn += 30.0)
+    {
+        bool bFound = false;
+        for (const double Sign : { 1.0, -1.0 })
+        {
+            const FVector Spot = Body + FRotator(0.0, From.Rotation().Yaw + Spread + Turn * Sign, 0.0).Vector() * GatherOffsetCm;
+            if (IsDryWay(Spot))
+            {
+                GatherSpot = Spot;
+                bFound = true;
+                break;
+            }
+        }
+        if (bFound)
+        {
+            break;
+        }
+    }
     bGatherArrived = false;
     SetMood(EMarburgumStreetMood::Gather, Now + MarburgumStreetPerson::GatherLongestSeconds);
 }
@@ -536,10 +576,30 @@ void AMarburgumPedestrian::StepFlee(double Now)
     const FVector Here = GetActorLocation();
     if (bFleeOffGraph || Edge == INDEX_NONE)
     {
-        WalkTo(Here + (Here - Threat).GetSafeNormal2D() * MarburgumStreetPerson::FleeStepCm);
+        // Straight away, or along the bank when straight away is the river.
+        FVector Goal;
+        FVector Away = (Here - Threat).GetSafeNormal2D();
+        if (Away.IsNearlyZero())
+        {
+            Away = GetActorForwardVector();
+        }
+        if (FindDryStep(Away, MarburgumStreetPerson::FleeStepCm, Goal))
+        {
+            WalkTo(Goal);
+        }
+        else
+        {
+            Stop();
+        }
         return;
     }
     const FMarburgumWalkGraph& Graph = Street()->GetGraph();
+    if (bWaterAhead)
+    {
+        // The graph keeps clear of the river; whatever pushed them toward it, back the other way.
+        ToNode = Graph.Other(Edge, ToNode);
+        LogEvent(TEXT("water_edge"), TEXT("turned=back"));
+    }
     if (FVector::Dist2D(Here, Graph.GetNodes()[ToNode].Location) < NodeArriveCm)
     {
         TakeNextEdge(ToNode, true);
@@ -554,9 +614,10 @@ void AMarburgumPedestrian::StepWatch(double Now)
         Threat = Incident->Location;
     }
     const FVector Here = GetActorLocation();
-    if (FVector::Dist2D(Here, Threat) < WatchStandoffCm)
+    const FVector Back = Here + (Here - Threat).GetSafeNormal2D() * MarburgumStreetPerson::BackAwayCm;
+    if (FVector::Dist2D(Here, Threat) < WatchStandoffCm && IsDryWay(Back))
     {
-        WalkTo(Here + (Here - Threat).GetSafeNormal2D() * MarburgumStreetPerson::BackAwayCm);
+        WalkTo(Back);
         return;
     }
     Stop();
@@ -575,7 +636,7 @@ void AMarburgumPedestrian::StepGather(double Now)
     Threat = Body->Location;
     if (!bGatherArrived)
     {
-        if (FVector::Dist2D(GetActorLocation(), GatherSpot) > MarburgumStreetPerson::GatherArriveCm)
+        if (FVector::Dist2D(GetActorLocation(), GatherSpot) > MarburgumStreetPerson::GatherArriveCm && !bWaterAhead)
         {
             WalkTo(GatherSpot);
             return;
@@ -619,7 +680,27 @@ bool AMarburgumPedestrian::InFight(const FVector& Point) const
 bool AMarburgumPedestrian::Rejoin()
 {
     const FMarburgumWalkGraph& Graph = Street()->GetGraph();
-    const int32 Node = Graph.NearestNode(GetActorLocation(), MarburgumStreetPerson::RejoinCm, MarburgumStreetPerson::RejoinHeightCm);
+    // The nearest node they can walk straight to without wading (ADR-046).
+    const FVector Here = GetActorLocation();
+    TArray<int32> Near;
+    Graph.NodesWithin(Here, MarburgumStreetPerson::RejoinCm, Near);
+    Near.RemoveAll([&](int32 Candidate)
+    {
+        return FMath::Abs(Graph.GetNodes()[Candidate].Location.Z - Here.Z) > MarburgumStreetPerson::RejoinHeightCm;
+    });
+    Near.Sort([&](int32 A, int32 B)
+    {
+        return FVector::DistSquared2D(Graph.GetNodes()[A].Location, Here) < FVector::DistSquared2D(Graph.GetNodes()[B].Location, Here);
+    });
+    int32 Node = INDEX_NONE;
+    for (int32 Index = 0; Index < FMath::Min(Near.Num(), MarburgumStreetPerson::RejoinTries); ++Index)
+    {
+        if (IsDryWay(Graph.GetNodes()[Near[Index]].Location))
+        {
+            Node = Near[Index];
+            break;
+        }
+    }
     if (Node == INDEX_NONE)
     {
         return false;
@@ -711,12 +792,22 @@ void AMarburgumPedestrian::StepWalk(double Now, double DeltaSeconds)
     {
         TakeNextEdge(ToNode, false);
     }
-    // Nobody walks into a fight, whatever they made of it: turn back short of it.
+    // Nobody walks into a fight, whatever they made of it, or into the river: turn back short of it.
     const FVector Goal = EdgeGoal();
     const FVector Ahead = Here + (Goal - Here).GetSafeNormal2D() * FightClearanceCm;
-    if (Edge != INDEX_NONE && (InFight(Goal) || InFight(Ahead)))
+    if (Edge != INDEX_NONE && (InFight(Goal) || InFight(Ahead) || bWaterAhead))
     {
         ToNode = Graph.Other(Edge, ToNode);
+        if (bWaterAhead)
+        {
+            LogEvent(TEXT("water_edge"), TEXT("turned=back"));
+        }
+    }
+    else if (Edge == INDEX_NONE && bWaterAhead && !Rejoin())
+    {
+        Stop();
+        bLost = true;
+        return;
     }
 
     // Stuck against something the graph check missed (a parked car, a crowd): turn back, and after a few

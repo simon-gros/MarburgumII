@@ -15,6 +15,7 @@
 #include "MarburgumGameplayContract.h"
 #include "MarburgumNetworkContract.h"
 #include "MarburgumStreetSubsystem.h"
+#include "MarburgumWater.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -38,6 +39,13 @@ namespace
     // Chest height for the wall test between two bodies.
     constexpr double ChestCm = 50.0;
     constexpr float TurnDegreesPerSecond = 540.f;
+    // The water is looked for this far ahead of the capsule's edge, and further at speed (ADR-046), so a
+    // runner stops at the bank rather than sliding in.
+    constexpr double WaterLookaheadCm = 40.0;
+    constexpr double WaterLookaheadSeconds = 0.2;
+    // FindDryStep turns off the wanted direction by this much at a time, up to the last.
+    constexpr double DryTurnStepDegrees = 30.0;
+    constexpr double DryTurnMostDegrees = 150.0;
     const FName PaintTint(TEXT("Paint Tint"));
 
     bool IsStanding(const AMarburgumCharacter& Person)
@@ -212,7 +220,22 @@ void AMarburgumFighter::Tick(float DeltaSeconds)
             }
             else
             {
-                AddMovementInput(Toward.GetSafeNormal());
+                // Not into the river (ADR-046). A swimmer is already in it and may make for the bank.
+                const FVector Direction = Toward.GetSafeNormal();
+                bWaterAhead = false;
+                if (!GetCharacterMovement()->IsSwimming())
+                {
+                    if (const UMarburgumWaterSubsystem* Water = GetWorld()->GetSubsystem<UMarburgumWaterSubsystem>())
+                    {
+                        const double Ahead = GetCapsuleComponent()->GetScaledCapsuleRadius() + WaterLookaheadCm
+                            + GetVelocity().Size2D() * WaterLookaheadSeconds;
+                        bWaterAhead = Water->IsWet(FeetLocation() + Direction * Ahead);
+                    }
+                }
+                if (!bWaterAhead)
+                {
+                    AddMovementInput(Direction);
+                }
             }
         }
         else if (bHasFacing)
@@ -327,6 +350,13 @@ void AMarburgumFighter::Think()
             {
                 Want = Home + FromHome.GetSafeNormal() * AvoidHomeCm;
             }
+            // Away along the bank, not into the river; with water every way, stand and keep an eye on it.
+            if (!IsDryWay(Want) && !FindDryStep(Want - Here, FVector::Dist2D(Here, Want), Want))
+            {
+                Stop();
+                FaceToward(Danger->GetActorLocation());
+                return;
+            }
             WalkTo(Want);
             return;
         }
@@ -371,6 +401,12 @@ void AMarburgumFighter::Think()
         // The original keeps a stroll that the navigation mesh moves inside WanderRadius + 35 cm of home;
         // every offset it picks is already inside that.
         WanderGoal = Home + WanderOffsetCm(IdHash, TickCount);
+        if (!IsDryWay(WanderGoal))
+        {
+            // The stroll would end in the river: wait for the next one instead.
+            GoalUntilTick = TickCount + PauseTicks;
+            return;
+        }
         GoalUntilTick = TickCount + WanderTicks;
         Stuck = 0;
         SetStateAndIntent(EMarburgumFighterState::Idle, EMarburgumFighterIntent::Wander);
@@ -385,7 +421,7 @@ void AMarburgumFighter::Think()
         SetStateAndIntent(EMarburgumFighterState::Idle, EMarburgumFighterIntent::Wait);
         return;
     }
-    if (bStepFailed && ++Stuck > WanderStuckTicks)
+    if (bWaterAhead || (bStepFailed && ++Stuck > WanderStuckTicks))
     {
         Stop();
         GoalUntilTick = TickCount + PauseTicks;
@@ -431,12 +467,22 @@ void AMarburgumFighter::ThinkHostile(AMarburgumCharacter& Person)
         return;
     case EHostileStep::Close:
     {
-        SetStateAndIntent(EMarburgumFighterState::Hostile, EMarburgumFighterIntent::Close);
         FVector Toward = There - Here;
         Toward.Z = 0.0;
+        if (!IsDryWay(There))
+        {
+            // Not after them into the river (ADR-046): wait on the bank, hands up, until they come out or are
+            // gone further than the pursuit range.
+            Stop();
+            FaceToward(There);
+            SetStateAndIntent(EMarburgumFighterState::Hostile, EMarburgumFighterIntent::Wait);
+            return;
+        }
+        SetStateAndIntent(EMarburgumFighterState::Hostile, EMarburgumFighterIntent::Close);
         if (bLastStepFailed && Toward.SizeSquared() > 1.0)
         {
-            // The straight line refused: try the side, and the other side every few refused steps.
+            // The straight line refused: try the side, and the other side every few refused steps; never a side
+            // in the water.
             ++Stuck;
             const FVector Ahead = Toward.GetSafeNormal();
             FVector Side(-Ahead.Y, Ahead.X, 0.0);
@@ -444,7 +490,18 @@ void AMarburgumFighter::ThinkHostile(AMarburgumCharacter& Person)
             {
                 Side = -Side;
             }
-            WalkTo(Here + Side * SideStepCm + Ahead * SideStepForwardCm);
+            FVector Step = Here + Side * SideStepCm + Ahead * SideStepForwardCm;
+            if (!IsDryWay(Step))
+            {
+                Step = Here - Side * SideStepCm + Ahead * SideStepForwardCm;
+            }
+            if (!IsDryWay(Step))
+            {
+                Stop();
+                FaceToward(There);
+                return;
+            }
+            WalkTo(Step);
         }
         else
         {
@@ -463,7 +520,15 @@ void AMarburgumFighter::ThinkHostile(AMarburgumCharacter& Person)
         {
             Away = FRotator(0.0, HomeYaw, 0.0).Vector();
         }
-        WalkTo(Here + Away.GetSafeNormal() * BackOffStepCm);
+        const FVector Back = Here + Away.GetSafeNormal() * BackOffStepCm;
+        if (IsDryWay(Back))
+        {
+            WalkTo(Back);
+        }
+        else
+        {
+            Stop();
+        }
         FaceToward(There);
         return;
     }
@@ -655,6 +720,50 @@ void AMarburgumFighter::WalkTo(const FVector& Goal)
 void AMarburgumFighter::Stop()
 {
     bWalking = false;
+    bWaterAhead = false;
+}
+
+FVector AMarburgumFighter::FeetLocation() const
+{
+    return GetActorLocation() - FVector(0.0, 0.0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+}
+
+bool AMarburgumFighter::IsDryWay(const FVector& Goal) const
+{
+    const UMarburgumWaterSubsystem* Water = GetWorld()->GetSubsystem<UMarburgumWaterSubsystem>();
+    if (!Water || GetCharacterMovement()->IsSwimming())
+    {
+        return true;
+    }
+    const FVector Feet = FeetLocation();
+    return !Water->IsWetWay(Feet, FVector(Goal.X, Goal.Y, Feet.Z));
+}
+
+bool AMarburgumFighter::FindDryStep(const FVector& Direction, double StepCm, FVector& OutGoal) const
+{
+    const FVector Flat = FVector(Direction.X, Direction.Y, 0.0).GetSafeNormal();
+    if (Flat.IsNearlyZero())
+    {
+        return false;
+    }
+    const FVector Here = GetActorLocation();
+    for (double Turn = 0.0; Turn <= DryTurnMostDegrees; Turn += DryTurnStepDegrees)
+    {
+        for (const double Sign : { 1.0, -1.0 })
+        {
+            const FVector Goal = Here + Flat.RotateAngleAxis(Turn * Sign, FVector::UpVector) * StepCm;
+            if (IsDryWay(Goal))
+            {
+                OutGoal = Goal;
+                return true;
+            }
+            if (Turn == 0.0)
+            {
+                break;
+            }
+        }
+    }
+    return false;
 }
 
 void AMarburgumFighter::FaceToward(const FVector& Point)

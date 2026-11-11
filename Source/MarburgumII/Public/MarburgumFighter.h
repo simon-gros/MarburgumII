@@ -121,9 +121,21 @@ protected:
     virtual void OnBlowLanded(AMarburgumCharacter* Attacker, bool bFloored);
     /** Server: the body goes down: off its feet, out of everyone's way, not a target. */
     void FallDown(float Seconds);
-    /** Walk toward Goal until the next tick says otherwise; Stop() stands still. */
+    /**
+     * Walk toward Goal until the next tick says otherwise; Stop() stands still. A step that would take the body
+     * from dry ground into the water is not taken (ADR-046): it stands at the edge with bWaterAhead set.
+     */
     void WalkTo(const FVector& Goal);
     void Stop();
+    /** Where the feet are. */
+    FVector FeetLocation() const;
+    /** The straight way from here to Goal's plan position keeps out of the water (always, once swimming). */
+    bool IsDryWay(const FVector& Goal) const;
+    /**
+     * A goal StepCm away, in Direction or as little off it as keeps the way dry (up to 150 degrees either side).
+     * False when every way is wet.
+     */
+    bool FindDryStep(const FVector& Direction, double StepCm, FVector& OutGoal) const;
     void FaceToward(const FVector& Point);
     bool IsWalled(const AActor& Other) const;
     void Tint();
@@ -171,6 +183,8 @@ protected:
     bool bLastStepFailed = false;
     bool bWalking = false;
     FVector WalkGoal = FVector::ZeroVector;
+    /** Walking was held back at the water's edge on the last frame. */
+    bool bWaterAhead = false;
     bool bHasFacing = false;
     double FacingYaw = 0.0;
     float RecoverRemaining = 0.f;

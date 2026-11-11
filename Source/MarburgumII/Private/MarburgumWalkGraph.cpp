@@ -3,6 +3,7 @@
 #include "CollisionQueryParams.h"
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
+#include "MarburgumWater.h"
 #include "Misc/FileHelper.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -66,6 +67,8 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
     FCollisionObjectQueryParams Static(FCollisionObjectQueryParams::AllStaticObjects);
     const FCollisionShape Body = FCollisionShape::MakeCapsule(BodyRadiusCm, BodyHalfHeightCm);
     const FCollisionShape Sweep = FCollisionShape::MakeCapsule(SweepRadiusCm, SweepHalfHeightCm);
+    // Nobody is led into the river (ADR-046): a node or an edge in the water goes too.
+    const UMarburgumWaterSubsystem* Water = World.GetSubsystem<UMarburgumWaterSubsystem>();
 
     const TArray<TSharedPtr<FJsonValue>>& JsonNodes = Root->GetArrayField(TEXT("nodes"));
     TArray<int32> Index;
@@ -73,6 +76,7 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
     TArray<FNode> Kept;
     int32 NoGround = 0;
     int32 NoRoom = 0;
+    int32 Wet = 0;
     for (int32 Source = 0; Source < JsonNodes.Num(); ++Source)
     {
         const TArray<TSharedPtr<FJsonValue>>& Row = JsonNodes[Source]->AsArray();
@@ -120,6 +124,11 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
             ++NoRoom;
             continue;
         }
+        if (Water && Water->IsWet(At))
+        {
+            ++Wet;
+            continue;
+        }
         FNode Node;
         Node.Location = At;
         Node.bRoad = (NodeFlags & RoadFlag) != 0;
@@ -129,6 +138,7 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
     TArray<FEdge> KeptEdges;
     int32 Blocked = 0;
     int32 Missing = 0;
+    int32 WetEdges = 0;
     for (const TSharedPtr<FJsonValue>& Value : Root->GetArrayField(TEXT("edges")))
     {
         const TArray<TSharedPtr<FJsonValue>>& Row = Value->AsArray();
@@ -152,6 +162,11 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
             ++Blocked;
             continue;
         }
+        if (Water && Water->IsWetWay(A, B))
+        {
+            ++WetEdges;
+            continue;
+        }
         FEdge Edge;
         Edge.A = Index[SourceA];
         Edge.B = Index[SourceB];
@@ -168,8 +183,8 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
     {
         LargestCount += Node.Component == Largest ? 1 : 0;
     }
-    OutReport = FString::Printf(TEXT("nodes=%d/%d edges=%d/%d no_ground=%d no_room=%d edges_blocked=%d edges_missing_end=%d largest_component=%d"),
-        Nodes.Num(), Read, Edges.Num(), EdgesRead, NoGround, NoRoom, Blocked, Missing, LargestCount);
+    OutReport = FString::Printf(TEXT("nodes=%d/%d edges=%d/%d no_ground=%d no_room=%d edges_blocked=%d edges_missing_end=%d largest_component=%d water_volumes=%d wet=%d edges_wet=%d"),
+        Nodes.Num(), Read, Edges.Num(), EdgesRead, NoGround, NoRoom, Blocked, Missing, LargestCount, Water ? Water->NumVolumes() : 0, Wet, WetEdges);
     if (Nodes.IsEmpty())
     {
         OutError = TEXT("no node of the walk graph is on walkable ground in this level");

@@ -12,6 +12,7 @@
 #include "MarburgumNetworkContract.h"
 #include "MarburgumPedestrian.h"
 #include "MarburgumVehicle.h"
+#include "MarburgumWater.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
@@ -41,6 +42,12 @@ namespace MarburgumStreetPopulation
     constexpr double BodyHoldSeconds = 0.5;
     constexpr float HalfHeightCm = 88.f;
     constexpr double SummarySeconds = 10.0;
+    // The water probe (ADR-046): the node nearest the first player (within this) with the river this far off it
+    // is scared from this far the other side, and watched for this long, out of the cull's reach.
+    constexpr double WaterProbeSearchCm = 30000.0;
+    constexpr double WaterProbeReachCm = 400.0;
+    constexpr double WaterProbeThreatCm = 300.0;
+    constexpr double WaterProbeSeconds = 6.0;
 }
 
 bool UMarburgumStreetSubsystem::ShouldCreateSubsystem(UObject* Outer) const
@@ -162,18 +169,22 @@ void UMarburgumStreetSubsystem::Step(double Time)
     MarkSeenAndCull(Time);
     SpawnPeople(Time, MarburgumStreetPopulation::StepSeconds);
     StepProbe();
+    StepWaterProbe(Time);
 
     if (Time - LastSummarySeconds >= MarburgumStreetPopulation::SummarySeconds)
     {
         LastSummarySeconds = Time;
         int32 ByMood[7] = {};
+        // Nobody walks into the river (ADR-046); anyone in it got there some other way, and is counted.
+        int32 Swimming = 0;
         for (const TWeakObjectPtr<AMarburgumPedestrian>& Person : People)
         {
             ++ByMood[FMath::Clamp(static_cast<int32>(Person->GetMood()), 0, 6)];
+            Swimming += Person->GetCharacterMovement()->IsSwimming() ? 1 : 0;
         }
-        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_summary people=%d players=%d incidents=%d walk=%d flee=%d watch=%d gather=%d dodge=%d fight=%d down=%d"),
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_summary people=%d players=%d incidents=%d walk=%d flee=%d watch=%d gather=%d dodge=%d fight=%d down=%d swimming=%d"),
             StreetLogPrefix, People.Num(), Viewers.Num(), Incidents.Num(), ByMood[0], ByMood[1], ByMood[2], ByMood[3], ByMood[4], ByMood[5],
-            ByMood[6]);
+            ByMood[6], Swimming);
     }
 }
 
@@ -326,6 +337,10 @@ void UMarburgumStreetSubsystem::MarkSeenAndCull(double Time)
             }
         }
         const bool bUnseen = Time - Person->LastSeenSeconds > UnseenSeconds;
+        if (Person == WaterProbe.Get() && Time < WaterProbeUntil)
+        {
+            continue;
+        }
         const TCHAR* Reason = nullptr;
         if (Viewers.IsEmpty())
         {
@@ -524,6 +539,74 @@ void UMarburgumStreetSubsystem::StepProbe()
             *Car->VehicleId.ToString(), Car->GetForwardSpeed(), Witnesses);
         return;
     }
+}
+
+void UMarburgumStreetSubsystem::StepWaterProbe(double Time)
+{
+    using namespace MarburgumStreetPopulation;
+    if (!bProbe)
+    {
+        return;
+    }
+    if (AMarburgumPedestrian* Person = WaterProbe.Get())
+    {
+        bWaterProbeSwam |= Person->GetCharacterMovement()->IsSwimming();
+        if (Time < WaterProbeUntil)
+        {
+            return;
+        }
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=water_probe_done npc=%s swam=%d moved_m=%.1f mood=%s"), StreetLogPrefix,
+            *Person->GetNpcId().ToString(), bWaterProbeSwam ? 1 : 0, FVector::Dist2D(Person->GetActorLocation(), WaterProbeStart) / 100.0,
+            AMarburgumPedestrian::MoodIntent(Person->GetMood()));
+        WaterProbe.Reset();
+        return;
+    }
+    if (bWaterProbeDone || Viewers.IsEmpty())
+    {
+        return;
+    }
+    bWaterProbeDone = true;
+    const UMarburgumWaterSubsystem* Water = GetWorld()->GetSubsystem<UMarburgumWaterSubsystem>();
+    if (!Water)
+    {
+        UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=water_probe_skipped reason=no_water"), StreetLogPrefix);
+        return;
+    }
+    // The pavement node nearest the player with the river a few metres off it.
+    const FVector Player = Viewers[0].Location;
+    TArray<int32> Near;
+    Graph.NodesWithin(Player, WaterProbeSearchCm, Near);
+    Near.Sort([&](int32 A, int32 B)
+    {
+        return FVector::DistSquared2D(Graph.GetNodes()[A].Location, Player) < FVector::DistSquared2D(Graph.GetNodes()[B].Location, Player);
+    });
+    for (const int32 Node : Near)
+    {
+        const FVector At = Graph.GetNodes()[Node].Location;
+        for (int32 Way = 0; Way < 16; ++Way)
+        {
+            const FVector Toward = FRotator(0.0, Way * 22.5, 0.0).Vector();
+            if (!Water->IsWet(At + Toward * WaterProbeReachCm) || !SpawnPointOk(At, false, true))
+            {
+                continue;
+            }
+            AMarburgumPedestrian* Person = SpawnAt(Node, nullptr, TEXT("probe_water"), FVector::Dist2D(At, Player));
+            if (!Person)
+            {
+                continue;
+            }
+            const FVector Threat = At - Toward * WaterProbeThreatCm;
+            Person->MakeWaterProbe(Threat, WaterProbeSeconds);
+            WaterProbe = Person;
+            WaterProbeUntil = Time + WaterProbeSeconds;
+            WaterProbeStart = Person->GetActorLocation();
+            bWaterProbeSwam = false;
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=water_probe npc=%s at=%.0f,%.0f,%.0f straight_away_wet=1 player_m=%.1f"), StreetLogPrefix,
+                *Person->GetNpcId().ToString(), At.X, At.Y, At.Z, FVector::Dist2D(At, Player) / 100.0);
+            return;
+        }
+    }
+    UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=water_probe_skipped reason=no_node_by_the_river"), StreetLogPrefix);
 }
 
 void UMarburgumStreetSubsystem::SpawnPeople(double Time, float DeltaSeconds)

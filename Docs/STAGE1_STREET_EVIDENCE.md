@@ -46,6 +46,21 @@ Per [ADR-008](DECISIONS.md) the status is `implemented_awaiting_owner_playtest`.
 ![Swinging at the air: people further along stop or turn away](Captures/stage1-street/street-fight.jpg)
 ![After the run-over: people flee along both pavements](Captures/stage1-street/street-run-over.jpg)
 
+## Keeping out of the Drava (ADR-046), 2026-11-11
+
+The owner saw people walk into the river. The same smoke now also checks the walk graph against the water, places a person by the river and scares them from the land side, and counts anyone in the water every 10 s.
+
+| Case | Observed | Result |
+| --- | --- | --- |
+| Graph | `street_ready … nodes=1529/1582 … water_volumes=91 wet=14 edges_wet=0`: 14 nodes the graph check used to keep lie in the river and are dropped | PASS |
+| River probe | `water_probe npc=street_1 at=6354,-15423,152 straight_away_wet=1 player_m=31.2`, then `water_probe_done … swam=0 moved_m=21.8 mood=flee`: running straight away would be into the Drava; they ran 21.8 m along the bank instead | PASS |
+| Nobody swims | Every `street_summary` has `swimming=0` | PASS |
+| Negative control | The same run with the step check switched off (a local build, not committed): `water_probe_done … swam=1`, and a `street_summary` with `swimming=1` | FAIL, as intended |
+
+Runs: `Saved/StreetSmoke/20261111T200710Z` and `20261111T201119Z` ([summary](Captures/stage1-street/water-summary.txt)) passed in full. `20261111T201216Z` passed every water check but failed `answered_body` (nobody reacted to the body); see below. Negative control: `20261111T200947Z`. Editor binaries, `scripts/street-smoke-linux.sh editor`. The automation tests (`Marburgum.*`, 8 of 8, including the water footprint cases in `StreetRules`) pass.
+
+`answered_body` is marginal. The car drives on, and new people appear round the player, about 57 m past the body. Only people already within 20 m of it can answer it, and the run-over has already alarmed most of them. Every earlier run had exactly one such answer. With these changes, 2 of 6 runs had none. The ADR-044 build (the `feat/street-people` worktree, unchanged) had none in 3 of 4 runs the same evening (`20261111T201412Z`, `201534Z`, `201645Z`; `201755Z` passed), so the water changes do not cause it. Keeping the car near the body, or the driver waiting there, would make the check reliable; that is left for the street work.
+
 ## Not covered
 
 - An owner playtest, and a staged (packaged) run.

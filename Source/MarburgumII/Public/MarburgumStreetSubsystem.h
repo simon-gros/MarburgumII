@@ -96,6 +96,11 @@ private:
     AMarburgumPedestrian* SpawnAt(int32 Node, const FVector* Override, const TCHAR* Why, double PlayerDistanceCm);
     /** -MB2StreetProbe: once a player drives, a person who will not jump clear stands in the car's way. */
     void StepProbe();
+    /**
+     * -MB2StreetProbe, ADR-046: once a player is about, a person on the pavement nearest the river is scared
+     * from the land side, so running straight away would be into the Drava, and is watched for a while.
+     */
+    void StepWaterProbe(double Now);
     /** Far enough from every player for the band (unless bNearPlayers), and not on top of anybody. */
     bool SpawnPointOk(const FVector& At, bool bInView, bool bNearPlayers = false) const;
     /** Within the view half-angle, narrowed by InsetDegrees (spawns use an inset so walking does not take them out of it). */
@@ -124,4 +129,9 @@ private:
     double LastSummarySeconds = 0.0;
     bool bProbe = false;
     bool bProbeDone = false;
+    bool bWaterProbeDone = false;
+    TWeakObjectPtr<AMarburgumPedestrian> WaterProbe;
+    double WaterProbeUntil = 0.0;
+    bool bWaterProbeSwam = false;
+    FVector WaterProbeStart = FVector::ZeroVector;
 };

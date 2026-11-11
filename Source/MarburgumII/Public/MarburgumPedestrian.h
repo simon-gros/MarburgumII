@@ -78,6 +78,8 @@ public:
      * not, with this much vitality.
      */
     void MakeProbe(const FVector& At, double Seconds, bool bDodges, float InVitality);
+    /** Server, smoke tests only (ADR-046): run off the graph, straight away from From, for Seconds. */
+    void MakeWaterProbe(const FVector& From, double Seconds);
 
     /** Server: when some player last had them in view (UMarburgumStreetSubsystem keeps it). */
     double LastSeenSeconds = -1000.0;

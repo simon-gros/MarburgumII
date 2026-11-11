@@ -8,7 +8,8 @@ class UWorld;
  * The walk graph street people follow (ADR-044), read from the file tools/lent-ground builds from the paved
  * streets (Content/Marburgum/Street/lent_walk_graph.json) and checked against the level it is loaded into:
  * every node is put on the ground found there and must leave room for a body, and every edge must be clear
- * for one walking along it. Whatever fails is dropped, so the graph never leads anyone into a wall.
+ * for one walking along it, and neither may be in the river (UMarburgumWaterSubsystem, ADR-046). Whatever fails
+ * is dropped, so the graph never leads anyone into a wall or the water.
  *
  * Positions are Unreal centimetres, on the walking surface. Edges are undirected.
  */

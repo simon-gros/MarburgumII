@@ -6,6 +6,8 @@
 #
 #   people appear round it, out of sight, and walk; it throws punches at the air and people near flee or watch;
 #   it drives off: the first probe goes down under the car, the second jumps aside; people answer the body.
+#   and, as it arrives, a person by the Drava is scared from the land side and runs along the bank, not into the
+#   river (ADR-046); nobody on the street is ever in the water.
 #
 # The server must log the walk graph loaded, people spawned and despawned, reactions to the fight, the run-over,
 # the dodge and the body. Evidence is written to Saved/StreetSmoke/<UTC timestamp>/.
@@ -150,6 +152,12 @@ if [[ -n "$victim" ]]; then
 fi
 expect_log "$log" "gathered_round_body" ">=0" "MB2_STREET role=server event=gathered "
 expect_log "$log" "graph_off" 0 "MB2_STREET role=server event=street_off"
+# Nobody walks into the Drava (ADR-046): the graph is checked against the water, and nobody is ever in it.
+expect_log "$log" "graph_checked_for_water" 1 "MB2_STREET role=server event=street_ready .* water_volumes=[1-9][0-9]* "
+expect_log "$log" "people_in_water" 0 "MB2_STREET role=server event=street_summary .* swimming=[1-9]"
+# The water probe: scared from the land side by the river, the person runs along the bank and never swims.
+expect_log "$log" "water_probe" 1 "MB2_STREET role=server event=water_probe npc=street_.* straight_away_wet=1 "
+expect_log "$log" "water_probe_dry" 1 "MB2_STREET role=server event=water_probe_done npc=street_.* swam=0 "
 
 {
     echo "MarburgumII street smoke"
@@ -160,7 +168,7 @@ expect_log "$log" "graph_off" 0 "MB2_STREET role=server event=street_off"
     echo "map: $map"
     echo "host: $(uname -srm)"
     echo
-    grep -ah "MB2SSMOKE\|MB2_STREET role=server event=\(street_ready\|street_summary\|incident\|react\|run_over\|dodge\|probe\|gathered\|despawn\)\|MB2SMOKE role=server event=\(ready\|login\|logout\)" \
+    grep -ah "MB2SSMOKE\|MB2_STREET role=server event=\(street_ready\|street_summary\|incident\|react\|run_over\|dodge\|probe\|gathered\|despawn\|water_edge\|water_probe\|water_probe_done\|water_probe_skipped\)\|MB2SMOKE role=server event=\(ready\|login\|logout\)" \
         "$out_dir"/*.log | sed 's/^.*\(MB2SSMOKE\|MB2_STREET\|MB2SMOKE\)/\1/'
 } > "$out_dir/summary.txt"
 

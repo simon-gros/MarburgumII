@@ -1,0 +1,98 @@
+MarburgumII street smoke
+result: PASS
+date_utc: 2026-11-11T20:12:16Z
+git_sha: 5dbc1d202f9b3c8ba21eeaeb5e3acfc19305f079 (dirty)
+mode: editor
+map: /Game/World/lent
+host: Linux 6.18.60-2-cachyos-lts x86_64
+
+MB2SSMOKE role=client event=start shot=1
+MB2SSMOKE role=client event=ready at=X=7091.900 Y=-12392.600 Z=251.800
+MB2SSMOKE role=client event=populated step=1 step_s=0.0 pos=7092,-12393,252 people=11 walk=10 flee=1 watch=0 gather=0 dodge=0 fight=0 down=0 most_flee=1 most_watch=0 most_down=0 most_gather=0 most_dodge=0 nearest_appear_m=24.0
+MB2SSMOKE role=client event=walked kept=10 walked=10 fell=0
+MB2SSMOKE role=client event=walking step=2 step_s=8.0 pos=7092,-12393,252 people=20 walk=20 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 most_flee=1 most_watch=0 most_down=0 most_gather=0 most_dodge=0 nearest_appear_m=24.0
+MB2SSMOKE role=client event=fight_mid step=3 step_s=4.2 pos=7092,-12393,252 people=20 walk=17 flee=2 watch=1 gather=0 dodge=0 fight=0 down=0 most_flee=2 most_watch=1 most_down=0 most_gather=0 most_dodge=0 nearest_appear_m=24.0
+MB2SSMOKE role=client event=fight_over step=3 step_s=7.0 pos=7092,-12393,252 people=20 walk=18 flee=0 watch=2 gather=0 dodge=0 fight=0 down=0 most_flee=2 most_watch=2 most_down=0 most_gather=0 most_dodge=0 nearest_appear_m=24.0
+MB2SSMOKE role=client event=calm step=4 step_s=4.0 pos=7092,-12393,252 people=20 walk=16 flee=2 watch=2 gather=0 dodge=0 fight=0 down=0 most_flee=2 most_watch=3 most_down=0 most_gather=0 most_dodge=0 nearest_appear_m=24.0
+MB2SSMOKE role=client event=seated step=5 step_s=0.0 pos=7325,-12335,245 people=20 walk=16 flee=2 watch=2 gather=0 dodge=0 fight=0 down=0 most_flee=2 most_watch=3 most_down=0 most_gather=0 most_dodge=0 nearest_appear_m=24.0
+MB2SSMOKE role=client event=struck step=6 step_s=2.8 pos=7324,-13304,249 people=24 walk=18 flee=2 watch=4 gather=0 dodge=0 fight=0 down=0 most_flee=2 most_watch=4 most_down=1 most_gather=0 most_dodge=0 nearest_appear_m=24.0
+MB2SSMOKE role=client event=braked step=6 step_s=7.0 pos=7316,-17933,260 people=18 walk=2 flee=9 watch=5 gather=1 dodge=0 fight=0 down=1 most_flee=11 most_watch=6 most_down=1 most_gather=1 most_dodge=1 nearest_appear_m=24.0
+MB2SSMOKE role=client event=gathered step=7 step_s=0.0 pos=7316,-17942,260 people=18 walk=2 flee=9 watch=5 gather=1 dodge=0 fight=0 down=1 most_flee=11 most_watch=6 most_down=1 most_gather=1 most_dodge=1 nearest_appear_m=24.0
+MB2SSMOKE role=client event=after_run_over step=7 step_s=0.0 pos=7316,-17942,260 people=18 walk=2 flee=9 watch=5 gather=1 dodge=0 fight=0 down=1 most_flee=11 most_watch=6 most_down=1 most_gather=1 most_dodge=1 nearest_appear_m=24.0
+MB2SSMOKE role=client event=pass
+MB2SMOKE role=server event=ready map=lent port=27761 contract=1
+MB2_STREET role=server event=street_ready graph="lent_walk_graph.json" nodes=1529/1582 edges=1695/1777 no_ground=12 no_room=23 edges_blocked=11 edges_missing_end=71 largest_component=907 water_volumes=91 wet=14 edges_wet=0 seed=1990 load_ms=12
+MB2SMOKE role=server event=login player=256 players=1
+MB2_STREET role=server event=probe npc=street_1 group=commuters personality=norm mood=flee pos=6354,-15423,244 water=1 from=6631,-15308
+MB2_STREET role=server event=water_probe npc=street_1 at=6354,-15423,152 straight_away_wet=1 player_m=31.2
+MB2_STREET role=server event=street_summary people=7 players=1 incidents=0 walk=6 flee=1 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0
+MB2_STREET role=server event=water_probe_done npc=street_1 swam=0 moved_m=22.0 mood=walk
+MB2_STREET role=server event=despawn npc=street_11 reason=far nearest_player_m=65.1
+MB2_STREET role=server event=incident id=1 kind=fight player=1 who=MarburgumCharacter_0 at=7092,-12393,252
+MB2_STREET role=server event=react npc=street_5 group=commuters personality=norm mood=walk pos=6076,-11711,272 event=fight response=flee incident=1 source=player spread=0 distance_m=12.2
+MB2_STREET role=server event=react npc=street_10 group=residents personality=norm mood=walk pos=6055,-11277,272 event=fight response=watch incident=1 source=player spread=0 distance_m=15.2
+MB2_STREET role=server event=react npc=street_18 group=students personality=tough mood=walk pos=6024,-11086,270 event=fight response=flee incident=1 source=player spread=0 distance_m=16.9
+MB2_STREET role=server event=street_summary people=20 players=1 incidents=1 walk=17 flee=2 watch=1 gather=0 dodge=0 fight=0 down=0 swimming=0
+MB2_STREET role=server event=despawn npc=street_16 reason=far nearest_player_m=65.0
+MB2_STREET role=server event=despawn npc=street_4 reason=far nearest_player_m=65.1
+MB2_STREET role=server event=despawn npc=street_18 reason=unseen nearest_player_m=35.3
+MB2_STREET role=server event=despawn npc=street_5 reason=unseen nearest_player_m=35.3
+MB2_STREET role=server event=react npc=street_25 group=commuters personality=weak mood=walk pos=5990,-10259,266 event=fight response=watch incident=1 source=player spread=0 distance_m=24.0
+MB2_STREET role=server event=react npc=street_7 group=students personality=norm mood=walk pos=6330,-15282,250 event=fight response=watch incident=1 source=player spread=0 distance_m=29.9
+MB2_STREET role=server event=react npc=street_21 group=pensioners personality=weak mood=walk pos=6413,-16302,227 event=fight response=flee incident=1 source=player spread=1 distance_m=39.7
+MB2_STREET role=server event=react npc=street_15 group=shoppers personality=weak mood=walk pos=6246,-15305,230 event=fight response=flee incident=1 source=player spread=1 distance_m=30.3
+MB2_STREET role=server event=react npc=street_19 group=commuters personality=norm mood=walk pos=6467,-16820,232 event=fight response=ignore incident=1 source=player spread=1 distance_m=44.7
+MB2_STREET role=server event=despawn npc=street_6 reason=far nearest_player_m=65.0
+MB2_STREET role=server event=react npc=street_24 group=shoppers personality=norm mood=walk pos=7524,-17274,268 event=fight response=ignore incident=1 source=player spread=1 distance_m=49.0
+MB2_STREET role=server event=despawn npc=street_8 reason=far nearest_player_m=65.0
+MB2_STREET role=server event=street_summary people=20 players=1 incidents=0 walk=16 flee=2 watch=2 gather=0 dodge=0 fight=0 down=0 swimming=0
+MB2_STREET role=server event=probe npc=street_28 group=students personality=norm mood=watch pos=7357,-13604,257 dodges=0 vitality=30
+MB2_STREET role=server event=probe npc=street_29 group=shoppers personality=weak mood=watch pos=7357,-15704,264 dodges=1 vitality=70
+MB2_STREET role=server event=probe vehicle=lent_hatchback speed_ms=3.2 witnesses=2
+MB2_STREET role=server event=run_over npc=street_28 vehicle=lent_hatchback speed_ms=7.2 damage=72.2 out=1 player_driving=1 incident=2 at=7357,-13604,257
+MB2_STREET role=server event=react npc=street_7 group=students personality=norm mood=watch pos=6329,-15281,250 event=run_over response=watch incident=2 source=player spread=0 distance_m=19.7
+MB2_STREET role=server event=react npc=street_10 group=residents personality=norm mood=walk pos=6077,-11975,274 event=run_over response=watch incident=2 source=player spread=0 distance_m=20.7
+MB2_STREET role=server event=react npc=street_19 group=commuters personality=norm mood=walk pos=6372,-15942,221 event=run_over response=flee incident=2 source=player spread=0 distance_m=25.4
+MB2_STREET role=server event=react npc=street_29 group=shoppers personality=weak mood=watch pos=7357,-15704,264 event=run_over response=flee incident=2 source=player spread=0 distance_m=21.0
+MB2_STREET role=server event=react npc=street_30 group=pensioners personality=weak mood=walk pos=6088,-12929,277 event=run_over response=flee incident=2 source=player spread=0 distance_m=14.4
+MB2_STREET role=server event=react npc=street_31 group=shoppers personality=norm mood=walk pos=6134,-14088,279 event=run_over response=watch incident=2 source=player spread=0 distance_m=13.2
+MB2_STREET role=server event=incident id=3 kind=body player=0 who=MarburgumPedestrian_27 at=7357,-13604,257
+MB2_STREET role=server event=despawn npc=street_25 reason=unseen nearest_player_m=35.2
+MB2_STREET role=server event=react npc=street_15 group=shoppers personality=weak mood=flee pos=6910,-17250,276 event=run_over response=flee incident=2 source=player spread=1 distance_m=36.7
+MB2_STREET role=server event=react npc=street_27 group=pensioners personality=weak mood=walk pos=7141,-17199,276 event=run_over response=flee incident=2 source=player spread=1 distance_m=36.0
+MB2_STREET role=server event=react npc=street_24 group=shoppers personality=norm mood=walk pos=8265,-17471,294 event=run_over response=flee incident=2 source=player spread=1 distance_m=39.7
+MB2_STREET role=server event=react npc=street_21 group=pensioners personality=weak mood=flee pos=8302,-17360,295 event=run_over response=flee incident=2 source=player spread=1 distance_m=38.7
+MB2_STREET role=server event=react npc=street_17 group=shoppers personality=norm mood=walk pos=8974,-17728,305 event=run_over response=watch incident=2 source=player spread=1 distance_m=44.3
+MB2_STREET role=server event=react npc=street_1 group=commuters personality=norm mood=walk pos=8741,-17670,300 event=run_over response=watch incident=2 source=player spread=1 distance_m=42.9
+MB2_STREET role=server event=react npc=street_9 group=commuters personality=norm mood=walk pos=9391,-17974,322 event=run_over response=flee incident=2 source=player spread=1 distance_m=48.2
+MB2_STREET role=server event=react npc=street_12 group=shoppers personality=norm mood=walk pos=9891,-18059,341 event=run_over response=flee incident=2 source=player spread=1 distance_m=51.2
+MB2_STREET role=server event=react npc=street_22 group=shoppers personality=norm mood=walk pos=9483,-17912,323 event=run_over response=watch incident=2 source=player spread=1 distance_m=48.0
+MB2_STREET role=server event=react npc=street_26 group=commuters personality=weak mood=walk pos=10255,-17591,345 event=run_over response=flee incident=2 source=player spread=1 distance_m=49.3
+MB2_STREET role=server event=react npc=street_3 group=commuters personality=norm mood=walk pos=10189,-18188,355 event=run_over response=flee incident=2 source=player spread=1 distance_m=53.9
+MB2_STREET role=server event=dodge npc=street_29 group=shoppers personality=weak mood=dodge pos=7357,-16368,264 car_speed_ms=10.5 due_s=1.42
+MB2_STREET role=server event=despawn npc=street_10 reason=unseen nearest_player_m=35.7
+MB2_STREET role=server event=despawn npc=street_14 reason=unseen nearest_player_m=50.3
+MB2_STREET role=server event=despawn npc=street_2 reason=unseen nearest_player_m=47.9
+MB2_STREET role=server event=despawn npc=street_20 reason=unseen nearest_player_m=50.2
+MB2_STREET role=server event=react npc=street_32 group=students personality=norm mood=walk pos=6168,-14856,264 event=body response=watch incident=3 source=stranger spread=0 distance_m=17.3
+MB2_STREET role=server event=despawn npc=street_13 reason=unseen nearest_player_m=49.1
+MB2_STREET role=server event=despawn npc=street_30 reason=unseen nearest_player_m=55.6
+MB2SMOKE role=server event=logout player=256 players=0
+MB2_STREET role=server event=despawn npc=street_1 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_3 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_7 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_9 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_12 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_15 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_17 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_19 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_21 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_22 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_23 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_24 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_26 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_27 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_28 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_29 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_31 reason=nobody_about nearest_player_m=-1.0
+MB2_STREET role=server event=despawn npc=street_32 reason=nobody_about nearest_player_m=-1.0

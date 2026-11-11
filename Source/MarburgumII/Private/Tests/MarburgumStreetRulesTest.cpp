@@ -1,5 +1,6 @@
 #include "MarburgumStreetContract.h"
 #include "MarburgumWalkGraph.h"
+#include "MarburgumWater.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -97,6 +98,28 @@ bool FMarburgumStreetRulesTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("the largest network is the three-node one"), Graph.GetNodes()[Graph.NearestNode(FVector::ZeroVector, 100.0)].Component,
             Graph.LargestComponent());
         TestEqual(TEXT("the middle node has two edges"), Graph.Touching(Graph.NearestNode(FVector(500.0, 0.0, 0.0), 100.0)).Num(), 2);
+    }
+
+    // The water's footprint (ADR-046): over a column, from its bottom up to a drop above its surface.
+    {
+        FMarburgumWaterColumns Water;
+        TArray<int32, TInlineAllocator<4>> Under;
+        Water.Under(FVector::ZeroVector, 5000.0, Under);
+        TestEqual(TEXT("no water, nothing under anyone"), Under.Num(), 0);
+        Water.Add(FBox(FVector(0.0, 0.0, -250.0), FVector(1000.0, 400.0, 6.0)));
+        Water.Add(FBox(FVector(1000.0, 0.0, -100.0), FVector(1100.0, 400.0, 6.0)));
+        Water.Under(FVector(500.0, 200.0, -40.0), 5000.0, Under);
+        TestEqual(TEXT("wading in the first column"), Under.Num(), 1);
+        Water.Under(FVector(500.0, 200.0, 180.0), 5000.0, Under);
+        TestEqual(TEXT("on a quay's height over it, still over the water"), Under.Num(), 1);
+        Water.Under(FVector(500.0, 200.0, 180.0), 100.0, Under);
+        TestEqual(TEXT("higher than the drop allowed"), Under.Num(), 0);
+        Water.Under(FVector(1050.0, 10.0, 0.0), 5000.0, Under);
+        TestTrue(TEXT("the second column"), Under.Num() == 1 && Under[0] == 1);
+        Water.Under(FVector(500.0, 450.0, 0.0), 5000.0, Under);
+        TestEqual(TEXT("on the bank beside it"), Under.Num(), 0);
+        Water.Under(FVector(500.0, 200.0, -400.0), 5000.0, Under);
+        TestEqual(TEXT("under the bed"), Under.Num(), 0);
     }
     return true;
 }
