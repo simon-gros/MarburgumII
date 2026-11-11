@@ -14,5 +14,7 @@ public class MarburgumII : ModuleRules
         });
         // Common runtime types may consume contracts; never depend on presentation or service modules.
         PrivateDependencyModuleNames.Add("MarburgumIIShared");
+        // The street walk graph (ADR-044) is a JSON file beside the content.
+        PrivateDependencyModuleNames.Add("Json");
     }
 }

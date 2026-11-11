@@ -7,6 +7,11 @@
 
 class AMarburgumCharacter;
 
+namespace MarburgumII::Combat
+{
+    struct FNpcDefinition;
+}
+
 /** What a fighting NPC's body is doing (the original's combat states), for evidence and presentation. */
 UENUM()
 enum class EMarburgumFighterState : uint8
@@ -65,7 +70,10 @@ public:
 
     FName GetNpcId() const { return NpcId; }
     FString GetDisplayName() const;
-    bool IsHostileRole() const;
+    /** Whether it answers violence by fighting: the cast's hostile role, or a street person who chose to. */
+    virtual bool IsHostileRole() const;
+    /** The person's numbers and looks; null for an unknown id. */
+    virtual const MarburgumII::Combat::FNpcDefinition* GetDefinition() const;
     bool IsDown() const { return FightPose.bDown; }
     uint8 GetVitalityPoints() const { return VitalityPoints; }
     EMarburgumFighterState GetFighterState() const { return State; }
@@ -79,6 +87,17 @@ public:
      */
     FName ReceiveBlowAuthority(AMarburgumCharacter* Attacker, float Damage, float StaggerSeconds, bool bHeavy);
 
+    /**
+     * Server only: a car struck this body (ADR-044). It loses Damage vitality and goes down; with some left it
+     * gets up again after DownSeconds where it lies and carries on, with none it is out like a beaten fighter.
+     */
+    void KnockDownAuthority(AActor* Vehicle, float Damage, float DownSeconds);
+
+    /** Server: on the floor, out of the fight or knocked down by a car. */
+    bool IsIncapacitatedAuthority() const { return State == EMarburgumFighterState::Incapacitated; }
+    /** Server: world seconds since it went down (meaningful while incapacitated). */
+    double GetDownSinceSeconds() const { return DownSinceSeconds; }
+
     /** Everyone: a blow landed on this body; play its sound here. */
     UFUNCTION(NetMulticast, Unreliable)
     void MulticastImpact(FVector_NetQuantize At, FName Outcome, bool bHeavy, bool bFloored);
@@ -89,21 +108,28 @@ public:
     static const TCHAR* StateName(EMarburgumFighterState Value);
     static const TCHAR* IntentName(EMarburgumFighterIntent Value);
 
-private:
+protected:
     /** One of the original's 100 ms ticks for this NPC. */
-    void Think();
+    virtual void Think();
     void ThinkHostile(AMarburgumCharacter& Person);
     void SetStateAndIntent(EMarburgumFighterState NewState, EMarburgumFighterIntent NewIntent);
-    void GiveUp();
+    virtual void GiveUp();
     void Strike(AMarburgumCharacter& Person);
-    void Recover();
+    /** Up again after RecoverRemaining: whole and at home after a beating, where it lies after a knock-down. */
+    virtual void Recover();
+    /** Server: a player's blow landed and the body is still standing (bFloored false) or not. */
+    virtual void OnBlowLanded(AMarburgumCharacter* Attacker, bool bFloored);
+    /** Server: the body goes down: off its feet, out of everyone's way, not a target. */
+    void FallDown(float Seconds);
     /** Walk toward Goal until the next tick says otherwise; Stop() stands still. */
     void WalkTo(const FVector& Goal);
     void Stop();
     void FaceToward(const FVector& Point);
     bool IsWalled(const AActor& Other) const;
     void Tint();
-    void LogEvent(const TCHAR* Event, const FString& Detail) const;
+    /** Called once the stats are known (BeginPlay on the server). */
+    void ApplyStats();
+    virtual void LogEvent(const TCHAR* Event, const FString& Detail) const;
 
     // ---- Replicated ----
 
@@ -148,6 +174,11 @@ private:
     bool bHasFacing = false;
     double FacingYaw = 0.0;
     float RecoverRemaining = 0.f;
+    /** Down from a car, not beaten: gets up where it lies. */
+    bool bKnockedDown = false;
+    /** Where the car that knocked it down was. */
+    FVector KnockedFrom = FVector::ZeroVector;
+    double DownSinceSeconds = 0.0;
 
     // ---- Presentation ----
 

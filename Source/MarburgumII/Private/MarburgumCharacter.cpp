@@ -21,6 +21,7 @@
 #include "MarburgumNetworkContract.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
+#include "MarburgumStreetSubsystem.h"
 #include "MarburgumVehicle.h"
 #include "MarburgumVehicleContract.h"
 #include "Net/UnrealNetwork.h"
@@ -501,6 +502,11 @@ void AMarburgumCharacter::ResolveSwingAuthority(bool bHeavy, const TCHAR* Refusa
             Result.TargetId = Target->GetNpcId();
             Result.TargetName = Target->GetDisplayName();
             Result.TargetVitality = Target->GetVitalityPoints();
+        }
+        // A punch thrown in the street is a fight to the people in it, landed or not (ADR-044).
+        if (UMarburgumStreetSubsystem* Street = GetWorld()->GetSubsystem<UMarburgumStreetSubsystem>())
+        {
+            Street->ReportFight(this, GetActorLocation(), true);
         }
     }
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=swing player=%d character=%s heavy=%d ok=%d reason=%s outcome=%s target=%s damage=%.1f target_vitality=%d"),

@@ -11,13 +11,17 @@
 //! - `top.bin`: the walkable top surface (landscape or paving), same grid, for seating actors;
 //! - `surface.png`: RGBA surface weights for the landscape (grass, earth, gravel, river stones);
 //! - `paved.bin`: road, kerb, pavement and marking meshes in chunks (see mesh.rs);
-//! - `ground.json`: sources with digests, grid and chunk layout, counts and checks.
+//! - `ground.json`: sources with digests, grid and chunk layout, counts and checks;
+//! - with `--walk-graph <file>`, the walk graph street people follow (walk.rs, ADR-044).
+//!
+//! `--mode walk` builds only the walk graph, from the streets and the `top.bin` already in `--out`.
 
 mod grid;
 mod mesh;
 mod osm;
 mod proj;
 mod shapes;
+mod walk;
 
 use grid::Grid;
 use mesh::{PavedMesh, Surface};
@@ -41,12 +45,16 @@ const KERB: f64 = 0.12;
 const KERB_DROPPED: f64 = 0.03;
 
 struct Args {
+    /// `walk`: only the walk graph, from the streets and the `top.bin` already in the output.
+    walk_only: bool,
     laz: PathBuf,
     osm: PathBuf,
     buildings: PathBuf,
     placed: PathBuf,
     ortho: PathBuf,
     out: PathBuf,
+    /// Where the walk graph goes (the game reads it from its content); none to skip it.
+    walk_graph: Option<PathBuf>,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -57,7 +65,9 @@ fn parse_args() -> Result<Args, String> {
         map.insert(k.trim_start_matches("--").to_string(), PathBuf::from(v));
     }
     let get = |k: &str| map.get(k).cloned().ok_or(format!("missing --{k}"));
-    Ok(Args { laz: get("laz")?, osm: get("osm")?, buildings: get("buildings")?, placed: get("placed")?, ortho: get("ortho")?, out: get("out")? })
+    let walk_only = map.get("mode").is_some_and(|m| m.as_os_str() == "walk");
+    let optional = |k: &str| if walk_only { Ok(map.get(k).cloned().unwrap_or_default()) } else { get(k) };
+    Ok(Args { walk_only, laz: optional("laz")?, osm: get("osm")?, buildings: get("buildings")?, placed: get("placed")?, ortho: optional("ortho")?, out: get("out")?, walk_graph: map.get("walk-graph").cloned() })
 }
 
 fn sha256_file(p: &Path) -> String {
@@ -443,6 +453,43 @@ fn centre_dashes(path: &[Pt]) -> Shapes {
 
 // ---------------------------------------------------------------------------------------------
 
+fn read_f32(path: &Path, n: usize, half: f64) -> Result<Grid, String> {
+    let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    if bytes.len() != n * n * 4 {
+        return Err(format!("{}: {} bytes, expected {}", path.display(), bytes.len(), n * n * 4));
+    }
+    let mut g = Grid::new(n, half, 0.0);
+    for (i, c) in bytes.chunks_exact(4).enumerate() {
+        g.v[i] = f32::from_le_bytes([c[0], c[1], c[2], c[3]]);
+    }
+    Ok(g)
+}
+
+/// The walk graph street people follow (walk.rs), written beside the ground.
+fn write_walk_graph(args: &Args, osm: &Osm, st: &Streets, footprints: &Shapes, top: &Grid) -> Result<(), String> {
+    let Some(path) = &args.walk_graph else {
+        return if args.walk_only { Err("--mode walk needs --walk-graph".into()) } else { Ok(()) };
+    };
+    let t0 = std::time::Instant::now();
+    let walkable = [&st.pavement, &st.unpaved, &st.plazas];
+    let blocked = shapes::union_all(&[footprints.clone(), st.water.clone()]);
+    let field = walk::Field::new(&walkable, &st.carriageway, &blocked, HALF);
+    let crossings: Vec<(Pt, [f64; 2])> = st.crossings.iter().map(|(at, _)| (*at, road_direction(&st.road_paths, *at))).collect();
+    let (graph, summary) = walk::build(osm, &field, &crossings, HALF);
+    let sources = serde_json::json!([
+        { "role": "streets and paths", "name": format!("OpenStreetMap via Overpass, {}", osm.timestamp), "licence": "ODbL 1.0, © OpenStreetMap contributors", "sha256": sha256_file(&args.osm) },
+        { "role": "building footprints", "name": "magna-raedarum-marburgum lent_buildings.json", "sha256": sha256_file(&args.buildings) },
+        { "role": "walkable top heights", "name": "top.bin (this tool)", "sha256": sha256_file(&args.out.join("top.bin")) },
+    ]);
+    let json = walk::to_json(&graph, top, &summary, sources);
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
+    }
+    std::fs::write(path, serde_json::to_string(&json).unwrap() + "\n").map_err(|e| e.to_string())?;
+    eprintln!("walk graph: {} ({:.1}s)", json["summary"], t0.elapsed().as_secs_f64());
+    Ok(())
+}
+
 fn write_f32(path: &Path, g: &Grid) -> std::io::Result<()> {
     let mut out = Vec::with_capacity(g.v.len() * 4);
     for v in &g.v {
@@ -493,6 +540,10 @@ fn run(args: &Args) -> Result<(), String> {
     let window = shapes::square(HALF - 1.0);
     let st = streets(&osm, &footprints, &window);
     eprintln!("streets: carriageway {:.0} m², pavement {:.0} m², {} crossings, {} junctions ({:.1}s)", shapes::area(&st.carriageway), shapes::area(&st.pavement), st.crossings.len(), st.junctions.len(), t0.elapsed().as_secs_f64());
+    if args.walk_only {
+        let top = read_f32(&args.out.join("top.bin"), LANDSCAPE_POINTS, HALF)?;
+        return write_walk_graph(args, &osm, &st, &footprints, &top);
+    }
 
     // ---- bare ground ----------------------------------------------------------------------
     let lidar = read_lidar(&args.laz, &st.bridges)?;
@@ -869,6 +920,7 @@ fn run(args: &Args) -> Result<(), String> {
         ],
     });
     std::fs::write(args.out.join("ground.json"), serde_json::to_string_pretty(&report).unwrap() + "\n").map_err(|e| e.to_string())?;
+    write_walk_graph(args, &osm, &st, &footprints, &top)?;
     eprintln!("done in {:.1}s: {}", t0.elapsed().as_secs_f64(), serde_json::to_string(&report["paved"]).unwrap());
     eprintln!("buildings: {}", report["buildings"]);
     Ok(())

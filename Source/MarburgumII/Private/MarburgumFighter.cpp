@@ -14,6 +14,7 @@
 #include "MarburgumFightPresentation.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumNetworkContract.h"
+#include "MarburgumStreetSubsystem.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -38,11 +39,6 @@ namespace
     constexpr double ChestCm = 50.0;
     constexpr float TurnDegreesPerSecond = 540.f;
     const FName PaintTint(TEXT("Paint Tint"));
-
-    const FNpcDefinition* Definition(FName Id)
-    {
-        return FindNpc(Id.ToString());
-    }
 
     bool IsStanding(const AMarburgumCharacter& Person)
     {
@@ -92,15 +88,20 @@ void AMarburgumFighter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
     DOREPLIFETIME(AMarburgumFighter, Intent);
 }
 
+const FNpcDefinition* AMarburgumFighter::GetDefinition() const
+{
+    return FindNpc(NpcId.ToString());
+}
+
 FString AMarburgumFighter::GetDisplayName() const
 {
-    const FNpcDefinition* Npc = Definition(NpcId);
+    const FNpcDefinition* Npc = GetDefinition();
     return Npc ? FString(Npc->Name) : NpcId.ToString();
 }
 
 bool AMarburgumFighter::IsHostileRole() const
 {
-    const FNpcDefinition* Npc = Definition(NpcId);
+    const FNpcDefinition* Npc = GetDefinition();
     return Npc && FCString::Strcmp(Npc->Role, RoleHostile) == 0;
 }
 
@@ -132,7 +133,12 @@ const TCHAR* AMarburgumFighter::IntentName(EMarburgumFighterIntent Value)
 void AMarburgumFighter::BeginPlay()
 {
     Super::BeginPlay();
-    const FNpcDefinition* Npc = Definition(NpcId);
+    ApplyStats();
+}
+
+void AMarburgumFighter::ApplyStats()
+{
+    const FNpcDefinition* Npc = GetDefinition();
     if (Npc)
     {
         GetMesh()->SetRelativeScale3D(FVector(Npc->Scale));
@@ -167,7 +173,7 @@ void AMarburgumFighter::BeginPlay()
 
 void AMarburgumFighter::Tint()
 {
-    const FNpcDefinition* Npc = Definition(NpcId);
+    const FNpcDefinition* Npc = GetDefinition();
     USkeletalMeshComponent* Body = GetMesh();
     if (!Npc || !Body)
     {
@@ -187,7 +193,7 @@ void AMarburgumFighter::Tint()
 void AMarburgumFighter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-    if (HasAuthority() && Definition(NpcId))
+    if (HasAuthority() && GetDefinition())
     {
         ThinkAccumulator += DeltaSeconds;
         // The original thinks on a fixed 100 ms tick; a long frame catches up, but never more than a second.
@@ -494,6 +500,11 @@ void AMarburgumFighter::Strike(AMarburgumCharacter& Person)
     FightPose.bHeavy = false;
     SetStateAndIntent(EMarburgumFighterState::Hostile, EMarburgumFighterIntent::Strike);
     Person.MulticastImpact(Person.GetActorLocation() + FVector(0.0, 0.0, ChestCm), Outcome, false, Movement->IsDown());
+    // The street sees a fight (ADR-044).
+    if (UMarburgumStreetSubsystem* Street = GetWorld()->GetSubsystem<UMarburgumStreetSubsystem>())
+    {
+        Street->ReportFight(this, GetActorLocation(), false);
+    }
     LogEvent(TEXT("npc_strike"), FString::Printf(TEXT("target=%s outcome=%s damage=%.1f target_vitality=%.1f target_down=%d"),
         *Person.GetName(), WireWord(Outcome), Damage, Movement->GetVitality(), Movement->IsDown() ? 1 : 0));
 }
@@ -511,29 +522,67 @@ FName AMarburgumFighter::ReceiveBlowAuthority(AMarburgumCharacter* Attacker, flo
     if (Blow.bIncapacitated)
     {
         // Out of the fight, not dead: on the floor, no longer anybody's target and nobody's opponent.
-        Target.Reset();
-        Stop();
-        GetCharacterMovement()->StopMovementImmediately();
-        GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-        FightPose.bDown = true;
-        FightPose.bGuarding = false;
-        RecoverRemaining = NpcRecoverySeconds;
-        SetStateAndIntent(EMarburgumFighterState::Incapacitated, EMarburgumFighterIntent::Wait);
+        bKnockedDown = false;
+        FallDown(NpcRecoverySeconds);
     }
     else
     {
         StaggerUntilTick = FMath::Max(StaggerUntilTick, TickCount + TicksForSeconds(Blow.StaggerSeconds));
-        // Being hit is how somebody finds out about you. A hostile answers it; anyone else only suffers it.
-        if (IsHostileRole() && Attacker)
-        {
-            Target = Attacker;
-            SetStateAndIntent(EMarburgumFighterState::Hostile, Intent);
-        }
     }
+    OnBlowLanded(Attacker, Blow.bIncapacitated);
     MulticastImpact(GetActorLocation() + FVector(0.0, 0.0, ChestCm), Blow.Outcome, bHeavy, Blow.bIncapacitated);
     LogEvent(TEXT("npc_struck"), FString::Printf(TEXT("by=%s heavy=%d outcome=%s damage=%.1f vitality=%.1f down=%d"),
         Attacker ? *Attacker->GetName() : TEXT("-"), bHeavy ? 1 : 0, Blow.Outcome, Blow.Applied, Vitality, Blow.bIncapacitated ? 1 : 0));
     return Blow.Outcome;
+}
+
+void AMarburgumFighter::OnBlowLanded(AMarburgumCharacter* Attacker, bool bFloored)
+{
+    // Being hit is how somebody finds out about you. A hostile answers it; anyone else only suffers it.
+    if (!bFloored && IsHostileRole() && Attacker)
+    {
+        Target = Attacker;
+        SetStateAndIntent(EMarburgumFighterState::Hostile, Intent);
+    }
+}
+
+void AMarburgumFighter::FallDown(float Seconds)
+{
+    Target.Reset();
+    Stop();
+    GetCharacterMovement()->StopMovementImmediately();
+    // Nobody walks into a body on the ground, and a car rolls over it rather than stopping dead against it.
+    GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+    GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Ignore);
+    GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Vehicle, ECR_Ignore);
+    FightPose.bDown = true;
+    FightPose.bGuarding = false;
+    RecoverRemaining = Seconds;
+    DownSinceSeconds = GetWorld()->GetTimeSeconds();
+    SetStateAndIntent(EMarburgumFighterState::Incapacitated, EMarburgumFighterIntent::Wait);
+}
+
+void AMarburgumFighter::KnockDownAuthority(AActor* Vehicle, float CarDamage, float DownSeconds)
+{
+    if (State == EMarburgumFighterState::Incapacitated)
+    {
+        return;
+    }
+    // A target is remembered through the fall: the fighter gets up and carries on after whoever it was after.
+    TWeakObjectPtr<AMarburgumCharacter> Kept = Target;
+    Vitality = FMath::Max(0.f, Vitality - CarDamage);
+    VitalityPoints = static_cast<uint8>(FMath::Clamp(FMath::CeilToInt(Vitality), 0, 255));
+    const bool bOut = Vitality <= 0.f;
+    bKnockedDown = !bOut;
+    KnockedFrom = Vehicle ? Vehicle->GetActorLocation() : GetActorLocation();
+    FallDown(bOut ? NpcRecoverySeconds : DownSeconds);
+    if (!bOut)
+    {
+        Target = Kept;
+    }
+    MulticastImpact(GetActorLocation() + FVector(0.0, 0.0, ChestCm), OutcomeHit, true, true);
+    LogEvent(TEXT("npc_run_over"), FString::Printf(TEXT("by=%s damage=%.1f vitality=%.1f out=%d"), Vehicle ? *Vehicle->GetName() : TEXT("-"), CarDamage,
+        Vitality, bOut ? 1 : 0));
 }
 
 void AMarburgumFighter::MulticastImpact_Implementation(FVector_NetQuantize At, FName Outcome, bool bHeavy, bool bFloored)
@@ -553,11 +602,25 @@ void AMarburgumFighter::GiveUp()
 
 void AMarburgumFighter::Recover()
 {
+    const FNpcDefinition* Npc = GetDefinition();
+    GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+    GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Block);
+    GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Vehicle, ECR_Block);
+    if (bKnockedDown)
+    {
+        // Knocked down by a car, not beaten: up where it lies, with what it had left, after whoever it was after.
+        bKnockedDown = false;
+        FightPose.bDown = false;
+        Stuck = 0;
+        bHasFacing = false;
+        LastThinkLocation = GetActorLocation();
+        SetStateAndIntent(Target.IsValid() ? EMarburgumFighterState::Hostile : EMarburgumFighterState::Idle, EMarburgumFighterIntent::Wait);
+        LogEvent(TEXT("npc_got_up"), FString::Printf(TEXT("vitality=%.0f"), Vitality));
+        return;
+    }
     // Marburgum II's addition: up again at home, whole, with nobody to fight.
-    const FNpcDefinition* Npc = Definition(NpcId);
     Vitality = MaxVitality;
     VitalityPoints = static_cast<uint8>(FMath::Clamp(FMath::CeilToInt(Vitality), 0, 255));
-    GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
     TeleportTo(Home, FRotator(0.0, HomeYaw, 0.0), false, true);
     FightPose.bDown = false;
     StaggerUntilTick = SwingUntilTick = NextAttackTick = 0;

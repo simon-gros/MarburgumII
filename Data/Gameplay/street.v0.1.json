@@ -1,0 +1,503 @@
+{
+  "format": "marburgumii.street",
+  "version": "0.1.0",
+  "status": "stage1_lent_street_people",
+  "description": "Street people carried forward from the original Marburgum's ambient population: who walks Lent, how far off they appear and go, and what each personality does about a fight, a run-over, someone on the ground, being hit or being walked into. Mirrors MarburgumIIShared/Public/MarburgumStreetContract.h; `mb2 validate street` keeps them in step. Distances in metres, speeds in metres per second, times in seconds. Decision weights are relative, per column [stranger, player].",
+  "provenance": {
+    "source": "magna-raedarum-marburgum: UnrealMarburgum/Source/MarburgumServer/Private/MarburgumAmbientPopulation.cpp and MarburgumRunOver, docs/AMBIENT_STREETS.md, project/data/population_groups.json, project/data/npc_visual_profiles.json (branches main, feat/ambient-react-to-bodies, feat/ambient-panic-spread)",
+    "copied_unchanged": [
+      "groups (archetypes, walk speeds, personality mixes)",
+      "looks (profile colours and scale)",
+      "old_town day mix",
+      "decisions: body, attacked, bumped",
+      "fight clearance, watch standoff, crowd spread, body notice and stand-by distances",
+      "run-over strike speed, margin, damage per m/s and down time"
+    ],
+    "marburgum_ii_own": [
+      "decisions: fight (the original's row was San Andreas' shipped R_Norm/R_Tough/R_Weak values) and run_over (none in the original)",
+      "people per player, spawn and cull distances (the original's were San Andreas' view bands)",
+      "graph walking: continuous heading with weighted branches (the original used GTA III's 45-degree headings)",
+      "fight notice radius 30 m (the original's 40 m was San Andreas')",
+      "flee, watch and dodge timings",
+      "colour and size variation within a look"
+    ],
+    "excluded": [
+      "San Andreas decision weights",
+      "San Andreas spawn/cull bands",
+      "GTA III wander, signal clock and car following",
+      "crime points, pursuit, officers",
+      "ambient traffic and carjacking (Marburgum II has no traffic yet)",
+      "attractors, time of day and weekend tables (no world clock yet)",
+      "placeholder San Andreas / GTA III bodies"
+    ]
+  },
+  "rules": {
+    "people_per_player": 20,
+    "max_people": 48,
+    "spawns_per_second": 4.0,
+    "view_half_angle_degrees": 60.0,
+    "spawn_in_view_min": 40.0,
+    "spawn_in_view_max": 55.0,
+    "spawn_out_of_view_min": 22.0,
+    "spawn_out_of_view_max": 35.0,
+    "in_view_spawn_share": 0.6,
+    "keep": 35.0,
+    "cull": 65.0,
+    "unseen_seconds": 5.0,
+    "clear_body": 30.0,
+    "clear_body_seconds": 60.0,
+    "keep_right": 0.3,
+    "node_arrive": 0.7,
+    "straightness": 3.0,
+    "heading_drift_degrees_per_second": 6.0,
+    "stuck_seconds": 2.0,
+    "fight_notice": 30.0,
+    "fight_clearance": 3.5,
+    "watch_standoff": 4.5,
+    "crowd_spread": 12.0,
+    "body_notice": 20.0,
+    "body_notice_height": 4.0,
+    "gather_offset": 1.5,
+    "gather_seconds_min": 6.0,
+    "gather_seconds_max": 14.0,
+    "bump": 0.9,
+    "bump_speed_min": 0.6,
+    "bump_speed_max": 7.0,
+    "flee_seconds": 8.0,
+    "watch_seconds": 8.0,
+    "flee_pace_min": 0.85,
+    "flee_pace_max": 1.05,
+    "dodge_lookahead_seconds": 1.5,
+    "dodge_clearance": 2.5,
+    "dodge_min_speed": 2.0,
+    "dodge_seconds": 1.2,
+    "dodge_step": 3.5,
+    "run_over_min_speed": 2.5,
+    "run_over_margin": 0.3,
+    "run_over_height": 2.0,
+    "run_over_damage_per_metre_per_second": 10.0,
+    "run_over_down_seconds": 4.0,
+    "run_over_incident_seconds": 3.0,
+    "fight_incident_seconds": 2.0,
+    "street_vitality": 70.0
+  },
+  "decisions": {
+    "norm": {
+      "fight": {
+        "flee": [
+          50,
+          55
+        ],
+        "watch": [
+          40,
+          35
+        ],
+        "ignore": [
+          10,
+          10
+        ]
+      },
+      "run_over": {
+        "flee": [
+          45,
+          50
+        ],
+        "watch": [
+          50,
+          45
+        ],
+        "ignore": [
+          5,
+          5
+        ]
+      },
+      "body": {
+        "flee": [
+          40,
+          55
+        ],
+        "watch": [
+          50,
+          40
+        ],
+        "ignore": [
+          10,
+          5
+        ]
+      },
+      "attacked": {
+        "flee": [
+          80,
+          80
+        ],
+        "fight": [
+          20,
+          20
+        ]
+      },
+      "bumped": {
+        "flee": [
+          60,
+          60
+        ],
+        "ignore": [
+          40,
+          40
+        ]
+      }
+    },
+    "tough": {
+      "fight": {
+        "flee": [
+          15,
+          20
+        ],
+        "watch": [
+          55,
+          50
+        ],
+        "ignore": [
+          30,
+          30
+        ]
+      },
+      "run_over": {
+        "flee": [
+          10,
+          15
+        ],
+        "watch": [
+          75,
+          70
+        ],
+        "ignore": [
+          15,
+          15
+        ]
+      },
+      "body": {
+        "flee": [
+          10,
+          15
+        ],
+        "watch": [
+          60,
+          65
+        ],
+        "ignore": [
+          30,
+          20
+        ]
+      },
+      "attacked": {
+        "flee": [
+          30,
+          30
+        ],
+        "fight": [
+          70,
+          70
+        ]
+      },
+      "bumped": {
+        "watch": [
+          25,
+          25
+        ],
+        "ignore": [
+          60,
+          60
+        ],
+        "fight": [
+          15,
+          15
+        ]
+      }
+    },
+    "weak": {
+      "fight": {
+        "flee": [
+          85,
+          90
+        ],
+        "watch": [
+          15,
+          10
+        ]
+      },
+      "run_over": {
+        "flee": [
+          80,
+          85
+        ],
+        "watch": [
+          20,
+          15
+        ]
+      },
+      "body": {
+        "flee": [
+          80,
+          90
+        ],
+        "watch": [
+          20,
+          10
+        ]
+      },
+      "attacked": {
+        "flee": [
+          100,
+          100
+        ]
+      },
+      "bumped": {
+        "flee": [
+          100,
+          100
+        ]
+      }
+    }
+  },
+  "groups": [
+    {
+      "id": "commuters",
+      "name": "Commuter",
+      "archetypes": [
+        "commuter",
+        "office_casual",
+        "office_bookkeeper",
+        "postal_worker",
+        "delivery_clerk"
+      ],
+      "walk_speed": [
+        1.35,
+        1.65
+      ],
+      "personality": {
+        "norm": 75,
+        "tough": 10,
+        "weak": 15
+      }
+    },
+    {
+      "id": "shoppers",
+      "name": "Shopper",
+      "archetypes": [
+        "newspaper_reader",
+        "cafe_regular",
+        "neighbour",
+        "storefront_owner",
+        "cultural_organizer"
+      ],
+      "walk_speed": [
+        1.0,
+        1.35
+      ],
+      "personality": {
+        "norm": 70,
+        "tough": 5,
+        "weak": 25
+      }
+    },
+    {
+      "id": "pensioners",
+      "name": "Pensioner",
+      "archetypes": [
+        "archivist",
+        "newspaper_reader",
+        "bus_stop_regular"
+      ],
+      "walk_speed": [
+        0.8,
+        1.1
+      ],
+      "personality": {
+        "norm": 35,
+        "tough": 0,
+        "weak": 65
+      }
+    },
+    {
+      "id": "students",
+      "name": "Student",
+      "archetypes": [
+        "student_lodger",
+        "night_bus_teen",
+        "photographer",
+        "journalist"
+      ],
+      "walk_speed": [
+        1.3,
+        1.7
+      ],
+      "personality": {
+        "norm": 55,
+        "tough": 35,
+        "weak": 10
+      }
+    },
+    {
+      "id": "residents",
+      "name": "Resident",
+      "archetypes": [
+        "block_resident",
+        "block_walker",
+        "courtyard_walker",
+        "neighbour",
+        "bus_stop_regular"
+      ],
+      "walk_speed": [
+        1.0,
+        1.4
+      ],
+      "personality": {
+        "norm": 70,
+        "tough": 15,
+        "weak": 15
+      }
+    }
+  ],
+  "lent_mix": {
+    "commuters": 20,
+    "shoppers": 40,
+    "pensioners": 20,
+    "students": 20,
+    "residents": 10
+  },
+  "looks": [
+    {
+      "profile": "tabor_commuter",
+      "archetype": "commuter",
+      "primary_color": "#3f5160",
+      "secondary_color": "#242c32",
+      "scale": 1.01
+    },
+    {
+      "profile": "petra_kralj",
+      "archetype": "office_casual",
+      "primary_color": "#6d5362",
+      "secondary_color": "#303845",
+      "scale": 0.96
+    },
+    {
+      "profile": "irena_vogrin",
+      "archetype": "office_bookkeeper",
+      "primary_color": "#5d5862",
+      "secondary_color": "#303038",
+      "scale": 0.98
+    },
+    {
+      "profile": "marija_sever",
+      "archetype": "postal_worker",
+      "primary_color": "#3e5c58",
+      "secondary_color": "#242e2c",
+      "scale": 0.98
+    },
+    {
+      "profile": "lent_dispatcher",
+      "archetype": "delivery_clerk",
+      "primary_color": "#425e6b",
+      "secondary_color": "#27333a",
+      "scale": 1.01
+    },
+    {
+      "profile": "lent_square_reader",
+      "archetype": "newspaper_reader",
+      "primary_color": "#5a5348",
+      "secondary_color": "#2e2c28",
+      "scale": 1.0
+    },
+    {
+      "profile": "kiosk_67_cafe_regular",
+      "archetype": "cafe_regular",
+      "primary_color": "#7a5344",
+      "secondary_color": "#3a322c",
+      "scale": 0.97
+    },
+    {
+      "profile": "kiosk_67_neighbour",
+      "archetype": "neighbour",
+      "primary_color": "#6a6848",
+      "secondary_color": "#333228",
+      "scale": 1.02
+    },
+    {
+      "profile": "under_paint_new_owner",
+      "archetype": "storefront_owner",
+      "primary_color": "#625a4f",
+      "secondary_color": "#34302b",
+      "scale": 1.0
+    },
+    {
+      "profile": "sara_vidic",
+      "archetype": "cultural_organizer",
+      "primary_color": "#2c2e33",
+      "secondary_color": "#1c1e22",
+      "scale": 1.0
+    },
+    {
+      "profile": "vera_horvat",
+      "archetype": "archivist",
+      "primary_color": "#665d4e",
+      "secondary_color": "#35322e",
+      "scale": 0.98
+    },
+    {
+      "profile": "kiosk_67_bus_regular",
+      "archetype": "bus_stop_regular",
+      "primary_color": "#5c6570",
+      "secondary_color": "#2c3136",
+      "scale": 1.0
+    },
+    {
+      "profile": "tine_kolar",
+      "archetype": "student_lodger",
+      "primary_color": "#4d6274",
+      "secondary_color": "#2a3138",
+      "scale": 1.03
+    },
+    {
+      "profile": "lara_mlinar",
+      "archetype": "night_bus_teen",
+      "primary_color": "#5a3d4e",
+      "secondary_color": "#2a2228",
+      "scale": 0.94
+    },
+    {
+      "profile": "nika_vidmar",
+      "archetype": "photographer",
+      "primary_color": "#4a403c",
+      "secondary_color": "#2a2624",
+      "scale": 0.97
+    },
+    {
+      "profile": "maja_koren",
+      "archetype": "journalist",
+      "primary_color": "#3c4658",
+      "secondary_color": "#242830",
+      "scale": 1.0
+    },
+    {
+      "profile": "ivana_zupan",
+      "archetype": "block_resident",
+      "primary_color": "#7a6a5c",
+      "secondary_color": "#3a342e",
+      "scale": 0.94
+    },
+    {
+      "profile": "tabor_block_walker",
+      "archetype": "block_walker",
+      "primary_color": "#4a5348",
+      "secondary_color": "#262a26",
+      "scale": 1.04
+    },
+    {
+      "profile": "tabor_courtyard_walker",
+      "archetype": "courtyard_walker",
+      "primary_color": "#6a5e68",
+      "secondary_color": "#322c32",
+      "scale": 0.96
+    }
+  ]
+}
