@@ -1,6 +1,6 @@
 # MarburgumII — MMORPG-first client/server architecture
 
-**Status:** Accepted foundational direction. Gate 0A builds and the Gate 0B loopback network smoke pass on Linux with UE 5.8.3 ([evidence](STAGE0_EVIDENCE.md)). Gate 1's first transaction passes with a development identity and file-backed store ([evidence](STAGE1_GATE1_EVIDENCE.md)); production persistence, login, AOI and scale remain unbuilt.  
+**Status (11 November 2026, ADR-045):** Native Linux UE 5.8.3 dedicated client/server, Gate 1 saved transaction, mission, condition, swimming, server vehicle driving and unarmed fighting have specified runtime smoke evidence. **ADR-044 adds server-managed ambient NPCs and incident reactions**, one-client **editor tested**; ADR-045 extends the single default map to nine original windows. **No production login, account database, AOI/scalable interest-management or production population capacity has been proven**. [Change audit](DEVELOPMENT_UPDATE_2026-11-11.md).  
 **Engine:** Unreal Engine **5.8.3**.  
 **Relationship to original:** The original project separated Unreal `MarburgumClient`, `MarburgumServer` and `MarburgumShared`, and used an authoritative server with a legacy protocol-v3 TCP/JSON contract. MarburgumII preserves the **roles and gameplay semantics**, but rebuilds their implementation. The old protocol is **not** a drop-in compatibility requirement.
 
@@ -22,6 +22,14 @@ The game ultimately retains the original Marburgum's core disciplines: 1990s fic
 **Dependency rule:** both side-specific modules may depend on `MarburgumIIShared` and on the core `MarburgumII` module's replicated types; neither depends on the other. The core and shared modules never depend on a side-specific module, and shared never depends on core. The .NET validator enforces these edges, and symbol inspection of the packaged binaries confirms that the Client contains no server-module code and the Server contains no client-module code ([ADR-012](DECISIONS.md)).
 
 Unreal `AGameModeBase` exists only on server authority; `AGameStateBase` and `APlayerState` replicate relevant public state to clients. The initial `AMarburgumGameState::NetworkContractVersion` is a replicated marker for network smoke testing; it is not proof of a successful client/server handshake.
+
+### Current NPC authority and scaling boundary (ADR-041/044/045)
+
+The Stage 1 PvE fighter and ambient pedestrian actors execute their decisions on the **server**, including attack target/damage, reactions and incident propagation; clients project replicated results, not independent authoritative crowds. Vehicle/pedestrian run-over and dodge checks also require server validation. The shared `combat.v0.1.json` / `street.v0.1.json` contracts preserve reviewed owner-authored behavior and mark independently chosen spawn, incident and replacement numbers. No Rockstar wanted/police/crime subsystem is permitted.
+
+The initial street implementation aims for **20 pedestrians around each player, at most 48** in its current local rules. This is a **feature-level spawn/cull policy**, neither a proven shard capacity nor network area-of-interest (AOI) scalability solution. Its current [street evidence](STAGE1_STREET_EVIDENCE.md) uses one editor client; the [combat evidence](STAGE1_COMBAT_EVIDENCE.md) is an earlier packaged two-client test. After the nine-window expansion, validate two/three genuinely separate packaged clients observing the same server decisions without duplicated NPC ownership, unfair viewpoint-based spawning, desynchronized fall/recovery or divergent incident reactions.
+
+The new walk graph spans the nine-window pavement, but one always-loaded `/Game/World/lent` is **not** Unreal World Partition and neither it nor the graph is network AOI. Stage 3/4 must separately measure actor replication relevancy/bandwidth, server AI tick, density scaling, 1/2/4/8-client controlled loads and eventually the planned larger shard stress matrix. No measured capacity is implied by the 48-pedestrian cap.
 
 ## 3. Build target matrix
 
