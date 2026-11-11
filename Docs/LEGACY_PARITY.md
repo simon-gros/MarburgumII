@@ -62,6 +62,8 @@ The **vehicle migration** retains original five-car authored data, procedural bo
 
 The **fighting migration** carries the original's `combat.h` numbers, its `world_simulation` fight rules and the Belligerent drinker, Evening walker and Newspaper reader at their Lent positions, with its own guard/jab/swing clips (ADR-041; [evidence](STAGE1_COMBAT_EVIDENCE.md)). The GTA hit/get-up clips and fight sounds and the Unreal port's wanted level and police are not imported. One redesign: a downed NPC gets up after a minute, because a persistent world never restarts.
 
+The **street people migration** carries the original Unreal port's ambient population (`MarburgumAmbientPopulation`, `MarburgumRunOver`, `population_groups.json`, `npc_visual_profiles.json`, with the panic-spread and react-to-bodies branches): groups, looks, the body/attacked/bumped tables and the run-over rules unchanged, on a walk graph rebuilt from Lent's pavement (ADR-044; [evidence](STAGE1_STREET_EVIDENCE.md)). San Andreas' fight weights, spawn/cull bands and fight-notice radius and GTA III's wander, signal clock, car following and crime/pursuit are not imported; Marburgum II's own numbers replace them.
+
 **Optional NVIDIA rendering** (ADR-029/030) is client-side and legally gated, not evidence of full visual-platform parity or authorization to use third-party proprietary binaries. An ADR acceptance is not the owner's gameplay sign-off.
 
 ## High-value original references

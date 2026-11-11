@@ -48,6 +48,7 @@ The playable world is currently a development slice of **Lent**, the historic ri
 | **Movement & condition** | Server-bounded movement time; stamina, running and winded state; swimming, submersion, drowning and recovery, including persisted condition | [Movement](Docs/STAGE1_MOVEMENT_TIME_EVIDENCE.md) · [condition](Docs/STAGE1_CONDITION_EVIDENCE.md) · [swimming](Docs/STAGE1_SWIM_EVIDENCE.md) |
 | **Cars & driving** | The original's five-car catalogue and four-raycast handling, simulated by the server only; seats and doors, driver and passengers; the original's city hatchback parked in Lent; procedural bodywork and door clips | [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) · [ADR-039](Docs/DECISIONS.md) |
 | **Fighting** | The original's unarmed fighting, ruled by the server: jab, committed swing and held guard with stamina costs, cooldowns and stagger; the Belligerent drinker, Evening walker and Newspaper reader at their Lent spots; beaten → down → recovery; the original's own fight clips, CC0 impact sounds | [Fighting](Docs/STAGE1_COMBAT_EVIDENCE.md) · [ADR-041](Docs/DECISIONS.md) |
+| **Street people** | The original's ambient population on Lent's pavements: groups, looks and reaction tables; people appear out of sight, walk, flee or watch fights and run-overs, stand by a body, spread panic, jump clear of cars or are knocked down | [Street people](Docs/STAGE1_STREET_EVIDENCE.md) · [ADR-044](Docs/DECISIONS.md) |
 | **Rendering** | Optional, client-side NVIDIA feature detection and fallbacks; Unreal TSR is the baseline renderer | [Rendering and platform limits](Docs/RENDERING_NVIDIA.md) |
 
 <details>
@@ -160,7 +161,7 @@ The [full milestone roadmap](Docs/ROADMAP.md) and [UI/HUD roadmap](Docs/UI_HUD_R
 | **Engineering** | [Development guide](Docs/DEVELOPMENT.md) · [Architecture](Docs/ARCHITECTURE.md) · [Network contract](Docs/NETWORK_ARCHITECTURE.md) · [Engineering decisions](Docs/DECISIONS.md) |
 | **Player experience** | [First launch](Docs/FIRST_LAUNCH_ONTOLOGY.md) · [UI/HUD design](Docs/UI_HUD_DESIGN.md) · [UI ontology](Docs/UI_HUD_ONTOLOGY.md) · [UI roadmap](Docs/UI_HUD_ROADMAP.md) · [Chat](Docs/CHAT.md) |
 | **World & assets** | [Map adoption](Docs/WORLD_MAP_ADOPTION.md) · [Protagonist](Docs/CHARACTER_PROTAGONIST.md) · [Conditional Hunyuan3D pipeline](Docs/ASSET_GENERATION_HUNYUAN3D.md) · [NVIDIA rendering](Docs/RENDERING_NVIDIA.md) |
-| **Verification** | [Main roadmap and gates](Docs/ROADMAP.md) · [Playtest freshness](Docs/PLAYTEST_FRESHNESS.md) · [Stage 0](Docs/STAGE0_EVIDENCE.md) · [Lent](Docs/STAGE1_LENT_EVIDENCE.md) · [Swimming](Docs/STAGE1_SWIM_EVIDENCE.md) · [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) |
+| **Verification** | [Main roadmap and gates](Docs/ROADMAP.md) · [Playtest freshness](Docs/PLAYTEST_FRESHNESS.md) · [Stage 0](Docs/STAGE0_EVIDENCE.md) · [Lent](Docs/STAGE1_LENT_EVIDENCE.md) · [Swimming](Docs/STAGE1_SWIM_EVIDENCE.md) · [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) · [Street people](Docs/STAGE1_STREET_EVIDENCE.md) |
 
 Machine-readable design contracts are under `Data/`; implementation, scripts and tests are under `Source/`, `scripts/`, `tools/` and `native/`. The GitHub workflow validates Rust and C# components; **CI does not replace a real Unreal Editor, client/server build or multiplayer test**.
 
