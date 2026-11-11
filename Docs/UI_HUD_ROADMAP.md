@@ -1,12 +1,12 @@
 # UI/HUD development roadmap — MarburgumII
 
-**Revision:** 0.2.0 — 11 November 2026; as-built review through `af2d0b3` ([daily change audit](DAILY_CHANGE_REVIEW_2026-11-10.md))  
+**Revision:** 0.3.0 — 11 November 2026; adds ADR-040–045 ([latest analysis](DEVELOPMENT_UPDATE_2026-11-11.md)), following [prior audit](DAILY_CHANGE_REVIEW_2026-11-10.md)  
 **Scope:** P0-to-production user interface program for the new **Unreal Engine 5.8.3** client.  
 **Normative concepts:** [UI/HUD ontology](UI_HUD_ONTOLOGY.md) and [machine-readable module registry](../Data/Ontology/ui_hud.v0.1.json).  
 **Visual contract:** [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md).  
 **Network dependency:** [NET-001](https://github.com/simon-gros/MarburgumII/issues/2), a genuine two-client authoritative session.  
 **Umbrella implementation task:** [UI-001](https://github.com/simon-gros/MarburgumII/issues/3).  
-**Status:** UI-01/02 UMG theme/gallery/connection recovery were compiled and captured in packaged Linux clients, awaiting owner review ([evidence](STAGE0C_UI_EVIDENCE.md)). UI-03 includes live general/private `chat_panel`, notifications, interaction prompts for items/NPCs/doors, `location_banner`, `pinned_objective`, `player_condition` including swimming/down, and contextual `vehicle_status` for speed/REV ([chat](STAGE0C_CHAT_EVIDENCE.md), [Gate 1](STAGE1_GATE1_EVIDENCE.md), [Lent](STAGE1_LENT_EVIDENCE.md), [condition](STAGE1_CONDITION_EVIDENCE.md), [swimming](STAGE1_SWIM_EVIDENCE.md), [driving](STAGE1_VEHICLE_EVIDENCE.md)). UI-04 includes functional first Character (C), Inventory (I), Journal (J) shells. **Skills/Settings are still missing**, UI-02A first-login/character creation is **design only**, and owner UX, full DPI/focus/accessibility and integrated latest-asset acceptance are open. UI-05 already has a first driving context, rather than being entirely future work.
+**Status:** Implemented Linux UI slices include UMG gallery/session shell, general/private chat, server receipts, item/NPC/vehicle prompts, location, mission objective, condition including swim/down, vehicle speed/REV, and first Character/Inventory/Journal shells. **ADR-041 adds real combat event notifications and animation**, and **ADR-044 adds a visible, server-driven ambient pedestrian population with incident reactions**; these are gameplay features, **not proof of a completed combat HUD, social UI, NPC-nameplate system or UI-05 population overlay**. The nine-window map (ADR-045) expands camera/visibility/layout testing. UI-02A authenticated first launch, Skills and Settings remain unimplemented. UI-07 current-package, keyboard/controller/input conflict, accessibility, multi-client state hygiene and owner sign-off remain open. [Combat evidence](STAGE1_COMBAT_EVIDENCE.md), [street evidence](STAGE1_STREET_EVIDENCE.md).
 
 ## 1. Product requirement and planning principle
 
@@ -66,7 +66,7 @@ Preserve Marburgum's recognizable experience: transient district names; concise 
 | UI-02A | Full login/character lifecycle **specified**, not implemented | FL-01–FL-12, verified backend, full-screen creator/model preview, server admission |
 | UI-03 | Chat, receipt notifications, prompt, location, mission, condition/swim/down, car status | Integrated consistent layout and privacy/focus/connection-state review |
 | UI-04 | First Character, Inventory and Journal | Skills, Settings and actual production identity, loading/disabled/error states |
-| UI-05 | First vehicle/seat/driver context | Real fishing/trade/dialogue/group UI after mechanics |
+| UI-05 | First vehicle/seat/driver context plus combat receipt/event feed, live pedestrian activity in-world | Contextual guard/strike feedback, readable incidents, future real fishing/trade/dialogue/group UI; no permanent combat wall |
 | UI-06 | Profile architecture only | Noneditable presets after accepted default, editor later |
 | UI-07 | Selected authentic Linux captures | Current SHA/asset seal, device/scale/accessibility/owner approval |
 
@@ -161,9 +161,23 @@ All panels share one navigation grammar: consistent tab/section positions, retur
 
 **Stage 1 acceptance:** all five surfaces have actually rendered UMG screenshots with real or **visibly labeled** preview data and correct empty/error states. At least one interaction pathway displays server-confirmed data through the prompt, feedback and a relevant panel. Public demonstration requires the live pathway.
 
+### UI-05A — Unarmed combat and living-street feedback (ADR-041/044; implemented mechanics, incomplete UI)
+
+**Current factual baseline:** F = jab, R = committed swing, G = hold guard; the server selects targets and resolves stamina, cooldown, stagger, blocked blows, down/recovery and NPC reactions. The existing notification feed displays fight results; pedestrians already flee/watch/respond to incidents. No fully designed combat status or population-management panel has been accepted.
+
+**Next UI tasks:**
+- Show **only the immediately relevant** jab/heavy/guard context (when appropriate), cooldown/refusal/blocked feedback, condition/stamina and down/recovery. Do not create a permanent fantasy skill bar, automatic lock-on, universal enemy nameplates or fictional reputation/police warnings.
+- Distinguish the state **authoritative outcome vs predicted attack input**. Deduplicate repeated move/request-count events and make hit, miss, too-soon, insufficient stamina, out of reach, blocked, down and recovered visually and textually distinct. Do not publish per-NPC private data or invent PvP.
+- Establish focus arbitration for **F/R/G, Enter/chat, E/door/interaction, WASD/Shift and Character/Inventory/Journal**, including keyboard/controller translations and when a vehicle seat, water/down state, modal, chat edit or menu disables action.
+- Prevent combat toasts, vehicle speed, condition warnings and mission objective from colliding. Urban public captures should show **human street behavior** without a wall of overlaid names. No wanted stars, police heat/pursuit or imported GTA sound/icon assets.
+- Add explicit scenarios for off-screen crowds, watching/fleeing NPC reactions, passenger versus driver prompts, incident spread near two connected clients, culling and re-appearance, reconnect and down-body cleanup. The **street smoke currently uses one editor client, not packaged multiplayer**; UI screenshots cannot upgrade that claim.
+- On the **1,536 m square** validate location banners across all window boundaries; distinguish authoritative **district labels** from implementation-only map-window IDs. Verify no incorrect local labels or stale prompts as the streamed/not-streamed scene changes. Current one-level world has **no streaming**; don't fake loading/zone status.
+
+**Suggested not-yet-implemented acceptance cases:** `UI-COMBAT-01` jab/guard/heavy receipts and visual priority; `UI-COMBAT-02` down/recovery; `UI-STREET-01` fighting incident reactions with observer; `UI-STREET-02` car dodge/run-over/remote visibility; `UI-MAP-01` nine-window location/occlusion/crossing matrix; `UI-FOCUS-02` Enter/F/R/G/E/drive input safety; `UI-IK-01` rendered stroke, tread, vehicle door and fight feet after the full animation graph on an actually fresh package.
+
 ## 8. UI-05 — Contextual activity and multiplayer modes
 
-Only after a real supporting feature exists, expand in order of game priority:
+Only when a real corresponding system exists, expand these overlays in order of user value. The first driving context and combat notification feed already have live inputs:
 
 1. **Fishing/work/interactions:** contextual task status/progress/eligible tools, results, accessibility cues, animation of meaningful events.
 2. **Dialogue/investigation:** contact identity, speech text, deliberate responses, evidence and journal links; decision confirmation via authoritative receipt.
@@ -205,7 +219,7 @@ Learn from the advantages of configurable modern online interfaces while preserv
 | --- | --- |
 | Screen size | 1280×720, 1366×768, 1920×1080, 2560×1440, 3440×1440, 3840×2160 |
 | UI scale | 80%, 100%, 125%, 150%, 200%, where supported |
-| HUD states | Empty exploration, location change, item/NPC/car prompt, objective, receipt/error, running/winded, swim/tread/underwater/down/recovery, car driver/passenger/reversing/exit; future activity/group only when implemented |
+| HUD states | Exploration, area/window transition, item/NPC/car prompt, objective/receipt/error, running/winded, swim/tread/underwater/down/recovery, car driver/passenger/reverse/exit, jab/heavy/guard/refusal/down and incident reactions; no fictional police/wanted or unsupported group state |
 | Panels | Character, Skills, Inventory, Journal, Settings, connection shell, login, email verification, credential setup and first-character creator |
 | Values | Zero, unknown, large valid integers, long Slovene/English titles, invalid item/actions, unauthorized target |
 | Input | Keyboard/mouse, controller-only, focus recovery, device switching |
