@@ -1,5 +1,6 @@
 #include "MarburgumVehicleSmokeSubsystem.h"
 
+#include "Components/SkeletalMeshComponent.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -46,6 +47,11 @@ namespace MarburgumVehicleSmoke
     constexpr double ExitNearDoorCm = 250.0;
     constexpr double WalkSeconds = 2.0;
     constexpr double WalkMinCm = 200.0;
+    // The door clips sit the body down with its feet ahead (ADR-043): about 45 cm ahead of the pelvis in the
+    // seat, more while ducking under the roof. A standing stance keeps them under it.
+    constexpr double DoorClipFeetAheadMinCm = 25.0;
+    constexpr double NoLegsSeenCm = -1000.0;
+    constexpr double EnteringShotFeetAheadCm = 45.0;
 }
 
 using namespace MarburgumVehicleSmoke;
@@ -185,6 +191,27 @@ void UMarburgumVehicleSmokeSubsystem::Report(const TCHAR* Event, double Now)
         Character && Character->IsBodyShown() ? 1 : 0, CarAt.X, CarAt.Y, CarAt.Z, CarRot.Yaw, CarRot.Pitch, CarRot.Roll,
         Car ? Car->GetForwardSpeed() : 0.f, Car ? Car->GetSteerAngle() : 0.f, Car ? Car->GetWheelsOnGround() : 0,
         Car ? Car->GetOccupants().Num() : 0, Car ? Car->GetImpactCount() : 0, *HudSpeed());
+    if (Character && Character->IsBodyShown())
+    {
+        // The drawn pose, after the whole animation graph: mesh space, Z up from the ground and Y the body's forward.
+        const USkeletalMeshComponent* Mesh = Character->GetMesh();
+        const auto Bone = [Mesh](const TCHAR* Name) { return Mesh->GetBoneLocation(Name, EBoneSpaces::ComponentSpace); };
+        MB2_VEHICLE_SMOKE_LOG("event=%s_pose pelvis_z=%.0f foot_l_z=%.0f foot_r_z=%.0f feet_ahead=%.0f", Event, Bone(TEXT("pelvis")).Z,
+            Bone(TEXT("foot_l")).Z, Bone(TEXT("foot_r")).Z, FeetAheadOfPelvisCm());
+    }
+}
+
+double UMarburgumVehicleSmokeSubsystem::FeetAheadOfPelvisCm() const
+{
+    // The mannequin faces +Y in its own component space (ADR-042, ADR-043).
+    const AMarburgumCharacter* Character = Body();
+    if (!Character)
+    {
+        return 0.0;
+    }
+    const USkeletalMeshComponent* Mesh = Character->GetMesh();
+    const auto Bone = [Mesh](const TCHAR* Name) { return Mesh->GetBoneLocation(Name, EBoneSpaces::ComponentSpace); };
+    return 0.5 * (Bone(TEXT("foot_l")).Y + Bone(TEXT("foot_r")).Y) - Bone(TEXT("pelvis")).Y;
 }
 
 bool UMarburgumVehicleSmokeSubsystem::Tick(float DeltaTime)
@@ -203,6 +230,12 @@ bool UMarburgumVehicleSmokeSubsystem::Tick(float DeltaTime)
     if (!Bind())
     {
         return true;
+    }
+    if (const AMarburgumCharacter* Character = Body(); bWatchingLegs && Character && Character->IsBodyShown())
+    {
+        // While a door clip plays, every frame (a pending screenshot included): ducking in, sitting and
+        // standing up put the drawn feet ahead of the pelvis when the legs follow the clip.
+        MostFeetAheadCm = FMath::Max(MostFeetAheadCm, FeetAheadOfPelvisCm());
     }
     if (!PendingShot.IsEmpty())
     {
@@ -286,16 +319,28 @@ void UMarburgumVehicleSmokeSubsystem::TickD(double Now)
         Expect(bAnswerOk, FString::Printf(TEXT("enter_refused=%s"), *AnswerReason.ToString()));
         Expect(Character->IsDriving(), TEXT("not_driving"));
         Expect(Character->IsBodyShown(), TEXT("hidden_before_enter_clip"));
+        MostFeetAheadCm = NoLegsSeenCm;
+        bWatchingLegs = true;
         Advance(3, Now);
         return;
     case 3:
         // The clip ends with the door shut and the body hidden in its seat.
         if (Character->IsBodyShown())
         {
+            // Drawn once the body ducks in (or late in the clip if it never does), for the evidence.
+            if (bRendered && !bEnteringShot && (FeetAheadOfPelvisCm() > EnteringShotFeetAheadCm || Now - StepSeconds > 0.8))
+            {
+                bEnteringShot = true;
+                Report(TEXT("entering"), Now);
+                Shot(TEXT("entering"));
+            }
             if (Now - StepSeconds > 5.0) Fail(TEXT("never_hidden_in_seat"));
             return;
         }
         Report(TEXT("hidden_in_seat"), Now);
+        bWatchingLegs = false;
+        MB2_VEHICLE_SMOKE_LOG("event=enter_legs feet_ahead_max=%.0f", MostFeetAheadCm);
+        Expect(MostFeetAheadCm > DoorClipFeetAheadMinCm, FString::Printf(TEXT("enter_legs_standing=%.0f"), MostFeetAheadCm));
         Expect(Now - StepSeconds > 0.3, FString::Printf(TEXT("enter_clip_too_short=%.2f"), Now - StepSeconds));
         if (bRendered)
         {
@@ -437,12 +482,19 @@ void UMarburgumVehicleSmokeSubsystem::TickD(double Now)
         }
         Mark = Character->GetActorLocation();
         CarRestAt = CarActor->GetActorLocation();
+        // Sampled from the next frame on: the pose drawn now is the one the hidden body was left in.
+        MostFeetAheadCm = NoLegsSeenCm;
+        bWatchingLegs = true;
         Shot(TEXT("exited"));
         Advance(13, Now);
         return;
     case 13:
         // Where it got out it stays: no stale walking move is replayed once the seat is left.
+        // Meanwhile the exit clip stands the body up from the seat, feet ahead of the pelvis at first.
         if (Now - StepSeconds < 1.0) return;
+        bWatchingLegs = false;
+        MB2_VEHICLE_SMOKE_LOG("event=exit_legs feet_ahead_max=%.0f", MostFeetAheadCm);
+        Expect(MostFeetAheadCm > DoorClipFeetAheadMinCm, FString::Printf(TEXT("exit_legs_standing=%.0f"), MostFeetAheadCm));
         Expect(FVector::Dist2D(Character->GetActorLocation(), Mark) < 50.0,
             FString::Printf(TEXT("moved_after_exit_cm=%.0f"), FVector::Dist2D(Character->GetActorLocation(), Mark)));
         Mark = Character->GetActorLocation();

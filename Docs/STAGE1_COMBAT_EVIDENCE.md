@@ -67,6 +67,8 @@ The fight clips were also checked against the original's own numbers. The should
 | ![Down](Captures/stage1-combat/combat-a-down.jpg) | |
 | The drinker falls; feed "Belligerent drinker goes down."; A at 63 vitality, 41 stamina | |
 
+**The drawn legs (ADR-043).** The captures above are from the packaged run, before ADR-043. Then the template's foot IK held the fight clips' feet at a standing stance whatever the clip drew. A now also reads its drawn feet, after the whole animation graph, while its committed swing plays: the right foot steps through to 53 cm ahead of the left (the clip puts it 50 cm ahead of the pelvis), and the check wants more than 20 cm. With the old clips the same check found 0 cm (`scripts/combat-smoke-linux.sh editor`, run `20261111T150719Z`, FAIL on that check only); with the regenerated clips the run passes (`20261111T151010Z`). The jab's step (21 cm in the clip) and the guard's bent knees are not checked.
+
 ## Not covered
 
 The owner playtest. Fighting other players (the original had none). Weapons. Perception: NPCs do not notice a fight at a distance. Arrests, or any other consequence of violence beyond the fight itself. Hit reactions on the struck body (the original's were GTA placeholders). Closed fists: the original keyed no fingers, so the mannequin's hands stay open. NPC pathfinding: fighters steer straight and sidestep. NPC condition is not saved across a server restart. A downed NPC getting up after 60 s is in the code but not in this test.

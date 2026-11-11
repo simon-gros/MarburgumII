@@ -1,5 +1,6 @@
 #include "MarburgumCombatSmokeSubsystem.h"
 
+#include "Components/SkeletalMeshComponent.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -42,6 +43,9 @@ namespace MarburgumCombatSmoke
     constexpr double InFlightSeconds = 0.8;
     // Between our own swings in the last round: past the jab's cooldown, with frame slack.
     constexpr double SwingSpacingSeconds = 0.45;
+    // The heavy swing steps the right foot through (ADR-043): about 40 cm ahead of the left at the strike.
+    // A standing stance keeps the feet side by side.
+    constexpr double HeavyStrideMinCm = 20.0;
 }
 
 using namespace MarburgumCombatSmoke;
@@ -201,6 +205,26 @@ void UMarburgumCombatSmokeSubsystem::Report(const TCHAR* Event, double Now)
         Him ? AMarburgumFighter::IntentName(Him->GetIntent()) : TEXT("-"), Him ? Him->GetVitalityPoints() : -1,
         Him ? *Him->GetPlayingFightClip().ToString() : TEXT("-"), Other ? AMarburgumFighter::IntentName(Other->GetIntent()) : TEXT("-"),
         Other && Him ? FVector::Dist2D(Other->GetActorLocation(), Him->GetActorLocation()) : -1.0);
+    if (Character)
+    {
+        // The drawn pose, after the whole animation graph: mesh space, Z up from the ground and Y the body's forward.
+        const USkeletalMeshComponent* Mesh = Character->GetMesh();
+        const auto Bone = [Mesh](const TCHAR* Name) { return Mesh->GetBoneLocation(Name, EBoneSpaces::ComponentSpace); };
+        MB2_COMBAT_SMOKE_LOG("event=%s_pose pelvis_z=%.0f foot_l_z=%.0f foot_r_z=%.0f stride=%.0f", Event, Bone(TEXT("pelvis")).Z,
+            Bone(TEXT("foot_l")).Z, Bone(TEXT("foot_r")).Z, StrideCm());
+    }
+}
+
+double UMarburgumCombatSmokeSubsystem::StrideCm() const
+{
+    // The mannequin faces +Y in its own component space (ADR-042, ADR-043).
+    const AMarburgumCharacter* Character = Body();
+    if (!Character)
+    {
+        return 0.0;
+    }
+    const USkeletalMeshComponent* Mesh = Character->GetMesh();
+    return Mesh->GetBoneLocation(TEXT("foot_r"), EBoneSpaces::ComponentSpace).Y - Mesh->GetBoneLocation(TEXT("foot_l"), EBoneSpaces::ComponentSpace).Y;
 }
 
 bool UMarburgumCombatSmokeSubsystem::Approach(double DistanceCm)
@@ -247,6 +271,10 @@ void UMarburgumCombatSmokeSubsystem::Observe()
     if (Character && Character->GetPlayingFightClip() == TEXT("guard"))
     {
         bSawOwnGuard = true;
+    }
+    if (Character && Character->GetPlayingFightClip() == TEXT("heavy"))
+    {
+        LongestHeavyStrideCm = FMath::Max(LongestHeavyStrideCm, StrideCm());
     }
 }
 
@@ -603,6 +631,9 @@ void UMarburgumCombatSmokeSubsystem::TickA(double Now)
         Expect(Him->GetPlayingFightClip() == TEXT("down"), FString::Printf(TEXT("drinker_clip=%s"), *Him->GetPlayingFightClip().ToString()));
         Expect(Answers.Num() > 0 && Answers.Last().TargetVitality == 0, TEXT("last_blow_not_the_floor"));
         Expect(bSawWalkerAvoid, TEXT("walker_never_stepped_away"));
+        // The drawn legs follow the heavy swing rather than a standing stance.
+        MB2_COMBAT_SMOKE_LOG("event=heavy_legs stride_max=%.0f", LongestHeavyStrideCm);
+        Expect(LongestHeavyStrideCm > HeavyStrideMinCm, FString::Printf(TEXT("heavy_legs_standing=%.0f"), LongestHeavyStrideCm));
         Shot(TEXT("down"));
         Advance(14, Now);
         return;

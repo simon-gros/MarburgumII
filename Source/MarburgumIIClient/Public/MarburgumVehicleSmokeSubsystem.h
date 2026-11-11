@@ -48,6 +48,8 @@ private:
     FString HudSpeed() const;
     void Advance(int32 Next, double Now);
     void Report(const TCHAR* Event, double Now);
+    /** Drawn feet ahead of the pelvis along the body's forward, after the whole animation graph (cm). */
+    double FeetAheadOfPelvisCm() const;
     void Pass();
     void Fail(const FString& Reason);
 
@@ -70,6 +72,10 @@ private:
     double FarthestRideCm = 0.0;
     FVector CarRestAt = FVector::ZeroVector;
     FName RiddenSeat;
+    // The farthest the drawn feet got ahead of the pelvis while a door clip played.
+    double MostFeetAheadCm = 0.0;
+    bool bWatchingLegs = false;
+    bool bEnteringShot = false;
 
     // The last vehicle answer from the server.
     bool bAnswered = false;

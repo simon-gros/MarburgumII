@@ -56,6 +56,8 @@ private:
     void Shot(const TCHAR* Label);
     void Advance(int32 Next, double Now);
     void Report(const TCHAR* Event, double Now);
+    /** The drawn right foot ahead of the left along the body's forward, after the whole animation graph (cm). */
+    double StrideCm() const;
     void Pass();
     void Fail(const FString& Reason);
 
@@ -83,6 +85,8 @@ private:
     bool bSawDrinkerJab = false;
     bool bSawOwnJab = false;
     bool bSawOwnGuard = false;
+    // The longest drawn stride while the own heavy swing played.
+    double LongestHeavyStrideCm = -1000.0;
 
     bool bGuardShot = false;
     FString PendingShot;

@@ -7,7 +7,7 @@ class UAnimSequence;
 /**
  * Carries one of the original game's procedural character clips (magna-raedarum-marburgum
  * tools/build_character.gd) onto the UE5 mannequin, key for key (ADR-039). The vehicle door
- * clips use it; the swim commandlet (ADR-032, ADR-033, ADR-036) still carries its own copy of the same steps.
+ * clips and the fight clips (ADR-041) use it; the swim commandlet (ADR-032, ADR-033, ADR-036) still carries its own copy of the same steps.
  *
  * The original keys model-space Euler angles in radians on its Godot humanoid: Y up, the body faces -Z, a
  * positive X rotation swings a limb forward and a positive Z rotation lifts the left arm out to the side.
@@ -77,7 +77,10 @@ namespace MarburgumGodotClip
     bool FollowFeetWithIkBones(const FReferenceSkeleton& Reference, int32 Frames, TMap<FName, TArray<FVector>>& Positions,
         TMap<FName, TArray<FQuat>>& Rotations, TMap<FName, TArray<FVector>>& Scales, const TCHAR* LogTag);
 
-    /** Builds the clip on SK_Mannequin and saves it; nullptr (after logging under LogTag) on failure. */
+    /**
+     * Builds the clip on SK_Mannequin, with the IK foot bones following the drawn feet (FollowFeetWithIkBones,
+     * ADR-043), and saves it; nullptr (after logging under LogTag) on failure.
+     */
     UAnimSequence* Build(const FClip& Clip, const TCHAR* LogTag);
 
     /**

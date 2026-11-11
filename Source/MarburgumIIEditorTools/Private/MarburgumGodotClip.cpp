@@ -334,6 +334,12 @@ namespace MarburgumGodotClip
             }
         }
 
+        // The template's foot IK pulls each foot to its IK bone, so those bones follow the drawn feet (ADR-042).
+        if (!FollowFeetWithIkBones(Reference, Frames, Positions, Rotations, Scales, LogTag))
+        {
+            return nullptr;
+        }
+
         UObject* Existing = nullptr;
         UPackage* Package = PreparePackage(Clip.Package, UAnimSequence::StaticClass(), Existing);
         UAnimSequence* Sequence = Cast<UAnimSequence>(Existing);
@@ -353,7 +359,7 @@ namespace MarburgumGodotClip
         Controller.RemoveAllBoneTracks(false);
         Controller.SetFrameRate(FFrameRate(FramesPerSecond, 1), false);
         Controller.SetNumberOfFrames(FFrameNumber(Frames), false);
-        for (const TPair<FName, FString>& Pair : MannequinToGodot)
+        for (const TPair<FName, TArray<FQuat>>& Pair : Rotations)
         {
             Controller.AddBoneCurve(Pair.Key, false);
             if (!Controller.SetBoneTrackKeys(Pair.Key, Positions[Pair.Key], Rotations[Pair.Key], Scales[Pair.Key], false))
@@ -375,7 +381,7 @@ namespace MarburgumGodotClip
             return nullptr;
         }
         UE_LOG(LogMarburgumGodotClip, Display, TEXT("%s saved %s frames=%d length=%.2fs tracks=%d"), LogTag, Clip.Package, Frames,
-            Sequence->GetPlayLength(), MannequinToGodot.Num());
+            Sequence->GetPlayLength(), Rotations.Num());
         return Sequence;
     }
 
@@ -447,8 +453,13 @@ namespace MarburgumGodotClip
             Rotations.Remove(Foot.Value);
             Scales.Remove(Foot.Value);
         }
+        const int32 Pelvis = Reference.FindRawBoneIndex(TEXT("pelvis"));
         TMap<FName, TArray<FVector>> IkPositions;
         TMap<FName, TArray<FQuat>> IkRotations;
+        // Evidence: how far each foot the clip draws reaches ahead of the pelvis (component +Y is the body's
+        // forward) and above the ground (component Z 0), so the smokes can compare the drawn pose with it.
+        TMap<FName, FVector2D> MostAhead;
+        TMap<FName, FVector2D> Highest;
         for (int32 Frame = 0; Frame <= Frames; ++Frame)
         {
             // Component space at this frame: keyed bones take their keys, the rest their reference pose.
@@ -472,7 +483,24 @@ namespace MarburgumGodotClip
                 const FTransform Local = Global[Reference.FindRawBoneIndex(Foot.Key)].GetRelativeTransform(Global[Parent]);
                 IkPositions.FindOrAdd(Foot.Value).Add(Local.GetLocation());
                 IkRotations.FindOrAdd(Foot.Value).Add(Local.GetRotation().GetNormalized());
+                const FVector At = Global[Reference.FindRawBoneIndex(Foot.Key)].GetLocation();
+                const double Ahead = Pelvis == INDEX_NONE ? At.Y : At.Y - Global[Pelvis].GetLocation().Y;
+                FVector2D& Ahead2 = MostAhead.FindOrAdd(Foot.Key, FVector2D(-TNumericLimits<double>::Max(), 0.0));
+                if (Ahead > Ahead2.X)
+                {
+                    Ahead2 = FVector2D(Ahead, Frame);
+                }
+                FVector2D& High = Highest.FindOrAdd(Foot.Key, FVector2D(-TNumericLimits<double>::Max(), 0.0));
+                if (At.Z > High.X)
+                {
+                    High = FVector2D(At.Z, Frame);
+                }
             }
+        }
+        for (const TPair<FName, FName>& Foot : Feet)
+        {
+            UE_LOG(LogMarburgumGodotClip, Display, TEXT("%s drawn %s most_ahead_of_pelvis=%.0f at frame %.0f highest=%.0f at frame %.0f"),
+                LogTag, *Foot.Key.ToString(), MostAhead[Foot.Key].X, MostAhead[Foot.Key].Y, Highest[Foot.Key].X, Highest[Foot.Key].Y);
         }
         for (const TPair<FName, FName>& Foot : Feet)
         {

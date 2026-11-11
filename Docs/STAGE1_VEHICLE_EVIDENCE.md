@@ -64,6 +64,10 @@ Per [ADR-008](DECISIONS.md) the status is `implemented_awaiting_owner_playtest`.
 | Driving along the promenade at 27 km/h, camera behind | Reversing: REV · 15 km/h |
 | ![Exited](Captures/stage1-vehicle/vehicle-d-exited.jpg) | |
 | Out at the driver's door, the exit clip starting, P beside the car (the prompt still reads GET OUT: it refreshes at 10 Hz) | |
+| ![Entering](Captures/stage1-vehicle/vehicle-d-entering.jpg) | ![Entering before ADR-043](Captures/stage1-vehicle/vehicle-d-entering-before.jpg) |
+| Ducking in with the legs lifted into the car (ADR-043) | The same moment before ADR-043: the body ducks over straight, standing legs |
+
+The two entering captures are from the ADR-043 editor runs (`scripts/vehicle-smoke-linux.sh editor`, 2026-11-11). Before ADR-043 the template's foot IK held the door clips' feet under the pelvis (run `20261111T150624Z`, FAIL on the new checks: feet at most 0 cm ahead of the pelvis getting in and out). With the regenerated clips (run `20261111T151211Z`, PASS) the drawn feet reach 52 cm ahead getting in and 53 cm getting out, as the clips draw them (52–54 cm). The driver now checks more than 25 cm both ways.
 
 ## Not covered
 
