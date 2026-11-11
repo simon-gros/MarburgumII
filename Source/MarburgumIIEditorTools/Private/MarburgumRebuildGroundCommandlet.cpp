@@ -40,6 +40,9 @@
 #include "MeshDescription.h"
 #include "MeshDescriptionBuilder.h"
 #include "Misc/FileHelper.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonReader.h"
+#include "Dom/JsonObject.h"
 #include "Misc/PackageName.h"
 #include "Misc/Paths.h"
 #include "PhysicsEngine/BodySetup.h"
@@ -55,10 +58,11 @@ namespace
     const TCHAR* GroundDir = TEXT("/Game/World/Ground");
     const TCHAR* ActorPrefix = TEXT("MB2Ground_");
 
-    // The data grid (tools/lent-ground): n × n points over plan −256..256 m, row 0 north.
-    constexpr int32 GridPoints = 1017;
-    constexpr double HalfExtent = 256.0;
-    // The landscape: 8 × 8 components of 2 × 63 quads, one quad per grid step.
+    // The data grid (tools/lent-ground): n × n points over plan −half..half m, row 0 north. Read from
+    // ground.json: Lent and its eight neighbouring windows are 3025 points over ±768 m (ADR-045).
+    int32 GridPoints = 0;
+    double HalfExtent = 0.0;
+    // The landscape: components of 2 × 63 quads, one quad per grid step.
     constexpr int32 SubsectionQuads = 63;
     constexpr int32 Subsections = 2;
 
@@ -88,6 +92,26 @@ namespace
             return A * (1.0 - FR) + B * FR;
         }
     };
+
+    bool ReadExtent(const FString& Path)
+    {
+        FString Text;
+        TSharedPtr<FJsonObject> Root;
+        if (!FFileHelper::LoadFileToString(Text, *Path) || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) || !Root.IsValid())
+        {
+            return false;
+        }
+        const TSharedPtr<FJsonObject>* Landscape = nullptr;
+        double Points = 0.0;
+        if (!Root->TryGetObjectField(TEXT("landscape"), Landscape) || !(*Landscape)->TryGetNumberField(TEXT("points"), Points)
+            || !(*Landscape)->TryGetNumberField(TEXT("half_extent_m"), HalfExtent))
+        {
+            return false;
+        }
+        GridPoints = static_cast<int32>(Points);
+        // Whole components of 2 × 63 quads.
+        return GridPoints > 1 && (GridPoints - 1) % (Subsections * SubsectionQuads) == 0 && HalfExtent > 0.0;
+    }
 
     bool LoadGrid(const FString& Path, FGrid& Out)
     {
@@ -770,6 +794,12 @@ UMarburgumRebuildGroundCommandlet::UMarburgumRebuildGroundCommandlet()
 
 int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
 {
+    const FString Data = FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground"));
+    if (!ReadExtent(FPaths::Combine(Data, TEXT("ground.json"))))
+    {
+        UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND cannot read the landscape extent from %s/ground.json (run tools/lent-ground)"), *Data);
+        return 1;
+    }
     if (FParse::Param(*Params, TEXT("Verify")))
     {
         UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(LentMap);
@@ -783,7 +813,6 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
         FParse::Value(*Params, TEXT("Every="), Every);
         return VerifyWalkable(World, FMath::Max(1, Every));
     }
-    const FString Data = FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground"));
     FGrid Heights;
     FGrid Top;
     TArray<FChunk> Chunks;
@@ -905,7 +934,7 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
         World->EditorDestroyActor(Actor, true);
     }
 
-    // New landscape: quads of 512 m / 1016, heights in metres with a vertical scale of 100.
+    // New landscape: one quad per grid step (about 0.5 m), heights in metres with a vertical scale of 100.
     const int32 Quads = GridPoints - 1;
     const double QuadCm = 2.0 * HalfExtent * 100.0 / Quads;
     TArray<uint16> HeightData;
@@ -999,7 +1028,25 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
         UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND could not save %s"), LentMap);
         return 1;
     }
-    UE_LOG(LogMarburgumGround, Display, TEXT("MB2GROUND done landscape=%dx%d quad_cm=%.2f probes=%d worst_height_error_m=%.3f paved_chunks=%d paved_triangles=%d reseated=%d removed=%d"),
-        GridPoints, GridPoints, QuadCm, Probes, WorstHeightError, Meshes.Num(), PavedTriangles, Reseat.Num(), Remove.Num() + OldLandscapes.Num());
+    // Chunks of an earlier, smaller extent that no longer exist go with it; the level no longer
+    // places them.
+    TSet<FString> Current;
+    for (const UStaticMesh* Mesh : Meshes)
+    {
+        Current.Add(Mesh->GetName() + TEXT(".uasset"));
+    }
+    const FString PavedFiles = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("World/Ground/Paved"));
+    TArray<FString> Files;
+    IFileManager::Get().FindFiles(Files, *FPaths::Combine(PavedFiles, TEXT("SM_LentPaved_*.uasset")), true, false);
+    int32 Stale = 0;
+    for (const FString& File : Files)
+    {
+        if (!Current.Contains(File) && IFileManager::Get().Delete(*FPaths::Combine(PavedFiles, File)))
+        {
+            ++Stale;
+        }
+    }
+    UE_LOG(LogMarburgumGround, Display, TEXT("MB2GROUND done landscape=%dx%d quad_cm=%.2f probes=%d worst_height_error_m=%.3f paved_chunks=%d paved_triangles=%d reseated=%d removed=%d stale_chunks_deleted=%d"),
+        GridPoints, GridPoints, QuadCm, Probes, WorstHeightError, Meshes.Num(), PavedTriangles, Reseat.Num(), Remove.Num() + OldLandscapes.Num(), Stale);
     return (Probes > 0 && WorstHeightError < 0.05 && Unseated == 0) ? 0 : 2;
 }

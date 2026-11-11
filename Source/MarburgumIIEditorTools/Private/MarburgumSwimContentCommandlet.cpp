@@ -493,7 +493,15 @@ namespace
 
     // ---- Water volumes over the Drava ----
 
+    // The Drava's water sheets: `Drava` over Lent, and `Drava_<window>` over the neighbouring windows
+    // the river runs through (ADR-045).
     constexpr const TCHAR* WaterSheetLabel = TEXT("Drava");
+
+    bool IsWaterSheet(const AActor* Actor)
+    {
+        const FString Label = Actor->GetActorLabel();
+        return Actor->IsA<AStaticMeshActor>() && (Label == WaterSheetLabel || Label.StartsWith(FString(WaterSheetLabel) + TEXT("_")));
+    }
     constexpr const TCHAR* WaterVolumePrefix = TEXT("MB2Water_");
     // Sample spacing. A metre follows the banks closely enough that the volume edge never decides whether
     // a body swims: under the sheet near a bank the bed is too shallow for the capsule centre to be in it.
@@ -566,14 +574,14 @@ namespace
             UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM cannot load %s"), LentMap);
             return false;
         }
-        AStaticMeshActor* Sheet = nullptr;
+        TArray<AStaticMeshActor*> Sheets;
         TArray<ALandscapeProxy*> Landscapes;
         TArray<AActor*> OldVolumes;
         for (TActorIterator<AActor> It(World); It; ++It)
         {
-            if (It->GetActorLabel() == WaterSheetLabel && It->IsA<AStaticMeshActor>())
+            if (IsWaterSheet(*It))
             {
-                Sheet = Cast<AStaticMeshActor>(*It);
+                Sheets.Add(Cast<AStaticMeshActor>(*It));
             }
             else if (ALandscapeProxy* Landscape = Cast<ALandscapeProxy>(*It))
             {
@@ -584,9 +592,13 @@ namespace
                 OldVolumes.Add(*It);
             }
         }
-        UStaticMesh* SheetMesh = Sheet ? Sheet->GetStaticMeshComponent()->GetStaticMesh() : nullptr;
-        const FMeshDescription* Description = SheetMesh ? SheetMesh->GetMeshDescription(0) : nullptr;
-        if (!Description || Landscapes.IsEmpty())
+        bool bSheetsHaveMeshes = !Sheets.IsEmpty();
+        for (const AStaticMeshActor* Sheet : Sheets)
+        {
+            const UStaticMesh* SheetMesh = Sheet->GetStaticMeshComponent()->GetStaticMesh();
+            bSheetsHaveMeshes &= SheetMesh && SheetMesh->GetMeshDescription(0);
+        }
+        if (!bSheetsHaveMeshes || Landscapes.IsEmpty())
         {
             UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM %s needs the %s water mesh and a landscape"), LentMap, WaterSheetLabel);
             return false;
@@ -596,25 +608,30 @@ namespace
             World->EditorDestroyActor(Old, true);
         }
 
-        // The sheet's triangles in world XY, and its level.
-        const FTransform SheetTransform = Sheet->GetActorTransform();
-        const TVertexAttributesConstRef<FVector3f> Positions = Description->GetVertexPositions();
+        // The sheets' triangles in world XY, and their level (one reach, so one surface).
         TArray<FTriangle2D> Triangles;
         double SurfaceZ = -UE_BIG_NUMBER;
-        for (const FTriangleID Triangle : Description->Triangles().GetElementIDs())
+        FBox SheetBounds(ForceInit);
+        for (const AStaticMeshActor* Sheet : Sheets)
         {
-            const TArrayView<const FVertexID> Vertices = Description->GetTriangleVertices(Triangle);
-            FVector World3[3];
-            for (int32 Corner = 0; Corner < 3; ++Corner)
+            const FMeshDescription* Description = Sheet->GetStaticMeshComponent()->GetStaticMesh()->GetMeshDescription(0);
+            const FTransform SheetTransform = Sheet->GetActorTransform();
+            const TVertexAttributesConstRef<FVector3f> Positions = Description->GetVertexPositions();
+            for (const FTriangleID Triangle : Description->Triangles().GetElementIDs())
             {
-                World3[Corner] = SheetTransform.TransformPosition(FVector(Positions[Vertices[Corner]]));
-                SurfaceZ = FMath::Max(SurfaceZ, World3[Corner].Z);
+                const TArrayView<const FVertexID> Vertices = Description->GetTriangleVertices(Triangle);
+                FVector World3[3];
+                for (int32 Corner = 0; Corner < 3; ++Corner)
+                {
+                    World3[Corner] = SheetTransform.TransformPosition(FVector(Positions[Vertices[Corner]]));
+                    SurfaceZ = FMath::Max(SurfaceZ, World3[Corner].Z);
+                }
+                FTriangle2D Flat{ FVector2D(World3[0]), FVector2D(World3[1]), FVector2D(World3[2]) };
+                Flat.Bounds = FBox2D(TArray<FVector2D>{ Flat.A, Flat.B, Flat.C });
+                Triangles.Add(Flat);
             }
-            FTriangle2D Flat{ FVector2D(World3[0]), FVector2D(World3[1]), FVector2D(World3[2]) };
-            Flat.Bounds = FBox2D(TArray<FVector2D>{ Flat.A, Flat.B, Flat.C });
-            Triangles.Add(Flat);
+            SheetBounds += Sheet->GetComponentsBoundingBox(true);
         }
-        const FBox SheetBounds = Sheet->GetComponentsBoundingBox(true);
 
         // Water cells: under the sheet, with the ground at least MinDepthCm below its surface.
         const int32 Columns = FMath::CeilToInt32(SheetBounds.GetSize().X / CellCm);
@@ -738,8 +755,8 @@ namespace
             UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM could not save %s"), LentMap);
             return false;
         }
-        UE_LOG(LogMarburgumSwim, Display, TEXT("MB2SWIM water surface_z=%.1f cells=%d volumes=%d replaced=%d deepest_bed_z=%.1f sheet_triangles=%d"),
-            SurfaceZ, WaterCells, Volumes, OldVolumes.Num(), Deepest, Triangles.Num());
+        UE_LOG(LogMarburgumSwim, Display, TEXT("MB2SWIM water surface_z=%.1f cells=%d volumes=%d replaced=%d deepest_bed_z=%.1f sheets=%d sheet_triangles=%d"),
+            SurfaceZ, WaterCells, Volumes, OldVolumes.Num(), Deepest, Sheets.Num(), Triangles.Num());
         return true;
     }
 

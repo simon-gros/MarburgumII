@@ -1,23 +1,23 @@
 {
   "buildings": {
-    "landscape_points_raised": 36,
-    "paved_points_below_wall_base": 166,
-    "paving_points_lifted_to_walls": 1120,
-    "seated": 124
+    "landscape_points_raised": 398,
+    "paved_points_below_wall_base": 864,
+    "paving_points_lifted_to_walls": 5747,
+    "seated": 870
   },
   "format": "marburgumii.lent_ground",
   "landscape": {
     "col0": "west",
-    "half_extent_m": 256.0,
-    "max_m": 22.211252212524414,
-    "min_m": -2.5999999046325684,
-    "points": 1017,
+    "half_extent_m": 768.0,
+    "max_m": 37.73513412475586,
+    "min_m": -13.782779693603516,
+    "points": 3025,
     "row0": "north",
     "under_paving_m": 0.15000000596046448
   },
   "paved": {
     "chunk_m": 64.0,
-    "chunks": 56,
+    "chunks": 521,
     "surfaces": [
       "asphalt",
       "yard_asphalt",
@@ -26,22 +26,51 @@
       "kerb",
       "paint"
     ],
-    "triangles": 649847,
+    "triangles": 5392356,
     "triangles_by_surface": [
-      52369,
-      10722,
-      298139,
-      113704,
-      167451,
-      7462
+      608509,
+      268071,
+      2527425,
+      400027,
+      1539546,
+      48778
     ]
   },
   "paving_edges": {
-    "landscape_points_lowered": 1524,
-    "points_next_to_paving_lowered": 46656
+    "landscape_points_lowered": 3289,
+    "points_lowered_under_dips": 708574,
+    "points_next_to_paving_lowered": 377418
   },
   "plan": "metres; x east and y south of the middle of Stari most (D96/TM E 549527.8, N 157564.0); z above the Drava (252.98 m)",
   "sources": [
+    {
+      "file": "TM_548_156.laz",
+      "licence": "ARSO/GURS open data, attribution",
+      "name": "ARSO LiDAR 2014, GKOT tile TM_548_156 (ground class)",
+      "role": "bare ground",
+      "sha256": "f6d246d71bf7e30c5f35678679a0652e308e4112dd72dd445d98a244f20a2035"
+    },
+    {
+      "file": "TM_548_157.laz",
+      "licence": "ARSO/GURS open data, attribution",
+      "name": "ARSO LiDAR 2014, GKOT tile TM_548_157 (ground class)",
+      "role": "bare ground",
+      "sha256": "1b501807e0cb837b4288ffabdfcf30a9f2b7f04d056d69c9d3a92f7b54fd2a99"
+    },
+    {
+      "file": "TM_548_158.laz",
+      "licence": "ARSO/GURS open data, attribution",
+      "name": "ARSO LiDAR 2014, GKOT tile TM_548_158 (ground class)",
+      "role": "bare ground",
+      "sha256": "5727f6c2f8c9acf6ff8273b55eb2fd7dad3933e01509907ec2bf67478938bd35"
+    },
+    {
+      "file": "TM_549_156.laz",
+      "licence": "ARSO/GURS open data, attribution",
+      "name": "ARSO LiDAR 2014, GKOT tile TM_549_156 (ground class)",
+      "role": "bare ground",
+      "sha256": "5160d778e4f551d14fb2b281845aba428390c552a61cae655b09a0c0e5de3ea9"
+    },
     {
       "file": "TM_549_157.laz",
       "licence": "ARSO/GURS open data, attribution",
@@ -50,30 +79,116 @@
       "sha256": "8f648bad2416e0e37ff9ebec411b7bb18896f5e7b1e1bc120e408f47d61373a7"
     },
     {
+      "file": "TM_549_158.laz",
+      "licence": "ARSO/GURS open data, attribution",
+      "name": "ARSO LiDAR 2014, GKOT tile TM_549_158 (ground class)",
+      "role": "bare ground",
+      "sha256": "bfd68c04b86994c2c9ed528abfde59de60dbb413665858bd9951467139c6bd0e"
+    },
+    {
+      "file": "TM_550_156.laz",
+      "licence": "ARSO/GURS open data, attribution",
+      "name": "ARSO LiDAR 2014, GKOT tile TM_550_156 (ground class)",
+      "role": "bare ground",
+      "sha256": "8117ee2d6ec322dc3675eceba615aa874ba9e07cbd8eae64335ed8c954097ba7"
+    },
+    {
+      "file": "TM_550_157.laz",
+      "licence": "ARSO/GURS open data, attribution",
+      "name": "ARSO LiDAR 2014, GKOT tile TM_550_157 (ground class)",
+      "role": "bare ground",
+      "sha256": "c8e289d09fe7b37fd35d3f88fc6a2a2fc94c4922da03c29ca4bb65510061a257"
+    },
+    {
+      "file": "TM_550_158.laz",
+      "licence": "ARSO/GURS open data, attribution",
+      "name": "ARSO LiDAR 2014, GKOT tile TM_550_158 (ground class)",
+      "role": "bare ground",
+      "sha256": "a05808712cc1d2d31a771c1f7ef2d56e49c5a91c661e7975e8eca1846329ff99"
+    },
+    {
       "licence": "ODbL 1.0, © OpenStreetMap contributors",
-      "name": "OpenStreetMap via Overpass, 2026-11-10T21:46:00Z",
+      "name": "OpenStreetMap via Overpass, 2026-11-11T18:56:34Z",
       "role": "streets and land use",
-      "sha256": "c5b02e69c03c80a0fc589fbd8dfb1dc129b17ec5e434fbdad20c00e1c0a84e65"
+      "sha256": "c0a0a4068b232bd3bcb44fcf921221a59bb70ef67724ee4975c0e1d9141f4fd2"
     },
     {
-      "name": "magna-raedarum-marburgum lent_buildings.json",
+      "file": "buildings.json",
+      "name": "magna-raedarum-marburgum <window>_buildings.json, joined (lent-ground merge-buildings)",
       "role": "building footprints",
-      "sha256": "83752f7a46c37cb9c6aa7fb69797543ee83f940c92176270d257cd056c3b1a6c"
+      "sha256": "09e68d5776ce84c4a0109e602c7c22de07ff9b13cd3f7f54ef57bf6ed3821796"
     },
     {
+      "file": "lent_albedo.jpg",
       "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
       "name": "GURS DOF025 orthophoto (2020–2022)",
       "role": "grass versus hard ground only",
       "sha256": "2ac0b8240b7ef6a0cbaaa5bc3396907fac2548e029924c11de2e5ac8bf0ea8fd"
+    },
+    {
+      "file": "ljudski_vrt_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "6fff5e0f70ea3c1854db3491de007619bfaefedb11848cd68ae940f76f434a27"
+    },
+    {
+      "file": "center_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "bc27ff0fc547a44fbe90eb5c57b6e2ef264a04cdef7558e2e2a2381c378a4557"
+    },
+    {
+      "file": "avtobusna_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "31c68c2870fb03583b9eb1420ea45b6a501078de849112dd5a2e0a7b285545a6"
+    },
+    {
+      "file": "pristan_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "e729c39c508e7ac4ceec337ccf8b94070c39f372148717d560ee0ffccd731962"
+    },
+    {
+      "file": "titov_most_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "b5dc34392a8f001b980f4e787b900553dc571fd992a62a85a26b45eb074ae22e"
+    },
+    {
+      "file": "kurilnica_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "6b3a83fb0d0b682c18ac307aee4c32a80bff5513d1b9a661ecd38a8b694f9be2"
+    },
+    {
+      "file": "magdalena_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "c3b510676795274cca9442601985c444e4289dcf50d192702eb567d8ad90b68d"
+    },
+    {
+      "file": "pobreska_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "0bd8dbb6d33abf544c517fc090584d1bad3253d7e3e9cc31e83f6b635a62d6e5"
     }
   ],
   "streets": {
-    "carriageway_m2": 22095.0,
-    "crossings": 41,
+    "carriageway_m2": 320463.0,
+    "crossings": 386,
     "dropped_kerb_m": 0.03,
     "kerb_m": 0.12,
-    "marked_crossings": 40,
-    "pavement_m2": 55323.0
+    "marked_crossings": 350,
+    "pavement_m2": 468025.0
   },
   "surface_mask": {
     "channels": [
@@ -82,16 +197,102 @@
       "gravel",
       "river_stones"
     ],
-    "points": 2048,
+    "points": 4096,
     "remainder": "hard standing"
   },
   "survey": {
-    "blob_points_removed": 7274,
-    "filled_under_bridges": 7451,
-    "grid_points": 1034289,
-    "ground_points": 1166803,
-    "measured_grid_points": 458083,
-    "points_in_window": 2746698
+    "blob_points_removed": 79880,
+    "filled_under_bridges": 27935,
+    "grid_points": 9150625,
+    "ground_points": 11707448,
+    "hollows_over_3m_deep_and_100m2": [
+      {
+        "area_m2": 6331.0,
+        "deepest_m": 9.5,
+        "x": -658.0,
+        "y": 70.0
+      },
+      {
+        "area_m2": 1046.0,
+        "deepest_m": 7.0,
+        "x": 236.0,
+        "y": 451.0
+      },
+      {
+        "area_m2": 850.0,
+        "deepest_m": 9.5,
+        "x": -233.0,
+        "y": -369.0
+      },
+      {
+        "area_m2": 601.0,
+        "deepest_m": 8.399999618530273,
+        "x": -666.0,
+        "y": 312.0
+      },
+      {
+        "area_m2": 585.0,
+        "deepest_m": 5.099999904632568,
+        "x": 478.0,
+        "y": -419.0
+      },
+      {
+        "area_m2": 344.0,
+        "deepest_m": 10.600000381469727,
+        "x": 465.0,
+        "y": -641.0
+      },
+      {
+        "area_m2": 340.0,
+        "deepest_m": 16.799999237060547,
+        "x": -306.0,
+        "y": -115.0
+      },
+      {
+        "area_m2": 179.0,
+        "deepest_m": 4.0,
+        "x": 666.0,
+        "y": -342.0
+      },
+      {
+        "area_m2": 161.0,
+        "deepest_m": 9.5,
+        "x": -221.0,
+        "y": -365.0
+      },
+      {
+        "area_m2": 125.0,
+        "deepest_m": 4.199999809265137,
+        "x": 711.0,
+        "y": -345.0
+      },
+      {
+        "area_m2": 123.0,
+        "deepest_m": 6.800000190734863,
+        "x": 598.0,
+        "y": -671.0
+      },
+      {
+        "area_m2": 117.0,
+        "deepest_m": 4.0,
+        "x": 179.0,
+        "y": 625.0
+      },
+      {
+        "area_m2": 108.0,
+        "deepest_m": 11.0,
+        "x": 186.0,
+        "y": -424.0
+      },
+      {
+        "area_m2": 105.0,
+        "deepest_m": 3.4000000953674316,
+        "x": 288.0,
+        "y": 440.0
+      }
+    ],
+    "measured_grid_points": 4756212,
+    "points_in_window": 27460251
   },
-  "version": 1
+  "version": 2
 }

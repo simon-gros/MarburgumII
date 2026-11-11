@@ -1,10 +1,16 @@
-//! lent-ground: builds the ground of `/Game/World/lent` from survey data (ADR-040).
+//! lent-ground: builds the ground of `/Game/World/lent` from survey data (ADR-040, ADR-045).
+//!
+//! The ground covers a square round the middle of Stari most: Lent and, since ADR-045, its eight
+//! neighbouring windows of the original game (plan ±768 m).
 //!
 //! Inputs, all outside the repository or committed beside its output:
-//! - the ARSO 2014 LiDAR tile TM_549_157 (GKOT, classified point cloud);
-//! - an OpenStreetMap extract of Lent (Overpass JSON, ODbL);
-//! - the original game's Lent building footprints and the list of buildings the level places;
-//! - the GURS DOF025 orthophoto of the window, used only to tell grass from hard ground.
+//! - the ARSO 2014 LiDAR tiles under the square (GKOT, classified point clouds);
+//! - an OpenStreetMap extract of the square (Overpass JSON, ODbL);
+//! - the building footprints (`merge-buildings` output) and the list of buildings the level places;
+//! - the original game's GURS DOF025 orthophoto of each window, used only to tell grass from hard
+//!   ground. Each `<window>_albedo.jpg` is placed by the bounds in the `<window>.json` beside it.
+//!
+//! `lent-ground merge-buildings` first joins the original's per-window footprints (buildings.rs).
 //!
 //! Outputs, in the output directory, for the `MarburgumRebuildGround` commandlet:
 //! - `heights.bin`: landscape heights (f32, plan metres above the Drava), n × n, row 0 north;
@@ -16,6 +22,7 @@
 //!
 //! `--mode walk` builds only the walk graph, from the streets and the `top.bin` already in `--out`.
 
+mod buildings;
 mod grid;
 mod mesh;
 mod osm;
@@ -31,12 +38,28 @@ use shapes::Shapes;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
-/// Half the side of the window, metres: the landscape spans −256..256 in plan x and y.
-const HALF: f64 = 256.0;
-/// Landscape grid points per side: 8 components of 127 quads.
-const LANDSCAPE_POINTS: usize = 1017;
-/// Surface weight texture size.
-const MASK_POINTS: usize = 2048;
+/// The extent and resolution, set once from the command line.
+struct Extent {
+    /// Half the side of the square, metres: the landscape spans −half..half in plan x and y.
+    half: f64,
+    /// Landscape grid points per side: a whole number of landscape components (2 × 63 quads), plus one.
+    points: usize,
+    /// Surface weight texture size.
+    mask: usize,
+}
+
+static EXTENT: std::sync::OnceLock<Extent> = std::sync::OnceLock::new();
+
+fn half() -> f64 {
+    EXTENT.get().expect("extent set").half
+}
+
+/// Lent and its eight neighbours: 24 components of 126 quads over 1,536 m (0.508 m), and a
+/// 4096² surface mask (0.375 m). Unreal builds a landscape from whole components only, so a grid
+/// that is not a whole number of them loses its east and south edges.
+const DEFAULT_HALF: f64 = 768.0;
+const DEFAULT_POINTS: usize = 3025;
+const DEFAULT_MASK: usize = 4096;
 
 /// How far under the paving the landscape is pushed, so it never shows through.
 const UNDER_PAVING: f32 = 0.15;
@@ -47,30 +70,53 @@ const KERB_DROPPED: f64 = 0.03;
 struct Args {
     /// `walk`: only the walk graph, from the streets and the `top.bin` already in the output.
     walk_only: bool,
-    laz: PathBuf,
+    laz: Vec<PathBuf>,
     osm: PathBuf,
     buildings: PathBuf,
     placed: PathBuf,
-    ortho: PathBuf,
+    ortho: Vec<PathBuf>,
     out: PathBuf,
     /// Where the walk graph goes (the game reads it from its content); none to skip it.
     walk_graph: Option<PathBuf>,
 }
 
-fn parse_args() -> Result<Args, String> {
+fn read_flags(args: impl Iterator<Item = String>) -> Result<HashMap<String, String>, String> {
     let mut map = HashMap::new();
-    let mut it = std::env::args().skip(1);
+    let mut it = args;
     while let Some(k) = it.next() {
         let v = it.next().ok_or(format!("{k} needs a value"))?;
-        map.insert(k.trim_start_matches("--").to_string(), PathBuf::from(v));
+        map.insert(k.trim_start_matches("--").to_string(), v);
     }
-    let get = |k: &str| map.get(k).cloned().ok_or(format!("missing --{k}"));
-    let walk_only = map.get("mode").is_some_and(|m| m.as_os_str() == "walk");
-    let optional = |k: &str| if walk_only { Ok(map.get(k).cloned().unwrap_or_default()) } else { get(k) };
-    Ok(Args { walk_only, laz: optional("laz")?, osm: get("osm")?, buildings: get("buildings")?, placed: get("placed")?, ortho: optional("ortho")?, out: get("out")?, walk_graph: map.get("walk-graph").cloned() })
+    Ok(map)
 }
 
-fn sha256_file(p: &Path) -> String {
+fn list(v: &str) -> Vec<PathBuf> {
+    v.split(',').filter(|s| !s.is_empty()).map(PathBuf::from).collect()
+}
+
+fn parse_args(map: &HashMap<String, String>) -> Result<Args, String> {
+    let get = |k: &str| map.get(k).cloned().ok_or(format!("missing --{k}"));
+    let number = |k: &str, d: f64| -> Result<f64, String> { map.get(k).map_or(Ok(d), |v| v.parse::<f64>().map_err(|e| format!("--{k}: {e}"))) };
+    let extent = Extent { half: number("half", DEFAULT_HALF)?, points: number("points", DEFAULT_POINTS as f64)? as usize, mask: number("mask", DEFAULT_MASK as f64)? as usize };
+    if (extent.points - 1) % 126 != 0 || extent.half <= 0.0 || extent.mask < 2 {
+        return Err("--points must be a whole number of 126-quad landscape components plus one, --half and --mask positive".into());
+    }
+    let _ = EXTENT.set(extent);
+    let walk_only = map.get("mode").is_some_and(|m| m == "walk");
+    let optional = |k: &str| if walk_only { Ok(map.get(k).cloned().unwrap_or_default()) } else { get(k) };
+    Ok(Args {
+        walk_only,
+        laz: list(&optional("laz")?),
+        osm: PathBuf::from(get("osm")?),
+        buildings: PathBuf::from(get("buildings")?),
+        placed: PathBuf::from(get("placed")?),
+        ortho: list(&optional("ortho")?),
+        out: PathBuf::from(get("out")?),
+        walk_graph: map.get("walk-graph").map(PathBuf::from),
+    })
+}
+
+pub(crate) fn sha256_file(p: &Path) -> String {
     let bytes = std::fs::read(p).unwrap_or_default();
     format!("{:x}", Sha256::digest(&bytes))
 }
@@ -129,57 +175,62 @@ struct Lidar {
     ground_points: usize,
 }
 
-fn read_lidar(path: &Path, bridges: &Shapes) -> Result<Lidar, String> {
-    let mut reader = las::Reader::from_path(path).map_err(|e| e.to_string())?;
-    let n = LANDSCAPE_POINTS;
-    let template = Grid::new(n, HALF, 0.0);
+fn read_lidar(paths: &[PathBuf], bridges: &Shapes) -> Result<Lidar, String> {
+    let n = EXTENT.get().expect("extent set").points;
+    let half = half();
+    let template = Grid::new(n, half, 0.0);
     let s = template.step();
-    let mut cells: Vec<Vec<f32>> = vec![Vec::new(); n * n];
+    // Ground returns per grid point, as heights. A flat list sorted by cell afterwards: one small
+    // vector per point would cost more than the returns themselves on the wide grid.
+    let mut returns: Vec<(u32, f32)> = Vec::new();
     let mut veg = template.like(0.0);
     let mut deck = vec![f32::MIN; n * n];
     let (mut inside, mut ground_points) = (0usize, 0usize);
-    for p in reader.points() {
-        let p = p.map_err(|e| e.to_string())?;
-        let (x, y) = proj::d96_to_plan(p.x, p.y);
-        if x.abs() > HALF + s || y.abs() > HALF + s {
-            continue;
-        }
-        inside += 1;
-        let (r, c) = (((y + HALF) / s).round(), ((x + HALF) / s).round());
-        if r < 0.0 || c < 0.0 || r >= n as f64 || c >= n as f64 {
-            continue;
-        }
-        let i = r as usize * n + c as usize;
-        let class = u8::from(p.classification);
-        let z = (p.z - proj::HEIGHT_DATUM) as f32;
-        let under_bridge = shapes::contains(bridges, [x, y]);
-        if under_bridge {
-            deck[i] = deck[i].max(z);
-        }
-        match class {
-            2 => {
-                cells[i].push(z);
-                ground_points += 1;
+    // Bridge outlines by grid row, so each return tests only the outlines its row crosses.
+    let bridge_rows: Vec<(f64, f64, usize)> = bridges.iter().enumerate().map(|(k, s)| {
+        let (lo, hi) = s[0].iter().fold((f64::MAX, f64::MIN), |a, p| (a.0.min(p[1]), a.1.max(p[1])));
+        (lo, hi, k)
+    }).collect();
+    for path in paths {
+        let mut reader = las::Reader::from_path(path).map_err(|e| format!("{}: {e}", path.display()))?;
+        for p in reader.points() {
+            let p = p.map_err(|e| e.to_string())?;
+            let (x, y) = proj::d96_to_plan(p.x, p.y);
+            if x.abs() > half + s || y.abs() > half + s {
+                continue;
             }
-            3..=5 => veg.v[i] += 1.0,
-            _ => {}
+            inside += 1;
+            let (r, c) = (((y + half) / s).round(), ((x + half) / s).round());
+            if r < 0.0 || c < 0.0 || r >= n as f64 || c >= n as f64 {
+                continue;
+            }
+            let i = r as usize * n + c as usize;
+            let class = u8::from(p.classification);
+            let z = (p.z - proj::HEIGHT_DATUM) as f32;
+            let under_bridge = bridge_rows.iter().any(|&(lo, hi, k)| y >= lo && y <= hi && shapes::contains(&bridges[k..k + 1], [x, y]));
+            if under_bridge {
+                deck[i] = deck[i].max(z);
+            }
+            match class {
+                2 => {
+                    returns.push((i as u32, z));
+                    ground_points += 1;
+                }
+                3..=5 => veg.v[i] += 1.0,
+                _ => {}
+            }
         }
+        eprintln!("survey: {} read, {} returns in the square so far", path.display(), inside);
     }
     // The 2014 survey classed Stari most's deck as ground and saw almost nothing beneath it, so
     // every return inside a bridge outline is dropped and the ground there is filled in.
-    for i in 0..n * n {
-        if deck[i] > f32::MIN {
-            cells[i].clear();
-        }
-    }
+    returns.retain(|&(i, _)| deck[i as usize] == f32::MIN);
+    returns.sort_unstable_by(|a, b| a.0.cmp(&b.0).then(a.1.partial_cmp(&b.1).unwrap()));
     let mut ground = template.like(0.0);
     let mut known = template.like(0.0);
-    for (i, zs) in cells.iter_mut().enumerate() {
-        if zs.is_empty() {
-            continue;
-        }
-        zs.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        ground.v[i] = zs[zs.len() / 2];
+    for run in returns.chunk_by(|a, b| a.0 == b.0) {
+        let i = run[0].0 as usize;
+        ground.v[i] = run[run.len() / 2].1;
         known.v[i] = 1.0;
     }
     Ok(Lidar { ground, known, vegetation: veg, points_in_window: inside, ground_points })
@@ -278,7 +329,7 @@ fn streets(osm: &Osm, buildings: &Shapes, window: &Shapes) -> Streets {
     let mut road_paths = Vec::new();
     let mut node_use: HashMap<(i64, i64), usize> = HashMap::new();
     let key = |p: &Pt| ((p[0] * 100.0).round() as i64, (p[1] * 100.0).round() as i64);
-    let near = |pts: &[Pt]| pts.iter().any(|p| p[0].abs() < HALF + 60.0 && p[1].abs() < HALF + 60.0);
+    let near = |pts: &[Pt]| pts.iter().any(|p| p[0].abs() < half() + 60.0 && p[1].abs() < half() + 60.0);
     for w in &osm.ways {
         if !near(&w.pts) {
             continue;
@@ -344,6 +395,7 @@ fn streets(osm: &Osm, buildings: &Shapes, window: &Shapes) -> Streets {
     let roads = shapes::open(&shapes::close(&roads, 4.0), 0.4);
     let roads = shapes::difference(&shapes::difference(&roads, &islands), &blocked);
     let carriageway = shapes::intersect(&roads, window);
+    let carriageway_index = shapes::Index::new(&carriageway);
 
     // Pavement: mapped footways and sidewalks, plazas and islands, a kerb-and-verge band round every
     // carriageway, and the strip between a road and the house fronts when it is narrow.
@@ -365,7 +417,7 @@ fn streets(osm: &Osm, buildings: &Shapes, window: &Shapes) -> Streets {
     let crossings = osm
         .nodes
         .iter()
-        .filter(|n| tag(&n.tags, "highway") == Some("crossing") && shapes::contains(&carriageway, n.at))
+        .filter(|n| tag(&n.tags, "highway") == Some("crossing") && carriageway_index.contains(n.at))
         .map(|n| {
             let marked = matches!(tag(&n.tags, "crossing"), Some("zebra" | "marked" | "uncontrolled" | "traffic_signals"))
                 || tag(&n.tags, "crossing_ref") == Some("zebra")
@@ -451,6 +503,38 @@ fn centre_dashes(path: &[Pt]) -> Shapes {
     shapes::union_all(&dashes)
 }
 
+/// Connected groups of points with a positive value: where they are, how big, how deep.
+fn clusters(g: &Grid, depth: &[f32]) -> Vec<serde_json::Value> {
+    let n = g.n;
+    let mut seen = vec![false; depth.len()];
+    let mut out = Vec::new();
+    for start in 0..depth.len() {
+        if depth[start] <= 0.0 || seen[start] {
+            continue;
+        }
+        let (mut stack, mut count, mut sx, mut sy, mut deepest) = (vec![start], 0usize, 0.0, 0.0, 0.0f32);
+        seen[start] = true;
+        while let Some(i) = stack.pop() {
+            let p = g.pos(i / n, i % n);
+            (count, sx, sy, deepest) = (count + 1, sx + p[0], sy + p[1], deepest.max(depth[i]));
+            let (r, c) = (i / n, i % n);
+            for (dr, dc) in [(0i64, 1i64), (0, -1), (1, 0), (-1, 0)] {
+                let (rr, cc) = (r as i64 + dr, c as i64 + dc);
+                if rr >= 0 && cc >= 0 && (rr as usize) < n && (cc as usize) < n {
+                    let j = rr as usize * n + cc as usize;
+                    if depth[j] > 0.0 && !seen[j] {
+                        seen[j] = true;
+                        stack.push(j);
+                    }
+                }
+            }
+        }
+        let step = g.step();
+        out.push(serde_json::json!({ "x": (sx / count as f64).round(), "y": (sy / count as f64).round(), "area_m2": (count as f64 * step * step).round(), "deepest_m": (deepest * 10.0).round() / 10.0 }));
+    }
+    out
+}
+
 // ---------------------------------------------------------------------------------------------
 
 fn read_f32(path: &Path, n: usize, half: f64) -> Result<Grid, String> {
@@ -473,12 +557,12 @@ fn write_walk_graph(args: &Args, osm: &Osm, st: &Streets, footprints: &Shapes, t
     let t0 = std::time::Instant::now();
     let walkable = [&st.pavement, &st.unpaved, &st.plazas];
     let blocked = shapes::union_all(&[footprints.clone(), st.water.clone()]);
-    let field = walk::Field::new(&walkable, &st.carriageway, &blocked, HALF);
+    let field = walk::Field::new(&walkable, &st.carriageway, &blocked, half());
     let crossings: Vec<(Pt, [f64; 2])> = st.crossings.iter().map(|(at, _)| (*at, road_direction(&st.road_paths, *at))).collect();
-    let (graph, summary) = walk::build(osm, &field, &crossings, HALF);
+    let (graph, summary) = walk::build(osm, &field, &crossings, half());
     let sources = serde_json::json!([
         { "role": "streets and paths", "name": format!("OpenStreetMap via Overpass, {}", osm.timestamp), "licence": "ODbL 1.0, © OpenStreetMap contributors", "sha256": sha256_file(&args.osm) },
-        { "role": "building footprints", "name": "magna-raedarum-marburgum lent_buildings.json", "sha256": sha256_file(&args.buildings) },
+        { "role": "building footprints", "name": "magna-raedarum-marburgum <window>_buildings.json, joined (lent-ground merge-buildings)", "sha256": sha256_file(&args.buildings) },
         { "role": "walkable top heights", "name": "top.bin (this tool)", "sha256": sha256_file(&args.out.join("top.bin")) },
     ]);
     let json = walk::to_json(&graph, top, &summary, sources);
@@ -498,19 +582,58 @@ fn write_f32(path: &Path, g: &Grid) -> std::io::Result<()> {
     std::fs::write(path, out)
 }
 
-fn read_ortho(path: &Path) -> Result<(usize, usize, Vec<u8>), String> {
-    let file = std::fs::File::open(path).map_err(|e| e.to_string())?;
+/// One window's orthophoto and the plan square it covers.
+struct Ortho {
+    width: usize,
+    height: usize,
+    pixels: Vec<u8>,
+    /// Plan x of the west edge and y of the north edge, and the side, metres.
+    x0: f64,
+    y0: f64,
+    side: f64,
+}
+
+/// Reads `<window>_albedo.jpg` and places it by the bounds in the `<window>.json` beside it.
+fn read_ortho(path: &Path) -> Result<Ortho, String> {
+    let file = std::fs::File::open(path).map_err(|e| format!("{}: {e}", path.display()))?;
     let mut decoder = jpeg_decoder::Decoder::new(std::io::BufReader::new(file));
     let pixels = decoder.decode().map_err(|e| e.to_string())?;
     let info = decoder.info().ok_or("no jpeg info")?;
-    Ok((info.width as usize, info.height as usize, pixels))
+    let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or_default();
+    let window = path.with_file_name(format!("{}.json", stem.trim_end_matches("_albedo")));
+    let bounds: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&window).map_err(|e| format!("{}: {e}", window.display()))?).map_err(|e| e.to_string())?;
+    let get = |k: &str| bounds[k].as_f64().ok_or(format!("{}: no {k}", window.display()));
+    let (west, east, north) = (get("west")?, get("east")?, get("north")?);
+    let (x0, y0) = proj::d96_to_plan(west, north);
+    Ok(Ortho { width: info.width as usize, height: info.height as usize, pixels, x0, y0, side: east - west })
 }
 
+const USAGE: &str = "usage:
+  lent-ground merge-buildings --windows lent,center,... --terrain DIR --out buildings.json
+  lent-ground --laz A.laz,B.laz,... --osm osm_lent.json.gz --buildings buildings.json --placed placed.txt
+              --ortho DIR/lent_albedo.jpg,DIR/center_albedo.jpg,... --out DIR [--half 768 --points 3025 --mask 4096]
+              [--walk-graph Content/Marburgum/Street/lent_walk_graph.json] [--mode walk]";
+
 fn main() {
-    let args = match parse_args() {
+    let mut argv: Vec<String> = std::env::args().skip(1).collect();
+    if argv.first().map(String::as_str) == Some("merge-buildings") {
+        argv.remove(0);
+        let result = read_flags(argv.into_iter()).and_then(|f| {
+            let get = |k: &str| f.get(k).cloned().ok_or(format!("missing --{k}"));
+            let terrain = PathBuf::from(get("terrain")?);
+            let sources: Vec<(String, PathBuf)> = get("windows")?.split(',').map(|w| (w.to_string(), terrain.join(format!("{w}_buildings.json")))).collect();
+            buildings::merge(&sources, Path::new(&get("out")?))
+        });
+        if let Err(e) = result {
+            eprintln!("lent-ground: {e}\n{USAGE}");
+            std::process::exit(2);
+        }
+        return;
+    }
+    let args = match read_flags(argv.into_iter()).and_then(|f| parse_args(&f)) {
         Ok(a) => a,
         Err(e) => {
-            eprintln!("lent-ground: {e}\nusage: lent-ground --laz TM_549_157.laz --osm lent_osm.json --buildings lent_buildings.json --placed placed.txt --ortho lent_albedo.jpg --out DIR");
+            eprintln!("lent-ground: {e}\n{USAGE}");
             std::process::exit(2);
         }
     };
@@ -537,11 +660,11 @@ fn run(args: &Args) -> Result<(), String> {
     let buildings = read_buildings(&args.buildings, &args.placed)?;
     let footprints = shapes::union_all(&buildings.iter().map(|b| shapes::polygon(&[b.outline.clone()])).collect::<Vec<_>>());
     // Paving stops a metre short of the landscape edge, inside its last row of quads.
-    let window = shapes::square(HALF - 1.0);
+    let window = shapes::square(half() - 1.0);
     let st = streets(&osm, &footprints, &window);
     eprintln!("streets: carriageway {:.0} m², pavement {:.0} m², {} crossings, {} junctions ({:.1}s)", shapes::area(&st.carriageway), shapes::area(&st.pavement), st.crossings.len(), st.junctions.len(), t0.elapsed().as_secs_f64());
     if args.walk_only {
-        let top = read_f32(&args.out.join("top.bin"), LANDSCAPE_POINTS, HALF)?;
+        let top = read_f32(&args.out.join("top.bin"), EXTENT.get().expect("extent set").points, half())?;
         return write_walk_graph(args, &osm, &st, &footprints, &top);
     }
 
@@ -613,6 +736,25 @@ fn run(args: &Args) -> Result<(), String> {
             blobs += 1;
         }
     }
+    // Hollows with no way out more than 3 m below their rim, away from the river and the streets,
+    // are reported, not changed: most are courtyards and light wells inside building blocks, but
+    // a few are building sites of the 2014 survey (the Minorite courtyard behind the puppet
+    // theatre was dug 17 m deep) or later sunken squares that a 1990s map may not want.
+    let filled = ground.depressions_filled();
+    let mut keep_low = ground.like(0.0);
+    for s in st.water.iter().chain(st.carriageway.iter()).chain(st.pavement.iter()) {
+        keep_low.fill_rings(s, 1.0);
+    }
+    let mut hollow_depth = vec![0.0f32; ground.v.len()];
+    for i in 0..ground.v.len() {
+        let depth = filled.v[i] - ground.v[i];
+        if depth > 3.0 && keep_low.v[i] < 0.5 {
+            hollow_depth[i] = depth;
+        }
+    }
+    let mut hollows = clusters(&ground, &hollow_depth);
+    hollows.retain(|h| h["area_m2"].as_f64().unwrap_or(0.0) >= 100.0);
+    hollows.sort_by(|a, b| b["area_m2"].as_f64().partial_cmp(&a["area_m2"].as_f64()).unwrap());
     // Light smoothing takes out survey noise; a stronger pass would round off the banks.
     let ground = ground.blur(0.55, None);
 
@@ -650,11 +792,8 @@ fn run(args: &Args) -> Result<(), String> {
     let mut wall_lift = 0usize;
     let mut near_wall: Vec<(f32, f32)> = vec![(f32::MIN, 0.0); pave.v.len()];
     for b in &buildings {
-        let mut inside = ground.like(0.0);
-        inside.fill_rings(&[b.outline.clone()], 1.0);
-        let from_wall = Grid::distance_to(&inside);
-        for i in 0..pave.v.len() {
-            let d = from_wall.v[i] as f64;
+        for (i, d) in ground.near_polygon(&[b.outline.clone()], 2.5).iter() {
+            let d = d as f64;
             if d > 0.0 && d < 2.0 {
                 let w = (1.0 - smoothstep(0.75, 2.0, d)) as f32;
                 if w > near_wall[i].1 || (w == near_wall[i].1 && (b.base as f32) > near_wall[i].0) {
@@ -676,15 +815,18 @@ fn run(args: &Args) -> Result<(), String> {
     // ---- meshes --------------------------------------------------------------------------------
     let kerb_band = shapes::difference(&shapes::intersect(&shapes::offset(&st.carriageway, 0.16), &st.pavement), &st.carriageway);
     let footway = shapes::difference(&st.pavement, &kerb_band);
-    let mut mesh = PavedMesh::new(HALF, 64.0);
+    let mut mesh = PavedMesh::new(half(), 64.0);
     // Fine enough that markings, laid on the same fields, never dip under the asphalt.
     let c_tris = mesh::triangulate(&st.carriageway, 0.6);
-    mesh.add_surface(&c_tris, &road_z, &|c| if shapes::contains(&st.parking, c) { Surface::YardAsphalt } else if shapes::contains(&st.setts, c) { Surface::Setts } else { Surface::Asphalt });
+    // Each of a few million triangles and kerb segments asks which surface it lies in.
+    let (parking, setts, carriageway) = (shapes::Index::new(&st.parking), shapes::Index::new(&st.setts), shapes::Index::new(&st.carriageway));
+    mesh.add_surface(&c_tris, &road_z, &|c| if parking.contains(c) { Surface::YardAsphalt } else if setts.contains(c) { Surface::Setts } else { Surface::Asphalt });
     let k_tris = mesh::triangulate(&kerb_band, 0.6);
     mesh.add_surface(&k_tris, &pave_z, &|_| Surface::Kerb);
     let f_tris = mesh::triangulate(&footway, 1.2);
     let squares = shapes::union_all(&[st.plazas.clone(), st.setts.clone()]);
-    mesh.add_surface(&f_tris, &pave_z, &|c| if shapes::contains(&squares, c) { Surface::Setts } else { Surface::Pavers });
+    let squares = shapes::Index::new(&squares);
+    mesh.add_surface(&f_tris, &pave_z, &|c| if squares.contains(c) { Surface::Setts } else { Surface::Pavers });
     // Kerb faces: from the road up to the pavement along every carriageway edge, facing the road.
     for contour in st.carriageway.iter().flatten() {
         mesh.add_wall(contour, true, &road_z, &pave_z, &|a, b| {
@@ -701,7 +843,7 @@ fn run(args: &Args) -> Result<(), String> {
             let l = (d[0] * d[0] + d[1] * d[1]).sqrt();
             let out = [d[1] / l, -d[0] / l];
             let mid = [(a[0] + b[0]) / 2.0 + out[0] * 0.08, (a[1] + b[1]) / 2.0 + out[1] * 0.08];
-            if shapes::contains(&st.carriageway, mid) { None } else { Some(out) }
+            if carriageway.contains(mid) { None } else { Some(out) }
         }, Surface::Kerb);
     }
     // Carriageway edges with no pavement beside them (the window edge, bridge ends) get a skirt too.
@@ -764,6 +906,24 @@ fn run(args: &Args) -> Result<(), String> {
             }
         }
     }
+    // Paving can dip between grid points (it is drawn finer than the landscape): every corner of
+    // a landscape cell goes below the lowest paved corner that reaches into the cell.
+    let lowest = mesh.lowest_in_cells(&landscape);
+    let mut under_dips = 0usize;
+    for r in 0..n - 1 {
+        for c in 0..n - 1 {
+            let low = lowest[r * n + c];
+            if !low.is_finite() {
+                continue;
+            }
+            for (rr, cc) in [(r, c), (r + 1, c), (r, c + 1), (r + 1, c + 1)] {
+                if landscape.at(rr, cc) > low - 0.05 {
+                    landscape.set(rr, cc, low - 0.05);
+                    under_dips += 1;
+                }
+            }
+        }
+    }
     // Just outside the paving the landscape may not stand above it: a narrow strip can fall
     // between grid points, and a bank beside a path would otherwise lap over its edge.
     let from_paved = Grid::distance_to(&paved_any);
@@ -782,11 +942,7 @@ fn run(args: &Args) -> Result<(), String> {
     let mut wall_gaps = 0usize;
     let mut raised = 0usize;
     for b in &buildings {
-        let mut inside = ground.like(0.0);
-        inside.fill_rings(&[b.outline.clone()], 1.0);
-        let from_wall = Grid::distance_to(&inside);
-        for i in 0..landscape.v.len() {
-            let d = from_wall.v[i];
+        for (i, d) in ground.near_polygon(&[b.outline.clone()], 1.5).iter() {
             if d > 0.0 && d <= 0.75 {
                 if paved_any.v[i] > 0.5 {
                     if (top.v[i] as f64) < b.base + 0.02 {
@@ -802,8 +958,9 @@ fn run(args: &Args) -> Result<(), String> {
     }
 
     // ---- surface weights -------------------------------------------------------------------------
-    let (ow, oh, ortho) = read_ortho(&args.ortho)?;
-    let m = Grid::new(MASK_POINTS, HALF, 0.0);
+    let orthos = args.ortho.iter().map(|p| read_ortho(p)).collect::<Result<Vec<_>, _>>()?;
+    let mask_points = EXTENT.get().expect("extent set").mask;
+    let m = Grid::new(mask_points, half(), 0.0);
     let (mut grass, mut earth, mut gravel, mut stones) = (m.like(0.0), m.like(0.0), m.like(0.0), m.like(0.0));
     let grassy = |t: &Tags| {
         matches!(tag(t, "landuse"), Some("grass" | "meadow" | "village_green" | "flowerbed" | "recreation_ground"))
@@ -834,11 +991,14 @@ fn run(args: &Args) -> Result<(), String> {
     let to_water = Grid::distance_to(&mwater);
     // Unmapped ground: green in the orthophoto is grass, the rest hard standing; vegetation the
     // survey saw over it adds leaf litter.
+    // Each point reads the window whose photo covers it (the nearest one at the outer edge).
     let ortho_at = |p: Pt| -> [f32; 3] {
-        let u = ((p[0] + HALF) / (2.0 * HALF) * ow as f64).clamp(0.0, ow as f64 - 1.0) as usize;
-        let v = ((p[1] + HALF) / (2.0 * HALF) * oh as f64).clamp(0.0, oh as f64 - 1.0) as usize;
-        let i = (v * ow + u) * 3;
-        [ortho[i] as f32, ortho[i + 1] as f32, ortho[i + 2] as f32]
+        let outside = |o: &Ortho| (o.x0 - p[0]).max(p[0] - o.x0 - o.side).max(o.y0 - p[1]).max(p[1] - o.y0 - o.side);
+        let o = orthos.iter().min_by(|a, b| outside(a).partial_cmp(&outside(b)).unwrap()).expect("an orthophoto");
+        let u = ((p[0] - o.x0) / o.side * o.width as f64).clamp(0.0, o.width as f64 - 1.0) as usize;
+        let v = ((p[1] - o.y0) / o.side * o.height as f64).clamp(0.0, o.height as f64 - 1.0) as usize;
+        let i = (v * o.width + u) * 3;
+        [o.pixels[i] as f32, o.pixels[i + 1] as f32, o.pixels[i + 2] as f32]
     };
     let veg = lidar.vegetation.blur(1.5, None);
     for r in 0..m.n {
@@ -871,7 +1031,7 @@ fn run(args: &Args) -> Result<(), String> {
     }
     let _ = mland;
     let (grass, earth, gravel, stones) = (grass.blur(0.35, None), earth.blur(0.5, None), gravel.blur(0.3, None), stones.blur(0.6, None));
-    let mut rgba = Vec::with_capacity(MASK_POINTS * MASK_POINTS * 4);
+    let mut rgba = Vec::with_capacity(mask_points * mask_points * 4);
     for i in 0..m.v.len() {
         let w = [grass.v[i], earth.v[i], gravel.v[i], stones.v[i]].map(|x| x.clamp(0.0, 1.0));
         let total: f32 = w.iter().sum();
@@ -882,7 +1042,7 @@ fn run(args: &Args) -> Result<(), String> {
     }
     {
         let file = std::fs::File::create(args.out.join("surface.png")).map_err(|e| e.to_string())?;
-        let mut enc = png::Encoder::new(std::io::BufWriter::new(file), MASK_POINTS as u32, MASK_POINTS as u32);
+        let mut enc = png::Encoder::new(std::io::BufWriter::new(file), mask_points as u32, mask_points as u32);
         enc.set_color(png::ColorType::Rgba);
         enc.set_depth(png::BitDepth::Eight);
         let mut w = enc.write_header().map_err(|e| e.to_string())?;
@@ -895,12 +1055,20 @@ fn run(args: &Args) -> Result<(), String> {
     mesh.write(&args.out.join("paved.bin")).map_err(|e| e.to_string())?;
     let by_surface = mesh.count_by_surface();
     let (lmin, lmax) = landscape.v.iter().fold((f32::MAX, f32::MIN), |a, &v| (a.0.min(v), a.1.max(v)));
+    let points = EXTENT.get().expect("extent set").points;
+    let file_name = |p: &PathBuf| p.file_name().map(|f| f.to_string_lossy().to_string());
+    let mut sources: Vec<serde_json::Value> = args.laz.iter().map(|p| serde_json::json!({ "role": "bare ground", "name": format!("ARSO LiDAR 2014, GKOT tile {} (ground class)", p.file_stem().map(|f| f.to_string_lossy().to_string()).unwrap_or_default()), "licence": "ARSO/GURS open data, attribution", "file": file_name(p), "sha256": sha256_file(p) })).collect();
+    sources.push(serde_json::json!({ "role": "streets and land use", "name": format!("OpenStreetMap via Overpass, {}", osm.timestamp), "licence": "ODbL 1.0, © OpenStreetMap contributors", "sha256": sha256_file(&args.osm) }));
+    sources.push(serde_json::json!({ "role": "building footprints", "name": "magna-raedarum-marburgum <window>_buildings.json, joined (lent-ground merge-buildings)", "file": file_name(&args.buildings), "sha256": sha256_file(&args.buildings) }));
+    for p in &args.ortho {
+        sources.push(serde_json::json!({ "role": "grass versus hard ground only", "name": "GURS DOF025 orthophoto (2020–2022)", "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije", "file": file_name(p), "sha256": sha256_file(p) }));
+    }
     let report = serde_json::json!({
         "format": "marburgumii.lent_ground",
-        "version": 1,
+        "version": 2,
         "plan": "metres; x east and y south of the middle of Stari most (D96/TM E 549527.8, N 157564.0); z above the Drava (252.98 m)",
-        "landscape": { "points": LANDSCAPE_POINTS, "half_extent_m": HALF, "row0": "north", "col0": "west", "min_m": lmin, "max_m": lmax, "under_paving_m": UNDER_PAVING },
-        "surface_mask": { "points": MASK_POINTS, "channels": ["grass", "earth", "gravel", "river_stones"], "remainder": "hard standing" },
+        "landscape": { "points": points, "half_extent_m": half(), "row0": "north", "col0": "west", "min_m": lmin, "max_m": lmax, "under_paving_m": UNDER_PAVING },
+        "surface_mask": { "points": mask_points, "channels": ["grass", "earth", "gravel", "river_stones"], "remainder": "hard standing" },
         "paved": { "chunk_m": mesh.chunk, "chunks": mesh.chunks.len(), "triangles": mesh.triangle_count(), "surfaces": mesh::SURFACE_NAMES, "triangles_by_surface": by_surface },
         "streets": {
             "carriageway_m2": shapes::area(&st.carriageway).round(),
@@ -909,15 +1077,10 @@ fn run(args: &Args) -> Result<(), String> {
             "marked_crossings": st.crossings.iter().filter(|c| c.1).count(),
             "kerb_m": KERB, "dropped_kerb_m": KERB_DROPPED,
         },
-        "survey": { "filled_under_bridges": filled_under_bridges, "blob_points_removed": blobs, "points_in_window": lidar.points_in_window, "ground_points": lidar.ground_points, "measured_grid_points": measured, "grid_points": LANDSCAPE_POINTS * LANDSCAPE_POINTS },
-        "paving_edges": { "landscape_points_lowered": edge_lowered, "points_next_to_paving_lowered": next_to_paving },
+        "survey": { "filled_under_bridges": filled_under_bridges, "blob_points_removed": blobs, "hollows_over_3m_deep_and_100m2": hollows, "points_in_window": lidar.points_in_window, "ground_points": lidar.ground_points, "measured_grid_points": measured, "grid_points": points * points },
+        "paving_edges": { "landscape_points_lowered": edge_lowered, "points_next_to_paving_lowered": next_to_paving, "points_lowered_under_dips": under_dips },
         "buildings": { "seated": buildings.len(), "paving_points_lifted_to_walls": wall_lift, "landscape_points_raised": raised, "paved_points_below_wall_base": wall_gaps },
-        "sources": [
-            { "role": "bare ground", "name": "ARSO LiDAR 2014, GKOT tile TM_549_157 (ground class)", "licence": "ARSO/GURS open data, attribution", "file": args.laz.file_name().map(|f| f.to_string_lossy().to_string()), "sha256": sha256_file(&args.laz) },
-            { "role": "streets and land use", "name": format!("OpenStreetMap via Overpass, {}", osm.timestamp), "licence": "ODbL 1.0, © OpenStreetMap contributors", "sha256": sha256_file(&args.osm) },
-            { "role": "building footprints", "name": "magna-raedarum-marburgum lent_buildings.json", "sha256": sha256_file(&args.buildings) },
-            { "role": "grass versus hard ground only", "name": "GURS DOF025 orthophoto (2020–2022)", "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije", "sha256": sha256_file(&args.ortho) },
-        ],
+        "sources": sources,
     });
     std::fs::write(args.out.join("ground.json"), serde_json::to_string_pretty(&report).unwrap() + "\n").map_err(|e| e.to_string())?;
     write_walk_graph(args, &osm, &st, &footprints, &top)?;

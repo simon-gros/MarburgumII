@@ -15,6 +15,7 @@
 #include "MeshDescription.h"
 #include "MeshDescriptionBuilder.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 #include "PhysicsEngine/BodySetup.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -27,7 +28,32 @@ namespace
 {
     namespace MB = MarburgumBuildings;
 
-    const TCHAR* SourcePath = TEXT("/home/simon/magna-raedarum-marburgum/project/assets/terrain/lent_buildings.json");
+    // The footprints of Lent and its eight neighbouring windows, joined across the window edges by
+    // `lent-ground merge-buildings` (ADR-045), and the list of the ones the level places, which the
+    // ground tool seats.
+    FString SourcePath()
+    {
+        return FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground/buildings.json"));
+    }
+
+    FString PlacedPath()
+    {
+        return FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground/placed_buildings.txt"));
+    }
+
+    // A building that was already in Lent keeps its asset under Buildings/lent; a new one goes under
+    // the window it mostly stands in.
+    FString BuildingPackage(const FString& Id, const FString& Window)
+    {
+        const FString Lent = FString::Printf(TEXT("/Game/World/Buildings/lent/%s"), *Id);
+        return FPackageName::DoesPackageExist(Lent) || Window.IsEmpty() ? Lent : FString::Printf(TEXT("/Game/World/Buildings/%s/%s"), *Window, *Id);
+    }
+
+    bool IsBuildingActor(const AStaticMeshActor* Actor)
+    {
+        const UStaticMesh* Mesh = Actor->GetStaticMeshComponent() ? Actor->GetStaticMeshComponent()->GetStaticMesh() : nullptr;
+        return Mesh && Mesh->GetPathName().StartsWith(TEXT("/Game/World/Buildings/"));
+    }
 
     // Plan metres (x east, y south of Stari most, z up) to Unreal centimetres. A rotation, so windings
     // and normals carry over unchanged.
@@ -36,10 +62,10 @@ namespace
         return FVector(-P.Y * 100.0, P.X * 100.0, P.Z * 100.0);
     }
 
-    bool ReadFootprints(TArray<FString>& OutIds, std::vector<MB::FFootprint>& OutFootprints, TArray<FString>& OutDropped)
+    bool ReadFootprints(TArray<FString>& OutIds, TArray<FString>& OutWindows, std::vector<MB::FFootprint>& OutFootprints, TArray<FString>& OutDropped)
     {
         FString Text;
-        if (!FFileHelper::LoadFileToString(Text, SourcePath))
+        if (!FFileHelper::LoadFileToString(Text, *SourcePath()))
         {
             return false;
         }
@@ -97,6 +123,7 @@ namespace
                 continue;
             }
             OutIds.Add(Id);
+            OutWindows.Add(Object->HasTypedField<EJson::String>(TEXT("window")) ? Object->GetStringField(TEXT("window")) : FString());
             OutFootprints.push_back(Footprint);
         }
         return !OutFootprints.empty();
@@ -187,7 +214,10 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
     if (FParse::Value(*Params, TEXT("Inspect="), InspectId))
     {
         // Reports what a saved building mesh holds: its source description and its built render data.
-        const FString Path = FString::Printf(TEXT("/Game/World/Buildings/lent/%s.%s"), *InspectId, *InspectId);
+        FString InspectWindow;
+        FParse::Value(*Params, TEXT("Window="), InspectWindow);
+        const FString Package = BuildingPackage(InspectId, InspectWindow);
+        const FString Path = FString::Printf(TEXT("%s.%s"), *Package, *InspectId);
         UStaticMesh* Saved = LoadObject<UStaticMesh>(nullptr, *Path);
         if (!Saved)
         {
@@ -206,11 +236,12 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
     FString Only;
     FParse::Value(*Params, TEXT("Only="), Only);
     TArray<FString> Ids;
+    TArray<FString> Windows;
     std::vector<MB::FFootprint> Footprints;
     TArray<FString> Dropped;
-    if (!ReadFootprints(Ids, Footprints, Dropped))
+    if (!ReadFootprints(Ids, Windows, Footprints, Dropped))
     {
-        UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not read %s"), SourcePath);
+        UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not read %s (run lent-ground merge-buildings)"), *SourcePath());
         return 1;
     }
     MB::FindPartyWalls(Footprints);
@@ -226,6 +257,11 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
         UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE missing materials"));
         return 1;
     }
+    // Kept through the garbage collections between buildings.
+    for (UObject* Material : { static_cast<UObject*>(Parent), static_cast<UObject*>(Frame), static_cast<UObject*>(Glass), static_cast<UObject*>(Plaster), static_cast<UObject*>(RoofTile), static_cast<UObject*>(FlatRoof) })
+    {
+        Material->AddToRoot();
+    }
     if (!bCheckOnly)
     {
         UEditorLoadingAndSavingUtils::SavePackages({ Frame->GetOutermost(), Glass->GetOutermost() }, false);
@@ -234,6 +270,8 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
     int32 Rebuilt = 0;
     int32 Failed = 0;
     int32 Open = 0;
+    // The buildings that built and saved, and where their meshes are, for placing them.
+    TMap<FString, FString> Saved;
     int64 Triangles = 0;
     TMap<FString, int32> Methods;
     for (int32 Index = 0; Index < Ids.Num(); ++Index)
@@ -273,7 +311,7 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
         ToMeshDescription(Mesh, Description);
         // An existing asset is loaded and changed in place. A fresh package with the same name would
         // be fully loaded from disk when saved, and the old mesh would overwrite the new one.
-        const FString PackageName = FString::Printf(TEXT("/Game/World/Buildings/lent/%s"), *Id);
+        const FString PackageName = BuildingPackage(Id, Windows[Index]);
         UPackage* Package = FPackageName::DoesPackageExist(PackageName) ? LoadPackage(nullptr, *PackageName, LOAD_None) : CreatePackage(*PackageName);
         if (!Package)
         {
@@ -343,11 +381,18 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
             ++Failed;
             continue;
         }
+        Saved.Add(Id, FString::Printf(TEXT("%s.%s"), *PackageName, *Id));
         ++Rebuilt;
+        if (Rebuilt % 50 == 0)
+        {
+            // Hundreds of meshes stay referenced by nothing once saved; let them go.
+            CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
+        }
     }
 
     int32 Removed = 0;
-    if (!bCheckOnly)
+    int32 Placed = 0;
+    if (!bCheckOnly && Only.IsEmpty())
     {
         UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(TEXT("/Game/World/lent"));
         if (!World)
@@ -368,6 +413,112 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
             Actor->Destroy();
             ++Removed;
         }
+        // Buildings of the neighbouring windows are placed like Lent's own: meshes in world
+        // coordinates, actors at the origin, labelled with the footprint id.
+        TSet<FString> Present;
+        for (TActorIterator<AStaticMeshActor> It(World); It; ++It)
+        {
+            if (IsBuildingActor(*It))
+            {
+                Present.Add(It->GetActorLabel());
+            }
+        }
+        for (int32 Index = 0; Index < Ids.Num(); ++Index)
+        {
+            const FString* MeshPath = Saved.Find(Ids[Index]);
+            if (!MeshPath || Present.Contains(Ids[Index]))
+            {
+                continue;
+            }
+            UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, **MeshPath);
+            AStaticMeshActor* Actor = Mesh ? World->SpawnActor<AStaticMeshActor>(FVector::ZeroVector, FRotator::ZeroRotator) : nullptr;
+            if (!Actor)
+            {
+                UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not place %s"), *Ids[Index]);
+                ++Failed;
+                continue;
+            }
+            Actor->GetStaticMeshComponent()->SetStaticMesh(Mesh);
+            Actor->GetStaticMeshComponent()->SetMobility(EComponentMobility::Static);
+            Actor->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+            Actor->SetActorLabel(Ids[Index]);
+            Actor->SetFolderPath(*FString::Printf(TEXT("Buildings/%s"), *Windows[Index]));
+            Present.Add(Ids[Index]);
+            ++Placed;
+        }
+        // The neighbouring windows' bridges and river sheets, as the original game placed them: a
+        // bridge mesh about its own centre, at the origin its import recorded; a river sheet in
+        // world coordinates. The swim commandlet fills every `Drava` sheet with water volumes.
+        struct FStructure { const TCHAR* Mesh; const TCHAR* Label; bool bBridge; };
+        const FStructure Structures[] = {
+            { TEXT("/Game/World/Bridges/pristan_studenska.pristan_studenska"), TEXT("Bridge_pristan_studenska"), true },
+            { TEXT("/Game/World/Bridges/titov_most_titov.titov_most_titov"), TEXT("Bridge_titov_most_titov"), true },
+            { TEXT("/Game/World/Bridges/titov_most_zelezniski.titov_most_zelezniski"), TEXT("Bridge_titov_most_zelezniski"), true },
+            { TEXT("/Game/World/Water/pristan.pristan"), TEXT("Drava_pristan"), false },
+            { TEXT("/Game/World/Water/titov_most.titov_most"), TEXT("Drava_titov_most"), false },
+        };
+        TSet<FString> Labels;
+        const AStaticMeshActor* LentDrava = nullptr;
+        for (TActorIterator<AActor> It(World); It; ++It)
+        {
+            Labels.Add(It->GetActorLabel());
+            if (It->GetActorLabel() == TEXT("Drava"))
+            {
+                LentDrava = Cast<AStaticMeshActor>(*It);
+            }
+        }
+        for (const FStructure& Structure : Structures)
+        {
+            if (Labels.Contains(Structure.Label))
+            {
+                continue;
+            }
+            UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, Structure.Mesh);
+            FVector Origin = FVector::ZeroVector;
+            if (Mesh && Structure.bBridge && !Origin.InitFromString(Mesh->GetOutermost()->GetMetaData().GetValue(Mesh, TEXT("MarburgumOrigin"))))
+            {
+                Mesh = nullptr;
+            }
+            AStaticMeshActor* Actor = Mesh ? World->SpawnActor<AStaticMeshActor>(Origin, FRotator::ZeroRotator) : nullptr;
+            if (!Actor)
+            {
+                UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not place %s (%s)"), Structure.Label, Structure.Mesh);
+                ++Failed;
+                continue;
+            }
+            Actor->GetStaticMeshComponent()->SetStaticMesh(Mesh);
+            Actor->GetStaticMeshComponent()->SetMobility(EComponentMobility::Static);
+            if (Structure.bBridge)
+            {
+                Actor->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+            }
+            else if (LentDrava)
+            {
+                // Collision as on Lent's own sheet; the volumes under it do the swimming.
+                Actor->GetStaticMeshComponent()->SetCollisionProfileName(LentDrava->GetStaticMeshComponent()->GetCollisionProfileName());
+                Actor->GetStaticMeshComponent()->SetCollisionEnabled(LentDrava->GetStaticMeshComponent()->GetCollisionEnabled());
+                Actor->GetStaticMeshComponent()->SetMaterial(0, LentDrava->GetStaticMeshComponent()->GetMaterial(0));
+            }
+            Actor->SetActorLabel(Structure.Label);
+            Actor->SetFolderPath(Structure.bBridge ? TEXT("Bridges") : TEXT("Water"));
+            UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE placed %s at %s"), Structure.Label, *Origin.ToString());
+            ++Placed;
+        }
+        // The ground tool seats every placed building (tools/lent-ground --placed).
+        TArray<FString> PlacedIds;
+        for (TActorIterator<AStaticMeshActor> It(World); It; ++It)
+        {
+            if (IsBuildingActor(*It))
+            {
+                PlacedIds.Add(It->GetActorLabel());
+            }
+        }
+        PlacedIds.Sort();
+        if (!FFileHelper::SaveStringToFile(FString::Join(PlacedIds, TEXT("\n")) + TEXT("\n"), *PlacedPath()))
+        {
+            UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not write %s"), *PlacedPath());
+            return 1;
+        }
         if (!UEditorLoadingAndSavingUtils::SaveMap(World, TEXT("/Game/World/lent")))
         {
             UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not save the level"));
@@ -379,7 +530,7 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
     {
         MethodText += FString::Printf(TEXT(" %s=%d"), *Method.Key, Method.Value);
     }
-    UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE done rebuilt=%d open=%d failed=%d dropped=%d removed=%d triangles=%lld check_only=%d%s"),
-        Rebuilt, Open, Failed, Dropped.Num(), Removed, Triangles, bCheckOnly ? 1 : 0, *MethodText);
+    UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE done rebuilt=%d open=%d failed=%d dropped=%d removed=%d placed=%d triangles=%lld check_only=%d%s"),
+        Rebuilt, Open, Failed, Dropped.Num(), Removed, Placed, Triangles, bCheckOnly ? 1 : 0, *MethodText);
     return Open > 0 || Failed > 0 ? 1 : 0;
 }

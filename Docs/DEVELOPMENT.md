@@ -45,13 +45,23 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ./scripts/create-swim-content.sh      # regenerate A_Swim (the original swim cycle on the mannequin) and the Drava water volumes in /Game/World/lent (`-run=MarburgumSwimContent`, ADR-032)
 ./scripts/create-vehicle-content.sh   # regenerate the five catalogue cars (the original procedural bodywork), M_Vehicle, A_EnterVehicle/A_ExitVehicle and the lent_hatchback placement (`-run=MarburgumVehicleContent`, ADR-039)
 ./scripts/create-combat-content.sh    # regenerate A_FightGuard/A_FightJab/A_FightHeavy (the original fight clips on the mannequin) and the CC0 impact sounds in /Game/Audio/Combat (`-run=MarburgumCombatContent`, ADR-041)
-# Lent buildings (ADR-034): rebuild every /Game/World/lent building as a closed shell; -CheckOnly builds and checks without saving
+# Lent and its eight neighbouring windows (ADR-045), 1,536 m square round Stari most. Window names and data come from the
+# original's project/assets/terrain ($ORIGINAL); the LiDAR tiles from its tools/fetch_lidar.sh.
+WINDOWS=lent,ljudski_vrt,center,avtobusna,pristan,titov_most,kurilnica,magdalena,pobreska
+./scripts/fetch-lent-osm.sh           # only to refresh the committed OpenStreetMap extract (Overpass)
+# Buildings (ADR-034, ADR-045): join the windows' footprints across their edges, then rebuild every building as a closed shell,
+# place the ones that are not in the level yet with the neighbours' bridges and river sheets, and write placed_buildings.txt.
+# -CheckOnly builds and checks without saving.
+cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- merge-buildings --windows $WINDOWS \
+    --terrain "$ORIGINAL/project/assets/terrain" --out Data/World/lent_ground/buildings.json
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildFacades -unattended -nop4 -nosplash -nullrhi
-# Lent ground (ADR-040): heights, paving and surface mask from the survey and OpenStreetMap, then the level, the river volumes and the car.
-# The LiDAR tile comes from the original's tools/fetch_lidar.sh; the building list and orthophoto from its project/assets/terrain.
-cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --laz ~/marburgum-data/arso-2014/gkot/TM_549_157.laz \
-    --osm Data/World/lent_ground/osm_lent.json.gz --buildings "$ORIGINAL/project/assets/terrain/lent_buildings.json" \
-    --placed Data/World/lent_ground/placed_buildings.txt --ortho "$ORIGINAL/project/assets/terrain/lent_albedo.jpg" --out Data/World/lent_ground
+# Ground (ADR-040, ADR-045): heights, paving and surface mask from the survey and OpenStreetMap, then the level, the river volumes and the car.
+LAZ=$(printf '%s,' ~/marburgum-data/arso-2014/gkot/TM_{548,549,550}_{156,157,158}.laz)
+ORTHO=$(for w in ${WINDOWS//,/ }; do printf '%s,' "$ORIGINAL/project/assets/terrain/${w}_albedo.jpg"; done)
+cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --laz "$LAZ" \
+    --osm Data/World/lent_ground/osm_lent.json.gz --buildings Data/World/lent_ground/buildings.json \
+    --placed Data/World/lent_ground/placed_buildings.txt --ortho "$ORTHO" --out Data/World/lent_ground \
+    --walk-graph Content/Marburgum/Street/lent_walk_graph.json   # and the street people's walk graph (ADR-044)
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildGround -unattended -nop4 -nosplash -nullrhi
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumSwimContent -Steps=water -unattended -nop4 -nosplash -nullrhi
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumVehicleContent -Steps=place -unattended -nop4 -nosplash -nullrhi

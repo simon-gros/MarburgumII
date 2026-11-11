@@ -101,7 +101,7 @@ pub fn ring_area(c: &[Pt]) -> f64 {
 }
 
 /// Even-odd point in shapes.
-pub fn contains(s: &Shapes, p: Pt) -> bool {
+pub fn contains(s: &[Vec<Vec<Pt>>], p: Pt) -> bool {
     let mut inside = false;
     for c in s.iter().flatten() {
         let n = c.len();
@@ -117,9 +117,69 @@ pub fn contains(s: &Shapes, p: Pt) -> bool {
     inside
 }
 
+/// Point-in-shapes queries against many points: the edges sorted into horizontal bands, so a query
+/// tests only the edges its band crosses. Same even-odd rule as `contains`.
+pub struct Index {
+    y0: f64,
+    band: f64,
+    bands: Vec<Vec<(Pt, Pt)>>,
+}
+
+impl Index {
+    pub fn new(s: &[Vec<Vec<Pt>>]) -> Index {
+        let band = 2.0;
+        let (lo, hi) = s.iter().flatten().flatten().fold((f64::MAX, f64::MIN), |a, p| (a.0.min(p[1]), a.1.max(p[1])));
+        if lo > hi {
+            return Index { y0: 0.0, band, bands: Vec::new() };
+        }
+        let count = ((hi - lo) / band).floor() as usize + 1;
+        let mut bands = vec![Vec::new(); count];
+        for c in s.iter().flatten() {
+            let n = c.len();
+            for i in 0..n {
+                let (a, b) = (c[i], c[(i + n - 1) % n]);
+                let (b0, b1) = (((a[1].min(b[1]) - lo) / band).floor() as usize, ((a[1].max(b[1]) - lo) / band).floor() as usize);
+                for k in b0..=b1.min(count - 1) {
+                    bands[k].push((a, b));
+                }
+            }
+        }
+        Index { y0: lo, band, bands }
+    }
+
+    pub fn contains(&self, p: Pt) -> bool {
+        let k = (p[1] - self.y0) / self.band;
+        if k < 0.0 || k as usize >= self.bands.len() {
+            return false;
+        }
+        let mut inside = false;
+        for &(a, b) in &self.bands[k as usize] {
+            if (a[1] > p[1]) != (b[1] > p[1]) && p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0] {
+                inside = !inside;
+            }
+        }
+        inside
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_index_agrees_with_contains() {
+        let s = union_all(&[stroke(&[[-30.0, 0.0], [30.0, 7.0]], 6.0, true), polygon(&[vec![[0.0, -20.0], [9.0, -20.0], [9.0, 20.0], [0.0, 20.0]], vec![[2.0, -5.0], [6.0, -5.0], [6.0, 5.0], [2.0, 5.0]]])]);
+        let index = Index::new(&s);
+        let mut checked = 0;
+        for i in 0..80 {
+            for j in 0..60 {
+                let p = [-40.0 + i as f64 * 1.013, -30.0 + j as f64 * 1.007];
+                assert_eq!(index.contains(p), contains(&s, p), "{p:?}");
+                checked += 1;
+            }
+        }
+        assert_eq!(checked, 4800);
+    }
 
     #[test]
     fn crossing_strokes_union_into_one_shape() {

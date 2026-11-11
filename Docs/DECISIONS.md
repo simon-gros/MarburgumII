@@ -506,3 +506,58 @@ All 476,517 pass: 0 landscape hits, 0 height mismatches over 1 cm, 0 capsules su
   - An "in view" spawn point could snap to a node the player could not see, and an "out of view" one could land at the edge of the kept band. Either way the person was gone 5 s later, and the spot was refilled in a loop. A snapped node must now lie on the side of the view it was picked for (in view: 15° inside the edge), and an out-of-view one at least 8 m inside the kept band. Spawns in the run fell from 65 to 31.
 
 **Not covered.** An owner playtest and a staged (packaged) run. More than one player. Gunshots and weapons (the original's sidearm and gunshot reactions on `feat/ambient-react-to-bodies`). Traffic, time of day, attractors and everyday activities (`feat/ambient-everyday-activities`; there is no world clock yet). Factions: the tables' friend and enemy columns are left out. Path-finding round obstacles off the graph: a person cut off from the graph is lost, and goes once nobody sees them. In the game, the graph's largest connected network is 907 of the 1543 placed nodes, so some pavements are islands. Sounds for the people: no screams or chatter. Saving people across a restart (they are ambient, so none is intended).
+
+## ADR-045 — Lent and its eight neighbouring windows (accepted 2026-11-11)
+
+**Problem.** The owner asked for a wider area than Lent: if Lent is a square, import the eight squares of the same size round it. The original game already cuts Maribor into 512 m windows on one grid round the middle of Stari most, and all eight of Lent's neighbours exist there:
+
+| | west | middle | east |
+|---|---|---|---|
+| north | ljudski_vrt | center | avtobusna |
+| middle | pristan | **lent** | titov_most |
+| south | kurilnica | magdalena | pobreska |
+
+Bringing in the eight original window levels as they are would have brought their photo landscapes, flat road sheets and strip roofs back, the faults that ADR-034 and ADR-040 removed from Lent. It would also have left a seam at every window edge, with nine separately surveyed landscapes and buildings cut in two where an edge crosses them.
+
+**Decision.** `/Game/World/lent` stays the one launch level. It now covers the 1,536 m square (plan ±768 m), and the eight neighbours go through the same pipeline as Lent:
+
+- **Buildings.** `lent-ground merge-buildings` reads the nine windows' `<window>_buildings.json` and writes `Data/World/lent_ground/buildings.json` (ODbL). The original builds a footprint that crosses a window edge once in each window it reaches. The parts of one OpenStreetMap id are joined back into one outline in a single overlay. Polygons cleaned one by one are snapped to their own grids, and their shared edges would no longer meet.
+  - Heights: eaves and ridge are the parts' heights weighted by their roof returns. The roof shape and pitch are the largest part's. The ground is the lowest part's.
+  - 65 buildings are joined.
+  - Three parts would close round a courtyard. The mesher has no holes, so these stay as separate parts at a party wall, with the joined heights.
+  - Two pieces that do not touch stay separate buildings.
+  - `-run=MarburgumRebuildFacades` reads that file. It builds every footprint as a closed shell (ADR-034) and places the ones the level lacks: meshes in world coordinates, actors at the origin, labelled by id, filed under `Buildings/<window>`. It then writes `placed_buildings.txt`. A building already in Lent keeps its asset under `Buildings/lent`; a new one goes under the window it mostly stands in. Of 932 footprints, 870 are built, and all 870 are closed with positive volume: 454 gabled, 162 hipped and 254 flat, 3.03 M triangles. 751 are new. The 62 dropped are under 30 m² or slivers.
+- **Bridges and river.** The same pass places the neighbours' crossings from the original game, `pristan_studenska` (Studenška brv), `titov_most_titov` and `titov_most_zelezniski` (the railway bridge), at the origin each import recorded in its package metadata. It also places the Drava sheets of pristan and titov_most as `Drava_pristan` and `Drava_titov_most`, with the collision and material of Lent's own `Drava`. The railway bridge brings `MI_railway_ballast` and `M_Ground` from the original. `-run=MarburgumSwimContent -Steps=water` now fills every `Drava` sheet with water volumes: 407 volumes over 200,632 cells, where Lent alone had 91.
+- **Ground.** `tools/lent-ground` takes the extent from the command line, defaulting to the square: 3025² points, 24 × 24 components of 2 × 63 quads, 0.508 m. Unreal builds a landscape from whole components only. Lent's 1017-point grid was 8.07 components wide, so its east and south 4 m were cut off; the new size is exact.
+  - Heights: the nine LiDAR tiles TM_548..550_156..158 (27.5 M returns in the square, 11.7 M ground).
+  - Grass and hard ground: each window's own orthophoto, placed by its bounds.
+  - Streets: a new Overpass extract of the square (`scripts/fetch-lent-osm.sh`; buildings are excluded because the footprints come from the original), with 320,463 m² of carriageway, 468,025 m² of pavement and 386 crossings, 350 of them marked.
+  - The surface mask is 4096² (0.375 m). There are 521 paved chunks with 5.39 M triangles.
+  - Rules: bridge decks, blob opening, the Drava bed, kerbs and paving at walls are unchanged from ADR-040.
+  - Speed: point-in-shape queries now go through a banded edge index, and building seating works on a patch round each footprint, so the whole square builds in 75 s.
+- **Paving that dips between grid points.** At the new grid two paved triangles in 584,537 samples showed the landscape over them by 2 and 10 cm. In both, the paving dipped between grid points, where the existing neighbour rule could not see it. Every corner of a landscape cell now goes 5 cm below the lowest paved corner that reaches into the cell.
+- **`-run=MarburgumRebuildGround`** reads the landscape size from `ground.json`. It deletes paved chunk assets that the new extent no longer has.
+- **Street people (ADR-044).** The walk graph is built over the whole square. Its clearance raster stays at 0.25 m whatever the extent. It has 13,098 nodes and 74.7 km of line, where Lent alone had 1,582 nodes and 9 km.
+
+**Evidence.**
+
+- `-run=MarburgumRebuildGround -Verify -Every=1` dropped a ray and a capsule on every walkable paved triangle of the saved level: 4,089,551 samples, 0 on the landscape, 0 capsules sunk.
+  - 6,612 hit a bridge deck or an eave first.
+  - 11 rays land up to 12 cm above their triangle, where a sliver of carriageway runs under the kerb at the pavement's edge. This is not walkable or visible.
+- The landscape reads back within 4 mm of the data.
+- Inside the old Lent window the new heights match the old within 3 mm (median) and 6 cm (95th percentile). The differences come from the grid spacing and the newer street extract.
+- The car parks at the same spot as before (ADR-040).
+- The street, combat, vehicle and swim smokes pass in editor mode on ports 27851–27854. The street server placed 12,965 of the 13,098 walk-graph nodes on the ground.
+- `cargo test` passes 20 tests, including:
+  - the window-edge join;
+  - the courtyard case, with the real r1630983 outlines;
+  - the patch distance against the whole-grid transform;
+  - the edge index against `contains`;
+  - depression filling.
+
+**Not covered.**
+
+- **Deep hollows.** The 2014 survey has 14 hollows over 100 m² that have no outlet and are more than 3 m deep, away from streets and water (`ground.json` → `hollows_over_3m_deep_and_100m2`). Most are courtyards and light wells inside building blocks, for example behind the Minorite monastery (17 m, a 2014 excavation) and a 6,300 m² overgrown pit in pristan (9.5 m). They are reported, not filled. Filling them is the owner's call for a 1990s map.
+- **Railways.** There are no rails; railway land is gravel.
+- **Detail.** Street furniture, trees, the quay wall, lane markings beyond centre lines and zebras, and 1990s corrections of the 2026 streets are not done. Paved meshes have no LODs and no Nanite.
+- **One level.** The square is one always-loaded level, with no World Partition or streaming, 576 landscape components and 8.4 M static triangles. Frame time on a packaged client and the owner playtest are still to do.

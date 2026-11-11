@@ -2,7 +2,7 @@
 //! can follow the ground, split into square chunks and written for the Unreal commandlet.
 
 use crate::osm::Pt;
-use crate::shapes::{contains, Shapes};
+use crate::shapes::Shapes;
 use spade::{AngleLimit, ConstrainedDelaunayTriangulation, Point2, RefinementParameters, Triangulation};
 use std::collections::HashMap;
 use std::io::Write;
@@ -46,6 +46,7 @@ pub fn triangulate(shapes: &Shapes, max_area: f64) -> Vec<[Pt; 3]> {
         .with_angle_limit(AngleLimit::from_deg(20.0))
         .with_max_additional_vertices(2_000_000);
     cdt.refine(params);
+    let inside = crate::shapes::Index::new(shapes);
     let tris: Vec<[Pt; 3]> = cdt.inner_faces()
         .filter_map(|f| {
             let v = f.vertices().map(|v| {
@@ -53,7 +54,7 @@ pub fn triangulate(shapes: &Shapes, max_area: f64) -> Vec<[Pt; 3]> {
                 [p.x, p.y]
             });
             let centroid = [(v[0][0] + v[1][0] + v[2][0]) / 3.0, (v[0][1] + v[1][1] + v[2][1]) / 3.0];
-            contains(shapes, centroid).then_some(v)
+            inside.contains(centroid).then_some(v)
         })
         .collect();
     // Whatever refinement could not reach (it stops at its vertex budget, and keeps long slivers
@@ -190,6 +191,35 @@ impl PavedMesh {
             }
             along += len;
         }
+    }
+
+    /// For each landscape cell (between grid points r, r + 1 and c, c + 1, stored at r × n + c),
+    /// the lowest corner of any upward-facing paved triangle that reaches into it, or +∞. A
+    /// landscape quad whose four corners are below that is below every paved point in the cell,
+    /// even where the paving dips between grid points.
+    pub fn lowest_in_cells(&self, grid: &crate::grid::Grid) -> Vec<f32> {
+        let n = grid.n;
+        let mut out = vec![f32::INFINITY; n * n];
+        let s = grid.step();
+        for chunk in self.chunks.values() {
+            for t in &chunk.tris {
+                let p = t.map(|i| chunk.verts[i as usize].map(|x| x as f64));
+                if ue_normal(p[0], p[1], p[2])[2] <= 0.0 {
+                    continue;
+                }
+                let low = p.iter().map(|q| q[2]).fold(f64::MAX, f64::min) as f32;
+                let (x0, x1) = (p.iter().map(|q| q[0]).fold(f64::MAX, f64::min), p.iter().map(|q| q[0]).fold(f64::MIN, f64::max));
+                let (y0, y1) = (p.iter().map(|q| q[1]).fold(f64::MAX, f64::min), p.iter().map(|q| q[1]).fold(f64::MIN, f64::max));
+                let cell = |v: f64| ((v + grid.half) / s).floor().clamp(0.0, (n - 2) as f64) as usize;
+                for r in cell(y0)..=cell(y1) {
+                    for c in cell(x0)..=cell(x1) {
+                        let o = &mut out[r * n + c];
+                        *o = o.min(low);
+                    }
+                }
+            }
+        }
+        out
     }
 
     /// The height of the highest upward-facing paved triangle over each grid point, or NaN

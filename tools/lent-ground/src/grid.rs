@@ -4,6 +4,23 @@
 
 use crate::osm::Pt;
 
+/// Distances over a rectangular patch of a grid (see `Grid::near_polygon`).
+pub struct Patch {
+    n: usize,
+    r0: usize,
+    c0: usize,
+    rows: usize,
+    cols: usize,
+    d: Vec<f32>,
+}
+
+impl Patch {
+    /// (index into the whole grid, distance) for every point of the patch.
+    pub fn iter(&self) -> impl Iterator<Item = (usize, f32)> + '_ {
+        (0..self.rows * self.cols).map(move |k| ((self.r0 + k / self.cols) * self.n + self.c0 + k % self.cols, self.d[k]))
+    }
+}
+
 #[derive(Clone)]
 pub struct Grid {
     pub n: usize,
@@ -86,6 +103,68 @@ impl Grid {
         }
     }
 
+    /// Distance (metres) from the grid points within `reach` metres of one polygon's bounding box
+    /// to the polygon, which counts as distance 0 inside. Only that patch of the grid is touched,
+    /// so a thousand footprints cost a thousand patches rather than a thousand whole grids.
+    pub fn near_polygon(&self, rings: &[Vec<Pt>], reach: f64) -> Patch {
+        let s = self.step();
+        let (mut x0, mut y0, mut x1, mut y1) = (f64::MAX, f64::MAX, f64::MIN, f64::MIN);
+        for p in rings.iter().flatten() {
+            (x0, y0, x1, y1) = (x0.min(p[0]), y0.min(p[1]), x1.max(p[0]), y1.max(p[1]));
+        }
+        let last = (self.n - 1) as f64;
+        let idx = |v: f64, f: fn(f64) -> f64| f((v + self.half) / s).clamp(0.0, last) as usize;
+        let (r0, r1) = (idx(y0 - reach, f64::floor), idx(y1 + reach, f64::ceil));
+        let (c0, c1) = (idx(x0 - reach, f64::floor), idx(x1 + reach, f64::ceil));
+        let (rows, cols) = (r1 - r0 + 1, c1 - c0 + 1);
+        let inf = 1e20f64;
+        let mut f = vec![inf; rows * cols];
+        for r in 0..rows {
+            let y = -self.half + (r0 + r) as f64 * s;
+            let mut xs: Vec<f64> = Vec::new();
+            for ring in rings {
+                let m = ring.len();
+                for i in 0..m {
+                    let (a, b) = (ring[i], ring[(i + 1) % m]);
+                    if (a[1] <= y) != (b[1] <= y) {
+                        xs.push(a[0] + (y - a[1]) / (b[1] - a[1]) * (b[0] - a[0]));
+                    }
+                }
+            }
+            xs.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            for pair in xs.chunks(2) {
+                if pair.len() < 2 {
+                    continue;
+                }
+                let a = ((pair[0] + self.half) / s).ceil().max(c0 as f64) as usize;
+                let b = ((pair[1] + self.half) / s).floor().min(c1 as f64);
+                if b < c0 as f64 {
+                    continue;
+                }
+                for c in a..=b as usize {
+                    f[r * cols + (c - c0)] = 0.0;
+                }
+            }
+        }
+        let mut line = vec![0.0; rows.max(cols)];
+        let mut out = vec![0.0; rows.max(cols)];
+        for c in 0..cols {
+            for r in 0..rows {
+                line[r] = f[r * cols + c];
+            }
+            edt_1d(&line[..rows], &mut out[..rows]);
+            for r in 0..rows {
+                f[r * cols + c] = out[r];
+            }
+        }
+        for r in 0..rows {
+            line[..cols].copy_from_slice(&f[r * cols..(r + 1) * cols]);
+            edt_1d(&line[..cols], &mut out[..cols]);
+            f[r * cols..(r + 1) * cols].copy_from_slice(&out[..cols]);
+        }
+        Patch { n: self.n, r0, c0, rows, cols, d: f.iter().map(|d| (d.sqrt() * s) as f32).collect() }
+    }
+
     /// Euclidean distance (metres) from every grid point to the nearest point where `mask` is set.
     pub fn distance_to(mask: &Grid) -> Grid {
         let n = mask.n;
@@ -162,6 +241,49 @@ impl Grid {
     pub fn opened(&self, radius: usize) -> Grid {
         let eroded = self.window(radius, f32::min, f32::MAX);
         eroded.window(radius, f32::max, f32::MIN)
+    }
+
+    /// Every hollow with no way out filled to the level at which it would spill over (priority
+    /// flood from the edge). Ground that drains to the edge, such as a river bed running out of the
+    /// square, keeps its height.
+    pub fn depressions_filled(&self) -> Grid {
+        use std::cmp::Reverse;
+        use std::collections::BinaryHeap;
+        let n = self.n;
+        // f32 heights as ordered integers: flip the sign bit, and all bits of negatives.
+        let key = |v: f32| {
+            let b = v.to_bits();
+            if b >> 31 == 1 { !b } else { b | 0x8000_0000 }
+        };
+        let mut out = self.v.clone();
+        let mut done = vec![false; n * n];
+        let mut heap = BinaryHeap::new();
+        for i in 0..n {
+            for j in [i, (n - 1) * n + i, i * n, i * n + n - 1] {
+                if !done[j] {
+                    done[j] = true;
+                    heap.push(Reverse((key(out[j]), j as u32)));
+                }
+            }
+        }
+        while let Some(Reverse((_, i))) = heap.pop() {
+            let i = i as usize;
+            let (r, c) = (i / n, i % n);
+            for (dr, dc) in [(0i64, 1i64), (0, -1), (1, 0), (-1, 0)] {
+                let (rr, cc) = (r as i64 + dr, c as i64 + dc);
+                if rr < 0 || cc < 0 || rr as usize >= n || cc as usize >= n {
+                    continue;
+                }
+                let j = rr as usize * n + cc as usize;
+                if done[j] {
+                    continue;
+                }
+                done[j] = true;
+                out[j] = out[j].max(out[i]);
+                heap.push(Reverse((key(out[j]), j as u32)));
+            }
+        }
+        Grid { n, half: self.half, v: out }
     }
 
     fn window(&self, radius: usize, pick: fn(f32, f32) -> f32, identity: f32) -> Grid {
@@ -266,7 +388,7 @@ fn relax(m: usize, v: &mut [f64], k: &[bool], iterations: usize) {
 }
 
 /// Felzenszwalb–Huttenlocher squared distance transform of one line.
-fn edt_1d(f: &[f64], d: &mut [f64]) {
+pub(crate) fn edt_1d(f: &[f64], d: &mut [f64]) {
     let n = f.len();
     let mut v = vec![0usize; n];
     let mut z = vec![0.0f64; n + 1];
@@ -306,6 +428,42 @@ mod tests {
         let d = Grid::distance_to(&m);
         assert!((d.at(5, 8) - 3.0).abs() < 1e-5);
         assert!((d.at(8, 9) - 5.0).abs() < 1e-5);
+    }
+
+    #[test]
+    fn a_patch_round_a_polygon_matches_the_whole_grid_near_it() {
+        let g = Grid::new(101, 25.0, 0.0);
+        let ring = vec![[-3.2, -1.1], [4.1, -2.0], [5.3, 3.7], [-1.0, 4.4]];
+        let mut mask = g.like(0.0);
+        mask.fill_rings(&[ring.clone()], 1.0);
+        let whole = Grid::distance_to(&mask);
+        let patch = g.near_polygon(&[ring], 2.0);
+        let mut seen = 0;
+        for (i, d) in patch.iter() {
+            if d <= 2.0 {
+                assert!((whole.v[i] - d).abs() < 1e-4, "point {i}: {d} against {}", whole.v[i]);
+                seen += 1;
+            }
+        }
+        assert!(seen > 100);
+    }
+
+    #[test]
+    fn a_closed_pit_is_filled_to_its_rim_and_a_channel_to_the_edge_is_not() {
+        let mut g = Grid::new(21, 10.0, 5.0);
+        for r in 8..12 {
+            for c in 3..6 {
+                g.set(r, c, -4.0); // a pit
+            }
+        }
+        g.set(9, 4, 4.0);
+        for c in 12..21 {
+            g.set(10, c, 1.0); // a channel running out of the east edge
+        }
+        let f = g.depressions_filled();
+        assert_eq!(f.at(9, 3), 5.0);
+        assert_eq!(f.at(10, 15), 1.0);
+        assert_eq!(f.at(0, 0), 5.0);
     }
 
     #[test]

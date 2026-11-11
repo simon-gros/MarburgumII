@@ -29,8 +29,10 @@ use crate::osm::{Osm, Pt, Tags};
 use crate::shapes::{self, Shapes};
 use std::collections::{HashMap, HashSet};
 
-/// Raster resolution for the clearance field, metres per cell (2049 points over 512 m).
+/// Raster resolution for the clearance field: at least 2049 points, and no coarser than 0.25 m per
+/// cell however wide the extent (ADR-045).
 const RASTER_POINTS: usize = 2049;
+const RASTER_M: f64 = 0.25;
 /// Distance a walker's line keeps from anything not walkable (body radius 0.34 m and a margin).
 pub const CLEAR_M: f64 = 0.5;
 /// Spacing of samples along a line.
@@ -120,7 +122,7 @@ pub struct Field {
 
 impl Field {
     pub fn new(walkable: &[&Shapes], road: &Shapes, blocked: &Shapes, half: f64) -> Field {
-        let mut walk = Grid::new(RASTER_POINTS, half, 0.0);
+        let mut walk = Grid::new(RASTER_POINTS.max((2.0 * half / RASTER_M).round() as usize + 1), half, 0.0);
         for s in walkable.iter().flat_map(|s| s.iter()) {
             walk.fill_rings(s, 1.0);
         }

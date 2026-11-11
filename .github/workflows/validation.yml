@@ -27,7 +27,7 @@ jobs:
       - run: cargo test --manifest-path tools/mb2/Cargo.toml
       # UI/HUD ontology graph, chat source contract, gameplay contract, Python-free tooling.
       - run: cargo run --release --manifest-path tools/mb2/Cargo.toml -- validate all
-      # Lent ground generator (ADR-040): projection, rasters, polygon operations, triangulation.
+      # Lent ground generator (ADR-040, ADR-045): projection, rasters, polygon operations, triangulation, building joins.
       - run: cargo test --manifest-path tools/lent-ground/Cargo.toml
 
   rust-core:
