@@ -25,6 +25,14 @@ Only use the launcher after real package paths, cook output and smoke test have 
 
 A passing launcher guard supports an owner playtest; it **never authorizes itself to grant owner approval**. Record the exact SHA, engine version, asset digest, session ID, scenarios, observed issues and an explicit owner decision.
 
+## Required latest-world asset closure (ADR-040–045; 11 November 2026)
+
+The normal clean-SHA/client-server seal must now include **the complete nine-window input and derived-asset chain**, not just older Lent's visible Unreal assets. Inventory/hash approved original-window building source and placed-building manifests, all nine LiDAR tiles and orthophoto classification inputs, the committed OSM extract, Rust `tools/lent-ground` output (ground/surface mask/paving and 3×3 footprint merges), generated UE `/Game/World/lent` landscape/building/paving assets, neighboring Drava sheets and swim physics volumes, vehicle placement, and the loose staged `Content/Marburgum/Street/lent_walk_graph.json`. Regenerate any dependent assets in documented order; a source SHA alone is insufficient to ensure a current cook.
+
+Include generated **post-IK swim/tread, car enter/exit and fight animation assets** (ADR-042/043), combat impact audio, original-game geometry/rights manifests and any locally ignored sources. A content change to one window, bridge, walk graph or source height/surface input invalidates the previous seal. Distinguish a fixture game map `/Game/Maps/Lent` from the production-candidate default `/Game/World/lent`, and never reuse the older map's screenshots as nine-window acceptance.
+
+**Current evidence distinction:** the nine-window ray/capsule verification and street/combat/vehicle/swim regression are recorded in **editor mode** at ADR-045; the ambient street smoke is one-client editor-only; the combat packaged two-client smoke predates later animation changes. A complete new packaged build with full nine-window two/three-client scenarios, load/memory and owner approval is **not yet documented as qualified**. Attach run-mode, source/cook/asset checksums, exact map, server/client logs and personal owner outcome to the acceptance package.
+
 ## Asset source and license boundary
 
 Commercial city geometry, proprietary reference images, locally generated 3D models, candidate PBR textures and model weights must remain in approved local private directories unless licensing explicitly permits public publication. The UI and server must accurately reflect current approved assets. Never republish licensed commercial maps to public GitHub merely to simplify test packaging.
