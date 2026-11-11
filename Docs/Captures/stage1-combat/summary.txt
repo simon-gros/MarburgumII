@@ -1,0 +1,316 @@
+MarburgumII combat smoke
+result: PASS
+date_utc: 2026-11-11T13:34:42Z
+git_sha: c40baf8e41a300cacf98a0c49fe3154b7169eca8 (dirty)
+mode: editor
+map: /Game/World/lent
+host: Linux 6.18.60-2-cachyos-lts x86_64
+
+MB2CSMOKE role=client tag=A event=start shot=1
+MB2CSMOKE role=client tag=A event=ready player=257 at=6200,-12100,271 vitality=100 stamina=100 drinker_cm=279 drinker_state=idle walker_cm=934
+MB2CSMOKE role=client tag=A event=idle_drinker step=0 step_s=2.00 pos=6200,-12100,271 vitality=100 stamina=100 guarding=0 down=0 clip=None drinker_cm=279 drinker_state=idle drinker_intent=watch drinker_vitality=78 drinker_clip=None walker_intent=watch walker_cm=690
+MB2COMBAT role=client event=result heavy=0 ok=1 reason=- outcome=miss target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=answer heavy=0 ok=1 reason=- outcome=miss target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=in_reach step=2 step_s=0.70 pos=6183,-11960,270 vitality=100 stamina=94 guarding=0 down=0 clip=None drinker_cm=138 drinker_state=idle drinker_intent=watch drinker_vitality=78 drinker_clip=None walker_intent=watch walker_cm=690
+MB2COMBAT role=client event=result heavy=0 ok=1 reason=- outcome=hit target=lent_drunk damage=7.0 target_vitality=71
+MB2CSMOKE role=client tag=A event=answer heavy=0 ok=1 reason=- outcome=hit target=lent_drunk damage=7.0 target_vitality=71
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_002 fall=- at=6167,-11823,320
+MB2COMBAT role=client event=result heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=answer heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_001 fall=- at=6183,-11957,320
+MB2CSMOKE role=client tag=A event=drinker_hostile step=5 step_s=0.00 pos=6183,-11957,270 vitality=100 stamina=94 guarding=0 down=0 clip=jab drinker_cm=135 drinker_state=hostile drinker_intent=strike drinker_vitality=71 drinker_clip=jab walker_intent=avoid walker_cm=771
+MB2COMBAT role=client event=impact outcome=blocked heavy=0 floored=0 sound=impactSoft_medium_004 fall=- at=6183,-11957,320
+MB2CSMOKE role=client tag=A event=blow_on_guard step=7 step_s=0.83 pos=6183,-11957,270 vitality=93 stamina=78 guarding=1 down=0 clip=guard drinker_cm=135 drinker_state=hostile drinker_intent=strike drinker_vitality=71 drinker_clip=jab walker_intent=avoid walker_cm=979
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_003 fall=- at=6183,-11957,320
+MB2CSMOKE role=client tag=A event=blow_unguarded step=9 step_s=0.72 pos=6183,-11957,270 vitality=87 stamina=89 guarding=0 down=0 clip=None drinker_cm=135 drinker_state=hostile drinker_intent=strike drinker_vitality=71 drinker_clip=jab walker_intent=avoid walker_cm=1205
+MB2COMBAT role=client event=result heavy=1 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=answer heavy=1 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=client event=result heavy=1 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=answer heavy=1 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=client event=result heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=57
+MB2CSMOKE role=client tag=A event=answer heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=57
+MB2COMBAT role=client event=impact outcome=hit heavy=1 floored=0 sound=impactPunch_heavy_004 fall=- at=6167,-11823,320
+MB2COMBAT role=client event=result heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=answer heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_003 fall=- at=6183,-11957,320
+MB2COMBAT role=client event=result heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=answer heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=client event=result heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=42
+MB2CSMOKE role=client tag=A event=answer heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=42
+MB2COMBAT role=client event=impact outcome=hit heavy=1 floored=0 sound=impactPunch_heavy_002 fall=- at=6167,-11823,320
+MB2COMBAT role=client event=result heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=answer heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_001 fall=- at=6183,-11957,320
+MB2COMBAT role=client event=result heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=27
+MB2CSMOKE role=client tag=A event=answer heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=27
+MB2COMBAT role=client event=impact outcome=hit heavy=1 floored=0 sound=impactPunch_heavy_004 fall=- at=6167,-11823,320
+MB2COMBAT role=client event=result heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=answer heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_002 fall=- at=6183,-11957,320
+MB2COMBAT role=client event=result heavy=1 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=answer heavy=1 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=client event=result heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=13
+MB2CSMOKE role=client tag=A event=answer heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=13
+MB2COMBAT role=client event=impact outcome=hit heavy=1 floored=0 sound=impactPunch_heavy_000 fall=- at=6167,-11823,320
+MB2COMBAT role=client event=result heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=answer heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_000 fall=- at=6183,-11957,320
+MB2COMBAT role=client event=result heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=0
+MB2CSMOKE role=client tag=A event=answer heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=0
+MB2COMBAT role=client event=impact outcome=hit heavy=1 floored=1 sound=impactPunch_heavy_004 fall=impactSoft_heavy_003 at=6167,-11823,320
+MB2CSMOKE role=client tag=A event=drinker_down step=12 step_s=4.58 pos=6183,-11957,270 vitality=69 stamina=46 guarding=0 down=0 clip=heavy drinker_cm=135 drinker_state=incapacitated drinker_intent=wait drinker_vitality=0 drinker_clip=down walker_intent=wait walker_cm=1214
+MB2CSMOKE role=client tag=A event=after_down step=13 step_s=1.01 pos=6183,-11957,270 vitality=63 stamina=36 guarding=0 down=0 clip=None drinker_cm=135 drinker_state=incapacitated drinker_intent=wait drinker_vitality=0 drinker_clip=down walker_intent=wait walker_cm=1214
+MB2COMBAT role=client event=result heavy=0 ok=1 reason=- outcome=miss target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=answer heavy=0 ok=1 reason=- outcome=miss target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=A event=done step=15 step_s=0.04 pos=6183,-11957,270 vitality=63 stamina=36 guarding=0 down=0 clip=jab drinker_cm=135 drinker_state=incapacitated drinker_intent=wait drinker_vitality=0 drinker_clip=down walker_intent=wait walker_cm=1214
+MB2CSMOKE role=client tag=A event=pass
+MB2CSMOKE role=client tag=B event=start shot=0
+MB2CSMOKE role=client tag=B event=ready player=256 at=6200,-12100,271 vitality=100 stamina=100 drinker_cm=324 drinker_state=idle walker_cm=934
+MB2CSMOKE role=client tag=B event=in_reach step=0 step_s=2.88 pos=6189,-11916,270 vitality=100 stamina=100 guarding=0 down=0 clip=None drinker_cm=140 drinker_state=idle drinker_intent=watch drinker_vitality=85 drinker_clip=None walker_intent=watch walker_cm=636
+MB2COMBAT role=client event=result heavy=0 ok=1 reason=- outcome=hit target=lent_drunk damage=7.0 target_vitality=78
+MB2CSMOKE role=client tag=B event=answer heavy=0 ok=1 reason=- outcome=hit target=lent_drunk damage=7.0 target_vitality=78
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_001 fall=- at=6181,-11777,319
+MB2CSMOKE role=client tag=B event=jabbed step=1 step_s=0.03 pos=6189,-11913,270 vitality=100 stamina=100 guarding=0 down=0 clip=jab drinker_cm=137 drinker_state=staggered drinker_intent=wait drinker_vitality=78 drinker_clip=None walker_intent=avoid walker_cm=636
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_003 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_002 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_000 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_004 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_002 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_003 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_000 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_004 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_002 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_002 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_001 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_001 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_004 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_002 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_001 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=0 sound=impactPunch_medium_001 fall=- at=6189,-11913,320
+MB2COMBAT role=client event=impact outcome=hit heavy=0 floored=1 sound=impactPunch_medium_001 fall=impactSoft_heavy_002 at=6189,-11913,320
+MB2CSMOKE role=client tag=B event=beaten_down step=2 step_s=17.69 pos=6189,-11913,270 vitality=0 stamina=100 guarding=0 down=1 clip=down drinker_cm=137 drinker_state=hostile drinker_intent=strike drinker_vitality=78 drinker_clip=jab walker_intent=wait walker_cm=1218
+MB2CSMOKE role=client tag=B event=after_down step=3 step_s=1.50 pos=6189,-11913,270 vitality=0 stamina=100 guarding=0 down=1 clip=down drinker_cm=137 drinker_state=idle drinker_intent=wait drinker_vitality=78 drinker_clip=jab walker_intent=return walker_cm=896
+MB2COMBAT role=client event=result heavy=0 ok=0 reason=incapacitated outcome=- target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=B event=answer heavy=0 ok=0 reason=incapacitated outcome=- target=- damage=0.0 target_vitality=0
+MB2CSMOKE role=client tag=B event=pass
+MB2SMOKE role=server event=ready map=lent port=27741 contract=1
+MB2COMBAT role=server event=npc_ready npc=lent_drunk state=idle intent=wait tick=0 pos=6200,-11800,268 role=hostile vitality=85 home=6200,-11800,268 yaw=-90.0
+MB2COMBAT role=server event=npc_spawned npc=lent_drunk role_kind=hostile at=6200,-11800,268 yaw=-90.0 original_z=180
+MB2COMBAT role=server event=npc_ready npc=lent_passerby state=idle intent=wait tick=0 pos=6450,-11200,262 role=civilian vitality=70 home=6450,-11200,262 yaw=90.0
+MB2COMBAT role=server event=npc_spawned npc=lent_passerby role_kind=civilian at=6450,-11200,262 yaw=90.0 original_z=180
+MB2COMBAT role=server event=npc_ready npc=lent_square_reader state=idle intent=wait tick=0 pos=18800,-1200,1229 role=civilian vitality=72 home=18800,-1200,1229 yaw=-22.9
+MB2COMBAT role=server event=npc_spawned npc=lent_square_reader role_kind=civilian at=18800,-1200,1229 yaw=-22.9 original_z=1136
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=idle intent=wander tick=41 pos=6200,-11800,268 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=idle intent=return tick=44 pos=6163,-11755,269 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=45 pos=18800,-1200,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=idle intent=wait tick=46 pos=6180,-11775,269 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=return tick=48 pos=18808,-1257,1228 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=50 pos=18805,-1232,1228 from=idle to=idle target=-
+MB2SMOKE role=server event=login player=256 players=1
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=idle intent=watch tick=53 pos=6181,-11777,269 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=watch tick=53 pos=6450,-11200,262 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=73 pos=18804,-1230,1228 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=76 pos=18797,-1173,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=hostile intent=watch tick=82 pos=6181,-11777,269 from=idle to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_struck npc=lent_drunk state=hostile intent=watch tick=82 pos=6181,-11777,269 by=MarburgumCharacter_0 heavy=0 outcome=hit damage=7.0 vitality=78.0 down=0
+MB2COMBAT role=server event=swing player=256 character=mb2b-t179440402510526 heavy=0 ok=1 reason=- outcome=hit target=lent_drunk damage=7.0 target_vitality=78
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=staggered intent=wait tick=83 pos=6181,-11777,269 from=hostile to=staggered target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=avoid tick=83 pos=6450,-11200,262 from=idle to=idle target=-
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=94.0 stamina=92.3
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=hostile intent=strike tick=84 pos=6181,-11777,269 from=staggered to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=84 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=94.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=88 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=88.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=95 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=95 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=88.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=99 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=82.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=106 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=106 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=82.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=110 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=wait tick=110 pos=6695,-10675,263 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=116 pos=18797,-1171,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=76.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=117 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=117 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=76.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=return tick=119 pos=18746,-1198,1230 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=121 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=121 pos=18775,-1204,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=70.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=128 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=128 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=70.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=132 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=64.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=139 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=139 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=64.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=143 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=144 pos=18777,-1204,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=145 pos=18777,-1204,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=58.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=150 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=150 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=58.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=154 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=52.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=161 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=161 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=52.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=165 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=46.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=172 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=172 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=46.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=176 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=40.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=183 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=183 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=40.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=185 pos=18777,-1204,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=187 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=return tick=188 pos=18775,-1146,1230 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=190 pos=18791,-1170,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=34.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=194 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=194 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=34.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=198 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=28.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=205 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=205 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=28.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=209 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=213 pos=18791,-1172,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=return tick=215 pos=18756,-1179,1230 from=idle to=idle target=-
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=22.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=216 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=216 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=22.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=217 pos=18775,-1195,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=220 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=16.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=227 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=227 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=16.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=231 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=10.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=238 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=238 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=10.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=241 pos=18776,-1196,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=242 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=244 pos=18823,-1230,1228 from=idle to=idle target=-
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=4.0 stamina=100.0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=249 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=249 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=4.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=253 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=struck player=256 character=mb2b-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.00 vitality=0.0 stamina=100.0
+MB2COND role=server event=beaten player=256 character=mb2b-t179440402510526 stamina=100.0 run_s=0.00 vitality=0 pos=6189,-11913,270 mode=1
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=260 pos=6181,-11777,269 from=hostile to=hostile target=MarburgumCharacter_0
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=260 pos=6181,-11777,269 target=MarburgumCharacter_0 outcome=hit damage=6.0 target_vitality=0.0 target_down=1
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=return tick=260 pos=6696,-10673,263 from=idle to=idle target=-
+MB2COND role=server event=recovery_point player=256 character=mb2b-t179440402510526 stamina=100.0 run_s=0.00 vitality=0 pos=7042,4013,245 mode=3
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=idle intent=wait tick=261 pos=6181,-11777,269 from=hostile to=idle target=-
+MB2COMBAT role=server event=swing player=256 character=mb2b-t179440402510526 heavy=0 ok=0 reason=incapacitated outcome=- target=- damage=0.0 target_vitality=0
+MB2SMOKE role=server event=logout player=256 players=0
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=284 pos=18824,-1231,1228 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=wander tick=285 pos=6466,-11166,262 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=return tick=285 pos=18818,-1243,1228 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=286 pos=18806,-1235,1228 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=wait tick=288 pos=6435,-11224,262 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=idle intent=wander tick=301 pos=6181,-11777,269 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=idle intent=return tick=303 pos=6163,-11746,269 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=idle intent=wait tick=305 pos=6179,-11766,269 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=312 pos=18805,-1234,1228 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=return tick=313 pos=18799,-1247,1228 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=314 pos=18795,-1245,1228 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=wander tick=328 pos=6435,-11226,262 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=idle intent=wander tick=329 pos=6180,-11768,269 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=return tick=331 pos=6492,-11220,262 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=idle intent=return tick=332 pos=6154,-11820,270 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=wait tick=332 pos=6488,-11211,262 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=idle intent=wait tick=333 pos=6166,-11823,270 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=340 pos=18795,-1245,1228 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=return tick=345 pos=18773,-1145,1230 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=347 pos=18787,-1168,1230 from=idle to=idle target=-
+MB2SMOKE role=server event=login player=257 players=1
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=idle intent=watch tick=351 pos=6167,-11823,270 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=watch tick=351 pos=6487,-11211,262 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=368 pos=18788,-1169,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=370 pos=18818,-1189,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=0 ok=1 reason=- outcome=miss target=- damage=0.0 target_vitality=0
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=hostile intent=watch tick=390 pos=6167,-11823,270 from=idle to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_struck npc=lent_drunk state=hostile intent=watch tick=390 pos=6167,-11823,270 by=MarburgumCharacter_1 heavy=0 outcome=hit damage=7.0 vitality=71.0 down=0
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=0 ok=1 reason=- outcome=hit target=lent_drunk damage=7.0 target_vitality=71
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=staggered intent=wait tick=391 pos=6167,-11823,270 from=hostile to=staggered target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=avoid tick=391 pos=6487,-11211,262 from=idle to=idle target=-
+MB2COMBAT role=server event=struck player=257 character=mb2a-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=94.0 stamina=91.6
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=hostile intent=strike tick=392 pos=6167,-11823,270 from=staggered to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=392 pos=6167,-11823,270 target=MarburgumCharacter_1 outcome=hit damage=6.0 target_vitality=94.0 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=396 pos=6167,-11823,270 from=hostile to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=struck player=257 character=mb2a-t179440402510526 outcome=blocked heavy=0 damage=1.5 guard_broke=0 stagger_s=0.10 vitality=92.5 stamina=78.9
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=403 pos=6167,-11823,270 from=hostile to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=403 pos=6167,-11823,270 target=MarburgumCharacter_1 outcome=blocked damage=6.0 target_vitality=92.5 target_down=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=407 pos=6167,-11823,270 from=hostile to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=410 pos=18819,-1190,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=411 pos=18830,-1181,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=struck player=257 character=mb2a-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=86.5 stamina=88.7
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=414 pos=6167,-11823,270 from=hostile to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=414 pos=6167,-11823,270 target=MarburgumCharacter_1 outcome=hit damage=6.0 target_vitality=86.5 target_down=0
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=1 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=wait tick=415 pos=6729,-10749,262 from=idle to=idle target=-
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=1 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=server event=npc_struck npc=lent_drunk state=hostile intent=strike tick=416 pos=6167,-11823,270 by=MarburgumCharacter_1 heavy=1 outcome=hit damage=14.7 vitality=56.3 down=0
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=57
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=staggered intent=wait tick=417 pos=6167,-11823,270 from=hostile to=staggered target=MarburgumCharacter_1
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=hostile intent=wait tick=422 pos=6167,-11823,270 from=staggered to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=struck player=257 character=mb2a-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=80.5 stamina=78.6
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=425 pos=6167,-11823,270 from=hostile to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=425 pos=6167,-11823,270 target=MarburgumCharacter_1 outcome=hit damage=6.0 target_vitality=80.5 target_down=0
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=429 pos=6167,-11823,270 from=hostile to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_struck npc=lent_drunk state=hostile intent=wait tick=429 pos=6167,-11823,270 by=MarburgumCharacter_1 heavy=1 outcome=hit damage=14.7 vitality=41.6 down=0
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=42
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=staggered intent=wait tick=430 pos=6167,-11823,270 from=hostile to=staggered target=MarburgumCharacter_1
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=hostile intent=wait tick=435 pos=6167,-11823,270 from=staggered to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=struck player=257 character=mb2a-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=74.5 stamina=68.8
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=436 pos=6167,-11823,270 from=hostile to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=436 pos=6167,-11823,270 target=MarburgumCharacter_1 outcome=hit damage=6.0 target_vitality=74.5 target_down=0
+MB2COMBAT role=server event=npc_struck npc=lent_drunk state=hostile intent=strike tick=438 pos=6167,-11823,270 by=MarburgumCharacter_1 heavy=1 outcome=hit damage=14.7 vitality=26.9 down=0
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=27
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=staggered intent=wait tick=439 pos=6167,-11823,270 from=hostile to=staggered target=MarburgumCharacter_1
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=hostile intent=wait tick=444 pos=6167,-11823,270 from=staggered to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=struck player=257 character=mb2a-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=68.5 stamina=58.9
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=strike tick=447 pos=6167,-11823,270 from=hostile to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=447 pos=6167,-11823,270 target=MarburgumCharacter_1 outcome=hit damage=6.0 target_vitality=68.5 target_down=0
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=1 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=server event=npc_intent npc=lent_drunk state=hostile intent=wait tick=451 pos=6167,-11823,270 from=hostile to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=451 pos=18831,-1180,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_struck npc=lent_drunk state=hostile intent=wait tick=452 pos=6167,-11823,270 by=MarburgumCharacter_1 heavy=1 outcome=hit damage=14.7 vitality=12.2 down=0
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=13
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=staggered intent=wait tick=453 pos=6167,-11823,270 from=hostile to=staggered target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=454 pos=18784,-1213,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=0 ok=0 reason=too_soon outcome=- target=- damage=0.0 target_vitality=0
+MB2COMBAT role=server event=struck player=257 character=mb2a-t179440402510526 outcome=hit heavy=0 damage=6.0 guard_broke=0 stagger_s=0.20 vitality=62.5 stamina=49.2
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=hostile intent=strike tick=458 pos=6167,-11823,270 from=staggered to=hostile target=MarburgumCharacter_1
+MB2COMBAT role=server event=npc_strike npc=lent_drunk state=hostile intent=strike tick=458 pos=6167,-11823,270 target=MarburgumCharacter_1 outcome=hit damage=6.0 target_vitality=62.5 target_down=0
+MB2COMBAT role=server event=npc_state npc=lent_drunk state=incapacitated intent=wait tick=461 pos=6167,-11823,270 from=hostile to=incapacitated target=-
+MB2COMBAT role=server event=npc_struck npc=lent_drunk state=incapacitated intent=wait tick=461 pos=6167,-11823,270 by=MarburgumCharacter_1 heavy=1 outcome=hit damage=14.7 vitality=0.0 down=1
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=1 ok=1 reason=- outcome=hit target=lent_drunk damage=14.7 target_vitality=0
+MB2COMBAT role=server event=swing player=257 character=mb2a-t179440402510526 heavy=0 ok=1 reason=- outcome=miss target=- damage=0.0 target_vitality=0
+MB2SMOKE role=server event=logout player=257 players=0
+MB2COMBAT role=server event=npc_intent npc=lent_passerby state=idle intent=return tick=491 pos=6730,-10747,262 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wander tick=494 pos=18782,-1214,1229 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=return tick=498 pos=18810,-1139,1230 from=idle to=idle target=-
+MB2COMBAT role=server event=npc_intent npc=lent_square_reader state=idle intent=wait tick=500 pos=18808,-1166,1229 from=idle to=idle target=-
+  client B: PASS
+  client A: PASS
+  server: npc_spawned=3 (want 3)
+  server: npc_ready=3 (want 3)
+  server: drinker_down=1 (want 1)
+  server: drinker_strikes=24 (want >=3)
+  server: blocked_by_guard=1 (want >=1)
+  server: player_beaten=1 (want 1)
+  server: swings_ruled=19 (want >=6)
+  server: refused_too_soon=9 (want >=1)
+  server: refused_from_floor=1 (want 1)
+  server: walker_avoids=2 (want >=1)
+  server: unknown_npc=0 (want 0)
+  server: impact_hit_sounds=12 (want >=2)
+  server: impact_blocked_sound=1 (want >=1)
+  server: impact_floor_sound=1 (want >=1)
+Result: PASS — Saved/CombatSmoke/20261111T133345Z/summary.txt

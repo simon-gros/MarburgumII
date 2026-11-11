@@ -44,6 +44,7 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ./scripts/create-maps.sh              # regenerate Content/Maps/FrontEnd, NetSmoke and Lent (+ Content/Blockout/Materials) with the C++ commandlet `-run=MarburgumCreateMaps`; build the Editor first
 ./scripts/create-swim-content.sh      # regenerate A_Swim (the original swim cycle on the mannequin) and the Drava water volumes in /Game/World/lent (`-run=MarburgumSwimContent`, ADR-032)
 ./scripts/create-vehicle-content.sh   # regenerate the five catalogue cars (the original procedural bodywork), M_Vehicle, A_EnterVehicle/A_ExitVehicle and the lent_hatchback placement (`-run=MarburgumVehicleContent`, ADR-039)
+./scripts/create-combat-content.sh    # regenerate A_FightGuard/A_FightJab/A_FightHeavy (the original fight clips on the mannequin) and the CC0 impact sounds in /Game/Audio/Combat (`-run=MarburgumCombatContent`, ADR-041)
 # Lent buildings (ADR-034): rebuild every /Game/World/lent building as a closed shell; -CheckOnly builds and checks without saving
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildFacades -unattended -nop4 -nosplash -nullrhi
 # Lent ground (ADR-040): heights, paving and surface mask from the survey and OpenStreetMap, then the level, the river volumes and the car.
@@ -68,6 +69,7 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --laz ~/marb
 ./scripts/condition-smoke-linux.sh    # Player condition: running costs breath, server-decided, saved at logout/stop, restart
 ./scripts/swim-smoke-linux.sh         # Swimming (ADR-032): swim, sink, held breath, wade out, drown, recovery, saved wait, restart
 ./scripts/vehicle-smoke-linux.sh      # Driving (ADR-039): parked car, enter clip, driver + passenger, throttle, steer, brake, reverse, exits
+./scripts/combat-smoke-linux.sh       # Fighting (ADR-041): the drinker fights back, guard, jab, heavy swing, too soon, NPC and player floored
 ```
 
 The smoke script starts one headless dedicated server on port 7777 (override with `MB2_SMOKE_PORT`). It runs one client through a refused mutation, an idempotent operation and a disconnect/reconnect, then two concurrent clients. Logs and `summary.txt` go to `Saved/NetSmoke/<UTC timestamp>/`. A nonzero exit means a failed expectation. Map generation is the editor-only C++ commandlet in `MarburgumIIEditorTools`; the PythonScriptPlugin and EditorScriptingUtilities plugins are disabled.
@@ -107,6 +109,14 @@ Saved/StagedBuilds/LinuxClient/MarburgumIIClient.sh '127.0.0.1:7777?MB2Start=len
 ```
 
 Press **E** at a door to get in (the driver's seat whenever its door is in reach), **W** to drive, **S** to brake and, once stopped, reverse, **A**/**D** to steer, **Shift** for the handbrake and **E** again to get out. The card in the lower right shows the speed. The mouse looks around; the camera swings back behind the car after a few seconds. A second client can ride along in a passenger seat. Cars are silent, and the car returns to its spot when the server restarts.
+
+Three of the original's people stand where it put them (ADR-041). The Belligerent drinker is on the promenade beside the hatchback, with the Evening walker a few metres along; the Newspaper reader is up on the square. To start a few steps in front of the drinker:
+
+```bash
+Saved/StagedBuilds/LinuxClient/MarburgumIIClient.sh '127.0.0.1:7777?MB2Start=fight_lent_drunk?MB2Character=simon'
+```
+
+**F** throws a jab, **R** a committed swing and holding **G** raises the guard, the original's keys. A swing needs the body facing him within 2 m. Each one costs stamina and has a cooldown; one thrown too soon is simply refused. The feed (upper right) reports each blow, a miss, and a swing refused for want of breath. He leaves you alone until you hit him, then fights back until one of you is down. Your guard takes a quarter of his blow and costs stamina; with no stamina left it breaks. A body with no vitality left goes down, is taken to the recovery point and gets up after 60 s; nothing restores vitality otherwise, as in the original. The walker steps away from a fight. The drinker gets up at home a minute after he goes down. Players cannot hit players.
 
 ### Playing the Gate 1 slice by hand
 

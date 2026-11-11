@@ -47,12 +47,13 @@ The playable world is currently a development slice of **Lent**, the historic ri
 | **Interactions & story** | Server-validated supply-crate transactions, persisted inventory, riverside angler, opening of **“Something in the Water”**, journal and objective tracking | [Interaction](Docs/STAGE1_GATE1_EVIDENCE.md) · [Lent mission](Docs/STAGE1_LENT_EVIDENCE.md) |
 | **Movement & condition** | Server-bounded movement time; stamina, running and winded state; swimming, submersion, drowning and recovery, including persisted condition | [Movement](Docs/STAGE1_MOVEMENT_TIME_EVIDENCE.md) · [condition](Docs/STAGE1_CONDITION_EVIDENCE.md) · [swimming](Docs/STAGE1_SWIM_EVIDENCE.md) |
 | **Cars & driving** | The original's five-car catalogue and four-raycast handling, simulated by the server only; seats and doors, driver and passengers; the original's city hatchback parked in Lent; procedural bodywork and door clips | [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) · [ADR-039](Docs/DECISIONS.md) |
+| **Fighting** | The original's unarmed fighting, ruled by the server: jab, committed swing and held guard with stamina costs, cooldowns and stagger; the Belligerent drinker, Evening walker and Newspaper reader at their Lent spots; beaten → down → recovery; the original's own fight clips, CC0 impact sounds | [Fighting](Docs/STAGE1_COMBAT_EVIDENCE.md) · [ADR-041](Docs/DECISIONS.md) |
 | **Rendering** | Optional, client-side NVIDIA feature detection and fallbacks; Unreal TSR is the baseline renderer | [Rendering and platform limits](Docs/RENDERING_NVIDIA.md) |
 
 <details>
 <summary><strong>What is not implemented yet?</strong></summary>
 
-Production account registration, email verification and login; first-time character creation and account-bound admission; a production database; fishing and the remainder of the first mission; the purchased city map; large-scale server operations; and the full mission, economy, skills and population systems, including car ownership, fuel, damage, traffic and vehicle sounds. Current persistence is a **development file store** and characters use **development-only test identities**. The refined graphics, current level and major gameplay slices all still require the owner's personal playtest and explicit approval.
+Production account registration, email verification and login; first-time character creation and account-bound admission; a production database; fishing and the remainder of the first mission; the purchased city map; large-scale server operations; and the full mission, economy, skills and population systems, including car ownership, fuel, damage, traffic and vehicle sounds, weapons and any consequence of a fight beyond the fight itself. Current persistence is a **development file store** and characters use **development-only test identities**. The refined graphics, current level and major gameplay slices all still require the owner's personal playtest and explicit approval.
 
 </details>
 
@@ -95,6 +96,7 @@ Build and stage the distinct Linux server and client executables, then run the e
 ./scripts/condition-smoke-linux.sh
 ./scripts/swim-smoke-linux.sh
 ./scripts/vehicle-smoke-linux.sh
+./scripts/combat-smoke-linux.sh
 ```
 
 To enter the **current default Lent world** manually with development credentials, start the server and client in separate terminals after packaging:
@@ -107,7 +109,7 @@ Saved/StagedBuilds/LinuxServer/MarburgumIIServer.sh /Game/World/lent -port=7777 
 Saved/StagedBuilds/LinuxClient/MarburgumIIClient.sh -MB2Character=localtester
 ```
 
-**Controls:** WASD + mouse to move/look · **Shift** run · **E** interact, or get in and out of a car (then W/S drive, brake and reverse, A/D steer, Shift handbrake) · **C** character · **I** inventory · **J** journal · **Enter** chat. The angler can start the opening mission, but fishing is not available yet. See the [full playthrough instructions](Docs/DEVELOPMENT.md#playing-the-lent-slice-by-hand) for map distinctions, world-store paths, test switches and troubleshooting.
+**Controls:** WASD + mouse to move/look · **Shift** run · **E** interact, or get in and out of a car (then W/S drive, brake and reverse, A/D steer, Shift handbrake) · **F** jab · **R** committed swing · **G** hold guard · **C** character · **I** inventory · **J** journal · **Enter** chat. The angler can start the opening mission, but fishing is not available yet. See the [full playthrough instructions](Docs/DEVELOPMENT.md#playing-the-lent-slice-by-hand) for map distinctions, world-store paths, test switches and troubleshooting.
 
 The network and mission tests use dedicated development fixtures, including the older `/Game/Maps/Lent` blockout. The actual default game, server and editor map is **`/Game/World/lent`**. Do not confuse success on an older smoke fixture with approval of the latest world content.
 

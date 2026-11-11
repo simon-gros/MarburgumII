@@ -53,7 +53,7 @@
         "project/data/population_groups.json"
       ],
       "intent": "Individual NPCs and broader simulated community with neighborhoods, schedules, social roles and contextual reactions.",
-      "migration": "Original Lent riverside angler is an interactable first mission contact. Wider city virtual population and NPC schedules are not yet implemented.",
+      "migration": "Original Lent riverside angler is an interactable first mission contact; the original's Lent fight cast (Belligerent drinker, Evening walker, Newspaper reader) stands at its authored spots with the original's fight/avoid/wander behaviour (ADR-041). Wider city virtual population and NPC schedules are not yet implemented.",
       "stage": "1-3",
       "status": "original_angler_first_npc_awaiting_owner_playtest"
     },
@@ -142,6 +142,21 @@
       "migration": "Server-owned property/permissions and address/interior identities; scale after the first district.",
       "stage": "3",
       "status": "design_retained_implementation_pending"
+    },
+    {
+      "id": "combat_fighting",
+      "name": "Unarmed fighting and NPCs answering violence",
+      "legacy_sources": [
+        "src/shared/combat.h",
+        "src/server/world_simulation.cpp",
+        "project/data/npcs.json",
+        "tools/build_character.gd",
+        "docs/COMBAT_ROADMAP.md"
+      ],
+      "intent": "Close-quarters fistfights with a jab, a committed swing and a held guard paid in stamina; NPCs that answer violence (a hostile fights whoever hits it, civilians step away); a fight ends at incapacitated, never death.",
+      "migration": "Original combat numbers and fight rules in Data/Gameplay/combat.v0.1.json and the shared contract; server-ruled swings and guard in the predicted movement; the Lent fight cast (drinker, walker, reader) as mannequin fighters at their original spots; the original guard/jab/swing clips; CC0 impact sounds; beaten -> down -> recovery (ADR-041). Redesign: a downed NPC gets up after 60 s. GTA hit/get-up clips and fight sounds and the Unreal port's wanted level and police not imported. No weapons, perception, consequences or NPC pathfinding.",
+      "stage": "1-3",
+      "status": "original_fight_rules_and_lent_cast_first_slice_awaiting_owner_playtest"
     },
     {
       "id": "vehicles",

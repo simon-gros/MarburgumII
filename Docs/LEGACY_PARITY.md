@@ -18,7 +18,7 @@ Changes made explicitly in this restart take precedence: **Unreal Engine 5.8.3**
 | --- | --- | --- | --- |
 | `world_geography` | Marburgum geography and district identity | Stage 1 original Lent; Stage 3 city | Original Unreal `/Game/World/lent` default with repaired buildings; future commercial model not acquired |
 | `historical_state` | 1990s culture and period correctness | Stage 3 | Legacy design retained; implementation pending |
-| `characters_population` | Characters, NPCs and virtual population | Stage 1 named NPC; Stage 3 population | Riverside angler exists as the original first mission contact; broad population pending |
+| `characters_population` | Characters, NPCs and virtual population | Stage 1 named NPC; Stage 3 population | Riverside angler exists as the original first mission contact; the original Lent fight cast stands at its spots (ADR-041); broad population pending |
 | `skills` | Skill progression | Stage 2 | Legacy design retained; implementation pending |
 | `fishing` | Fishing | Stage 2 | Legacy design retained; implementation pending |
 | `missions_story` | Missions, story and evidence | Stage 1 start; Stage 2–5 completion/expansion | First mission starts, saves, grants rod and appears in Journal; fishing required to finish |
@@ -26,6 +26,7 @@ Changes made explicitly in this restart take precedence: **Unreal Engine 5.8.3**
 | `economy_trading` | Economy and trading | Stage 1-2 | Legacy design retained; implementation pending |
 | `inventory_items` | Items, clues and inventory | Stage 1 | First runtime slice: `fishing_rod` (original id) held in owner-only server custody, durable across restarts; awaiting owner playtest |
 | `housing` | Housing and property | Stage 3 | Legacy design retained; implementation pending |
+| `combat_fighting` | Unarmed fighting and NPCs answering violence | Stage 1 | Original fight rules and Lent fight cast, server-ruled jab/swing/guard, own fight clips, CC0 impacts, down/recovery and fight smoke (ADR-041); weapons, perception and consequences absent |
 | `vehicles` | Vehicles and transportation | Stage 1 drive; Stage 3 expansion | Five original car definitions, server physics, city hatchback, doors/seats and driving smoke; ownership/fuel/save/traffic/damage/audio absent |
 | `weather_time` | City time, seasonal weather and environment | Stage 3 | Legacy design retained; implementation pending |
 | `interactions` | Unified urban interaction verbs | Stage 1 | First runtime slice: proximity prompt, client request → server validation → durable receipt on a test fixture; awaiting owner playtest |
@@ -58,6 +59,8 @@ The **third-person protagonist** is currently a single generated, retopologized 
 The **movement/condition/swimming** path includes server movement-time bounding, saved sprint/winded state, Drava water volumes, prone flutter stroke, idle upright tread, held breath, drowning and restart recovery (ADR-019, 020, 032, 033, 036; [evidence](STAGE1_SWIM_EVIDENCE.md)). Audio, underwater presentation and personal owner acceptance remain pending.
 
 The **vehicle migration** retains original five-car authored data, procedural bodywork and the original self-authored enter/exit clips; Unreal server-only four-raycast physics, seat RPCs, hatchback and passenger work in the tested slice (ADR-039; [evidence](STAGE1_VEHICLE_EVIDENCE.md)). GTA/San Andreas placeholder content is intentionally not imported. A car's location is not yet saved across restarts.
+
+The **fighting migration** carries the original's `combat.h` numbers, its `world_simulation` fight rules and the Belligerent drinker, Evening walker and Newspaper reader at their Lent positions, with its own guard/jab/swing clips (ADR-041; [evidence](STAGE1_COMBAT_EVIDENCE.md)). The GTA hit/get-up clips and fight sounds and the Unreal port's wanted level and police are not imported. One redesign: a downed NPC gets up after a minute, because a persistent world never restarts.
 
 **Optional NVIDIA rendering** (ADR-029/030) is client-side and legally gated, not evidence of full visual-platform parity or authorization to use third-party proprietary binaries. An ADR acceptance is not the owner's gameplay sign-off.
 
