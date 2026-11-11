@@ -34,7 +34,7 @@ Changes made explicitly in this restart take precedence: **Unreal Engine 5.8.3**
 | `user_interface` | Player-facing UI, HUD and journal (visually rebuilt) | Stage 0C–1 | Live UMG shell/chat/prompt/location/objective/condition/swim/vehicle and Character/Inventory/Journal; Skills, Settings and auth/creator missing |
 | `network_persistence` | Dedicated authoritative MMORPG world | Stage 0-4 | Dedicated server and clients qualified; development file store and test identity only (ADR-014) |
 
-The companion JSON contains the original source paths and explicit migration rules for all 16 areas. This table is **not** a claim that the whole content catalogue, source assets, data imports, maps, or network services have been ported.
+The companion JSON contains the original source paths and explicit migration rules for all 17 current domain entries. This table is **not** a claim that the whole content catalogue, source assets, data imports, maps, or network services have been ported.
 
 ## Current launch map and conditional future replacement
 
