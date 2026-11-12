@@ -4,8 +4,9 @@
 # Starts the account service (services/accounts) over HTTPS with a throwaway development CA, and a dedicated
 # server that requires accounts. Then:
 #   FIRST     a rendered client on the real screens: register, a wrong code, the code from the outbox, two
-#             passwords that differ, username and password, a refused name, the character (Špela Kovačič,
-#             Quinn); Connect enters the world as her, wearing Quinn.
+#             passwords that differ, username and password, every body in the creator's 3D preview (and one
+#             turn), a refused name, the character (Špela Kovačič, Quinn); Connect enters the world as her,
+#             wearing Quinn.
 #   RETURN    a second rendered client: a wrong password, then the right one; no creator; the same character.
 #   Admission, with a second account made through the HTTP API (curl):
 #     a development key, no ticket and a forged ticket are refused;
@@ -208,8 +209,6 @@ ticket=$(api POST /v1/verify "{\"email\":\"bor@example.si\",\"code\":\"$(code_fo
 api POST /v1/setup "{\"ticket\":\"$ticket\",\"username\":\"bor_m\",\"password\":\"pohorje-snow-1991\"}" >/dev/null
 session=$(api POST /v1/login '{"username":"bor_m","password":"pohorje-snow-1991"}' | json session)
 api POST /v1/character '{"request":"r1","first_name":"Bor","last_name":"Mlakar","model":"manny"}' "$session" >/dev/null
-ticket_1=$(api POST /v1/admission '{}' "$session" | json ticket)
-ticket_2=$(api POST /v1/admission '{}' "$session" | json ticket)
 forged=$(head -c 32 /dev/urandom | base64 | tr '+/' '-_' | tr -d '=')
 nullrhi=(-nullrhi -MB2AccountTimeout=60)
 client dev-key REFUSED "127.0.0.1:$port?MB2Character=dev-key-player" "${nullrhi[@]}"
@@ -218,6 +217,8 @@ client no-ticket REFUSED "127.0.0.1:$port" "${nullrhi[@]}"
 expect_server "refused a join without a ticket" 'admission_refused stage=prelogin reason=no_ticket'
 client forged REFUSED "127.0.0.1:$port?MB2Ticket=$forged" "${nullrhi[@]}"
 expect_server "refused a forged ticket" 'admission_refused stage=redeem reason="Your sign-in for this world has expired'
+# Each ticket is asked for just before its join: a ticket lives one minute, about four client starts.
+ticket_1=$(api POST /v1/admission '{}' "$session" | json ticket)
 client admitted ADMITTED "127.0.0.1:$port?MB2Ticket=$ticket_1" "${nullrhi[@]}" -MB2AccountHold=40 -MB2AccountFirst=Bor \
     -MB2AccountLast=Mlakar -MB2AccountModel=manny &
 admitted_pid=$!
@@ -226,6 +227,7 @@ for _ in $(seq 1 240); do
     sleep 0.5
 done
 client replay REFUSED "127.0.0.1:$port?MB2Ticket=$ticket_1" "${nullrhi[@]}"
+ticket_2=$(api POST /v1/admission '{}' "$session" | json ticket)
 client twice REFUSED "127.0.0.1:$port?MB2Ticket=$ticket_2" "${nullrhi[@]}"
 expect_server "refused the character a second time" 'admission_refused stage=redeem reason=already_in_world'
 wait "$admitted_pid" || true
