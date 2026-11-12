@@ -1,7 +1,7 @@
 # First-launch, account and character onboarding ontology — Marburgum II
 
 **Version:** 0.1.0, 10 November 2026  
-**Status:** Approved product direction / planned implementation; no production account, email-verification or character-creation service exists yet. Owner runtime acceptance is outstanding.  
+**Status:** Approved product direction. Implemented for development by ADR-055 (self-hosted account service, front-end screens, ticket admission), qualified in the editor by `scripts/account-smoke-linux.sh`. No production deployment or real email sender exists; owner runtime acceptance is outstanding.  
 **Normative data:** [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json)  
 **Companions:** [Game ontology](ONTOLOGY.md), [UI/HUD ontology](UI_HUD_ONTOLOGY.md), [network architecture](NETWORK_ARCHITECTURE.md), [main roadmap](ROADMAP.md), [UI roadmap](UI_HUD_ROADMAP.md), [ADR-022](DECISIONS.md).
 

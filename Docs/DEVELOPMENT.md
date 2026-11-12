@@ -185,6 +185,22 @@ The project owner reports **Hunyuan3D-2.1** installed locally. The [local genera
 
 Use [PLAYTEST_FRESHNESS.md](PLAYTEST_FRESHNESS.md) and the guard `scripts/mb2.sh playtest`, with a privately configured `Saved/PlaytestProfile/profile.json`. It validates Git/source revision, hashes tracked and locally licensed asset inputs, rebuilds and recooks into a new client/server package and verifies exact archives before launch. The example profile has not been qualified with real UAT output paths and **does not** prove that a native Unreal playtest exists. Always validate that generator outputs, custom import intermediate steps and local purchased assets are included in the actual profile.
 
+## Accounts and signed-in entry (ADR-055)
+
+The account service is `services/accounts`. Run it over HTTPS with a certificate the clients trust:
+
+```bash
+cargo test --manifest-path services/accounts/Cargo.toml
+cargo build --release --manifest-path services/accounts/Cargo.toml
+services/accounts/target/release/mb2-accounts --bind 127.0.0.1:7790 --store Saved/Accounts/accounts.json \
+    --outbox Saved/Accounts/outbox --models Data/Accounts/character_models.v0.1.json \
+    --server-key-file <file with 32+ random characters> --tls-cert <cert.pem> --tls-key <key.pem>
+```
+
+Start the dedicated server with `-MB2Accounts=https://127.0.0.1:7790 -MB2AccountsKeyFile=<the same key file>`, and the client with `-MB2Accounts=https://127.0.0.1:7790`. If the certificate is not signed by a public CA, add `-ini:Engine:[SSL]:OverrideCertificateBundlePath=<ca.pem>` to both. Emails, including confirmation codes, are files in the outbox folder until a mail sender is chosen. Without `-MB2Accounts`, a development server and client keep the ADR-014 key, and every other smoke runs as before. A shipping server always requires accounts.
+
+`scripts/account-smoke-linux.sh editor` makes a throwaway CA and runs the service, a dedicated server and rendered clients through the first-time and returning flows and five refused admissions. Ports: `MB2_ACCOUNT_PORT` (game, default 7791) and `MB2_ACCOUNT_SERVICE_PORT` (service, default 7792). Evidence goes to `Saved/AccountSmoke/<UTC timestamp>/`, with screenshots of the screens.
+
 ## Messaging validation (CHAT-001)
 
 General and private text chat source resides in `AMarburgumPlayerController`; client UMG resides in `MarburgumIIClient`. See [CHAT.md](CHAT.md). Use a genuine UE **5.8.3** Editor/Client/Server compilation plus the native automation test `Marburgum.Chat.TextPolicy`, followed by **three** separate clients to prove that a bystander never receives private text. The source-only chat checker in CI is a dependency/regression check, **not** a live network or owner-acceptance test. Chat source code currently exists, but no native compilation/runtime result is verified.
@@ -193,7 +209,7 @@ General and private text chat source resides in `AMarburgumPlayerController`; cl
 
 ```bash
 dotnet run --project tools/MarburgumII.Tools -- verify   # .NET 10: modules, targets, side boundaries
-scripts/mb2.sh validate all                            # Rust: UI ontology, chat, gameplay contract, no Python
+scripts/mb2.sh validate all                            # Rust: UI ontology, chat, gameplay, accounts contract, no Python
 cargo test --manifest-path tools/mb2/Cargo.toml
 cargo test --manifest-path native/marburgum-sim-core/Cargo.toml
 cargo build --release --manifest-path native/marburgum-sim-core/Cargo.toml
