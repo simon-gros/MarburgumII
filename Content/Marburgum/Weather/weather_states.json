@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "_comment": "Hourly weather states and the tunables of the automatic (\"auto\") weather of docs/CLIMATE_CALENDAR_WEATHER_ROADMAP.md sections 7, 8, 12 and 16. Each mirrored 1990s day gets a deterministic plan of one state per hour; the server blends each hour into the next across the hour and eases precipitation, thunder, wetness and snow toward what the plan asks, so nothing jumps. Ramps and the soak-to-dry ratio follow GTA San Andreas (REA report section 11), converted from its 60x game clock to Marburgum's real-time one. Provisional values, to be tuned by eye and playtest.",
+  "states": {
+    "clear":         {"cloud_cover": 0.10, "precipitation": 0.0,  "fog": 0.0,  "thunder": 0.0, "wind_ms": 1.5, "gust": 0.10},
+    "partly_cloudy": {"cloud_cover": 0.45, "precipitation": 0.0,  "fog": 0.0,  "thunder": 0.0, "wind_ms": 2.5, "gust": 0.20},
+    "overcast":      {"cloud_cover": 0.95, "precipitation": 0.0,  "fog": 0.0,  "thunder": 0.0, "wind_ms": 3.5, "gust": 0.25},
+    "light_rain":    {"cloud_cover": 1.00, "precipitation": 0.30, "fog": 0.0,  "thunder": 0.0, "wind_ms": 4.0, "gust": 0.30},
+    "steady_rain":   {"cloud_cover": 1.00, "precipitation": 0.60, "fog": 0.0,  "thunder": 0.0, "wind_ms": 5.0, "gust": 0.35},
+    "heavy_rain":    {"cloud_cover": 1.00, "precipitation": 0.90, "fog": 0.0,  "thunder": 0.0, "wind_ms": 6.5, "gust": 0.50},
+    "thunderstorm":  {"cloud_cover": 1.00, "precipitation": 0.85, "fog": 0.0,  "thunder": 1.0, "wind_ms": 8.0, "gust": 0.90},
+    "fog":           {"cloud_cover": 0.80, "precipitation": 0.0,  "fog": 1.0,  "thunder": 0.0, "wind_ms": 0.5, "gust": 0.0},
+    "mist":          {"cloud_cover": 0.60, "precipitation": 0.0,  "fog": 0.45, "thunder": 0.0, "wind_ms": 1.0, "gust": 0.05}
+  },
+  "days": {
+    "_comment": "How a day's plan is drawn from the month's normals. wet_persistence is the chance a day copies the previous day's wet/dry draw (keeps the monthly frequency, adds multi-day spells). A rain day has 1-3 spells of 2-6 h; its intensity comes from the month's mm per precipitation day. A thunder day (a share of the wet days, from thunder_days) builds cloud for 2 h before a 1-3 h storm starting 13-18 h. A fog day (dry days only, from fog_days) has fog from 03:00 until 1-3 h after sunrise, then an hour of mist.",
+    "wet_persistence": 0.4,
+    "rain_spells": [1, 3],
+    "rain_spell_hours": [2, 6],
+    "light_below_mm_per_day": 5.0,
+    "heavy_above_mm_per_day": 12.0,
+    "thunder_start_hour": [13, 18],
+    "thunder_hours": [1, 3],
+    "thunder_build_up_hours": 2,
+    "fog_from_hour": 3,
+    "fog_burn_off_after_sunrise_hours": [1, 3],
+    "convective_cumulus_above_mean_c": 10.0,
+    "temperature_anomaly_c": 3.0,
+    "rain_day_high_drop_c": 2.0,
+    "cloud_damps_diurnal_range": 0.5
+  },
+  "dynamics": {
+    "_comment": "Minutes of real time (the world clock is 1:1). GTA SA ramps rain over ~4 game minutes, soaks roads in ~15 and dries them in ~60; drying here also scales with temperature, wind and sun, per roadmap section 12.",
+    "precipitation_ramp_minutes": 4.0,
+    "thunder_ramp_minutes": 4.0,
+    "wetness_soak_minutes": 15.0,
+    "wetness_dry_minutes": 60.0,
+    "snow_below_c": 0.5,
+    "sleet_below_c": 2.0,
+    "snow_cm_per_hour_at_full": 2.0,
+    "melt_cm_per_degree_hour": 0.4,
+    "reconstruct_hours": 36,
+    "resync_after_minutes": 15
+  }
+}

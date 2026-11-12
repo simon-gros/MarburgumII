@@ -12,13 +12,14 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerState.h"
 #include "MarburgumCharacter.h"
+#include "MarburgumGameState.h"
+#include "MarburgumGround.h"
 #include "MarburgumNetworkContract.h"
 #include "MarburgumVehicleContract.h"
 #include "MarburgumVehicleDynamics.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Net/UnrealNetwork.h"
-#include "PhysicalMaterials/PhysicalMaterial.h"
 
 using namespace MarburgumII::Vehicles;
 
@@ -34,21 +35,6 @@ namespace
     constexpr double ExitProbeDownCm = 300.0;
 
     const TCHAR* const DoorSockets[WheelCount] = { TEXT("Door0"), TEXT("Door1"), TEXT("Door2"), TEXT("Door3") };
-
-    /**
-     * The semantic surface under a wheel. Marburgum II's Lent carries no physical-surface semantics yet, so
-     * every road reads as unknown and stays neutral; a physical material named PM_<surface> opts in.
-     */
-    FString SurfaceOf(const FHitResult& Hit)
-    {
-        const UPhysicalMaterial* Material = Hit.PhysMaterial.Get();
-        if (!Material)
-        {
-            return TEXT("unknown");
-        }
-        FString Name = Material->GetName();
-        return Name.RemoveFromStart(TEXT("PM_")) ? Name.ToLower() : FString(TEXT("unknown"));
-    }
 
     void IgnoreRiders(const AActor& Vehicle, FCollisionQueryParams& Params)
     {
@@ -295,6 +281,10 @@ void AMarburgumVehicle::StepPhysicsAuthority(float DeltaSeconds)
     const double Share = Definition->Mass / WheelCount;
     const double Reach = (Definition->SuspensionRestLength + Definition->WheelRadius) * Cm;
 
+    // The server's weather (ADR-061): a wet road keeps only part of its grip (SurfaceGrip, SurfaceTraction).
+    const FMarburgumWeather* Weather = AMarburgumGameState::WeatherOf(GetWorld());
+    const double Wetness = Weather ? Weather->Wetness : 0.0;
+
     FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumVehicleWheel), false);
     Params.bReturnPhysicalMaterial = true;
     IgnoreRiders(*this, Params);
@@ -342,11 +332,11 @@ void AMarburgumVehicle::StepPhysicsAuthority(float DeltaSeconds)
             WheelForward = Forward.RotateAngleAxis(Degrees, Up).GetSafeNormal();
             WheelRight = Right.RotateAngleAxis(Degrees, Up).GetSafeNormal();
         }
-        const FString Kind = SurfaceOf(Hit);
+        const FString Kind = MarburgumII::Ground::SurfaceOf(Hit);
         const double Sideways = FVector::DotProduct(WheelVelocity, WheelRight) / Cm;
         const double Rolling = FVector::DotProduct(WheelVelocity, WheelForward) / Cm;
-        const double Grip = SurfaceGrip(Kind, 0.0);
-        const double Traction = SurfaceTraction(Kind, 0.0);
+        const double Grip = SurfaceGrip(Kind, Wetness);
+        const double Traction = SurfaceTraction(Kind, Wetness);
         const double Lateral = bHeld
             ? HoldForce(Sideways, FVector::DotProduct(Pull, WheelRight), Share, DeltaSeconds, LateralFrictionLimit * Grip * Load)
             : LateralForce(*Definition, Wheel, Sideways, Load, bHandbrake, Grip);

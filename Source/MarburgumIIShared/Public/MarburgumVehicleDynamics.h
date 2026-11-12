@@ -214,7 +214,7 @@ namespace MarburgumII::Vehicles::Dynamics
     //
     // Physical surfaces scale tyre grip and drive/brake traction; wetness (0..1, server-owned world state)
     // takes a share of each away. An unknown surface stays neutral, so missing semantic coverage never
-    // silently changes handling. Marburgum II has no weather yet, so wetness is 0 until it does.
+    // silently changes handling. Surfaces come from MarburgumGround.h, wetness from the server's weather (ADR-061).
 
     inline double CleanWetness(double Wetness)
     {

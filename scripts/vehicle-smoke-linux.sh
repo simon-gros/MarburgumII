@@ -13,6 +13,9 @@
 # it logs how far from the car it took that player's view to be: the camera behind the car while seated
 # (about 11 m), not where they got in (ADR-056).
 #
+# The server runs the clear_dry weather (ADR-061), so the real day's rain never changes the car's grip under the
+# thresholds below; scripts/weather-smoke-linux.sh drives on the wet road.
+#
 # MB2_VEHICLE_NET_CULL_M=<metres> shrinks the distance the server sends the car within. Below the seated
 # camera's 11 m, only the occupants' relevancy rule keeps the car updating for D and P while they ride.
 #
@@ -90,7 +93,7 @@ start_server() {
     fi
     local extra=()
     [[ -n "$net_cull_m" ]] && extra+=("-MB2VehicleNetCullM=$net_cull_m")
-    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" "${common_args[@]}" "${extra[@]}" > "$log" 2>&1 &
+    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" -MB2Weather=clear_dry "${common_args[@]}" "${extra[@]}" > "$log" 2>&1 &
     server_pid=$!
     for _ in $(seq 1 240); do
         grep -aq "MB2SMOKE role=server event=ready .* port=$port " "$log" && return 0

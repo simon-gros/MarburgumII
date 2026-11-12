@@ -10,7 +10,8 @@
 #   river (ADR-046); nobody on the street is ever in the water.
 #
 # The server must log the walk graph loaded, people spawned and despawned, reactions to the fight, the run-over,
-# the dodge and the body. Evidence is written to Saved/StreetSmoke/<UTC timestamp>/.
+# the dodge and the body. The server runs the clear_dry weather (ADR-061) so a real wet day never changes how the car
+# meets the probes. Evidence is written to Saved/StreetSmoke/<UTC timestamp>/.
 # Usage: scripts/street-smoke-linux.sh [staged|editor]   (port: MB2_STREET_PORT, default 27761)
 set -euo pipefail
 
@@ -78,7 +79,7 @@ start_server() {
         echo "UDP port $port is already in use; stop the other server or set MB2_STREET_PORT." >&2
         exit 1
     fi
-    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" -MB2StreetProbe -MB2StreetSeed=1990 "${common_args[@]}" > "$log" 2>&1 &
+    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" -MB2StreetProbe -MB2StreetSeed=1990 -MB2Weather=clear_dry "${common_args[@]}" > "$log" 2>&1 &
     server_pid=$!
     for _ in $(seq 1 240); do
         grep -aq "MB2SMOKE role=server event=ready .* port=$port " "$log" && return 0

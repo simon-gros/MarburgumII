@@ -16,5 +16,7 @@ public class MarburgumII : ModuleRules
         PrivateDependencyModuleNames.Add("MarburgumIIShared");
         // The street walk graph (ADR-044) is a JSON file beside the content.
         PrivateDependencyModuleNames.Add("Json");
+        // What a tyre or a foot stands on: the landscape's collision component (ADR-061).
+        PrivateDependencyModuleNames.Add("Landscape");
     }
 }

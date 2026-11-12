@@ -9,8 +9,10 @@
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "MarburgumArea.h"
+#include "MarburgumGameState.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumPlayerState.h"
+#include "MarburgumWeather.h"
 #include "UI/MarburgumUIBuilder.h"
 
 #define LOCTEXT_NAMESPACE "MarburgumLocationBanner"
@@ -52,8 +54,13 @@ void UMarburgumLocationBanner::NativeOnInitialized()
     Center(Rule);
     NoteLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption);
     NoteLabel->SetJustification(ETextJustify::Center);
-    FBuilder::Stack(Column, NoteLabel, 0.f);
+    FBuilder::Stack(Column, NoteLabel, T.Space.XS);
     Center(NoteLabel);
+    WeatherLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextSecondary);
+    WeatherLabel->SetJustification(ETextJustify::Center);
+    WeatherLabel->SetVisibility(ESlateVisibility::Collapsed);
+    FBuilder::Stack(Column, WeatherLabel, 0.f);
+    Center(WeatherLabel);
 
     Card = B.Surface(ESurfaceKind::Overlay, Pad(T.Space.XXL, T.Space.L), Column);
     USizeBox* Width = WidgetTree->ConstructWidget<USizeBox>();
@@ -77,6 +84,11 @@ void UMarburgumLocationBanner::NativeConstruct()
 {
     Super::NativeConstruct();
     AreaHandle = AMarburgumPlayerState::OnAreaChanged().AddUObject(this, &UMarburgumLocationBanner::HandleAreaChanged);
+    WeatherHandle = AMarburgumGameState::OnWeatherChanged().AddUObject(this, &UMarburgumLocationBanner::HandleWeatherChanged);
+    if (const FMarburgumWeather* Weather = AMarburgumGameState::WeatherOf(GetWorld()))
+    {
+        HandleWeatherChanged(*Weather);
+    }
     const APlayerController* Owner = GetOwningPlayer();
     if (AMarburgumPlayerState* State = Owner ? Owner->GetPlayerState<AMarburgumPlayerState>() : nullptr)
     {
@@ -87,6 +99,7 @@ void UMarburgumLocationBanner::NativeConstruct()
 void UMarburgumLocationBanner::NativeDestruct()
 {
     AMarburgumPlayerState::OnAreaChanged().Remove(AreaHandle);
+    AMarburgumGameState::OnWeatherChanged().Remove(WeatherHandle);
     Super::NativeDestruct();
 }
 
@@ -102,6 +115,28 @@ void UMarburgumLocationBanner::HandleAreaChanged(AMarburgumPlayerState* State)
         return; // Both replicated properties report the same change.
     }
     Show(State->GetAreaId());
+}
+
+void UMarburgumLocationBanner::HandleWeatherChanged(const FMarburgumWeather& Weather)
+{
+    if (!Weather.bKnown)
+    {
+        return;
+    }
+    WeatherLabel->SetText(FText::FromString(MarburgumII::Weather::Summary(Weather.State.ToString(), Weather.TemperatureC, Weather.Wetness, Weather.SnowDepthM)));
+    WeatherLabel->SetVisibility(ESlateVisibility::HitTestInvisible);
+    const bool bTurned = !WeatherState.IsNone() && (Weather.State != WeatherState || Weather.PrecipitationType != WeatherType);
+    WeatherState = Weather.State;
+    WeatherType = Weather.PrecipitationType;
+    if (bTurned && bHasShown && !IsShowing())
+    {
+        Show(ShownArea);
+    }
+}
+
+FString UMarburgumLocationBanner::GetWeatherText() const
+{
+    return WeatherLabel && WeatherLabel->GetVisibility() != ESlateVisibility::Collapsed ? WeatherLabel->GetText().ToString() : FString();
 }
 
 void UMarburgumLocationBanner::Show(FName AreaId)

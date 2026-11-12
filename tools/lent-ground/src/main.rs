@@ -21,9 +21,13 @@
 //! - with `--walk-graph <file>`, the walk graph street people follow (walk.rs, ADR-044).
 //!
 //! `--mode walk` builds only the walk graph, from the streets and the `top.bin` already in `--out`.
+//!
+//! `lent-ground surface-kinds` reduces `surface.png` to the surface map the game reads at run time for
+//! footsteps and tyre grip on the landscape (kinds.rs, ADR-061).
 
 mod buildings;
 mod grid;
+mod kinds;
 mod mesh;
 mod osm;
 mod proj;
@@ -808,7 +812,8 @@ const USAGE: &str = "usage:
   lent-ground --laz A.laz,B.laz,... --osm osm_lent.json.gz --buildings buildings.json --placed placed.txt
               --ortho DIR/lent_albedo.jpg,DIR/center_albedo.jpg,... --out DIR [--half 768 --points 3025 --mask 4096]
               [--walk-graph Content/Marburgum/Street/lent_walk_graph.json] [--mode walk]
-       lent-ground ring --laz A.laz,B.laz,... --heights DIR/heights.bin --out DIR";
+       lent-ground ring --laz A.laz,B.laz,... --heights DIR/heights.bin --out DIR
+       lent-ground surface-kinds --surface DIR/surface.png --out Content/Marburgum/Ground/lent_surface.bin [--half 768 --cell 2]";
 
 fn main() {
     let mut argv: Vec<String> = std::env::args().skip(1).collect();
@@ -819,6 +824,21 @@ fn main() {
             let terrain = PathBuf::from(get("terrain")?);
             let sources: Vec<(String, PathBuf)> = get("windows")?.split(',').map(|w| (w.to_string(), terrain.join(format!("{w}_buildings.json")))).collect();
             buildings::merge(&sources, Path::new(&get("out")?))
+        });
+        if let Err(e) = result {
+            eprintln!("lent-ground: {e}\n{USAGE}");
+            std::process::exit(2);
+        }
+        return;
+    }
+    if argv.first().map(String::as_str) == Some("surface-kinds") {
+        argv.remove(0);
+        let result = read_flags(argv.into_iter()).and_then(|f| {
+            let get = |k: &str| f.get(k).cloned().ok_or(format!("missing --{k}"));
+            let number = |k: &str, default: f64| f.get(k).map_or(Ok(default), |v| v.parse::<f64>().map_err(|e| format!("--{k}: {e}")));
+            let summary = kinds::build(Path::new(&get("surface")?), number("half", DEFAULT_HALF)?, number("cell", 2.0)?, Path::new(&get("out")?))?;
+            eprintln!("surface-kinds: {summary}");
+            Ok(())
         });
         if let Err(e) = result {
             eprintln!("lent-ground: {e}\n{USAGE}");

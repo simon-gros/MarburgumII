@@ -9,6 +9,7 @@ mod playtest;
 mod render_probe;
 mod repo;
 mod store_check;
+mod wet_footsteps;
 mod validate;
 
 use std::path::PathBuf;
@@ -20,6 +21,7 @@ Usage: mb2 <command>
   validate <ui-ontology|chat|gameplay|vehicles|combat|street|python-free|all>
                          Source-only contract checks (no Unreal build).
   generate gameplay      Write MarburgumGameplayCatalogue.h from Data/Gameplay/gameplay.v0.1.json.
+  generate wet-footsteps Write the wet-street footsteps (SourceArt/Audio/Footsteps/Generated) from the dry ones.
   engine-version <engine_root>
                          Check Engine/Build/Build.version against .unreal-engine-version.
   playtest <build|verify|launch> --profile <file>
@@ -42,6 +44,7 @@ fn main() -> ExitCode {
     let words: Vec<&str> = args.iter().map(String::as_str).collect();
     let code = match words.as_slice() {
         ["validate", which] => validate::run(which),
+        ["generate", "wet-footsteps"] => wet_footsteps::run(),
         ["generate", which] => generate::run(which),
         ["engine-version", engine_root] => engine::run(&PathBuf::from(engine_root)),
         ["playtest", action, "--profile", profile] => playtest::run(action, &PathBuf::from(profile)),
