@@ -318,6 +318,20 @@ void UMarburgumAccountSmokeSubsystem::TickFirst(double Now)
     case 79:
         if (Now - StepSeconds < SettleSeconds * 1.5) return;
         Shot(*FString::Printf(TEXT("creator-%s-close"), MarburgumII::Accounts::CharacterModels[0].Id));
+        Advance(80, Now);
+        return;
+    case 80:
+        // The same head turned 70 degrees: its shape in three-quarter view (nose, jaw, ear).
+        if (UMarburgumCharacterPreview* Preview = Form->GetPreview()) Preview->TurnForTest(-140.f);
+        Advance(81, Now);
+        return;
+    case 81:
+        if (Now - StepSeconds < SettleSeconds) return;
+        Shot(*FString::Printf(TEXT("creator-%s-turned"), MarburgumII::Accounts::CharacterModels[0].Id));
+        Advance(82, Now);
+        return;
+    case 82:
+        if (UMarburgumCharacterPreview* Preview = Form->GetPreview()) Preview->TurnForTest(140.f);
         Advance(75, Now);
         return;
     case 75:
