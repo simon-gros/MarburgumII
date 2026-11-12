@@ -111,7 +111,7 @@ Server-side rules also have an editor automation test:
     -unattended -nullrhi -stdout -TestExit="Automation Test Queue Empty"   # Marburgum.Chat.TextPolicy, Marburgum.Server.MissionRules
 ```
 
-### Development qualifications for ADR-040–045 (11 November 2026)
+### Development qualifications through ADR-059 (12 November 2026)
 
 The commands above describe **regeneration order**, not proof that the whole map and all scripts pass as a single packaged release. The new default `/Game/World/lent` covers **nine 512 m original windows** in one 1,536 m square. Use an explicit original-game content root `$ORIGINAL` and locally available nine LiDAR LAZ tiles/orthophoto inputs. **Do not** commit unrelated licensed originals, full paid map source, raw proprietary files or private credentials when rebuilding.
 
@@ -123,11 +123,11 @@ The commands above describe **regeneration order**, not proof that the whole map
 - ADR-045 nine-window saved-level verification: **4,089,551** paved samples, 0 landscape-first and 0 sunk capsules; street, combat, swimming and vehicle **editor-mode** smokes passed. This is not a packaged/client-performance pass.
 - ADR-041 combat: a **packaged dedicated-server/two-client** smoke passed on an earlier revision. ADR-043's fixed rendered feet have separate **editor-mode** evidence; repackage for the current world.
 - ADR-044 ambient people: **one-client editor-mode** street smoke passed; `./scripts/street-smoke-linux.sh staged` and a separate two/three-client scenario are **future acceptance tests**, not recorded passes.
-- The original mission/condition smokes still use `/Game/Maps/Lent`, an older distinct test world. A successful fallback smoke cannot establish collision, population or authored contact positions across all nine windows.
+- Some older Lent/condition fixtures still use `/Game/Maps/Lent`, a distinct test world, but **the new `mission-smoke-linux.sh editor` plays all eight original missions on `/Game/World/lent`** (ADR-047–052), including temporary replicated pads for Melje/Tabor locations outside the nine-window map. A fallback test does not qualify today's world; the editor full-mission test does not equal a packaged two-client regression.
 
 **Expanded-world P0 performance and multiplayer gate:** fresh client/server cook at an exact clean SHA, map and root-manifest hashes; run camera/travel and player/angler/car/swim routes across eight window edges; sample cold load, memory/VRAM, CPU/GPU frame-time p95/p99, draw calls and server tick. Stress a controlled 1/2/4/8-client population and capture remote street reactions, NPC duplication/relevance, body retention, collision, combat down/recovery, car dodge/run-over and reconnect. The expanded world is **a single always-loaded level with no World Partition**; do not claim streaming or MMO-scale performance until measured. Fourteen surveyed deep hollows require a recorded historical/gameplay decision, not an automatic fill.
 
-See [the 11 November change audit](DEVELOPMENT_UPDATE_2026-11-11.md), [ground and map decisions](DECISIONS.md), [street evidence](STAGE1_STREET_EVIDENCE.md), [combat evidence](STAGE1_COMBAT_EVIDENCE.md), and [freshness acceptance procedure](PLAYTEST_FRESHNESS.md).
+See [the 12 November development review](DEVELOPMENT_REVIEW_2026-11-12.md), [the 11 November change audit](DEVELOPMENT_UPDATE_2026-11-11.md), [ground and map decisions](DECISIONS.md), [street evidence](STAGE1_STREET_EVIDENCE.md), [combat evidence](STAGE1_COMBAT_EVIDENCE.md), and [freshness acceptance procedure](PLAYTEST_FRESHNESS.md).
 
 ### Playing the Lent slice by hand
 
@@ -188,7 +188,7 @@ Use [PLAYTEST_FRESHNESS.md](PLAYTEST_FRESHNESS.md) and the guard `scripts/mb2.sh
 
 ## Accounts and signed-in entry (ADR-055)
 
-The account service is `services/accounts`. Run it over HTTPS with a certificate the clients trust:
+The account service is `services/accounts` (ADR-055). It supplies code-based email verification, Argon2id passwords, a durable first character and short-lived one-use admission tickets. **The current service is a development implementation**, not a production installation; messages are written into an outbox folder, not delivered externally. Run it over HTTPS with a certificate the clients trust:
 
 ```bash
 cargo test --manifest-path services/accounts/Cargo.toml
@@ -200,11 +200,11 @@ services/accounts/target/release/mb2-accounts --bind 127.0.0.1:7790 --store Save
 
 Start the dedicated server with `-MB2Accounts=https://127.0.0.1:7790 -MB2AccountsKeyFile=<the same key file>`, and the client with `-MB2Accounts=https://127.0.0.1:7790`. If the certificate is not signed by a public CA, add `-ini:Engine:[SSL]:OverrideCertificateBundlePath=<ca.pem>` to both. Emails, including confirmation codes, are files in the outbox folder until a mail sender is chosen. Without `-MB2Accounts`, a development server and client keep the ADR-014 key, and every other smoke runs as before. A shipping server always requires accounts.
 
-`scripts/account-smoke-linux.sh editor` makes a throwaway CA and runs the service, a dedicated server and rendered clients through the first-time and returning flows (every body in the creator's 3D preview, turned and zoomed) and five refused admissions. Ports: `MB2_ACCOUNT_PORT` (game, default 7791) and `MB2_ACCOUNT_SERVICE_PORT` (service, default 7792). Evidence goes to `Saved/AccountSmoke/<UTC timestamp>/`, with screenshots of the screens.
+`scripts/account-smoke-linux.sh editor` makes a throwaway CA and runs the service, a dedicated server and rendered clients through the first-time and returning flows (every body in the creator's 3D preview, turned and zoomed) and five refused admissions. Ports: `MB2_ACCOUNT_PORT` (game, default 7791) and `MB2_ACCOUNT_SERVICE_PORT` (service, default 7792). Evidence goes to `Saved/AccountSmoke/<UTC timestamp>/`, with screenshots of the screens. Evidence through ADR-059 is primarily **editor-mode**, including per-model rotate/zoom and close-up captures. The latest packaged FL-10 input/scale/Slovene and full owner FL-12 gates remain open. Keep outbox, CA secrets, passwords and tickets out of source control/captures. Engine join-URL logs currently include **spent one-time tickets** and need security-log review.
 
 ## Messaging validation (CHAT-001)
 
-General and private text chat source resides in `AMarburgumPlayerController`; client UMG resides in `MarburgumIIClient`. See [CHAT.md](CHAT.md). Use a genuine UE **5.8.3** Editor/Client/Server compilation plus the native automation test `Marburgum.Chat.TextPolicy`, followed by **three** separate clients to prove that a bystander never receives private text. The source-only chat checker in CI is a dependency/regression check, **not** a live network or owner-acceptance test. Chat source code currently exists, but no native compilation/runtime result is verified.
+General and private text chat source resides in `AMarburgumPlayerController`; client UMG resides in `MarburgumIIClient`. See [CHAT.md](CHAT.md). Use a genuine UE **5.8.3** Editor/Client/Server compilation plus the native automation test `Marburgum.Chat.TextPolicy`, followed by **three** separate clients to prove that a bystander never receives private text. The source-only chat checker in CI is a dependency/regression check, **not** a live network or owner-acceptance test. Earlier **packaged** Linux dedicated-server/three-client delivery and recipient isolation are recorded in [CHAT-001 evidence](STAGE0C_CHAT_EVIDENCE.md). This documentation update did not rerun those tests; regression against the current assets and owner UI/focus acceptance remain outstanding.
 
 ## Independent source checks
 
@@ -217,6 +217,17 @@ cargo build --release --manifest-path native/marburgum-sim-core/Cargo.toml
 ```
 
 The C# program checks repository manifest contracts, but does not inspect the local Unreal installation. `scripts/mb2.sh` builds and runs the Rust repository tool (`tools/mb2`); it also provides the engine-version check, operation ids and world-store checks the smoke scripts use, and the playtest freshness guard. The Rust simulation library is an unlinked and independently testable experimental component.
+
+### Reproducing the newest editor-level checks
+
+```bash
+./scripts/mission-smoke-linux.sh editor    # all eight original missions, decisions, store/restart; pads beyond map
+./scripts/account-smoke-linux.sh editor    # HTTPS registration, first/returning login, 3D preview, ticket denials
+./scripts/vehicle-smoke-linux.sh editor    # own-car relevancy; ADR-056 records a reduced-cull comparison separately
+./scripts/street-smoke-linux.sh editor     # server-led pedestrians and incident reactions
+```
+
+These are **commands for reproducing earlier recorded results**, not tests executed as part of the documentation review. Before owner acceptance, rebuild/cook all current level/model/data assets for staged clients, repeat a >150 m vehicle drive with passenger after ADR-056, execute two/three-client street/account/mission integration, measure performance and record source SHA, cooked asset digest, screenshots, logs and the owner's explicit decision. See [the 12 November state review](DEVELOPMENT_REVIEW_2026-11-12.md).
 
 ## Required acceptance evidence
 
