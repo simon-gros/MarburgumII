@@ -19,6 +19,7 @@
 #include "GameFramework/Pawn.h"
 #include "HAL/PlatformTime.h"
 #include "GameFramework/PlayerState.h"
+#include "Camera/PlayerCameraManager.h"
 #include "InputCoreTypes.h"
 
 namespace
@@ -421,7 +422,21 @@ void AMarburgumPlayerController::PlayerTick(float DeltaTime)
     Super::PlayerTick(DeltaTime);
     if (IsLocalController())
     {
+        KeepServerViewWithSeat();
         UpdateDriving();
+    }
+}
+
+void AMarburgumPlayerController::KeepServerViewWithSeat()
+{
+    // The server sends each player what is near their camera, which the client reports, but the engine
+    // reports it only while the pawn's movement has input or velocity. A seated body's movement is off, so
+    // the server's view stayed where the player got in: 150 m on, the player's own car stopped updating,
+    // and getting out snapped the body and the car to where the server had driven them (ADR-056).
+    const AMarburgumCharacter* Body = Cast<AMarburgumCharacter>(GetPawn());
+    if (PlayerCameraManager && PlayerCameraManager->bUseClientSideCameraUpdates && Body && Body->GetSeatedVehicle())
+    {
+        PlayerCameraManager->bShouldSendClientSideCameraUpdate = true;
     }
 }
 

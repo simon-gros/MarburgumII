@@ -181,6 +181,8 @@ private:
 
     /** Shared request budget for interactions and vehicle requests (MaxRequestsPerSecond). */
     bool AdmitRequest(const TCHAR* What);
+    /** While seated, keep reporting the camera to the server: it is where the server sends this player the world from. */
+    void KeepServerViewWithSeat();
     void UpdateDriving();
 
     double VehicleRequestAt = -1000.0;

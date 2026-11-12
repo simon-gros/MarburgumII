@@ -9,11 +9,14 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/PhysicsVolume.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerState.h"
 #include "MarburgumCharacter.h"
 #include "MarburgumNetworkContract.h"
 #include "MarburgumVehicleContract.h"
 #include "MarburgumVehicleDynamics.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "Net/UnrealNetwork.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 
@@ -182,6 +185,13 @@ void AMarburgumVehicle::BeginPlay()
         // A low centre of mass keeps an arcade car from tipping over in a turn it should hold.
         Body->SetCenterOfMass(LocalPointCm(Definition->CentreOfMass));
         Body->SetSimulatePhysics(true);
+        // The vehicle smoke shrinks the distance a car is sent to players within, so that only the
+        // occupants' rule in IsNetRelevantFor keeps it updating for them (ADR-056).
+        float NetCullM = 0.f;
+        if (FParse::Value(FCommandLine::Get(), TEXT("MB2VehicleNetCullM="), NetCullM) && NetCullM > 0.f)
+        {
+            SetNetCullDistanceSquared(FMath::Square(NetCullM * static_cast<float>(Cm)));
+        }
         for (TActorIterator<APhysicsVolume> It(GetWorld()); It; ++It)
         {
             if (It->bWaterVolume)
@@ -191,8 +201,9 @@ void AMarburgumVehicle::BeginPlay()
         }
         Motion.Location = GetActorLocation();
         Motion.Rotation = GetActorQuat();
-        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=vehicle_ready vehicle=%s definition=%s location=%s water_volumes=%d"), LogPrefix,
-            *VehicleId.ToString(), Definition->Id, *GetActorLocation().ToString(), WaterVolumes.Num());
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=vehicle_ready vehicle=%s definition=%s location=%s water_volumes=%d net_cull_m=%.0f"),
+            LogPrefix, *VehicleId.ToString(), Definition->Id, *GetActorLocation().ToString(), WaterVolumes.Num(),
+            FMath::Sqrt(GetNetCullDistanceSquared()) / Cm);
     }
     else
     {
@@ -218,6 +229,18 @@ void AMarburgumVehicle::Tick(float DeltaSeconds)
         UpdateWheels(DeltaSeconds);
         AnimateDoors(DeltaSeconds);
     }
+}
+
+bool AMarburgumVehicle::IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const
+{
+    // A player's own car never goes stale under them, whatever the server takes their view to be: past the
+    // cull distance it stopped updating while the server drove on, and getting out snapped it (ADR-056).
+    const APlayerController* Viewer = Cast<APlayerController>(RealViewer);
+    if (Viewer && Viewer->PlayerState && !FindSeatOf(Viewer->PlayerState).IsNone())
+    {
+        return true;
+    }
+    return Super::IsNetRelevantFor(RealViewer, ViewTarget, SrcLocation);
 }
 
 // ---- Server simulation ----
@@ -571,6 +594,16 @@ bool AMarburgumVehicle::TryExitAuthority(AMarburgumCharacter& Who, FName& OutRea
     {
         LogAuthority(TEXT("exit_refused"), State, SeatId, OutReason);
         return false;
+    }
+    // Where the server took this player's view to be, from the car: the camera behind it while seated, not
+    // where the player got in (ADR-056).
+    if (const APlayerController* Viewer = Cast<APlayerController>(Who.GetController()))
+    {
+        FVector ViewAt;
+        FRotator ViewRotation;
+        Viewer->GetPlayerViewPoint(ViewAt, ViewRotation);
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=exit_view vehicle=%s player=%d view_m=%.1f"), LogPrefix,
+            *VehicleId.ToString(), State->GetPlayerId(), FVector::Dist(ViewAt, GetActorLocation()) / Cm);
     }
     ReleaseAuthority(State);
     // Step out facing away from the car, the way the door opens.

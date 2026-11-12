@@ -9,7 +9,12 @@
 #      door and walks away; the car stays where it was left.
 #   P  a passenger (-nullrhi). Once D holds the wheel it asks for the driver's seat (refused: seat_taken),
 #      gets into the nearest free passenger seat, rides while D drives, and gets out once the car has stopped.
-# The server must log the car ready, both entries and exits, the one refusal, and no impacts.
+# The server must log the car ready, both entries and exits, the one refusal, and no impacts. At each exit
+# it logs how far from the car it took that player's view to be: the camera behind the car while seated
+# (about 11 m), not where they got in (ADR-056).
+#
+# MB2_VEHICLE_NET_CULL_M=<metres> shrinks the distance the server sends the car within. Below the seated
+# camera's 11 m, only the occupants' relevancy rule keeps the car updating for D and P while they ride.
 #
 # D renders offscreen (see interaction-smoke-linux.sh for the Vulkan note).
 # Usage: scripts/vehicle-smoke-linux.sh [staged|editor]
@@ -19,6 +24,7 @@ set -euo pipefail
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-staged}"
 port="${MB2_VEHICLE_PORT:-7777}"
+net_cull_m="${MB2_VEHICLE_NET_CULL_M:-}"
 map="/Game/World/lent"
 uproject="$repo_root/MarburgumII.uproject"
 out_dir="$repo_root/Saved/VehicleSmoke/$(date -u +%Y%m%dT%H%M%SZ)"
@@ -82,7 +88,9 @@ start_server() {
         echo "UDP port $port is already in use; stop the other server or set MB2_VEHICLE_PORT." >&2
         exit 1
     fi
-    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" "${common_args[@]}" > "$log" 2>&1 &
+    local extra=()
+    [[ -n "$net_cull_m" ]] && extra+=("-MB2VehicleNetCullM=$net_cull_m")
+    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" "${common_args[@]}" "${extra[@]}" > "$log" 2>&1 &
     server_pid=$!
     for _ in $(seq 1 240); do
         grep -aq "MB2SMOKE role=server event=ready .* port=$port " "$log" && return 0
@@ -143,7 +151,7 @@ expect_log() {
     fi
 }
 
-echo "Dedicated server ($mode) on $map, port $port; evidence in $out_dir"
+echo "Dedicated server ($mode) on $map, port $port${net_cull_m:+, car sent within $net_cull_m m}; evidence in $out_dir"
 start_server "$out_dir/server.log"
 # D first, so it is at the car before the passenger arrives; P follows a few seconds later.
 # shellcheck disable=SC2046  # word splitting of the argument list is intended
@@ -166,6 +174,16 @@ expect_log "$log" "exit_refused" 0 "MB2VEHICLE role=server event=exit_refused"
 expect_log "$log" "seat_released_on_leave" 0 "MB2VEHICLE role=server event=seat_released"
 expect_log "$log" "impacts" 0 "MB2VEHICLE role=server event=impact vehicle=lent_hatchback "
 expect_log "$log" "unknown_definitions" 0 "MB2VEHICLE role=.* event=unknown_definition"
+if [[ -n "$net_cull_m" ]]; then
+    expect_log "$log" "net_cull_m=$net_cull_m" 1 "MB2VEHICLE role=server event=vehicle_ready .* net_cull_m=$net_cull_m\$"
+fi
+# The server's view of a player getting out is the seated camera, behind the car, not where they got in.
+expect_log "$log" "exit_view" 2 "MB2VEHICLE role=server event=exit_view vehicle=lent_hatchback "
+max_view_m=16
+while read -r view_m; do
+    echo "  server: exit view_m=$view_m (want <= $max_view_m)"
+    awk -v v="$view_m" -v m="$max_view_m" 'BEGIN { exit !(v <= m) }' || status=1
+done < <(grep -ao "event=exit_view vehicle=lent_hatchback player=[0-9-]* view_m=[0-9.]*" "$log" | sed 's/.*view_m=//')
 
 {
     echo "MarburgumII vehicle smoke"
@@ -173,6 +191,7 @@ expect_log "$log" "unknown_definitions" 0 "MB2VEHICLE role=.* event=unknown_defi
     echo "date_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     echo "git_sha: $(git -C "$repo_root" rev-parse HEAD)$(git -C "$repo_root" diff --quiet HEAD -- Source Config Content || echo ' (dirty)')"
     echo "mode: $mode"
+    echo "net_cull_m: ${net_cull_m:-engine default (150)}"
     echo "map: $map"
     echo "host: $(uname -srm)"
     echo

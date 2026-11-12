@@ -90,6 +90,9 @@ public:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
 
+    /** Always relevant to the people sitting in it, wherever their view is; otherwise the engine's distance rule. */
+    virtual bool IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const override;
+
     /** Catalogue id (MarburgumVehicleContract.h). */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Marburgum|Vehicle")
     FName DefinitionId = TEXT("city_hatchback_a");
