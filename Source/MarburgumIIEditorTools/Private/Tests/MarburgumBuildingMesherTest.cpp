@@ -76,6 +76,7 @@ bool FMarburgumBuildingMesherTest::RunTest(const FString& Parameters)
     MB::BuildBuilding(Plans[0], Rectangle, Error);
     TestEqual(TEXT("The gabled rectangle has two gable ends"), Rectangle.Gables, 2);
     TestEqual(TEXT("The gabled rectangle keeps its gabled roof"), FString(Rectangle.RoofMethod.c_str()), FString(TEXT("gabled")));
+    TestEqual(TEXT("The three-storey rectangle has a plinth, a string course and a cornice"), Rectangle.Bands, 3);
     return true;
 }
 

@@ -169,7 +169,7 @@ namespace
         Builder.EnablePolyGroups();
         Builder.SetNumUVLayers(1);
         TArray<FPolygonGroupID> Groups;
-        const TCHAR* Names[MB::MaterialCount] = { TEXT("plaster"), TEXT("roof"), TEXT("frame"), TEXT("glass"), TEXT("flat_roof") };
+        const TCHAR* Names[MB::MaterialCount] = { TEXT("plaster"), TEXT("roof"), TEXT("frame"), TEXT("glass"), TEXT("flat_roof"), TEXT("socle"), TEXT("trim") };
         for (int32 Index = 0; Index < MB::MaterialCount; ++Index)
         {
             Groups.Add(Builder.AppendPolygonGroup(Names[Index]));
@@ -267,6 +267,15 @@ namespace
         { TEXT("MI_roof_flat_dark"), FLinearColor(2.59f, 2.68f, 2.81f), 1 },          //  86  86  84
     };
 
+    // Façade bands, on every building: a plinth of dark grey-brown render, and light trim for the
+    // string course and cornice.
+    const FShade SocleShades[] = {
+        { TEXT("MI_facade_socle"), FLinearColor(0.392f, 0.432f, 0.550f), 1 },        // 112 106  98
+    };
+    const FShade TrimShades[] = {
+        { TEXT("MI_facade_trim"), FLinearColor(1.840f, 2.150f, 2.779f), 1 },         // 226 220 206
+    };
+
     // One instance per shade under Parent, its tint the parent's times the shade's gain.
     template <size_t N>
     TArray<UMaterialInstanceConstant*> EnsureShades(const FShade (&Shades)[N], UMaterialInterface* Parent)
@@ -352,8 +361,10 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
     // Each building takes a render colour and a flat-roof finish from its id, so a rebuild keeps them.
     const TArray<UMaterialInstanceConstant*> Plasters = EnsureShades(PlasterShades, Plaster);
     const TArray<UMaterialInstanceConstant*> FlatRoofs = EnsureShades(FlatRoofShades, FlatRoof);
+    const TArray<UMaterialInstanceConstant*> Socles = EnsureShades(SocleShades, Plaster);
+    const TArray<UMaterialInstanceConstant*> Trims = EnsureShades(TrimShades, Plaster);
     TArray<UPackage*> MaterialPackages{ Frame->GetOutermost(), Glass->GetOutermost() };
-    for (const TArray<UMaterialInstanceConstant*>* Shades : { &Plasters, &FlatRoofs })
+    for (const TArray<UMaterialInstanceConstant*>* Shades : { &Plasters, &FlatRoofs, &Socles, &Trims })
     {
         for (UMaterialInstanceConstant* Shade : *Shades)
         {
@@ -395,8 +406,8 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
             continue;
         }
         const MB::FCheck Check = MB::Check(Mesh, Footprint);
-        UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE %s roof=%s corners=%d party=%d gables=%d windows=%d triangles=%d closed=%d strict=%d open_edges=%d volume_m3=%.0f"),
-            *Id, UTF8_TO_TCHAR(Mesh.RoofMethod.c_str()), static_cast<int32>(Footprint.Outline.size()), Mesh.PartyWalls, Mesh.Gables, Mesh.Windows,
+        UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE %s roof=%s corners=%d party=%d gables=%d windows=%d bands=%d triangles=%d closed=%d strict=%d open_edges=%d volume_m3=%.0f"),
+            *Id, UTF8_TO_TCHAR(Mesh.RoofMethod.c_str()), static_cast<int32>(Footprint.Outline.size()), Mesh.PartyWalls, Mesh.Gables, Mesh.Windows, Mesh.Bands,
             static_cast<int32>(Mesh.Triangles.size()), Check.bClosed ? 1 : 0, Check.bStrict ? 1 : 0, Check.StrictOpenEdges, Check.Volume);
         if (!Check.bStrict || Check.Volume <= 0.0)
         {
@@ -455,7 +466,8 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
         UMaterialInterface* Deck = FlatRoofs[(Pick / 7) % FlatRoofs.Num()];
         StaticMesh->SetStaticMaterials({ FStaticMaterial(Walls, TEXT("plaster"), TEXT("plaster")), FStaticMaterial(RoofTile, TEXT("roof"), TEXT("roof")),
             FStaticMaterial(Frame, TEXT("frame"), TEXT("frame")), FStaticMaterial(Glass, TEXT("glass"), TEXT("glass")),
-            FStaticMaterial(Deck, TEXT("flat_roof"), TEXT("flat_roof")) });
+            FStaticMaterial(Deck, TEXT("flat_roof"), TEXT("flat_roof")), FStaticMaterial(Socles[0], TEXT("socle"), TEXT("socle")),
+            FStaticMaterial(Trims[0], TEXT("trim"), TEXT("trim")) });
         StaticMesh->Build(true);
         if (!StaticMesh->GetRenderData() || StaticMesh->GetRenderData()->LODResources.Num() == 0
             || StaticMesh->GetRenderData()->LODResources[0].GetNumTriangles() == 0)

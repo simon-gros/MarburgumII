@@ -22,6 +22,20 @@ namespace
     constexpr double ParapetHeight = 0.45;
     // A roof wider than twice this is cut flat (the source data's roof_max_span / 2).
     constexpr double MaxRoofReach = 8.0;
+    // Façade bands, in metres: the plinth's top above the street and how far it stands out; the
+    // string course over the ground floor and the cornice under the eaves (top, depth, height).
+    // Every band reaches BandIn into the wall. A door starts on the plinth.
+    constexpr double SocleTop = 0.45;
+    constexpr double SocleOut = 0.05;
+    constexpr double CourseOut = 0.06;
+    constexpr double CourseHeight = 0.16;
+    constexpr double CorniceOut = 0.14;
+    constexpr double CorniceDrop = 0.02;
+    constexpr double CorniceHeight = 0.22;
+    constexpr double BandIn = 0.02;
+    // A band's outer face along a party wall stands this far out, so no corner of it lands on the
+    // wall's own edges.
+    constexpr double PartyBandOut = 0.005;
 
     FVec2 operator+(const FVec2& A, const FVec2& B) { return { A.X + B.X, A.Y + B.Y }; }
     FVec2 operator-(const FVec2& A, const FVec2& B) { return { A.X - B.X, A.Y - B.Y }; }
@@ -912,10 +926,10 @@ namespace
         {
             if (S == 0 && bDoor)
             {
-                const double Top = std::min(2.15, Storey - 0.4);
-                if (Top > 1.7)
+                const double Top = std::min(2.15 + SocleTop, Storey - 0.4);
+                if (Top - SocleTop > 1.7)
                 {
-                    Out.push_back({ Width * 0.5 - 0.55, Width * 0.5 + 0.55, 0.0, Top, 1.0 });
+                    Out.push_back({ Width * 0.5 - 0.55, Width * 0.5 + 0.55, SocleTop + 0.005, Top, 1.0 });
                 }
                 continue;
             }
@@ -1072,6 +1086,26 @@ namespace
                     AddFacade(A, B, Setup.Z0 - ParapetHeight, I == Longest);
                 }
             }
+            // Façade bands round the whole outline: a darker plinth from the bottom of the wall, a
+            // light string course over the ground floor and a cornice under the eaves or the deck.
+            {
+                const double Top = Setup.bParapet ? Setup.Z0 - ParapetHeight : Soffit;
+                const double Rise = Top - Footprint.Ground;
+                const int Storeys = std::clamp(static_cast<int>(std::lround(Rise / 3.2)), 1, 6);
+                if (Footprint.Ground + SocleTop > Footprint.Base + 0.05)
+                {
+                    bOk &= Band(Footprint.Base, Footprint.Ground + SocleTop, SocleOut, Socle);
+                }
+                if (Storeys >= 2 && Rise >= 4.8)
+                {
+                    const double Course = Footprint.Ground + Rise / Storeys - 0.06;
+                    bOk &= Band(Course, Course + CourseHeight, CourseOut, Trim);
+                }
+                if (Rise >= 2.4)
+                {
+                    bOk &= Band(Top - CorniceDrop - CorniceHeight, Top - CorniceDrop, CorniceOut, Trim);
+                }
+            }
             for (size_t E = 0; E < N; ++E)
             {
                 Mesh.Gables += S.Lines[E].Speed < 1.0e-9 && !Footprint.Party[E] ? 1 : 0;
@@ -1085,6 +1119,39 @@ namespace
         }
 
     private:
+        // One band from Z0 to Z1: a closed ring round the outline, Out proud of the free walls and
+        // BandIn into them, mitred at the corners. Skipped (true) where the mitres do not fit.
+        bool Band(double Z0, double Z1, double Out, int Material)
+        {
+            const std::vector<FVec2>& P = Footprint.Outline;
+            const size_t N = P.size();
+            std::vector<double> OuterOffset(N);
+            for (size_t I = 0; I < N; ++I)
+            {
+                OuterOffset[I] = Footprint.Party[I] ? PartyBandOut : Out;
+            }
+            std::vector<FVec2> Outer;
+            std::vector<FVec2> Inner;
+            if (!OffsetOutline(P, OuterOffset, Outer) || !OffsetOutline(P, std::vector<double>(N, -BandIn), Inner))
+            {
+                return true;
+            }
+            const FVec3 Up{ 0.0, 0.0, 1.0 };
+            bool bOk = true;
+            for (size_t I = 0; I < N; ++I)
+            {
+                const size_t J = (I + 1) % N;
+                const FVec2 D = Normalize(P[J] - P[I]);
+                const FVec3 Outward{ D.Y, -D.X, 0.0 };
+                bOk &= Builder.Polygon({ At(Outer[I], Z0), At(Outer[J], Z0), At(Outer[J], Z1), At(Outer[I], Z1) }, Outward, Material);
+                bOk &= Builder.Polygon({ At(Inner[J], Z0), At(Inner[I], Z0), At(Inner[I], Z1), At(Inner[J], Z1) }, Outward * -1.0, Material);
+                bOk &= Builder.Polygon({ At(Inner[I], Z1), At(Outer[I], Z1), At(Outer[J], Z1), At(Inner[J], Z1) }, Up, Material);
+                bOk &= Builder.Polygon({ At(Inner[I], Z0), At(Inner[J], Z0), At(Outer[J], Z0), At(Outer[I], Z0) }, Up * -1.0, Material);
+            }
+            Mesh.Bands += 1;
+            return bOk;
+        }
+
         void AddFacade(const FVec2& A, const FVec2& B, double Top, bool bDoor)
         {
             const double Width = Length(B - A);

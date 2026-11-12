@@ -2,6 +2,7 @@
 
 #include "AssetCompilingManager.h"
 #include "Components/TextRenderComponent.h"
+#include "Engine/CollisionProfile.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
 #include "Engine/Texture2D.h"
@@ -624,10 +625,17 @@ namespace
         return At == Bytes.Num();
     }
 
-    UStaticMesh* BuildChunkMesh(const FChunk& Chunk, const TArray<UMaterialInterface*>& Materials, TArray<UPackage*>& Dirty)
+    // The distant ring's material slots (tools/lent-ground ring.rs, RING_SLOTS).
+    constexpr int32 RingSlotCount = 8;
+    const TCHAR* RingSlotNames[RingSlotCount] = { TEXT("ground"), TEXT("trees"), TEXT("roof_tile"), TEXT("roof_flat"), TEXT("wall_light"), TEXT("wall_warm"), TEXT("wall_grey"), TEXT("water") };
+
+    /** One chunk of paved.bin (Kind "Paved", collision from its own triangles) or ring.bin (Kind
+     *  "Ring", no collision: nothing out there can be reached). */
+    UStaticMesh* BuildChunkMesh(const FChunk& Chunk, const TCHAR* Kind, TArrayView<const TCHAR* const> SlotNames, const TArray<UMaterialInterface*>& Materials, bool bCollision, TArray<UPackage*>& Dirty)
     {
-        const FString Name = FString::Printf(TEXT("SM_LentPaved_%d_%d"), Chunk.Col, Chunk.Row);
-        const FString PackageName = FString::Printf(TEXT("%s/Paved/%s"), GroundDir, *Name);
+        const int32 SlotCount = SlotNames.Num();
+        const FString Name = FString::Printf(TEXT("SM_Lent%s_%d_%d"), Kind, Chunk.Col, Chunk.Row);
+        const FString PackageName = FString::Printf(TEXT("%s/%s/%s"), GroundDir, Kind, *Name);
         UPackage* Package = OpenPackage(PackageName);
         UStaticMesh* Mesh = FindObject<UStaticMesh>(Package, *Name);
         if (Mesh)
@@ -646,9 +654,9 @@ namespace
         Builder.EnablePolyGroups();
         Builder.SetNumUVLayers(1);
         TArray<FPolygonGroupID> Groups;
-        for (int32 Index = 0; Index < SurfaceCount; ++Index)
+        for (int32 Index = 0; Index < SlotCount; ++Index)
         {
-            Groups.Add(Builder.AppendPolygonGroup(SurfaceNames[Index]));
+            Groups.Add(Builder.AppendPolygonGroup(SlotNames[Index]));
         }
         // One instance per vertex: shared vertices give smooth normals across the surface; the
         // tool writes separate vertices where kerb faces meet it, which keeps those edges hard.
@@ -663,7 +671,7 @@ namespace
         for (int32 Index = 0; Index < Chunk.Triangles.Num(); ++Index)
         {
             const FIntVector3& T = Chunk.Triangles[Index];
-            Builder.AppendTriangle(Instances[T.X], Instances[T.Y], Instances[T.Z], Groups[FMath::Min<int32>(Chunk.Materials[Index], SurfaceCount - 1)]);
+            Builder.AppendTriangle(Instances[T.X], Instances[T.Y], Instances[T.Z], Groups[FMath::Min<int32>(Chunk.Materials[Index], SlotCount - 1)]);
         }
         Mesh->SetNumSourceModels(1);
         FStaticMeshSourceModel& Source = Mesh->GetSourceModel(0);
@@ -675,17 +683,20 @@ namespace
         Mesh->CreateMeshDescription(0, MoveTemp(Description));
         Mesh->CommitMeshDescription(0);
         TArray<FStaticMaterial> Slots;
-        for (int32 Index = 0; Index < SurfaceCount; ++Index)
+        for (int32 Index = 0; Index < SlotCount; ++Index)
         {
-            Slots.Add(FStaticMaterial(Materials[Index], SurfaceNames[Index], SurfaceNames[Index]));
+            Slots.Add(FStaticMaterial(Materials[Index], SlotNames[Index], SlotNames[Index]));
         }
         Mesh->SetStaticMaterials(Slots);
         Mesh->Build(true);
         Mesh->PostEditChange();
-        Mesh->CreateBodySetup();
-        // Collision is the visible surface itself: you stand on the road, the kerb and the pavement.
-        Mesh->GetBodySetup()->CollisionTraceFlag = CTF_UseComplexAsSimple;
-        Mesh->GetBodySetup()->bDoubleSidedGeometry = false;
+        if (bCollision)
+        {
+            Mesh->CreateBodySetup();
+            // Collision is the visible surface itself: you stand on the road, the kerb and the pavement.
+            Mesh->GetBodySetup()->CollisionTraceFlag = CTF_UseComplexAsSimple;
+            Mesh->GetBodySetup()->bDoubleSidedGeometry = false;
+        }
         FAssetCompilingManager::Get().FinishAllCompilation();
         Package->MarkPackageDirty();
         Dirty.Add(Package);
@@ -732,9 +743,9 @@ namespace
         const FCollisionShape Capsule = FCollisionShape::MakeCapsule(Radius, HalfHeight);
         for (TActorIterator<AStaticMeshActor> It(World); It; ++It)
         {
-            if (!It->GetActorLabel().StartsWith(ActorPrefix))
+            if (!It->GetActorLabel().StartsWith(ActorPrefix) || It->GetActorLabel().Contains(TEXT("LentRing")))
             {
-                continue;
+                continue; // the distant ring is not walked on
             }
             const UStaticMesh* Mesh = It->GetStaticMeshComponent()->GetStaticMesh();
             const FMeshDescription* Description = Mesh ? Mesh->GetMeshDescription(0) : nullptr;
@@ -933,7 +944,7 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
     int32 PavedTriangles = 0;
     for (const FChunk& Chunk : Chunks)
     {
-        UStaticMesh* Mesh = BuildChunkMesh(Chunk, PavedMaterials, Dirty);
+        UStaticMesh* Mesh = BuildChunkMesh(Chunk, TEXT("Paved"), MakeArrayView(SurfaceNames, SurfaceCount), PavedMaterials, true, Dirty);
         if (!Mesh || !Mesh->GetRenderData() || Mesh->GetRenderData()->LODResources.Num() == 0)
         {
             UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND paved chunk %d,%d did not build"), Chunk.Col, Chunk.Row);
@@ -948,6 +959,57 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
         return 1;
     }
     Dirty.Reset();
+
+    // The distant ring (ring.bin, tools/lent-ground ring): the survey round the square, so the
+    // map ends in the rest of the city. Ground and canopies in the paved look, roofs and walls in
+    // the buildings' own materials, and the Drava's water.
+    TArray<UStaticMesh*> RingMeshes;
+    int32 RingTriangles = 0;
+    {
+        TArray<FChunk> RingChunks;
+        const FString RingPath = FPaths::Combine(Data, TEXT("ring.bin"));
+        if (!FPaths::FileExists(RingPath))
+        {
+            UE_LOG(LogMarburgumGround, Warning, TEXT("MB2GROUND no ring.bin: the square keeps its bare edge (run lent-ground ring)"));
+        }
+        else if (!ReadPaved(RingPath, RingChunks))
+        {
+            UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND cannot read ring.bin"));
+            return 1;
+        }
+        auto Envelope = [](const TCHAR* Name) {
+            return LoadObject<UMaterialInterface>(nullptr, *FString::Printf(TEXT("/Game/Marburgum/Materials/Instances/building_envelope/%s.%s"), Name, Name));
+        };
+        TArray<UMaterialInterface*> RingMaterials = {
+            PavedInstance(TEXT("MI_LentRingGround"), PavedMaster, Grass, FLinearColor(0.78f, 0.80f, 0.70f), 1.0f, Grass.RoughMax - Grass.RoughMin, Grass.RoughMin, 0.6f, Dirty),
+            PavedInstance(TEXT("MI_LentRingTrees"), PavedMaster, Grass, FLinearColor(0.42f, 0.52f, 0.36f), 1.0f, 0.1f, 0.85f, 0.4f, Dirty),
+            Envelope(TEXT("MI_roof_tile_clay")), Envelope(TEXT("MI_roof_flat_grey")),
+            Envelope(TEXT("MI_plaster_beige")), Envelope(TEXT("MI_plaster_ochre")), Envelope(TEXT("MI_plaster_render_grey")),
+            Water,
+        };
+        if (RingChunks.Num() > 0 && RingMaterials.Contains(nullptr))
+        {
+            UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND ring materials missing (run MarburgumRebuildFacades first)"));
+            return 1;
+        }
+        for (const FChunk& Chunk : RingChunks)
+        {
+            UStaticMesh* Mesh = BuildChunkMesh(Chunk, TEXT("Ring"), MakeArrayView(RingSlotNames, RingSlotCount), RingMaterials, false, Dirty);
+            if (!Mesh || !Mesh->GetRenderData() || Mesh->GetRenderData()->LODResources.Num() == 0)
+            {
+                UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND ring chunk %d,%d did not build"), Chunk.Col, Chunk.Row);
+                return 1;
+            }
+            RingTriangles += Mesh->GetRenderData()->LODResources[0].GetNumTriangles();
+            RingMeshes.Add(Mesh);
+        }
+        if (!Save(Dirty))
+        {
+            UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND could not save the ring"));
+            return 1;
+        }
+        Dirty.Reset();
+    }
 
     // The level.
     UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(LentMap);
@@ -1029,6 +1091,18 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
         Actor->SetActorLabel(FString::Printf(TEXT("%s%s"), ActorPrefix, *Mesh->GetName().RightChop(3)));
         Actor->SetFolderPath(TEXT("Ground/Paved"));
     }
+    for (UStaticMesh* Mesh : RingMeshes)
+    {
+        AStaticMeshActor* Actor = World->SpawnActor<AStaticMeshActor>(FVector::ZeroVector, FRotator::ZeroRotator);
+        UStaticMeshComponent* Component = Actor->GetStaticMeshComponent();
+        Component->SetStaticMesh(Mesh);
+        Component->SetMobility(EComponentMobility::Static);
+        Component->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+        Component->SetGenerateOverlapEvents(false);
+        Component->bReceivesDecals = false;
+        Actor->SetActorLabel(FString::Printf(TEXT("%s%s"), ActorPrefix, *Mesh->GetName().RightChop(3)));
+        Actor->SetFolderPath(TEXT("Ground/Ring"));
+    }
 
     // Collision for the new landscape and paving, so the seat traces below can hit it.
     World->UpdateWorldComponents(true, false);
@@ -1091,22 +1165,28 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
     // Chunks of an earlier, smaller extent that no longer exist go with it; the level no longer
     // places them.
     TSet<FString> Current;
-    for (const UStaticMesh* Mesh : Meshes)
+    for (const TArray<UStaticMesh*>* Set : { &Meshes, &RingMeshes })
     {
-        Current.Add(Mesh->GetName() + TEXT(".uasset"));
-    }
-    const FString PavedFiles = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("World/Ground/Paved"));
-    TArray<FString> Files;
-    IFileManager::Get().FindFiles(Files, *FPaths::Combine(PavedFiles, TEXT("SM_LentPaved_*.uasset")), true, false);
-    int32 Stale = 0;
-    for (const FString& File : Files)
-    {
-        if (!Current.Contains(File) && IFileManager::Get().Delete(*FPaths::Combine(PavedFiles, File)))
+        for (const UStaticMesh* Mesh : *Set)
         {
-            ++Stale;
+            Current.Add(Mesh->GetName() + TEXT(".uasset"));
         }
     }
-    UE_LOG(LogMarburgumGround, Display, TEXT("MB2GROUND done landscape=%dx%d quad_cm=%.2f probes=%d worst_height_error_m=%.3f paved_chunks=%d paved_triangles=%d reseated=%d removed=%d stale_chunks_deleted=%d"),
-        GridPoints, GridPoints, QuadCm, Probes, WorstHeightError, Meshes.Num(), PavedTriangles, Reseat.Num(), Remove.Num() + OldLandscapes.Num(), Stale);
+    int32 Stale = 0;
+    for (const TCHAR* Kind : { TEXT("Paved"), TEXT("Ring") })
+    {
+        const FString KindFiles = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("World/Ground"), Kind);
+        TArray<FString> Files;
+        IFileManager::Get().FindFiles(Files, *FPaths::Combine(KindFiles, FString::Printf(TEXT("SM_Lent%s_*.uasset"), Kind)), true, false);
+        for (const FString& File : Files)
+        {
+            if (!Current.Contains(File) && IFileManager::Get().Delete(*FPaths::Combine(KindFiles, File)))
+            {
+                ++Stale;
+            }
+        }
+    }
+    UE_LOG(LogMarburgumGround, Display, TEXT("MB2GROUND done landscape=%dx%d quad_cm=%.2f probes=%d worst_height_error_m=%.3f paved_chunks=%d paved_triangles=%d ring_chunks=%d ring_triangles=%d reseated=%d removed=%d stale_chunks_deleted=%d"),
+        GridPoints, GridPoints, QuadCm, Probes, WorstHeightError, Meshes.Num(), PavedTriangles, RingMeshes.Num(), RingTriangles, Reseat.Num(), Remove.Num() + OldLandscapes.Num(), Stale);
     return (Probes > 0 && WorstHeightError < 0.05 && Unseated == 0) ? 0 : 2;
 }

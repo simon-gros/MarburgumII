@@ -49,7 +49,12 @@
   },
   "paving_flat": {
     "apron_points_eased": 535155,
+    "bank_points_cut": 57163,
+    "bank_points_raised": 3814,
     "bump_kept_m": 0.05,
+    "island_points": 1272976,
+    "island_points_moved": 161956,
+    "islands_fitted": 736,
     "opening_half_width_m": 5.079,
     "points_flattened": 45222,
     "stair_points_smoothed": 52698,

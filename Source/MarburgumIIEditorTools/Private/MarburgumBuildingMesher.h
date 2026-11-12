@@ -7,7 +7,7 @@
 // The roof is a weighted straight skeleton of the footprint. Every roof face starts on a wall line,
 // so the roof always meets the walls. Gable ends and party walls are edges that do not move inward;
 // their faces come out vertical and are plaster. Window frames, glass, sills and doors are separate
-// closed boxes set into the wall. Positions are welded, and Check() proves the result is closed: every
+// closed boxes set into the wall, and the plinth, string course and cornice closed rings round it. Positions are welded, and Check() proves the result is closed: every
 // edge is used by exactly two triangles, once in each direction.
 
 #include <string>
@@ -42,7 +42,10 @@ namespace MarburgumBuildings
         Frame = 2,
         Glass = 3,
         FlatRoof = 4,
-        MaterialCount = 5
+        // The plinth, and the string course and cornice.
+        Socle = 5,
+        Trim = 6,
+        MaterialCount = 7
     };
 
     struct FFootprint
@@ -82,6 +85,8 @@ namespace MarburgumBuildings
         int Gables = 0;
         int PartyWalls = 0;
         int Windows = 0;
+        // Façade bands built: plinth, string course, cornice.
+        int Bands = 0;
     };
 
     struct FCheck

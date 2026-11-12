@@ -27,6 +27,7 @@ mod grid;
 mod mesh;
 mod osm;
 mod proj;
+mod ring;
 mod shapes;
 mod walk;
 
@@ -85,6 +86,22 @@ const DEEP_FOOTING: f64 = 12.0;
 /// brought up to just under the paving's edge.
 const VERGE_SHORTFALL: f32 = 0.6;
 const VERGE_REACH: f32 = 3.0;
+/// Islands: unpaved ground of at most ISLAND_MAX_M2, not at the window's edge, with at least
+/// ISLAND_ENCLOSED of its rim on paving. It is fitted to the smoothest surface through the
+/// paving round it, 4 cm under the edge, and keeps the survey's shape only within ISLAND_KEEP
+/// plus ISLAND_SLOPE per metre from the paving, at most ISLAND_KEEP_MAX.
+const ISLAND_MAX_M2: f64 = 5000.0;
+const ISLAND_ENCLOSED: f64 = 0.6;
+const ISLAND_KEEP: f32 = 0.04;
+const ISLAND_SLOPE: f32 = 0.12;
+const ISLAND_KEEP_MAX: f32 = 2.0;
+/// Banks at the paving's edge: within BANK_REACH metres, unpaved ground falls from 4 cm under the
+/// paving by at most BANK_SLOPE per metre, and rises by at most that beyond the 0.8 m it must stay
+/// under it. Ground is moved by at most BANK_MAX, and not within BANK_WATER metres of the Drava.
+const BANK_REACH: f32 = 2.5;
+const BANK_SLOPE: f32 = 0.8;
+const BANK_MAX: f32 = 1.5;
+const BANK_WATER: f32 = 6.0;
 
 struct Args {
     /// `walk`: only the walk graph, from the streets and the `top.bin` already in the output.
@@ -594,6 +611,94 @@ fn flatten_paving(ground: &Grid, paved: &Grid, deck: &Grid) -> (Grid, usize) {
 }
 
 /// Connected groups of points with a positive value: where they are, how big, how deep.
+/// The landscape with every island (see ISLAND_MAX_M2) fitted to the paving round it: the
+/// harmonic surface through the paving's top less 4 cm, plus the survey's departure from it
+/// limited by distance from the paving. Walls and other ground on an island's rim hold it at
+/// their own height. Returns the landscape, the islands and their points.
+fn fit_islands(land: &Grid, top: &Grid, paved: &Grid, walls: &Grid, from_paved: &Grid) -> (Grid, usize, usize) {
+    let n = land.n;
+    let max_points = (ISLAND_MAX_M2 / (land.step() * land.step())) as usize;
+    let free = |i: usize| paved.v[i] <= 0.5 && walls.v[i] <= 0.5;
+    let mut seen = vec![false; n * n];
+    let mut island = vec![false; n * n];
+    let mut known = land.like(1.0);
+    let mut base = land.clone();
+    for i in 0..n * n {
+        if paved.v[i] > 0.5 && walls.v[i] <= 0.5 {
+            base.v[i] = top.v[i] - 0.04;
+        }
+    }
+    let (mut islands, mut points) = (0usize, 0usize);
+    let (mut stack, mut members) = (Vec::new(), Vec::new());
+    for s in 0..n * n {
+        if seen[s] || !free(s) {
+            continue;
+        }
+        members.clear();
+        stack.push(s);
+        seen[s] = true;
+        let (mut rim_paved, mut rim_other, mut at_edge) = (0usize, 0usize, false);
+        while let Some(i) = stack.pop() {
+            members.push(i);
+            let (r, c) = (i / n, i % n);
+            if r == 0 || c == 0 || r == n - 1 || c == n - 1 {
+                at_edge = true;
+                continue;
+            }
+            for j in [i - n, i + n, i - 1, i + 1] {
+                if free(j) {
+                    if !seen[j] {
+                        seen[j] = true;
+                        stack.push(j);
+                    }
+                } else if paved.v[j] > 0.5 && walls.v[j] <= 0.5 {
+                    rim_paved += 1;
+                } else {
+                    rim_other += 1;
+                }
+            }
+        }
+        if at_edge || members.len() > max_points || (rim_paved as f64) < ISLAND_ENCLOSED * (rim_paved + rim_other) as f64 {
+            continue;
+        }
+        for &i in &members {
+            known.v[i] = 0.0;
+            island[i] = true;
+            // A building on the rim is left free as well, so a wall does not hold the island
+            // to the ground under the building.
+            for j in [i - n, i + n, i - 1, i + 1] {
+                if walls.v[j] > 0.5 && known.v[j] > 0.5 {
+                    known.v[j] = 0.0;
+                    stack.push(j);
+                }
+            }
+        }
+        while let Some(i) = stack.pop() {
+            let (r, c) = (i / n, i % n);
+            if r == 0 || c == 0 || r == n - 1 || c == n - 1 {
+                continue;
+            }
+            for j in [i - n, i + n, i - 1, i + 1] {
+                if walls.v[j] > 0.5 && known.v[j] > 0.5 {
+                    known.v[j] = 0.0;
+                    stack.push(j);
+                }
+            }
+        }
+        islands += 1;
+        points += members.len();
+    }
+    base.inpaint(&known);
+    let mut out = land.clone();
+    for i in 0..n * n {
+        if island[i] {
+            let keep = (ISLAND_KEEP + ISLAND_SLOPE * from_paved.v[i]).min(ISLAND_KEEP_MAX);
+            out.v[i] = base.v[i] + (land.v[i] - base.v[i]).clamp(-keep, keep);
+        }
+    }
+    (out, islands, points)
+}
+
 fn clusters(g: &Grid, depth: &[f32]) -> Vec<serde_json::Value> {
     let n = g.n;
     let mut seen = vec![false; depth.len()];
@@ -702,7 +807,8 @@ const USAGE: &str = "usage:
   lent-ground merge-buildings --windows lent,center,... --terrain DIR --out buildings.json
   lent-ground --laz A.laz,B.laz,... --osm osm_lent.json.gz --buildings buildings.json --placed placed.txt
               --ortho DIR/lent_albedo.jpg,DIR/center_albedo.jpg,... --out DIR [--half 768 --points 3025 --mask 4096]
-              [--walk-graph Content/Marburgum/Street/lent_walk_graph.json] [--mode walk]";
+              [--walk-graph Content/Marburgum/Street/lent_walk_graph.json] [--mode walk]
+       lent-ground ring --laz A.laz,B.laz,... --heights DIR/heights.bin --out DIR";
 
 fn main() {
     let mut argv: Vec<String> = std::env::args().skip(1).collect();
@@ -713,6 +819,23 @@ fn main() {
             let terrain = PathBuf::from(get("terrain")?);
             let sources: Vec<(String, PathBuf)> = get("windows")?.split(',').map(|w| (w.to_string(), terrain.join(format!("{w}_buildings.json")))).collect();
             buildings::merge(&sources, Path::new(&get("out")?))
+        });
+        if let Err(e) = result {
+            eprintln!("lent-ground: {e}\n{USAGE}");
+            std::process::exit(2);
+        }
+        return;
+    }
+    if argv.first().map(String::as_str) == Some("ring") {
+        argv.remove(0);
+        let result = read_flags(argv.into_iter()).and_then(|f| {
+            let get = |k: &str| f.get(k).cloned().ok_or(format!("missing --{k}"));
+            let inner = read_f32(Path::new(&get("heights")?), DEFAULT_POINTS, DEFAULT_HALF)?;
+            let out = PathBuf::from(get("out")?);
+            let summary = ring::build(&list(&get("laz")?), &inner, DEFAULT_HALF, &out.join("ring.bin"))?;
+            std::fs::write(out.join("ring.json"), serde_json::to_string_pretty(&summary).unwrap() + "\n").map_err(|e| e.to_string())?;
+            eprintln!("ring: {summary}");
+            Ok(())
         });
         if let Err(e) = result {
             eprintln!("lent-ground: {e}\n{USAGE}");
@@ -1105,6 +1228,54 @@ fn run(args: &Args) -> Result<(), String> {
             verges_raised += 1;
         }
     }
+    // Islands and strips enclosed by paving: a pit or a mound in one met the paving in a cut,
+    // its sides showing as a dark band. Fitted to the paving round them, they ease out from
+    // the kerb instead.
+    let mut walls = landscape.like(0.0);
+    for b in &buildings {
+        walls.fill_rings(&[b.outline.clone()], 1.0);
+    }
+    let (fitted, islands, island_points) = fit_islands(&landscape, &top, &paved_any, &walls, &from_paved);
+    let mut islands_moved = 0usize;
+    for i in 0..landscape.v.len() {
+        let z = fitted.v[i].min(cap.v[i]);
+        if (z - landscape.v[i]).abs() > 0.005 {
+            landscape.v[i] = z;
+            top.v[i] = z;
+            islands_moved += 1;
+        }
+    }
+    // Everywhere else a pit or a bank beside the paving met it in a vertical cut, the paving's
+    // edging showing as a dark wall. It now meets it in a bank no steeper than BANK_SLOPE.
+    let edge_top = top.blur(1.0, Some(&paved_any));
+    let mut wet = ground.like(0.0);
+    for i in 0..wet.v.len() {
+        wet.v[i] = if ground.v[i] < 0.25 { 1.0 } else { 0.0 };
+    }
+    let wet = Grid::distance_to(&wet);
+    let (mut banks_raised, mut banks_cut) = (0usize, 0usize);
+    for i in 0..landscape.v.len() {
+        let d = from_paved.v[i];
+        if d <= 0.0 || d > BANK_REACH || edge_top.v[i].is_nan() || wet.v[i] < BANK_WATER || walls.v[i] > 0.5 {
+            continue;
+        }
+        let edge = edge_top.v[i] - 0.04;
+        let low = edge - BANK_SLOPE * d;
+        let high = edge + BANK_SLOPE * (d - 0.8).max(0.0);
+        let z = landscape.v[i];
+        // Eased out over the last metre, so a bank deeper than the rule reaches keeps no step.
+        let fade = 1.0 - smoothstep((BANK_REACH - 1.0) as f64, BANK_REACH as f64, d as f64) as f32;
+        if z < low && low - z <= BANK_MAX {
+            landscape.v[i] = (z + (low - z) * fade).min(cap.v[i]);
+            banks_raised += 1;
+        } else if z > high && z - high <= BANK_MAX {
+            landscape.v[i] = z + (high - z) * fade;
+            banks_cut += 1;
+        } else {
+            continue;
+        }
+        top.v[i] = landscape.v[i];
+    }
     // Walls reach FOOTING below their base, so ground beside them is left alone. A building
     // whose ground falls further than that beside it (the edge of a building site in the 2014
     // survey, a bank the original's terrain did not have) gets a deeper footing, recorded for
@@ -1266,7 +1437,7 @@ fn run(args: &Args) -> Result<(), String> {
         },
         "survey": { "filled_under_bridges": filled_under_bridges, "blob_points_removed": blobs, "hollows_over_3m_deep_and_100m2": hollows, "points_in_window": lidar.points_in_window, "ground_points": lidar.ground_points, "measured_grid_points": measured, "grid_points": points * points },
         "paving_edges": { "landscape_points_lowered": edge_lowered, "points_next_to_paving_lowered": next_to_paving, "points_lowered_under_dips": under_dips },
-        "paving_flat": { "opening_half_width_m": (PAVING_FLAT_RADIUS as f64 * ground.step() * 1000.0).round() / 1000.0, "bump_kept_m": (PAVING_BUMP as f64 * 100.0).round() / 100.0, "points_flattened": paving_bumps, "apron_points_eased": aprons_eased, "stair_points_smoothed": stairs_smoothed, "verge_points_raised": verges_raised },
+        "paving_flat": { "opening_half_width_m": (PAVING_FLAT_RADIUS as f64 * ground.step() * 1000.0).round() / 1000.0, "bump_kept_m": (PAVING_BUMP as f64 * 100.0).round() / 100.0, "points_flattened": paving_bumps, "apron_points_eased": aprons_eased, "stair_points_smoothed": stairs_smoothed, "verge_points_raised": verges_raised, "islands_fitted": islands, "island_points": island_points, "island_points_moved": islands_moved, "bank_points_raised": banks_raised, "bank_points_cut": banks_cut },
         "buildings": { "seated": buildings.len(), "footing_m": FOOTING, "deep_footings_m": deep_footings, "landscape_points_raised": raised, "paved_points_below_footing": wall_gaps },
         "sources": sources,
     });
@@ -1315,6 +1486,69 @@ mod tests {
         let (flat, lowered) = flatten_paving(&g, &paved(81, 20.0), &g.like(f32::NAN));
         assert_eq!(lowered, 0);
         assert_eq!(flat.v, g.v);
+    }
+
+    /// Paving at 1 m round a 10 m square of grass whose survey holds a pit and a mound.
+    fn island_case() -> (Grid, Grid, Grid) {
+        let mut land = Grid::new(61, 15.0, 0.85);
+        let mut paved = land.like(1.0);
+        for r in 0..61 {
+            for c in 0..61 {
+                let p = land.pos(r, c);
+                if p[0].abs() < 5.0 && p[1].abs() < 5.0 {
+                    paved.set(r, c, 0.0);
+                    let pit = (p[0] + 2.5).hypot(p[1]) < 1.5;
+                    let mound = (p[0] - 2.5).hypot(p[1]) < 1.5;
+                    land.set(r, c, if pit { 0.2 } else if mound { 1.8 } else { 0.9 });
+                }
+            }
+        }
+        let top = land.like(1.0);
+        (land, top, paved)
+    }
+
+    #[test]
+    fn an_island_meets_the_kerb_round_it() {
+        let (land, top, paved) = island_case();
+        let from_paved = Grid::distance_to(&paved);
+        let (fit, islands, points) = fit_islands(&land, &top, &paved, &land.like(0.0), &from_paved);
+        assert_eq!(islands, 1);
+        assert!(points > 300);
+        for i in 0..fit.v.len() {
+            if paved.v[i] > 0.5 {
+                assert_eq!(fit.v[i], land.v[i]);
+            } else if from_paved.v[i] <= 0.6 {
+                assert!((fit.v[i] - 0.96).abs() < 0.12, "edge point at {} m stands at {}", from_paved.v[i], fit.v[i]);
+            }
+        }
+        // The pit comes up and the mound down, each by no more than their distance allows.
+        let (pit, mound) = (fit.sample([-2.5, 0.0]), fit.sample([2.5, 0.0]));
+        assert!(pit > 0.5 && pit < 0.96, "pit at {}", pit);
+        assert!(mound > 0.96 && mound < 1.5, "mound at {}", mound);
+    }
+
+    #[test]
+    fn ground_at_the_window_edge_or_walled_in_is_not_an_island() {
+        let (land, top, mut paved) = island_case();
+        let mut walls = land.like(0.0);
+        // Walls round three sides: less than ISLAND_ENCLOSED of the rim is paving.
+        for r in 0..61 {
+            for c in 0..61 {
+                let p = land.pos(r, c);
+                if paved.at(r, c) > 0.5 && (p[0].abs() < 6.0 && p[1].abs() < 6.0) && p[1] > -5.0 {
+                    walls.set(r, c, 1.0);
+                }
+            }
+        }
+        let (fit, islands, _) = fit_islands(&land, &top, &paved, &walls, &Grid::distance_to(&paved));
+        assert_eq!(islands, 0);
+        assert_eq!(fit.v, land.v);
+        // A strip of grass running out to the window's edge.
+        for r in 0..61 {
+            paved.set(r, 30, 0.0);
+        }
+        let (_, islands, _) = fit_islands(&land, &top, &paved, &land.like(0.0), &Grid::distance_to(&paved));
+        assert_eq!(islands, 0);
     }
 
     #[test]

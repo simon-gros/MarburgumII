@@ -133,6 +133,11 @@ impl PavedMesh {
 
     /// Adds a triangle facing `toward` (a direction), with per-vertex UVs.
     pub fn add(&mut self, p: [[f64; 3]; 3], uv: [[f64; 2]; 3], toward: [f64; 3], mat: Surface) {
+        self.add_slot(p, uv, toward, mat as u8);
+    }
+
+    /// `add` with a material slot number instead of a paved surface (the distant ring's meshes).
+    pub fn add_slot(&mut self, p: [[f64; 3]; 3], uv: [[f64; 2]; 3], toward: [f64; 3], mat: u8) {
         let n = ue_normal(p[0], p[1], p[2]);
         let (order, uvo) = if n[0] * toward[0] + n[1] * toward[1] + n[2] * toward[2] >= 0.0 {
             (p, uv)
@@ -145,7 +150,7 @@ impl PavedMesh {
         let idx = [chunk.vertex(order[0], uvo[0]), chunk.vertex(order[1], uvo[1]), chunk.vertex(order[2], uvo[2])];
         if idx[0] != idx[1] && idx[1] != idx[2] && idx[0] != idx[2] {
             chunk.tris.push(idx);
-            chunk.mats.push(mat as u8);
+            chunk.mats.push(mat);
         }
     }
 
