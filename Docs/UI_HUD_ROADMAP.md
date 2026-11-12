@@ -1,12 +1,12 @@
 # UI/HUD development roadmap — MarburgumII
 
-**Revision:** 0.3.0 — 11 November 2026; adds ADR-040–045 ([latest analysis](DEVELOPMENT_UPDATE_2026-11-11.md)), following [prior audit](DAILY_CHANGE_REVIEW_2026-11-10.md)  
+**Revision:** 0.4.0 — 12 November 2026, updated through ADR-059 ([current development review](DEVELOPMENT_REVIEW_2026-11-12.md)); earlier UI-00–UI-07 design gates remain normative.
 **Scope:** P0-to-production user interface program for the new **Unreal Engine 5.8.3** client.  
 **Normative concepts:** [UI/HUD ontology](UI_HUD_ONTOLOGY.md) and [machine-readable module registry](../Data/Ontology/ui_hud.v0.1.json).  
 **Visual contract:** [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md).  
 **Network dependency:** [NET-001](https://github.com/simon-gros/MarburgumII/issues/2), a genuine two-client authoritative session.  
 **Umbrella implementation task:** [UI-001](https://github.com/simon-gros/MarburgumII/issues/3).  
-**Status:** Implemented Linux UI slices include UMG gallery/session shell, general/private chat, server receipts, item/NPC/vehicle prompts, location, mission objective, condition including swim/down, vehicle speed/REV, and first Character/Inventory/Journal shells. **ADR-041 adds real combat event notifications and animation**, and **ADR-044 adds a visible, server-driven ambient pedestrian population with incident reactions**; these are gameplay features, **not proof of a completed combat HUD, social UI, NPC-nameplate system or UI-05 population overlay**. The nine-window map (ADR-045) expands camera/visibility/layout testing. UI-02A authenticated first launch is implemented for development (ADR-055, ADR-057: account screens, a full-height 3D creator and ticket admission), awaiting the packaged screen matrix and owner sign-off; Skills and Settings remain unimplemented. UI-07 current-package, keyboard/controller/input conflict, accessibility, multi-client state hygiene and owner sign-off remain open. [Combat evidence](STAGE1_COMBAT_EVIDENCE.md), [street evidence](STAGE1_STREET_EVIDENCE.md).
+**Status:** Rendered UMG shell, general/private chat, live prompts/objectives/condition/vehicle/combat messages, Character/Inventory/Journal and first **Skills (K)**, plus editor-tested story/fishing choices. ADR-055/057 implemented real development account screens, server ticket gating and a three-body drag/zoom 3D creator, with ADR-058/059 improving the prototype body's face/head. This is **not** a fully packaged, owner-accepted current-build UI. Settings, focus/controller, packaged auth/mission runs, Slovene localization and 720p–4K/ultrawide acceptance remain open.
 
 ## 1. Product requirement and planning principle
 
@@ -56,17 +56,17 @@ Preserve Marburgum's recognizable experience: transient district names; concise 
 
 **Important:** UI-05 breadth and UI-06 extensive customization do not delay Stage 1, but their underlying *module registry, layout policy, tokenized style and state boundaries* must be designed in UI-01/03 so future work does not require rebuilding the interface.
 
-### Updated phase and work-package ledger (11 November 2026)
+### Updated phase and work-package ledger (12 November 2026)
 
 | Phase | Proven first runtime slice | Still required |
 | --- | --- | --- |
 | UI-00 | Ontology, stable module registry and exclusions | Current vehicle/swim vocabulary owner review |
 | UI-01 | Design tokens, actual UMG primitives, SAMPLE DATA gallery | Polish and full scale/contrast matrix |
 | UI-02 | Join/failure/retry/recovery shell | Keyboard/controller focus, logout and session edge cases |
-| UI-02A | Login/character lifecycle **implemented for development** (ADR-055, ADR-057); packaged matrix and owner sign-off open | FL-01–FL-12, verified backend, full-screen creator/model preview, server admission |
+| UI-02A | Implemented registration/code/credentials/reset, first and returning sign-in, one character, three-model 3D preview/cards and ticket-gated join (ADR-055/057); editor smoke passes | Delivered mail/production operations, packaged FL-10/12, Slovene/controller/scale and owner approval |
 | UI-03 | Chat, receipt notifications, prompt, location, mission, condition/swim/down, car status | Integrated consistent layout and privacy/focus/connection-state review |
-| UI-04 | First Character, Inventory and Journal | Skills, Settings and actual production identity, loading/disabled/error states |
-| UI-05 | First vehicle/seat/driver context plus combat receipt/event feed, live pedestrian activity in-world | Contextual guard/strike feedback, readable incidents, future real fishing/trade/dialogue/group UI; no permanent combat wall |
+| UI-04 | Character, Inventory, Journal and **first Skills (K)** panels | Settings, live XP/progression/empty/error states and stable navigation/focus |
+| UI-05 | Vehicle/seat/driver, combat receipts, pedestrian incidents, and editor-tested fishing/mission choices | Polished bite/strike/catch UX, mission decision focus/receipt, integrated combat/vehicle/social presentation and multi-client proof |
 | UI-06 | Profile architecture only | Noneditable presets after accepted default, editor later |
 | UI-07 | Selected authentic Linux captures | Current SHA/asset seal, device/scale/accessibility/owner approval |
 
@@ -74,9 +74,9 @@ Preserve Marburgum's recognizable experience: transient district names; concise 
 
 **UI-P0B — Input arbitration and truthful status priority.** Focus priority: auth/system modal > managed panel > chat text > nearby E interaction > movement/driving. Typing or opening a panel must never simultaneously move/drive/exit/use an item; E must choose vehicle-door context before NPC/item appropriately. Clear state on logout, server loss, seat change, death/recovery and travel. Condition priority is DROWNED/recovery > underwater/held breath > swimming > winded > running. Upright treading is an animation state, not an invented inventory/gameplay stat.
 
-**UI-P0C — First launch (blocking public entry).** Create polished verified-email, login/password/recovery, First name / Last name / approved 3D model creator and loading/admission screens backed by the trusted account service. Public game must deny unauthorized travel and dev `-MB2Character` bypass. Validate Slovene diacritics, long names, model freshness/rights, duplicate creates, server restart, returning user and two authenticated clients. Owner personally playtests first and subsequent entry.
+**UI-P0C — First-launch acceptance (blocking public entry).** Qualify and refine the **implemented** verified-email, login/password/recovery, First name/Last name/three-model 3D creator and loading/admission screens against the Rust account service. Public game must deny unauthorized travel and dev `-MB2Character` bypass. Validate Slovene diacritics, long names, model freshness/rights, duplicate creates, server restart, returning user and two authenticated clients. Owner personally playtests first and subsequent entry.
 
-**UI-P1 — Complete live presentation.** Character/Inventory/Journal must show real server-owned data and honest unavailable fields, Skills and Settings need real first pass, pinned objective must match saved mission, vehicle card only while seated, swimming feedback coherent with condition and camera. Add proper response to denied seat, unavailable fish, failed store commit, private recipient disappearing and reconnect.
+**UI-P1 — Complete live presentation.** Character/Inventory/Journal must show real server-owned data and honest unavailable fields, Skills already has a first pass and needs verified XP/readability/restart checks; Settings still needs implementation, pinned objective must match saved mission, vehicle card only while seated, swimming feedback coherent with condition and camera. Add proper response to denied seat, unavailable fish, failed store commit, private recipient disappearing and reconnect.
 
 **Proposed acceptance IDs (not tests already implemented):** `UI-REAL-01` crate→receipt→inventory; `UI-REAL-02` mission→objective→journal→restart; `UI-COND-01` run→swim→down→recovery; `UI-VEH-01` driver/passenger/brake/reverse/exit; `UI-FOCUS-01` chat/panel/vehicle conflicts; `UI-PRIV-01` three clients and private data; `UI-RES-01` six resolutions/five scales; `UI-FL-01` new/returning-account admission. Every major module requires owner visual and in-game approval.
 
@@ -119,14 +119,14 @@ Preserve Marburgum's recognizable experience: transient district names; concise 
 
 ## 5A. UI-02A — Verified login and mandatory first-character creation (Stage 0F → Stage 1)
 
-**Product and semantic authority:** [FIRST_LAUNCH_ONTOLOGY.md](FIRST_LAUNCH_ONTOLOGY.md) and [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json). This is a **new implementation workstream**, not a declaration that UI-02's existing connection shell supports accounts. UI-02 remains valid for network/dev smoke tests; **UI-02A is a blocker for a player-facing Stage 1 entry**. Its first visible screen is a branded **Username / Password / Sign in** interface with Create account. Registration asks for email verification, then provisions username/password securely; the newly authenticated player then sees a **First name / Last name / character model** creator *before* gameplay. Returning players go directly to their saved character and Enter World.
+**Product and semantic authority:** [FIRST_LAUNCH_ONTOLOGY.md](FIRST_LAUNCH_ONTOLOGY.md) and [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json). This is a **separately implemented workstream** (ADR-055/057), not a claim that the older UI-02 dev-key connection shell alone supports real accounts. UI-02 remains valid for network/dev smoke tests; **UI-02A is a blocker for a player-facing Stage 1 entry**. Its first visible screen is a branded **Username / Password / Sign in** interface with Create account. Registration asks for email verification, then provisions username/password securely; the newly authenticated player then sees a **First name / Last name / character model** creator *before* gameplay. Returning players go directly to their saved character and Enter World.
 
 - **UI-02A-1 — Registration and credentials:** dedicated title/login, register-email, verification pending, credential setup, forgot/reset password, authenticating and refused/retry states. An email link/code must be verified by the account service; no plaintext password in email.
 - **UI-02A-2 — Character creation:** full-screen, accessible, visually polished 3D model preview, First name and Last name fields, model selector from a real approved catalogue, validated errors, confirmation/pending/retry and safe cancellation. Keep account username distinct from character display name.
 - **UI-02A-3 — Durable authorization:** only server-committed character ID and authenticated ownership enable Enter World; direct travel, stale session, development character key and spoofed client model/name cannot bypass the shipping world gate. Preserve the existing explicit test-key pathway for development smoke tests only.
 - **UI-02A-4 — Usability and owner validation:** model asset freshness, full input/focus, 720p–4K and ultrawide snapshots, Slovene diacritics, errors/timeouts, logout/reconnect, returning accounts, and two independent authenticated clients. Owner must personally test first-time and returning flows and approve the exact build.
 
-**Exit gate:** FL-01–FL-12 from the first-launch ontology; pass verified-email, denied unverified access, unique credentials, character create/replay/restart, resumed character, no unauthenticated spawn, visual/input matrix and fresh cooked asset manifests. Current implementation status: **design and roadmap only; no production auth or character creation code**.
+**Exit gate:** FL-01–FL-12 from the first-launch ontology; pass verified-email, denied unverified access, unique credentials, character create/replay/restart, resumed character, no unauthenticated spawn, visual/input matrix and fresh cooked asset manifests. Current implementation status: **Rust HTTPS accounts, UMG registration/login/creator, model selection and server one-time ticket admission are running in development/editor smokes** (ADR-055/057), with ADR-058/059 avatar visual repairs. There is **no production deployment/mail sender, latest packaged resolution/controller/localization matrix, or owner acceptance**. FL-01–FL-12 remain an open complete exit gate.
 
 ## 6. UI-03 — Modular, server-aware exploration HUD
 
@@ -177,9 +177,9 @@ All panels share one navigation grammar: consistent tab/section positions, retur
 
 ## 8. UI-05 — Contextual activity and multiplayer modes
 
-Only when a real corresponding system exists, expand these overlays in order of user value. The first driving context and combat notification feed already have live inputs:
+Only when a real corresponding system exists, expand these overlays in order of user value. Driving, combat, fishing and mission choice/XP paths already have server-owned inputs; fishing and mission completion evidence is **editor-only**:
 
-1. **Fishing/work/interactions:** contextual task status/progress/eligible tools, results, accessibility cues, animation of meaningful events.
+1. **Fishing/work/interactions:** cast/bite/strike/catch and mission outcome already have authoritative game logic (ADR-047–052); deliver clear status/eligible-tool/denial feedback, animated/audible interaction and packaged client proof.
 2. **Dialogue/investigation:** contact identity, speech text, deliberate responses, evidence and journal links; decision confirmation via authoritative receipt.
 3. **Trading and economy:** item detail, explicit currency, price/quantity preview, guarded buy/sell confirmation, receipt/error without double spending.
 4. **Driving — first runtime slice implemented (ADR-039):** the real `vehicle_status` card shows replicated vehicle, seat, speed in km/h and REV; `interaction_prompt` chooses DRIVE / GET OUT. Verify driver/passenger/refused seat transitions, context/hide/reset on exit and disconnect, modal/chat input focus, and absent unsupported ownership/damage UI. Route and navigation enhancements remain future scope.
@@ -223,7 +223,7 @@ Learn from the advantages of configurable modern online interfaces while preserv
 | Panels | Character, Skills, Inventory, Journal, Settings, connection shell, login, email verification, credential setup and first-character creator |
 | Values | Zero, unknown, large valid integers, long Slovene/English titles, invalid item/actions, unauthorized target |
 | Input | Keyboard/mouse, controller-only, focus recovery, device switching |
-| Continuity | Connected/joining/timeout/disconnect/reconnect, refusal, world exit, stale private target, seat/prompt/condition reset, public auth expiry once UI-02A exists |
+| Continuity | Connected/joining/timeout/disconnect/reconnect, refusal, world exit, stale private target, seat/prompt/condition reset, real UI-02A authentication expiry and recovery |
 
 At the **first public Stage 1 showcase**, require (a) a clear 1440p or 4K real-client screenshot, (b) a short gameplay capture showing **server-confirmed interaction and feedback** with visible polished HUD, and (c) a capture manifest specifying game/engine SHA, resolution/scale, input, connection truth, licensed assets, and whether any UI fixtures were used. Do not say an activity/panel is implemented when the footage is of a fixture.
 
