@@ -200,7 +200,7 @@ services/accounts/target/release/mb2-accounts --bind 127.0.0.1:7790 --store Save
 
 Start the dedicated server with `-MB2Accounts=https://127.0.0.1:7790 -MB2AccountsKeyFile=<the same key file>`, and the client with `-MB2Accounts=https://127.0.0.1:7790`. If the certificate is not signed by a public CA, add `-ini:Engine:[SSL]:OverrideCertificateBundlePath=<ca.pem>` to both. Emails, including confirmation codes, are files in the outbox folder until a mail sender is chosen. Without `-MB2Accounts`, a development server and client keep the ADR-014 key, and every other smoke runs as before. A shipping server always requires accounts.
 
-`scripts/account-smoke-linux.sh editor` makes a throwaway CA and runs the service, a dedicated server and rendered clients through the first-time and returning flows and five refused admissions. Ports: `MB2_ACCOUNT_PORT` (game, default 7791) and `MB2_ACCOUNT_SERVICE_PORT` (service, default 7792). Evidence goes to `Saved/AccountSmoke/<UTC timestamp>/`, with screenshots of the screens.
+`scripts/account-smoke-linux.sh editor` makes a throwaway CA and runs the service, a dedicated server and rendered clients through the first-time and returning flows (every body in the creator's 3D preview, turned and zoomed) and five refused admissions. Ports: `MB2_ACCOUNT_PORT` (game, default 7791) and `MB2_ACCOUNT_SERVICE_PORT` (service, default 7792). Evidence goes to `Saved/AccountSmoke/<UTC timestamp>/`, with screenshots of the screens.
 
 ## Messaging validation (CHAT-001)
 
