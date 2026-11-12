@@ -12,6 +12,7 @@
 #include "MarburgumCharacter.h"
 #include "MarburgumCharacterMovement.h"
 #include "MarburgumCombatContract.h"
+#include "MarburgumContentPad.h"
 #include "MarburgumFishingRules.h"
 #include "MarburgumInteractable.h"
 #include "MarburgumMissionLogic.h"
@@ -20,6 +21,7 @@
 #include "MarburgumNpc.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
+#include "MarburgumWater.h"
 #include "MarburgumWorldStore.h"
 #include "Misc/CommandLine.h"
 #include "Misc/DateTime.h"
@@ -896,10 +898,75 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
     const double AnglerOriginal[3] = { -127.0, 2.1, -58.0 };
     const FVector AnglerOriginalUe = MarburgumII::Combat::GodotPositionToUnreal(AnglerOriginal);
     FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumAuthoredGround), true);
+    // Places whose window is not built yet share a floor, so a mission can be stood on until the
+    // ground reaches them (ADR-052). One floor per cluster, with room for the development start.
+    TArray<TArray<FVector>> Pads;
+    for (const FInteractableDefinition& Entry : MarburgumII::Gameplay::Interactables)
+    {
+        if (Entry.Placement != EPlacement::Pad)
+        {
+            continue;
+        }
+        const FVector At = MarburgumII::Combat::GodotPositionToUnreal(Entry.GodotPosition);
+        TArray<FVector>* Cluster = nullptr;
+        for (TArray<FVector>& Existing : Pads)
+        {
+            if (FVector::Dist2D(Existing[0], At) < 8000.0)
+            {
+                Cluster = &Existing;
+                break;
+            }
+        }
+        if (!Cluster)
+        {
+            Pads.AddDefaulted();
+            Cluster = &Pads.Last();
+        }
+        Cluster->Add(At);
+    }
+    for (const TArray<FVector>& Cluster : Pads)
+    {
+        FVector Min = Cluster[0];
+        FVector Max = Cluster[0];
+        for (const FVector& At : Cluster)
+        {
+            Min = Min.ComponentMin(At);
+            Max = Max.ComponentMax(At);
+        }
+        Min -= FVector(800.0, 800.0, 0.0);
+        Max += FVector(800.0, 800.0, 0.0);
+        const FVector Centre = (Min + Max) * 0.5;
+        const FVector Extent((Max.X - Min.X) * 0.5, (Max.Y - Min.Y) * 0.5, 20.0);
+        const FTransform PadAt(FVector(Centre.X, Centre.Y, Min.Z - Extent.Z));
+        AMarburgumContentPad* Pad = InWorld.SpawnActorDeferred<AMarburgumContentPad>(AMarburgumContentPad::StaticClass(), PadAt,
+            nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+        if (!Pad)
+        {
+            continue;
+        }
+        Pad->SetExtentAuthority(Extent);
+        Pad->FinishSpawning(PadAt);
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=content_pad points=%d at=%.0f,%.0f,%.0f extent=%.0f,%.0f"), InteractLogPrefix,
+            Cluster.Num(), Centre.X, Centre.Y, Min.Z, Extent.X, Extent.Y);
+    }
+    const UMarburgumWaterSubsystem* Water = InWorld.GetSubsystem<UMarburgumWaterSubsystem>();
+    const auto IsWet = [Water](const FVector& Feet) { return Water && Water->IsWet(Feet); };
+    const auto FindGround = [&InWorld, &Params](const FVector& Planned, FHitResult& Out)
+    {
+        for (const double Above : { 300.0, 1500.0 })
+        {
+            if (InWorld.LineTraceSingleByChannel(Out, Planned + FVector(0.0, 0.0, Above), Planned - FVector(0.0, 0.0, 1500.0),
+                    ECC_Visibility, Params))
+            {
+                return true;
+            }
+        }
+        return false;
+    };
     int32 Spawned = 0;
     for (const FInteractableDefinition& Entry : MarburgumII::Gameplay::Interactables)
     {
-        if (Entry.Placement != EPlacement::Original && Entry.Placement != EPlacement::AnglerRelative)
+        if (Entry.Placement != EPlacement::Original && Entry.Placement != EPlacement::AnglerRelative && Entry.Placement != EPlacement::Pad)
         {
             continue;
         }
@@ -915,18 +982,40 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
             Planned = Angler->GetActorLocation() + (Planned - AnglerOriginalUe);
         }
         FHitResult Ground;
-        bool bGround = false;
-        for (const double Above : { 300.0, 1500.0 })
-        {
-            bGround = bGround
-                || InWorld.LineTraceSingleByChannel(Ground, Planned + FVector(0.0, 0.0, Above), Planned - FVector(0.0, 0.0, 1500.0),
-                    ECC_Visibility, Params);
-        }
-        if (!bGround)
+        if (!FindGround(Planned, Ground))
         {
             UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=content_skipped id=%s reason=no_ground planned=%s"), InteractLogPrefix,
                 Entry.Id, *Planned.ToString());
             continue;
+        }
+        // The new map's river does not follow the original's bank everywhere: a person or place whose original
+        // spot is now in the Drava stands on the nearest dry ground instead (ADR-046, ADR-052).
+        if (Entry.Kind != EInteractableKind::FishingSpot && IsWet(Ground.ImpactPoint))
+        {
+            const FVector Wet = Ground.ImpactPoint;
+            bool bDry = false;
+            for (double Radius = 200.0; !bDry && Radius <= 6000.0; Radius += 200.0)
+            {
+                for (int32 Step = 0; !bDry && Step < 16; ++Step)
+                {
+                    const double Angle = Step * UE_TWO_PI / 16.0;
+                    FHitResult Candidate;
+                    if (FindGround(Planned + FVector(FMath::Cos(Angle), FMath::Sin(Angle), 0.0) * Radius, Candidate)
+                        && !IsWet(Candidate.ImpactPoint))
+                    {
+                        Ground = Candidate;
+                        bDry = true;
+                    }
+                }
+            }
+            if (!bDry)
+            {
+                UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=content_skipped id=%s reason=in_water at=%s"), InteractLogPrefix,
+                    Entry.Id, *Wet.ToString());
+                continue;
+            }
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=content_moved id=%s reason=in_water from=%.0f,%.0f,%.0f by=%.0f"),
+                InteractLogPrefix, Entry.Id, Wet.X, Wet.Y, Wet.Z, FVector::Dist2D(Wet, Ground.ImpactPoint));
         }
         const bool bPerson = Entry.Kind == EInteractableKind::Npc;
         // People stand on their feet; a place marker sits half sunk so it reads as a post, crate or sign.
@@ -946,9 +1035,16 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
         ++Spawned;
 
         // A development start a few steps inland of it, facing it (?MB2Start=mission_<id>), like the fight cast's.
-        const FVector Ahead = At - Facing.Vector() * 250.0;
+        // Where inland is the river on the new map, the first dry side round it.
         FHitResult StartGround;
-        if (InWorld.LineTraceSingleByChannel(StartGround, Ahead + FVector(0.0, 0.0, 300.0), Ahead - FVector(0.0, 0.0, 600.0), ECC_Visibility, Params))
+        bool bStart = false;
+        for (int32 Step = 0; !bStart && Step < 8; ++Step)
+        {
+            const FVector Ahead = At - Facing.Vector().RotateAngleAxis(Step * 45.0, FVector::UpVector) * 250.0;
+            bStart = InWorld.LineTraceSingleByChannel(StartGround, Ahead + FVector(0.0, 0.0, 300.0), Ahead - FVector(0.0, 0.0, 600.0),
+                ECC_Visibility, Params) && !IsWet(StartGround.ImpactPoint);
+        }
+        if (bStart)
         {
             FActorSpawnParameters StartParams;
             StartParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -960,7 +1056,8 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
         }
         UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=content_spawned id=%s kind=%s at=%.0f,%.0f,%.0f placement=%s"), InteractLogPrefix,
             Entry.Id, bPerson ? TEXT("npc") : Entry.Kind == EInteractableKind::FishingSpot ? TEXT("fishing_spot") : TEXT("place"),
-            At.X, At.Y, At.Z, Entry.Placement == EPlacement::AnglerRelative ? TEXT("angler_relative") : TEXT("original"));
+            At.X, At.Y, At.Z, Entry.Placement == EPlacement::AnglerRelative ? TEXT("angler_relative")
+                : Entry.Placement == EPlacement::Pad ? TEXT("pad") : TEXT("original"));
     }
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=content_ready spawned=%d"), InteractLogPrefix, Spawned);
 }

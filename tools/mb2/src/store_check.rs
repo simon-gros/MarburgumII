@@ -172,23 +172,31 @@ fn check_missions(doc: &Value, key: &str) -> u8 {
     {
         let mut done = |id: &str, stage: &str, choice: &str| {
             let mission = &doc["missions"][key][id];
-            problems.expect(mission["completed"] == true && mission["stage"] == stage && mission["choice"] == choice,
+            // A mission with no decision stores no choice.
+            problems.expect(mission["completed"] == true && mission["stage"] == stage
+                && mission["choice"].as_str().unwrap_or("") == choice,
                 format!("{id}={mission}"));
         };
         done("lent_late_delivery", "resolve_fee", "leave_clerk_share");
         done("hall_three_last_shift", "resolve_inventory", "negotiate_settlement");
         done("under_the_paint_four_names", "decide_sign_window", "preserve_layers");
+        done("raeda_last_shift", "show_vera", "");
+        done("raeda_city_for_sale", "decide_milan", "trust_milan");
     }
     problems.expect(item("brown_paper_parcel") == 0, "parcel_not_consumed");
+    problems.expect(item("raeda_yard_archive_boxes") == 0, "archive_boxes_not_consumed");
     for id in ["hall_three_plate_photos", "hall_three_keyring", "raeda_transport_maintenance_book",
         "storefront_layer_one_photo", "storefront_layer_two_photo", "storefront_layer_three_photo",
-        "storefront_oldest_lettering_photo", "storefront_archived_advertisements"]
+        "storefront_oldest_lettering_photo", "storefront_archived_advertisements",
+        "tone_vogrin_locker_card", "kainach_serial_photos", "yard_vehicle_log", "corrected_yard_schedule",
+        "exchange_counterfoil_copy", "kainach_contract_reference", "prehod_classified_clippings",
+        "pohorska_bank_file_locator", "k67_raeda_concession_copy"]
     {
         problems.expect(item(id) == 1, format!("{id}={}", item(id)));
     }
     problems.expect(money == 90, format!("money={money}"));
     problems.expect([16, 20, 24].contains(&fishing), format!("fishing_xp={fishing}"));
-    problems.expect(reputation == 85, format!("reputation_xp={reputation}"));
+    problems.expect(reputation == 95, format!("reputation_xp={reputation}"));
     finish(problems, format!("{money} {fishing} {reputation}"))
 }
 
@@ -286,7 +294,10 @@ mod tests {
                 "hall_three_plate_photos": 1, "hall_three_keyring": 1, "raeda_transport_maintenance_book": 1,
                 "storefront_layer_one_photo": 1, "storefront_layer_two_photo": 1,
                 "storefront_layer_three_photo": 1, "storefront_oldest_lettering_photo": 1,
-                "storefront_archived_advertisements": 1
+                "storefront_archived_advertisements": 1,
+                "tone_vogrin_locker_card": 1, "kainach_serial_photos": 1, "yard_vehicle_log": 1,
+                "corrected_yard_schedule": 1, "exchange_counterfoil_copy": 1, "kainach_contract_reference": 1,
+                "prehod_classified_clippings": 1, "pohorska_bank_file_locator": 1, "k67_raeda_concession_copy": 1
             }},
             "missions": { "p": {
                 "lent_first_catch": {
@@ -316,9 +327,16 @@ mod tests {
                 "under_the_paint_four_names": {
                     "stage": "decide_sign_window", "started_revision": 24, "completed": true,
                     "choice": "preserve_layers"
+                },
+                "raeda_last_shift": {
+                    "stage": "show_vera", "started_revision": 30, "completed": true
+                },
+                "raeda_city_for_sale": {
+                    "stage": "decide_milan", "started_revision": 38, "completed": true,
+                    "choice": "trust_milan"
                 }
             }},
-            "skills": { "p": { "fishing": 20, "reputation": 85 } },
+            "skills": { "p": { "fishing": 20, "reputation": 95 } },
             "money": { "p": 90 },
             "receipts": {}
         });

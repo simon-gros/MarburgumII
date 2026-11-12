@@ -100,6 +100,7 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
             Some("original") => "Original",
             Some("angler_relative") => "AnglerRelative",
             Some("unplaced") => "Unplaced",
+            Some("pad") => "Pad",
             _ => continue, // test fixtures live in the map commandlet only
         };
         let kind = match str_of(entry, "kind")? {

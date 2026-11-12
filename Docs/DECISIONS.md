@@ -634,3 +634,17 @@ Bringing in the eight original window levels as they are would have brought thei
 **Evidence.** `Marburgum.Server.MissionRules` covers Matej's decision coming before the Melje offer. The editor smoke on port 27893 plays the three missions after the kiosk and passes, including the restart. `Saved/MissionSmoke/20261111T221606Z`.
 
 **Not covered.** A packaged run and the owner playtest. The Melje yard and the Tabor bank trail are still outside this map.
+
+## ADR-052 — Melje and Tabor on temporary floors, and nobody stands in the Drava (accepted 2026-11-12)
+
+**Problem.** The last two of the original's eight missions, The Last Shift and The City for Sale, need the Melje transport yard and the Tabor exchange and bank. Those places lie outside the nine-window map, so nothing could reach them. Playing The City for Sale also showed that the new map's river does not follow the original's bank everywhere: Milan Šolar's original spot in Pristan is now in the Drava. He stood on the riverbed, and his development start was in the water.
+
+**Decision.**
+
+- A catalogue placement `pad`: a place outside the built windows stands on a plain temporary floor at its original height. The server makes one floor per cluster of such places. `AMarburgumContentPad` replicates (always relevant), so every client stands on the floor the server simulates. The eight Melje and Tabor places use it until those windows are imported. Nika Vidmar and Alenka Pahor were already inside the map and now stand at their original spots.
+- A person or place whose ground is wet stands on the nearest dry ground within 60 m instead, logged as `content_moved`. Fishing spots are exempt. Milan moves 16 m and three Hall Three places move 2 m. A development start beside one goes to the first dry side round it.
+- The editor smoke now also plays The Last Shift (the yard, Matej and Vera) and The City for Sale (the counterfoil, Irena, the classifieds, the bank index, Milan and Petra), then trusts Milan. Reputation ends at 95. Every paper from both missions stays in custody and the archive boxes are handed over. `mb2 store-check missions` checks all of that, and treats a mission without a decision as storing no choice.
+
+**Evidence.** `Marburgum.*` automation passes (11/11). `cargo test` for `tools/mb2` passes (29). The editor mission smoke on port 27911 plays all eight missions, restarts, and the store is unchanged afterwards. `Saved/MissionSmoke/20261112T000431Z`.
+
+**Not covered.** The floors are grey boxes in an empty sky until the Melje and Tabor windows exist. A packaged run and the owner playtest.

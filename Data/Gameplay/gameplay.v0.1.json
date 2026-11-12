@@ -1380,7 +1380,7 @@
         -166.96
       ],
       "range_cm": 400,
-      "placement": "unplaced",
+      "placement": "original",
       "dialogue": {
         "en": "A print without a date is only a picture. If you still have the negative, I can tell you whether the light matches the year you think it does."
       },
@@ -1448,7 +1448,7 @@
         149.2
       ],
       "range_cm": 400,
-      "placement": "unplaced",
+      "placement": "original",
       "dialogue": {
         "en": "Visiting hours are on the door. If you mean the man who stopped buying his paper, he sat in this waiting room this morning and would not say which ward."
       },
@@ -1842,13 +1842,14 @@
         -72.0
       ],
       "range_cm": 500,
-      "placement": "unplaced",
+      "placement": "pad",
       "dialogue": {
         "en": "The old industrial gate opens onto the fictional Raeda transport yard. Layers of paint, patched asphalt and changing notices show repeated reuse; none of them is evidence by itself."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
-        "source_version": 3
+        "source_version": 3,
+        "note": "Outside the nine-window map. Stood on a temporary pad until the Greenwich, Melje and Tabor windows are built (ADR-052)."
       }
     },
     {
@@ -1864,13 +1865,14 @@
         -58.0
       ],
       "range_cm": 400,
-      "placement": "unplaced",
+      "placement": "pad",
       "dialogue": {
         "en": "A row of dented lockers still carries pencilled names, route numbers and shift notes. One metal card names Tone Vogrin."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
-        "source_version": 3
+        "source_version": 3,
+        "note": "Outside the nine-window map. Stood on a temporary pad until the Greenwich, Melje and Tabor windows are built (ADR-052)."
       }
     },
     {
@@ -1886,13 +1888,14 @@
         -58.0
       ],
       "range_cm": 500,
-      "placement": "unplaced",
+      "placement": "pad",
       "dialogue": {
         "en": "Two weathered trucks retain readable serial plates. Their presence proves a vehicle can be documented here; it does not explain who owned the yard."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
-        "source_version": 3
+        "source_version": 3,
+        "note": "Outside the nine-window map. Stood on a temporary pad until the Greenwich, Melje and Tabor windows are built (ADR-052)."
       }
     },
     {
@@ -1908,13 +1911,14 @@
         -58.0
       ],
       "range_cm": 400,
-      "placement": "unplaced",
+      "placement": "pad",
       "dialogue": {
         "en": "A dispatch shelf holds a surviving vehicle log with dates, service marks and handwritten route abbreviations."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
-        "source_version": 3
+        "source_version": 3,
+        "note": "Outside the nine-window map. Stood on a temporary pad until the Greenwich, Melje and Tabor windows are built (ADR-052)."
       }
     },
     {
@@ -1930,13 +1934,14 @@
         -58.0
       ],
       "range_cm": 400,
-      "placement": "unplaced",
+      "placement": "pad",
       "dialogue": {
         "en": "Clearance boxes contain ordinary schedules, duplicate forms and worn office files. One box is marked for Hall Three rather than disposal."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
-        "source_version": 3
+        "source_version": 3,
+        "note": "Outside the nine-window map. Stood on a temporary pad until the Greenwich, Melje and Tabor windows are built (ADR-052)."
       }
     },
     {
@@ -1952,13 +1957,14 @@
         1050.5
       ],
       "range_cm": 400,
-      "placement": "unplaced",
+      "placement": "pad",
       "dialogue": {
         "en": "An old counterfoil book survives among routine exchange-office records. The carbon receipt supplies the date and amount to look for."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
-        "source_version": 3
+        "source_version": 3,
+        "note": "Outside the nine-window map. Stood on a temporary pad until the Greenwich, Melje and Tabor windows are built (ADR-052)."
       }
     },
     {
@@ -1974,7 +1980,7 @@
         1050.0
       ],
       "range_cm": 400,
-      "placement": "unplaced",
+      "placement": "pad",
       "dialogue": {
         "en": "That counterfoil is familiar. The books were always cleaner than the transactions. I can tell you which contract number to ask for, not what conclusion to draw."
       },
@@ -1992,7 +1998,8 @@
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
-        "source_version": 3
+        "source_version": 3,
+        "note": "Outside the nine-window map. Stood on a temporary pad until the Greenwich, Melje and Tabor windows are built (ADR-052)."
       }
     },
     {
@@ -2008,13 +2015,14 @@
         1049.0
       ],
       "range_cm": 400,
-      "placement": "unplaced",
+      "placement": "pad",
       "dialogue": {
         "en": "The fictional bank archive index lists an annual Raeda file and a Kainach-related reference. The file itself is restricted; knowing that it exists is not the same as reading it."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
-        "source_version": 3
+        "source_version": 3,
+        "note": "Outside the nine-window map. Stood on a temporary pad until the Greenwich, Melje and Tabor windows are built (ADR-052)."
       }
     },
     {

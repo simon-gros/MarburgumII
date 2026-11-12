@@ -50,9 +50,10 @@ namespace MarburgumII::Gameplay
     /**
      * Where an authored interactable stands. Map: the map commandlet places it (the angler). Original: the server
      * spawns it at the original game's position on the Lent level. AnglerRelative: at the original offset from
-     * wherever the map put the angler. Unplaced: outside the current level, so nothing can reach it yet.
+     * wherever the map put the angler. Pad: outside the built windows, stood on a temporary floor until that
+     * window is imported. Unplaced: still has no floor.
      */
-    enum class EPlacement : uint8 { Map, Original, AnglerRelative, Unplaced };
+    enum class EPlacement : uint8 { Map, Original, AnglerRelative, Unplaced, Pad };
 
     /** An authored interactable from the original interactions.json. */
     struct FInteractableDefinition

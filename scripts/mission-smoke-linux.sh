@@ -199,6 +199,25 @@ mv "$out_dir/client-step-petra_kralj.log" "$out_dir/client-step-petra_kralj-pain
 # shellcheck disable=SC2046
 run sign CHOICE mission_under_paint_new_owner $(shot sign) -MB2MissionTarget=under_paint_new_owner \
     -MB2MissionId=under_the_paint_four_names -MB2MissionChoice=preserve_layers
+# The Melje yard and the Tabor trail stand on temporary pads (ADR-052).
+step matej_hall_three mission_started
+step melje_yard_gate stage_completed
+step melje_dispatch_lockers stage_completed
+step melje_kainach_trucks stage_completed
+step melje_vehicle_log_shelf stage_completed
+step melje_archive_boxes stage_completed
+step matej_hall_three stage_completed
+step vera_horvat mission_completed
+step vera_horvat mission_started
+step tabor_exchange_counter stage_completed
+step irena_vogrin stage_completed
+step mariborski_glas_archive stage_completed
+step pohorska_bank_archive_desk stage_completed
+step milan_solar stage_completed
+step petra_kralj stage_completed
+# shellcheck disable=SC2046
+run milan CHOICE mission_milan_solar $(shot milan) -MB2MissionTarget=milan_solar \
+    -MB2MissionId=raeda_city_for_sale -MB2MissionChoice=trust_milan
 sleep 1
 stop_server
 
