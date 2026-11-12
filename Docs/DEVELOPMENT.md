@@ -62,6 +62,9 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --laz "$LAZ"
     --osm Data/World/lent_ground/osm_lent.json.gz --buildings Data/World/lent_ground/buildings.json \
     --placed Data/World/lent_ground/placed_buildings.txt --ortho "$ORTHO" --out Data/World/lent_ground \
     --walk-graph Content/Marburgum/Street/lent_walk_graph.json   # and the street people's walk graph (ADR-044)
+# The ground tool records deeper wall footings for buildings whose surveyed ground falls more than 2.5 m below their base
+# (ground.json buildings.deep_footings_m, ADR-053); rebuild the façades once more so their walls reach it.
+"$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildFacades -unattended -nop4 -nosplash -nullrhi
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildGround -unattended -nop4 -nosplash -nullrhi
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumSwimContent -Steps=water -unattended -nop4 -nosplash -nullrhi
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumVehicleContent -Steps=place -unattended -nop4 -nosplash -nullrhi
@@ -108,7 +111,7 @@ Server-side rules also have an editor automation test:
 
 The commands above describe **regeneration order**, not proof that the whole map and all scripts pass as a single packaged release. The new default `/Game/World/lent` covers **nine 512 m original windows** in one 1,536 m square. Use an explicit original-game content root `$ORIGINAL` and locally available nine LiDAR LAZ tiles/orthophoto inputs. **Do not** commit unrelated licensed originals, full paid map source, raw proprietary files or private credentials when rebuilding.
 
-`lent-ground merge-buildings` must run before `MarburgumRebuildFacades`; the placed-building manifest must exist before generating ground and pedestrian walk graph. Generate ground/paving, then resample **all** Drava water volumes and re-place the hatchback after the ground changes. Regenerate swim, vehicle and combat animation assets after ADR-042/043's foot IK fixes before cooking. Include `Content/Marburgum/Street/lent_walk_graph.json` and any other non-`.uasset` staged game data in the source/cook hash manifest. `-Verify -Every=1` is the full paving check; record result counts and source SHA.
+`lent-ground merge-buildings` must run before `MarburgumRebuildFacades`; the placed-building manifest must exist before generating ground and pedestrian walk graph, and the façades are rebuilt once more after the ground tool so they take its deep footings (ADR-053). Generate ground/paving, then resample **all** Drava water volumes and re-place the hatchback after the ground changes. Regenerate swim, vehicle and combat animation assets after ADR-042/043's foot IK fixes before cooking. Include `Content/Marburgum/Street/lent_walk_graph.json` and any other non-`.uasset` staged game data in the source/cook hash manifest. `-Verify -Every=1` is the full paving check; record result counts and source SHA.
 
 **Evidence interpretation:**
 

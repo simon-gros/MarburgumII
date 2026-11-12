@@ -243,6 +243,48 @@ impl Grid {
         eroded.window(radius, f32::max, f32::MIN)
     }
 
+    /// The highest value within a square of half-width `radius` points, over the points where
+    /// `within` is set; NaN where there are none.
+    pub fn max_within(&self, radius: usize, within: &Grid) -> Grid {
+        let mut g = self.clone();
+        for (v, w) in g.v.iter_mut().zip(&within.v) {
+            if *w < 0.5 {
+                *v = f32::MIN;
+            }
+        }
+        let mut out = g.window(radius, f32::max, f32::MIN);
+        for v in out.v.iter_mut() {
+            if *v == f32::MIN {
+                *v = f32::NAN;
+            }
+        }
+        out
+    }
+
+    /// Grey-scale opening over the points where `within` is set only; the rest neither erode nor
+    /// dilate. Points outside keep their height.
+    pub fn opened_within(&self, radius: usize, within: &Grid) -> Grid {
+        let mut g = self.clone();
+        for (v, w) in g.v.iter_mut().zip(&within.v) {
+            if *w < 0.5 {
+                *v = f32::MAX;
+            }
+        }
+        let mut eroded = g.window(radius, f32::min, f32::MAX);
+        for (v, w) in eroded.v.iter_mut().zip(&within.v) {
+            if *w < 0.5 {
+                *v = f32::MIN;
+            }
+        }
+        let mut out = eroded.window(radius, f32::max, f32::MIN);
+        for i in 0..out.v.len() {
+            if within.v[i] < 0.5 {
+                out.v[i] = self.v[i];
+            }
+        }
+        out
+    }
+
     /// Every hollow with no way out filled to the level at which it would spill over (priority
     /// flood from the edge). Ground that drains to the edge, such as a river bed running out of the
     /// square, keeps its height.

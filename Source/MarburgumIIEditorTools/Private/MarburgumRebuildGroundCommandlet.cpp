@@ -27,10 +27,13 @@
 #include "Materials/MaterialExpressionNoise.h"
 #include "Materials/MaterialExpressionSaturate.h"
 #include "Materials/MaterialExpressionScalarParameter.h"
+#include "Materials/MaterialExpressionSingleLayerWaterMaterialOutput.h"
 #include "Materials/MaterialExpressionSubtract.h"
 #include "Materials/MaterialExpressionTextureCoordinate.h"
 #include "Materials/MaterialExpressionTextureSample.h"
 #include "Materials/MaterialExpressionTextureSampleParameter2D.h"
+#include "Materials/MaterialExpressionTime.h"
+#include "Materials/MaterialExpressionUtils.h"
 #include "Materials/MaterialExpressionVectorParameter.h"
 #include "Materials/MaterialExpressionVertexNormalWS.h"
 #include "Materials/MaterialExpressionWorldPosition.h"
@@ -509,6 +512,53 @@ namespace
         return G.Material;
     }
 
+    /**
+     * M_DravaWater: single-layer water for the river sheets. Two scales of the engine's tiling
+     * water normal drift downstream (plan east) at different speeds; the Drava's green comes from
+     * absorbing red and scattering a little green, not from a painted colour, so depth and the
+     * bed show through near the banks.
+     */
+    UMaterial* BuildWaterMaterial(TArray<UPackage*>& Dirty)
+    {
+        UTexture* Ripples = LoadObject<UTexture>(nullptr, TEXT("/Engine/Functions/Engine_MaterialFunctions02/ExampleContent/Textures/water_n.water_n"));
+        if (!Ripples)
+        {
+            UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND engine water normal texture missing"));
+            return nullptr;
+        }
+        FGraph G{ BeginMaterial(FString::Printf(TEXT("%s/Materials/M_DravaWater"), GroundDir), Dirty) };
+        G.Material->SetShadingModel(MSM_SingleLayerWater);
+        G.Material->BlendMode = BLEND_Opaque;
+        UMaterialExpression* XY = G.Mask(G.WorldPosition(), true, true);
+        UMaterialExpression* Time = G.Node<UMaterialExpressionTime>();
+        const EMaterialSamplerType Type = MaterialExpressionUtils::GetSamplerTypeForTexture(Ripples);
+        auto Layer = [&](float TileMetres, float Downstream, float Across) {
+            UMaterialExpression* Drift = G.Mask(G.Mul(Time, G.Vector(FLinearColor(Across, Downstream, 0.0f))), true, true);
+            UMaterialExpression* N = G.Sample(Ripples, Type, G.Add(G.Mul(XY, G.Const(1.0f / (TileMetres * 100.0f))), Drift), SSM_Wrap_WorldGroupSettings);
+            // A texture not compressed as a normal map comes back 0..1.
+            return Type == SAMPLERTYPE_Normal ? N : G.Sub(G.Mul(N, G.Const(2.0f)), G.Const(1.0f));
+        };
+        UMaterialExpression* Ripple = G.Mul(G.Add(Layer(12.0f, 0.020f, 0.004f), Layer(4.5f, 0.034f, -0.006f)), G.Const(0.5f));
+        UMaterialExpression* Normal = G.Lerp(G.Vector(FLinearColor(0.0f, 0.0f, 1.0f)), G.Mask(Ripple, true, true, true), G.Const(0.4f));
+        UMaterialExpressionSingleLayerWaterMaterialOutput* Out = G.Node<UMaterialExpressionSingleLayerWaterMaterialOutput>();
+        // Per centimetre (per metre: scattering 0.01 0.03 0.022, absorption 0.65 0.2 0.28): the
+        // Drava's dark jade green, with the bed showing through only near the banks.
+        Out->ScatteringCoefficients.Connect(0, G.Vector(FLinearColor(0.0001f, 0.0003f, 0.00022f)));
+        Out->AbsorptionCoefficients.Connect(0, G.Vector(FLinearColor(0.0065f, 0.002f, 0.0028f)));
+        Out->PhaseG.Connect(0, G.Const(0.2f));
+        Out->ColorScaleBehindWater.Connect(0, G.Const(1.0f));
+        UMaterialEditorOnlyData* Ed = G.Material->GetEditorOnlyData();
+        // On single-layer water, base colour and opacity describe a layer on top of the water (foam):
+        // none here. Left unconnected, opacity is 1 and the river is an opaque black sheet.
+        Ed->BaseColor.Connect(0, G.Vector(FLinearColor(0.0f, 0.0f, 0.0f)));
+        Ed->Opacity.Connect(0, G.Const(0.0f));
+        Ed->Normal.Connect(0, Normal);
+        Ed->Roughness.Connect(0, G.Const(0.05f));
+        Ed->Specular.Connect(0, G.Const(0.5f));
+        FinishMaterial(G.Material);
+        return G.Material;
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Paved meshes
 
@@ -865,6 +915,11 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
         PavedInstance(TEXT("MI_LentRoadPaint"), PavedMaster, Kerb, FLinearColor(0.78f, 0.78f, 0.75f), 0.12f, 0.4f, 0.35f, 0.25f, Dirty),
     };
     UMaterial* Terrain = BuildTerrainMaterial({ &YardAsphalt, &Earth, &Gravel, &Grass, &Stones }, Wall, Surface, Dirty);
+    UMaterial* Water = BuildWaterMaterial(Dirty);
+    if (!Water)
+    {
+        return 1;
+    }
     FAssetCompilingManager::Get().FinishAllCompilation();
     if (!Save(Dirty))
     {
@@ -917,6 +972,11 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
         else if (IsReseated(*It))
         {
             Reseat.Add(*It);
+        }
+        // Lent's river sheet and the neighbouring windows' (Drava_pristan, Drava_titov_most).
+        if (AStaticMeshActor* Sheet = Cast<AStaticMeshActor>(*It); Sheet && Sheet->GetActorLabel().StartsWith(TEXT("Drava")))
+        {
+            Sheet->GetStaticMeshComponent()->SetMaterial(0, Water);
         }
     }
     // What each placed actor stands on now: the first surface under it (the bridge deck counts).

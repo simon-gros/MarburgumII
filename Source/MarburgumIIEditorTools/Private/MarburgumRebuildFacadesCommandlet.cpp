@@ -41,6 +41,30 @@ namespace
         return FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground/placed_buildings.txt"));
     }
 
+    // Every wall reaches this far below its base, so paving and grass meet it at their own height
+    // instead of being lifted to its bottom edge. The ground tool must use the same value.
+    constexpr double Footing = 2.5;
+
+    // Deeper footings the ground tool asks for, where the surveyed ground beside a building falls
+    // further than Footing below its base (`buildings.deep_footings_m` in its ground.json).
+    TSharedPtr<FJsonObject> ReadDeepFootings()
+    {
+        FString Text;
+        TSharedPtr<FJsonObject> Root;
+        if (!FFileHelper::LoadFileToString(Text, *FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground/ground.json")))
+            || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) || !Root.IsValid())
+        {
+            return nullptr;
+        }
+        const TSharedPtr<FJsonObject>* Buildings = nullptr;
+        const TSharedPtr<FJsonObject>* Deep = nullptr;
+        if (Root->TryGetObjectField(TEXT("buildings"), Buildings) && Buildings && (*Buildings)->TryGetObjectField(TEXT("deep_footings_m"), Deep) && Deep)
+        {
+            return *Deep;
+        }
+        return nullptr;
+    }
+
     // A building that was already in Lent keeps its asset under Buildings/lent; a new one goes under
     // the window it mostly stands in.
     FString BuildingPackage(const FString& Id, const FString& Window)
@@ -75,6 +99,7 @@ namespace
         {
             return false;
         }
+        const TSharedPtr<FJsonObject> DeepFootings = ReadDeepFootings();
         for (const TSharedPtr<FJsonValue>& Value : Root->GetArrayField(TEXT("buildings")))
         {
             const TSharedPtr<FJsonObject> Object = Value->AsObject();
@@ -96,7 +121,8 @@ namespace
             Footprint.Roof = Roof == TEXT("flat") ? MB::ERoof::Flat
                 : (Roof == TEXT("hipped") || Roof == TEXT("pyramidal") ? MB::ERoof::Hipped : MB::ERoof::Gabled);
 
-            // Walls start just below the lowest terrain under the footprint, so none floats on a slope.
+            // Walls start just below the lowest terrain under the footprint, so none floats on a slope,
+            // and reach their footing below that.
             Footprint.Base = Footprint.Ground - 0.15;
             const TSharedPtr<FJsonObject>* Contact = nullptr;
             if (Object->TryGetObjectField(TEXT("ground_contact"), Contact) && Contact && (*Contact)->TryGetNumberField(TEXT("terrain_min"), Number))
@@ -107,6 +133,12 @@ namespace
                     Footprint.Base = Number - 0.15;
                 }
             }
+            double Deep = Footing;
+            if (DeepFootings.IsValid() && DeepFootings->TryGetNumberField(Id, Deep))
+            {
+                Deep = std::max(Deep, Footing);
+            }
+            Footprint.Base -= Deep;
             for (const TSharedPtr<FJsonValue>& Point : Object->GetArrayField(TEXT("outline")))
             {
                 const TArray<TSharedPtr<FJsonValue>> Pair = Point->AsArray();
@@ -175,6 +207,7 @@ namespace
         }
     }
 
+    // A negative roughness leaves the parent's.
     UMaterialInstanceConstant* EnsureMaterial(const TCHAR* Name, UMaterialInterface* Parent, const FLinearColor& Tint, float Roughness)
     {
         const FString Directory = TEXT("/Game/Marburgum/Materials/Instances/building_envelope");
@@ -193,10 +226,64 @@ namespace
         }
         Instance->SetParentEditorOnly(Parent);
         Instance->SetVectorParameterValueEditorOnly(FMaterialParameterInfo(TEXT("BaseColorTint")), Tint);
-        Instance->SetScalarParameterValueEditorOnly(FMaterialParameterInfo(TEXT("RoughnessDefault")), Roughness);
+        if (Roughness >= 0.0f)
+        {
+            Instance->SetScalarParameterValueEditorOnly(FMaterialParameterInfo(TEXT("RoughnessDefault")), Roughness);
+        }
         Instance->PostEditChange();
         Instance->MarkPackageDirty();
         return Instance;
+    }
+
+    struct FShade
+    {
+        const TCHAR* Name;
+        // Multiplies the parent's tint: the target colour (sRGB in the comment) in linear terms over
+        // the texture's linear mean (plaster_mineral 0.413 0.333 0.222, roof_bitumen 0.036 0.035 0.032).
+        FLinearColor Gain;
+        // How often it comes up, out of the palette's total.
+        int32 Weight;
+    };
+
+    // Render colours of 1990s Maribor: Maria Theresa yellow and ochre in the old town, cream and pale
+    // yellow, faded salmon and sage, and the grey render of post-war blocks. The original's beige stays
+    // one of them.
+    const FShade PlasterShades[] = {
+        { TEXT("MI_plaster_beige"), FLinearColor(1.051f, 1.054f, 1.040f), 3 },        // 176 160 132
+        { TEXT("MI_plaster_ochre"), FLinearColor(1.629f, 1.369f, 0.787f), 2 },        // 214 180 116
+        { TEXT("MI_plaster_pale_yellow"), FLinearColor(1.800f, 1.560f, 1.000f), 2 },  // 225 194 134
+        { TEXT("MI_plaster_cream"), FLinearColor(1.750f, 1.650f, 1.700f), 2 },        // 222 198 166
+        { TEXT("MI_plaster_warm_grey"), FLinearColor(1.078f, 1.221f, 1.541f), 2 },    // 178 171 158
+        { TEXT("MI_plaster_salmon"), FLinearColor(1.595f, 1.206f, 1.335f), 1 },       // 212 170 148
+        { TEXT("MI_plaster_sage"), FLinearColor(1.189f, 1.581f, 1.718f), 1 },         // 186 192 166
+        { TEXT("MI_plaster_off_white"), FLinearColor(1.550f, 1.700f, 2.200f), 1 },    // 210 198 186
+        { TEXT("MI_plaster_render_grey"), FLinearColor(0.805f, 0.955f, 1.276f), 2 },  // 156 153 145
+    };
+
+    // Flat roofs: gravel ballast and weathered grey bitumen rather than the texture's near-black.
+    const FShade FlatRoofShades[] = {
+        { TEXT("MI_roof_flat_gravel"), FLinearColor(7.08f, 6.76f, 6.38f), 2 },        // 138 133 124
+        { TEXT("MI_roof_flat_grey"), FLinearColor(4.18f, 4.24f, 4.29f), 2 },          // 108 107 103
+        { TEXT("MI_roof_flat_dark"), FLinearColor(2.59f, 2.68f, 2.81f), 1 },          //  86  86  84
+    };
+
+    // One instance per shade under Parent, its tint the parent's times the shade's gain.
+    template <size_t N>
+    TArray<UMaterialInstanceConstant*> EnsureShades(const FShade (&Shades)[N], UMaterialInterface* Parent)
+    {
+        FLinearColor ParentTint(1.0f, 1.0f, 1.0f, 1.0f);
+        Parent->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("BaseColorTint")), ParentTint);
+        UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE %s BaseColorTint %s"), *Parent->GetName(), *ParentTint.ToString());
+        TArray<UMaterialInstanceConstant*> Out;
+        for (const FShade& Shade : Shades)
+        {
+            const FLinearColor Tint(ParentTint.R * Shade.Gain.R, ParentTint.G * Shade.Gain.G, ParentTint.B * Shade.Gain.B, ParentTint.A);
+            for (int32 K = 0; K < Shade.Weight; ++K)
+            {
+                Out.Add(K == 0 ? EnsureMaterial(Shade.Name, Parent, Tint, -1.0f) : Out.Last());
+            }
+        }
+        return Out;
     }
 }
 
@@ -262,9 +349,26 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
     {
         Material->AddToRoot();
     }
+    // Each building takes a render colour and a flat-roof finish from its id, so a rebuild keeps them.
+    const TArray<UMaterialInstanceConstant*> Plasters = EnsureShades(PlasterShades, Plaster);
+    const TArray<UMaterialInstanceConstant*> FlatRoofs = EnsureShades(FlatRoofShades, FlatRoof);
+    TArray<UPackage*> MaterialPackages{ Frame->GetOutermost(), Glass->GetOutermost() };
+    for (const TArray<UMaterialInstanceConstant*>* Shades : { &Plasters, &FlatRoofs })
+    {
+        for (UMaterialInstanceConstant* Shade : *Shades)
+        {
+            if (!Shade)
+            {
+                UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE missing materials"));
+                return 1;
+            }
+            Shade->AddToRoot();
+            MaterialPackages.AddUnique(Shade->GetOutermost());
+        }
+    }
     if (!bCheckOnly)
     {
-        UEditorLoadingAndSavingUtils::SavePackages({ Frame->GetOutermost(), Glass->GetOutermost() }, false);
+        UEditorLoadingAndSavingUtils::SavePackages(MaterialPackages, false);
     }
 
     int32 Rebuilt = 0;
@@ -346,9 +450,12 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
         StaticMesh->SetLightMapCoordinateIndex(1);
         StaticMesh->CreateMeshDescription(0, MoveTemp(Description));
         StaticMesh->CommitMeshDescription(0);
-        StaticMesh->SetStaticMaterials({ FStaticMaterial(Plaster, TEXT("plaster"), TEXT("plaster")), FStaticMaterial(RoofTile, TEXT("roof"), TEXT("roof")),
+        const uint32 Pick = FCrc::StrCrc32(*Id);
+        UMaterialInterface* Walls = Plasters[Pick % Plasters.Num()];
+        UMaterialInterface* Deck = FlatRoofs[(Pick / 7) % FlatRoofs.Num()];
+        StaticMesh->SetStaticMaterials({ FStaticMaterial(Walls, TEXT("plaster"), TEXT("plaster")), FStaticMaterial(RoofTile, TEXT("roof"), TEXT("roof")),
             FStaticMaterial(Frame, TEXT("frame"), TEXT("frame")), FStaticMaterial(Glass, TEXT("glass"), TEXT("glass")),
-            FStaticMaterial(FlatRoof, TEXT("flat_roof"), TEXT("flat_roof")) });
+            FStaticMaterial(Deck, TEXT("flat_roof"), TEXT("flat_roof")) });
         StaticMesh->Build(true);
         if (!StaticMesh->GetRenderData() || StaticMesh->GetRenderData()->LODResources.Num() == 0
             || StaticMesh->GetRenderData()->LODResources[0].GetNumTriangles() == 0)

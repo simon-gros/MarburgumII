@@ -1,8 +1,14 @@
 {
   "buildings": {
-    "landscape_points_raised": 398,
-    "paved_points_below_wall_base": 864,
-    "paving_points_lifted_to_walls": 5747,
+    "deep_footings_m": {
+      "w106429768": 3.0,
+      "w1420809685": 4.0,
+      "w159333167": 9.5,
+      "w91792771": 10.0
+    },
+    "footing_m": 2.5,
+    "landscape_points_raised": 0,
+    "paved_points_below_footing": 0,
     "seated": 870
   },
   "format": "marburgumii.lent_ground",
@@ -26,20 +32,28 @@
       "kerb",
       "paint"
     ],
-    "triangles": 5392356,
+    "triangles": 5392267,
     "triangles_by_surface": [
-      608509,
+      608506,
       268071,
-      2527425,
-      400027,
-      1539546,
+      2527344,
+      400026,
+      1539542,
       48778
     ]
   },
   "paving_edges": {
-    "landscape_points_lowered": 3289,
-    "points_lowered_under_dips": 708574,
-    "points_next_to_paving_lowered": 377418
+    "landscape_points_lowered": 3304,
+    "points_lowered_under_dips": 701701,
+    "points_next_to_paving_lowered": 385750
+  },
+  "paving_flat": {
+    "apron_points_eased": 535155,
+    "bump_kept_m": 0.05,
+    "opening_half_width_m": 5.079,
+    "points_flattened": 45222,
+    "stair_points_smoothed": 52698,
+    "verge_points_raised": 694276
   },
   "plan": "metres; x east and y south of the middle of Stari most (D96/TM E 549527.8, N 157564.0); z above the Drava (252.98 m)",
   "sources": [

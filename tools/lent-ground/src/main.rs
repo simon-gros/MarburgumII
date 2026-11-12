@@ -66,6 +66,25 @@ const UNDER_PAVING: f32 = 0.15;
 /// Kerb height above the carriageway, and at a dropped kerb.
 const KERB: f64 = 0.12;
 const KERB_DROPPED: f64 = 0.03;
+/// Half-width (grid points, about 5 m) of the opening that lays paving flat over mounds, and
+/// how far the survey may stand above the opened surface and still be followed.
+const PAVING_FLAT_RADIUS: usize = 10;
+const PAVING_BUMP: f32 = 0.05;
+const MOUND_RISE: f32 = 0.2;
+const MOUND_MAX: f32 = 3.0;
+/// Paving within APRON metres of a wall eases to the level of the paving just beyond, so it
+/// meets the wall on a clean line instead of climbing a bank or the survey's returns off the
+/// wall; it comes down by up to APRON_DROP and up by up to APRON_RISE.
+const APRON: f64 = 3.0;
+const APRON_DROP: f32 = 4.0;
+const APRON_RISE: f32 = 0.3;
+/// How far every wall reaches below its base (MarburgumBuildingMesher's footing).
+const FOOTING: f64 = 2.5;
+const DEEP_FOOTING: f64 = 12.0;
+/// Unpaved ground up to this far below the paving beside it, within `VERGE_REACH` metres, is
+/// brought up to just under the paving's edge.
+const VERGE_SHORTFALL: f32 = 0.6;
+const VERGE_REACH: f32 = 3.0;
 
 struct Args {
     /// `walk`: only the walk graph, from the streets and the `top.bin` already in the output.
@@ -134,7 +153,6 @@ fn tag<'a>(t: &'a Tags, k: &str) -> Option<&'a str> {
 // Buildings
 
 struct Building {
-    #[allow(dead_code)]
     id: String,
     outline: Vec<Pt>,
     /// Height of the bottom of the walls, as the façade commandlet builds them.
@@ -171,6 +189,8 @@ struct Lidar {
     ground: Grid,
     known: Grid,
     vegetation: Grid,
+    /// Highest return over each grid point inside a bridge outline (the deck), NaN elsewhere.
+    deck: Grid,
     points_in_window: usize,
     ground_points: usize,
 }
@@ -233,7 +253,13 @@ fn read_lidar(paths: &[PathBuf], bridges: &Shapes) -> Result<Lidar, String> {
         ground.v[i] = run[run.len() / 2].1;
         known.v[i] = 1.0;
     }
-    Ok(Lidar { ground, known, vegetation: veg, points_in_window: inside, ground_points })
+    let mut deck_grid = template.like(f32::NAN);
+    for (i, &z) in deck.iter().enumerate() {
+        if z > f32::MIN {
+            deck_grid.v[i] = z;
+        }
+    }
+    Ok(Lidar { ground, known, vegetation: veg, deck: deck_grid, points_in_window: inside, ground_points })
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -503,6 +529,70 @@ fn centre_dashes(path: &[Pt]) -> Shapes {
     shapes::union_all(&dashes)
 }
 
+/// Paving laid flat over the survey's mounds (spoil heaps, parked lorries the classifier kept).
+/// A point is on a mound when the paving round it falls away by more than MOUND_RISE both ways
+/// along at least three of the four axes through it (the two grid axes and the two diagonals),
+/// within PAVING_FLAT_RADIUS. The lip of a bank, even round a corner, a road on an embankment or
+/// a ramp up to a bridge rises or stays level one way and keeps its height. Round each mound the paving comes down to an opening of the
+/// paving (and the bridge decks) that takes out raised features narrower than about 10 m.
+/// Returns the heights and the number of points lowered.
+fn flatten_paving(ground: &Grid, paved: &Grid, deck: &Grid) -> (Grid, usize) {
+    let n = ground.n;
+    let (mut domain, mut lifted) = (ground.like(0.0), ground.clone());
+    for i in 0..ground.v.len() {
+        if paved.v[i] > 0.5 {
+            domain.v[i] = 1.0;
+        } else if !deck.v[i].is_nan() {
+            domain.v[i] = 1.0;
+            lifted.v[i] = deck.v[i];
+        }
+    }
+    let opened = lifted.opened_within(PAVING_FLAT_RADIUS, &domain);
+    let reach = PAVING_FLAT_RADIUS as i64 + 2;
+    let mut core = ground.like(0.0);
+    for r in 0..n {
+        for c in 0..n {
+            let i = r * n + c;
+            if paved.v[i] < 0.5 || ground.v[i] - opened.v[i] < MOUND_RISE {
+                continue;
+            }
+            let z = ground.v[i] - MOUND_RISE;
+            let falls = |dr: i64, dc: i64| {
+                for k in 1..=reach {
+                    let (rr, cc) = (r as i64 + dr * k, c as i64 + dc * k);
+                    if rr < 0 || cc < 0 || rr >= n as i64 || cc >= n as i64 {
+                        return false;
+                    }
+                    let j = rr as usize * n + cc as usize;
+                    if domain.v[j] < 0.5 {
+                        return false;
+                    }
+                    if lifted.v[j] < z {
+                        return true;
+                    }
+                }
+                false
+            };
+            let axes = [(0i64, 1i64), (1, 0), (1, 1), (1, -1)].iter().filter(|&&(dr, dc)| falls(dr, dc) && falls(-dr, -dc)).count();
+            if axes >= 3 {
+                core.v[i] = 1.0;
+            }
+        }
+    }
+    // The mound's foot, where it rises less than MOUND_RISE, comes down with it.
+    let near_core = Grid::distance_to(&core);
+    let foot = PAVING_FLAT_RADIUS as f32 * ground.step() as f32 * 0.6;
+    let mut flat = ground.clone();
+    let mut lowered = 0usize;
+    for i in 0..flat.v.len() {
+        if paved.v[i] > 0.5 && near_core.v[i] <= foot && ground.v[i] > opened.v[i] + PAVING_BUMP {
+            flat.v[i] = (opened.v[i] + PAVING_BUMP).max(ground.v[i] - MOUND_MAX);
+            lowered += 1;
+        }
+    }
+    (flat, lowered)
+}
+
 /// Connected groups of points with a positive value: where they are, how big, how deep.
 fn clusters(g: &Grid, depth: &[f32]) -> Vec<serde_json::Value> {
     let n = g.n;
@@ -767,9 +857,66 @@ fn run(args: &Args) -> Result<(), String> {
     for s in &st.pavement {
         p_mask.fill_rings(s, 1.0);
     }
-    let road = ground.blur(1.6, Some(&c_mask));
-    let side = ground.blur(0.9, Some(&p_mask));
+    let mut paved_cells = c_mask.clone();
+    for i in 0..paved_cells.v.len() {
+        paved_cells.v[i] = paved_cells.v[i].max(p_mask.v[i]);
+    }
+    let (mut flat, paving_bumps) = flatten_paving(&ground, &paved_cells, &lidar.deck);
+    let mut building_mask = ground.like(0.0);
+    for s in &footprints {
+        building_mask.fill_rings(s, 1.0);
+    }
+    let from_building = Grid::distance_to(&building_mask);
+    let mut beyond = ground.like(0.0);
+    for i in 0..beyond.v.len() {
+        let d = from_building.v[i] as f64;
+        if paved_cells.v[i] > 0.5 && d >= APRON && d <= APRON + 3.0 {
+            beyond.v[i] = 1.0;
+        }
+    }
+    let apron_level = flat.blur(2.0, Some(&beyond));
+    let apron_cover = beyond.blur(2.0, None);
+    let mut aprons_eased = 0usize;
+    for i in 0..flat.v.len() {
+        let d = from_building.v[i] as f64;
+        if paved_cells.v[i] < 0.5 || d <= 0.0 || d >= APRON || apron_cover.v[i] < 0.03 {
+            continue;
+        }
+        let to = apron_level.v[i].clamp(flat.v[i] - APRON_DROP, flat.v[i] + APRON_RISE);
+        let w = 1.0 - smoothstep(APRON * 0.5, APRON, d) as f32;
+        if (to - flat.v[i]).abs() > 0.01 {
+            flat.v[i] += (to - flat.v[i]) * w;
+            aprons_eased += 1;
+        }
+    }
+    let road = flat.blur(1.6, Some(&c_mask));
+    let mut side = flat.blur(0.9, Some(&p_mask));
+    // Where the pavement is steeper than about 1 in 4 the survey has caught the treads of an
+    // outdoor stair; the paving cannot show them, so it is drawn as a smooth ramp instead of a
+    // row of teeth.
+    let ramp = flat.blur(2.0, Some(&p_mask));
+    let mut stairs_smoothed = 0usize;
+    {
+        let (n, step) = (side.n, side.step() as f32);
+        let before = side.clone();
+        for r in 1..n - 1 {
+            for c in 1..n - 1 {
+                let i = r * n + c;
+                if p_mask.v[i] < 0.5 {
+                    continue;
+                }
+                let gx = (ramp.at(r, c + 1) - ramp.at(r, c - 1)) / (2.0 * step);
+                let gy = (ramp.at(r + 1, c) - ramp.at(r - 1, c)) / (2.0 * step);
+                let w = smoothstep(0.18, 0.3, (gx * gx + gy * gy).sqrt() as f64) as f32;
+                if w > 0.0 {
+                    side.v[i] = before.v[i] + (ramp.v[i] - before.v[i]) * w;
+                    stairs_smoothed += 1;
+                }
+            }
+        }
+    }
     let from_road = Grid::distance_to(&c_mask);
+    let road_cover = c_mask.blur(1.6, None);
     let mut crossing_mask = ground.like(0.0);
     for (at, _) in &st.crossings {
         let (r, c) = crossing_mask.rc(*at);
@@ -783,32 +930,19 @@ fn run(args: &Args) -> Result<(), String> {
         let d = from_road.v[i] as f64;
         let kerb = KERB_DROPPED + (KERB - KERB_DROPPED) * smoothstep(1.8, 3.6, from_crossing.v[i] as f64);
         let r = road.v[i] as f64;
-        let near = (side.v[i] as f64).clamp(r + kerb, r + kerb + 0.12);
+        // The kerb holds the pavement to the road beside it. Further out it lets go of a road on
+        // another level (below a bank or a terrace wall) and of the stray average a road's blur
+        // leaves where the road is out of its reach.
+        let s = side.v[i] as f64;
+        let held = s.clamp(r + kerb, r + kerb + 0.12);
+        let other_level = if road_cover.v[i] < 0.02 { 1.0 } else { smoothstep(0.4, 0.9, (s - r - kerb).abs()) };
+        let same_level = 1.0 - other_level * smoothstep(1.5, 3.0, d);
+        let near = s + (held - s) * same_level;
         let t = smoothstep(3.0, 9.0, d);
         pave.v[i] = (near * (1.0 - t) + (side.v[i] as f64 + 0.03) * t) as f32;
     }
-    // Paving that meets a wall comes up to cover the wall's bottom edge, easing back over 2 m,
-    // so no gap shows under a façade.
-    let mut wall_lift = 0usize;
-    let mut near_wall: Vec<(f32, f32)> = vec![(f32::MIN, 0.0); pave.v.len()];
-    for b in &buildings {
-        for (i, d) in ground.near_polygon(&[b.outline.clone()], 2.5).iter() {
-            let d = d as f64;
-            if d > 0.0 && d < 2.0 {
-                let w = (1.0 - smoothstep(0.75, 2.0, d)) as f32;
-                if w > near_wall[i].1 || (w == near_wall[i].1 && (b.base as f32) > near_wall[i].0) {
-                    near_wall[i] = ((b.base + 0.03) as f32, w);
-                }
-            }
-        }
-    }
-    for i in 0..pave.v.len() {
-        let (need, w) = near_wall[i];
-        if w > 0.0 && need > pave.v[i] {
-            pave.v[i] += (need - pave.v[i]) * w;
-            wall_lift += 1;
-        }
-    }
+    // Walls reach FOOTING below their base (MarburgumBuildingMesher), so paving meets them at
+    // its own height and is not lifted to the wall's bottom edge.
     let road_z = |p: Pt| road.sample(p) as f64;
     let pave_z = |p: Pt| pave.sample(p) as f64;
 
@@ -886,6 +1020,8 @@ fn run(args: &Args) -> Result<(), String> {
     let n = landscape.n;
     let mut next_to_paving = 0usize;
     let before = landscape.clone();
+    // The highest each landscape point may stand by the rules below; the verges keep to it.
+    let mut cap = landscape.like(f32::INFINITY);
     for r in 0..n {
         for c in 0..n {
             let mut lowest = f32::INFINITY;
@@ -900,9 +1036,12 @@ fn run(args: &Args) -> Result<(), String> {
                     }
                 }
             }
-            if lowest.is_finite() && before.at(r, c) > lowest - 0.05 {
-                landscape.set(r, c, lowest - 0.05);
-                next_to_paving += 1;
+            if lowest.is_finite() {
+                cap.set(r, c, cap.at(r, c).min(lowest - 0.05));
+                if before.at(r, c) > lowest - 0.05 {
+                    landscape.set(r, c, lowest - 0.05);
+                    next_to_paving += 1;
+                }
             }
         }
     }
@@ -917,6 +1056,7 @@ fn run(args: &Args) -> Result<(), String> {
                 continue;
             }
             for (rr, cc) in [(r, c), (r + 1, c), (r, c + 1), (r + 1, c + 1)] {
+                cap.set(rr, cc, cap.at(rr, cc).min(low - 0.05));
                 if landscape.at(rr, cc) > low - 0.05 {
                     landscape.set(rr, cc, low - 0.05);
                     under_dips += 1;
@@ -931,25 +1071,64 @@ fn run(args: &Args) -> Result<(), String> {
     let mut edge_lowered = 0usize;
     for i in 0..landscape.v.len() {
         let d = from_paved.v[i];
-        if d > 0.0 && d <= 0.8 && landscape.v[i] > top_near.v[i] - 0.04 {
-            landscape.v[i] = top_near.v[i] - 0.04;
-            top.v[i] = top.v[i].max(landscape.v[i]);
-            edge_lowered += 1;
+        if d > 0.0 && d <= 0.8 {
+            cap.v[i] = cap.v[i].min(top_near.v[i] - 0.04);
+            if landscape.v[i] > top_near.v[i] - 0.04 {
+                landscape.v[i] = top_near.v[i] - 0.04;
+                top.v[i] = top.v[i].max(landscape.v[i]);
+                edge_lowered += 1;
+            }
         }
     }
-    // Seat every building: unpaved ground within 0.75 m of a wall comes up to cover the wall's
-    // bottom edge, so no wall shows a gap or hangs over a dip.
+    // Grass islands and verges come up to just under the kerb round them: the survey leaves many
+    // 10-40 cm low, a pit with the paving's edging showing as a dark rim. Only a shallow
+    // shortfall is made up, fading out over VERGE_REACH; a bank falling away from a path keeps
+    // its fall.
+    let kerb_top = top.max_within((VERGE_REACH as f64 / top.step()).ceil() as usize, &paved_any);
+    let mut verges_raised = 0usize;
+    for i in 0..landscape.v.len() {
+        let d = from_paved.v[i];
+        if d <= 0.0 || d > VERGE_REACH || kerb_top.v[i].is_nan() {
+            continue;
+        }
+        let target = (kerb_top.v[i] - 0.04).min(cap.v[i]);
+        let short = target - landscape.v[i];
+        if short <= 0.0 || short > VERGE_SHORTFALL {
+            continue;
+        }
+        let reach = 1.0 - smoothstep(1.5, VERGE_REACH as f64, d as f64) as f32;
+        let fade = 1.0 - smoothstep(0.35, VERGE_SHORTFALL as f64, short as f64) as f32;
+        let lift = short * reach * fade;
+        if lift > 0.005 {
+            landscape.v[i] += lift;
+            top.v[i] = top.v[i].max(landscape.v[i]);
+            verges_raised += 1;
+        }
+    }
+    // Walls reach FOOTING below their base, so ground beside them is left alone. A building
+    // whose ground falls further than that beside it (the edge of a building site in the 2014
+    // survey, a bank the original's terrain did not have) gets a deeper footing, recorded for
+    // MarburgumRebuildFacades, up to DEEP_FOOTING; ground lower still comes up to its edge.
     let mut wall_gaps = 0usize;
     let mut raised = 0usize;
+    let mut deep_footings = serde_json::Map::new();
     for b in &buildings {
-        for (i, d) in ground.near_polygon(&[b.outline.clone()], 1.5).iter() {
+        let patch = ground.near_polygon(&[b.outline.clone()], 1.5);
+        let lowest = patch.iter().filter(|&(_, d)| d > 0.0 && d <= 0.75).map(|(i, _)| if paved_any.v[i] > 0.5 { top.v[i] } else { landscape.v[i] } as f64).fold(f64::INFINITY, f64::min);
+        let mut footing = FOOTING;
+        if lowest.is_finite() && b.base - lowest + 0.3 > FOOTING {
+            footing = ((b.base - lowest + 0.3) * 2.0).ceil().min(DEEP_FOOTING * 2.0) / 2.0;
+            deep_footings.insert(b.id.clone(), serde_json::json!(footing));
+        }
+        let bottom = b.base - footing;
+        for (i, d) in patch.iter() {
             if d > 0.0 && d <= 0.75 {
                 if paved_any.v[i] > 0.5 {
-                    if (top.v[i] as f64) < b.base + 0.02 {
+                    if (top.v[i] as f64) < bottom + 0.02 {
                         wall_gaps += 1;
                     }
-                } else if from_paved.v[i] > 0.8 && (landscape.v[i] as f64) < b.base + 0.06 {
-                    landscape.v[i] = (b.base + 0.06) as f32;
+                } else if from_paved.v[i] > 0.8 && (landscape.v[i] as f64) < bottom + 0.06 {
+                    landscape.v[i] = (bottom + 0.06) as f32;
                     top.v[i] = landscape.v[i];
                     raised += 1;
                 }
@@ -1019,7 +1198,15 @@ fn run(args: &Args) -> Result<(), String> {
                 grass.v[i] = 1.0;
                 continue;
             }
-            let [rr, gg, bb] = ortho_at(p);
+            // Averaged over about 1.5 m, so single bright or shaded pixels do not spot the lawn
+            // with hard standing or the yards with grass.
+            let (mut rr, mut gg, mut bb) = (0.0, 0.0, 0.0);
+            for dy in [-0.5, 0.0, 0.5] {
+                for dx in [-0.5, 0.0, 0.5] {
+                    let [r, g, b] = ortho_at([p[0] + dx, p[1] + dy]);
+                    (rr, gg, bb) = (rr + r, gg + g, bb + b);
+                }
+            }
             let sum = (rr + gg + bb).max(1.0);
             let excess_green = (2.0 * gg - rr - bb) / sum;
             if excess_green > 0.05 {
@@ -1030,7 +1217,7 @@ fn run(args: &Args) -> Result<(), String> {
         }
     }
     let _ = mland;
-    let (grass, earth, gravel, stones) = (grass.blur(0.35, None), earth.blur(0.5, None), gravel.blur(0.3, None), stones.blur(0.6, None));
+    let (grass, earth, gravel, stones) = (grass.blur(0.5, None), earth.blur(0.5, None), gravel.blur(0.3, None), stones.blur(0.6, None));
     let mut rgba = Vec::with_capacity(mask_points * mask_points * 4);
     for i in 0..m.v.len() {
         let w = [grass.v[i], earth.v[i], gravel.v[i], stones.v[i]].map(|x| x.clamp(0.0, 1.0));
@@ -1079,7 +1266,8 @@ fn run(args: &Args) -> Result<(), String> {
         },
         "survey": { "filled_under_bridges": filled_under_bridges, "blob_points_removed": blobs, "hollows_over_3m_deep_and_100m2": hollows, "points_in_window": lidar.points_in_window, "ground_points": lidar.ground_points, "measured_grid_points": measured, "grid_points": points * points },
         "paving_edges": { "landscape_points_lowered": edge_lowered, "points_next_to_paving_lowered": next_to_paving, "points_lowered_under_dips": under_dips },
-        "buildings": { "seated": buildings.len(), "paving_points_lifted_to_walls": wall_lift, "landscape_points_raised": raised, "paved_points_below_wall_base": wall_gaps },
+        "paving_flat": { "opening_half_width_m": (PAVING_FLAT_RADIUS as f64 * ground.step() * 1000.0).round() / 1000.0, "bump_kept_m": (PAVING_BUMP as f64 * 100.0).round() / 100.0, "points_flattened": paving_bumps, "apron_points_eased": aprons_eased, "stair_points_smoothed": stairs_smoothed, "verge_points_raised": verges_raised },
+        "buildings": { "seated": buildings.len(), "footing_m": FOOTING, "deep_footings_m": deep_footings, "landscape_points_raised": raised, "paved_points_below_footing": wall_gaps },
         "sources": sources,
     });
     std::fs::write(args.out.join("ground.json"), serde_json::to_string_pretty(&report).unwrap() + "\n").map_err(|e| e.to_string())?;
@@ -1087,4 +1275,60 @@ fn run(args: &Args) -> Result<(), String> {
     eprintln!("done in {:.1}s: {}", t0.elapsed().as_secs_f64(), serde_json::to_string(&report["paved"]).unwrap());
     eprintln!("buildings: {}", report["buildings"]);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn paved(n: usize, half: f64) -> Grid {
+        Grid::new(n, half, 1.0)
+    }
+
+    #[test]
+    fn a_mound_in_the_paving_comes_down() {
+        let mut g = Grid::new(81, 20.0, 0.0);
+        for r in 0..81 {
+            for c in 0..81 {
+                let p = g.pos(r, c);
+                let d = (p[0] * p[0] + p[1] * p[1]).sqrt();
+                g.set(r, c, (1.0 - d / 3.0).max(0.0) as f32 * 1.2);
+            }
+        }
+        let (flat, lowered) = flatten_paving(&g, &paved(81, 20.0), &g.like(f32::NAN));
+        assert!(lowered > 0);
+        assert!(flat.at(40, 40) <= PAVING_BUMP + 1e-4, "top of the mound at {}", flat.at(40, 40));
+    }
+
+    #[test]
+    fn the_lip_of_a_terrace_keeps_its_height() {
+        // An upper terrace 3 m high in the north-west quarter, falling 1 in 1 to the rest: its
+        // edges and its convex corner are not mounds.
+        let mut g = Grid::new(81, 20.0, 0.0);
+        for r in 0..81 {
+            for c in 0..81 {
+                let p = g.pos(r, c);
+                let out = p[0].max(p[1]).max(0.0);
+                g.set(r, c, (3.0 - out).max(0.0) as f32);
+            }
+        }
+        let (flat, lowered) = flatten_paving(&g, &paved(81, 20.0), &g.like(f32::NAN));
+        assert_eq!(lowered, 0);
+        assert_eq!(flat.v, g.v);
+    }
+
+    #[test]
+    fn the_opening_ignores_points_outside() {
+        // A narrow ridge inside the set, a high wall outside it: the wall does not hold the ridge up.
+        let mut g = Grid::new(21, 5.0, 0.0);
+        let mut within = g.like(1.0);
+        for r in 0..21 {
+            g.set(r, 10, 1.0);
+            g.set(r, 11, 9.0);
+            within.set(r, 11, 0.0);
+        }
+        let o = g.opened_within(3, &within);
+        assert_eq!(o.at(10, 10), 0.0);
+        assert_eq!(o.at(10, 11), 9.0);
+    }
 }
