@@ -16,6 +16,7 @@
 #include "Session/MarburgumAccountSubsystem.h"
 #include "Session/MarburgumSessionSubsystem.h"
 #include "UI/MarburgumAccountScreen.h"
+#include "UI/MarburgumCharacterPreview.h"
 #include "UI/MarburgumUISubsystem.h"
 #include "UnrealClient.h"
 
@@ -258,6 +259,58 @@ void UMarburgumAccountSmokeSubsystem::TickFirst(double Now)
         if (View.Step != EStep::Character && !View.bError) return;
         Expect(View.Step == EStep::Character && View.Username == User.ToLower(), FString::Printf(TEXT("setup=%s step=%d"), *View.ErrorCode, (int32)View.Step));
         Expect(View.CharacterId.IsEmpty(), TEXT("character_before_creation"));
+        PreviewModel = 0;
+        Advance(71, Now);
+        return;
+    case 71:
+        // The creator's 3D preview (ADR-057): every roster body in turn, as a player paging with ‹ ›.
+        Form->SelectModelForTest(FName(MarburgumII::Accounts::CharacterModels[PreviewModel].Id));
+        Advance(72, Now);
+        return;
+    case 72:
+    {
+        if (Now - StepSeconds < SettleSeconds * 1.5) return;
+        const UMarburgumCharacterPreview* Preview = Form->GetPreview();
+        const TCHAR* Id = MarburgumII::Accounts::CharacterModels[PreviewModel].Id;
+        Expect(Preview && Preview->IsVisible() && Preview->GetShownModel() == PreviewModel,
+            FString::Printf(TEXT("preview_not_shown=%s"), Id));
+        MB2_ACCOUNT_LOG("event=preview model=%s shown=%d", Id, Preview && Preview->GetShownModel() == PreviewModel ? 1 : 0);
+        Shot(*FString::Printf(TEXT("creator-%s"), Id));
+        Advance(++PreviewModel < static_cast<int32>(UE_ARRAY_COUNT(MarburgumII::Accounts::CharacterModels)) ? 71 : 73, Now);
+        return;
+    }
+    case 73:
+    {
+        // Dragging turns the body; the same path as the mouse, by a known amount.
+        UMarburgumCharacterPreview* Preview = Form->GetPreview();
+        const float Before = Preview ? Preview->GetYaw() : 0.f;
+        if (Preview) Preview->TurnForTest(-140.f);
+        Expect(Preview && !FMath::IsNearlyEqual(Preview->GetYaw(), Before), TEXT("preview_did_not_turn"));
+        Advance(74, Now);
+        return;
+    }
+    case 74:
+        if (Now - StepSeconds < SettleSeconds) return;
+        Shot(TEXT("creator-turned"));
+        Advance(76, Now);
+        return;
+    case 76:
+    {
+        // The wheel brings the camera to head and shoulders, the same path as a player's scroll.
+        UMarburgumCharacterPreview* Preview = Form->GetPreview();
+        if (Preview) Preview->ZoomForTest(4.f);
+        Expect(Preview && FMath::IsNearlyEqual(Preview->GetZoom(), 1.f), TEXT("preview_did_not_zoom"));
+        Advance(77, Now);
+        return;
+    }
+    case 77:
+        if (Now - StepSeconds < SettleSeconds) return;
+        Shot(TEXT("creator-close"));
+        Advance(75, Now);
+        return;
+    case 75:
+        // After the picture is saved: the screenshot is taken at the end of a later frame.
+        if (UMarburgumCharacterPreview* Preview = Form->GetPreview()) Preview->ZoomForTest(-4.f);
         Form->SelectModelForTest(Model);
         Form->SubmitForTest({ TEXT("R2D2"), Last });
         Advance(8, Now);

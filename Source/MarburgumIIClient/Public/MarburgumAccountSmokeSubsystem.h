@@ -11,7 +11,8 @@
  * scripts/account-smoke-linux.sh):
  *
  *   FIRST     a new player: register an email, a wrong code, then the code from the outbox, two passwords that
- *             differ, a username and password, a refused first name, then the character; Connect enters the
+ *             differ, a username and password, each roster body in the creator's 3D preview (turned once), a
+ *             refused first name, then the character; Connect enters the
  *             world and the server shows the character's name and body.
  *   RETURN    the same player again: a wrong password, then the right one; no creator; the same character enters.
  *   REFUSED   started with a join URL the server must refuse; passes when the session ends refused.
@@ -68,6 +69,8 @@ private:
     int32 Step = 0;
     double StepSeconds = 0.0;
     int32 SeenRevision = 0;
+    /** The roster body the creator's preview is being checked on. */
+    int32 PreviewModel = 0;
     FString PendingShot;
     double ShotRequestedSeconds = 0.0;
     bool bDone = false;

@@ -15,6 +15,7 @@
 #include "Components/VerticalBoxSlot.h"
 #include "Engine/GameInstance.h"
 #include "MarburgumAccountContract.h"
+#include "UI/MarburgumCharacterPreview.h"
 #include "UI/MarburgumUIBuilder.h"
 
 #define LOCTEXT_NAMESPACE "MarburgumAccountScreen"
@@ -25,6 +26,7 @@ using EStep = EMarburgumAccountStep;
 namespace
 {
     constexpr float CardWidth = 560.f;
+    constexpr float PreviewWidthUnits = 620.f;
     constexpr int32 StepCount = static_cast<int32>(EStep::Ready) + 1;
 
     FText TitleFor(EStep Step)
@@ -78,7 +80,7 @@ void UMarburgumAccountScreen::NativeOnInitialized()
     BackdropSlot->SetHorizontalAlignment(HAlign_Fill);
     BackdropSlot->SetVerticalAlignment(VAlign_Fill);
 
-    UTextBlock* Motif = B.Text(LOCTEXT("Coordinates", "46°33′N  15°39′E"), ETypeRole::Display, T.Color.TextPrimary.CopyWithNewOpacity(0.035f));
+    Motif = B.Text(LOCTEXT("Coordinates", "46°33′N  15°39′E"), ETypeRole::Display, T.Color.TextPrimary.CopyWithNewOpacity(0.035f));
     FSlateFontInfo MotifFont = Motif->GetFont();
     MotifFont.Size = 88;
     MotifFont.LetterSpacing = 0;
@@ -108,6 +110,19 @@ void UMarburgumAccountScreen::NativeOnInitialized()
     UOverlaySlot* SafeSlot = Root->AddChildToOverlay(Safe);
     SafeSlot->SetHorizontalAlignment(HAlign_Fill);
     SafeSlot->SetVerticalAlignment(VAlign_Fill);
+
+    // The creator's body, in 3D, beside the card (ADR-057); shown only on the character step.
+    // Full height, from the top gutter to the bottom one, in the space the brand and the card leave free.
+    Preview = CreateWidget<UMarburgumCharacterPreview>(this, UMarburgumCharacterPreview::StaticClass());
+    USizeBox* PreviewWidth = WidgetTree->ConstructWidget<USizeBox>();
+    PreviewWidth->SetWidthOverride(PreviewWidthUnits);
+    PreviewWidth->SetContent(Preview);
+    UOverlaySlot* PreviewSlot = Root->AddChildToOverlay(PreviewWidth);
+    PreviewSlot->SetHorizontalAlignment(HAlign_Right);
+    PreviewSlot->SetVerticalAlignment(VAlign_Fill);
+    PreviewSlot->SetPadding(FMargin(0.f, T.Space.ScreenGutter * 0.8f, T.Space.ScreenGutter, T.Space.ScreenGutter * 0.8f));
+    Preview->SetVisibility(ESlateVisibility::Collapsed);
+    ShowModel();
     SetIsFocusable(true);
 }
 
@@ -231,13 +246,18 @@ UWidget* UMarburgumAccountScreen::BuildCard()
         Fields(EStep::Character).Add(AddField(Panel, LOCTEXT("FirstName", "FIRST NAME"), LOCTEXT("FirstNameHint", "e.g. Špela")));
         Fields(EStep::Character).Add(AddField(Panel, LOCTEXT("LastName", "LAST NAME"), LOCTEXT("LastNameHint", "e.g. Novak")));
         FBuilder::Stack(Panel, B.Text(LOCTEXT("Body", "BODY"), ETypeRole::Overline), T.Space.XS);
+        // One card per approved body (ADR-057); the preview beside the card shows the chosen one.
         UHorizontalBox* Chooser = B.Row();
-        AddButton(Chooser, LOCTEXT("PreviousModel", "‹"), Secondary, T.Space.M)->OnClicked.AddDynamic(this, &UMarburgumAccountScreen::HandlePreviousModel);
-        ModelName = B.Text(FText::GetEmpty(), ETypeRole::Heading);
-        FBuilder::Inline(Chooser, ModelName, T.Space.M, true);
-        ModelCount = B.Text(FText::GetEmpty(), ETypeRole::Numeric, T.Color.TextMuted);
-        FBuilder::Inline(Chooser, ModelCount, T.Space.M);
-        AddButton(Chooser, LOCTEXT("NextModel", "›"), Secondary, 0.f)->OnClicked.AddDynamic(this, &UMarburgumAccountScreen::HandleNextModel);
+        constexpr int32 Count = UE_ARRAY_COUNT(MarburgumII::Accounts::CharacterModels);
+        for (int32 Index = 0; Index < Count; ++Index)
+        {
+            UMarburgumModelCard* Card = CreateWidget<UMarburgumModelCard>(this, UMarburgumModelCard::StaticClass());
+            Card->Setup(Index, FText::FromString(MarburgumII::Accounts::CharacterModels[Index].NameEn));
+            Card->OnPicked.AddUObject(this, &UMarburgumAccountScreen::HandleModelPicked);
+            FBuilder::Inline(Chooser, Card, Index + 1 < Count ? T.Space.S : 0.f, true, false);
+            ModelCards.Add(Card);
+            Actions.Add(Card->GetButton());
+        }
         FBuilder::Stack(Panel, Chooser, T.Space.L);
         UHorizontalBox* Row = B.Row();
         AddButton(Row, LOCTEXT("CreateCharacter", "Create character"), Primary, T.Space.S)->OnClicked.AddDynamic(this, &UMarburgumAccountScreen::HandleCreateCharacter);
@@ -265,8 +285,14 @@ void UMarburgumAccountScreen::ShowModel()
     using namespace MarburgumII::Accounts;
     constexpr int32 Count = UE_ARRAY_COUNT(CharacterModels);
     ModelIndex = (ModelIndex % Count + Count) % Count;
-    ModelName->SetText(FText::FromString(CharacterModels[ModelIndex].NameEn));
-    ModelCount->SetText(FText::Format(LOCTEXT("ModelCount", "{0} / {1}"), FText::AsNumber(ModelIndex + 1), FText::AsNumber(Count)));
+    for (int32 Index = 0; Index < ModelCards.Num(); ++Index)
+    {
+        ModelCards[Index]->SetSelected(Index == ModelIndex);
+    }
+    if (Preview)
+    {
+        Preview->ShowModel(ModelIndex);
+    }
 }
 
 void UMarburgumAccountScreen::ApplyView(const FMarburgumAccountView& View)
@@ -317,6 +343,14 @@ void UMarburgumAccountScreen::ApplyView(const FMarburgumAccountView& View)
     Message->SetText(View.Message);
     Message->SetColorAndOpacity(FSlateColor(View.bError ? T.Color.Danger : T.Color.TextSecondary));
     Message->SetVisibility(View.Message.IsEmpty() ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
+    if (Preview)
+    {
+        const bool bCreator = View.Step == EStep::Character;
+        Preview->SetVisibility(bCreator ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+        Preview->SetActive(bCreator);
+        // The coordinates would show half-covered behind the preview.
+        Motif->SetVisibility(bCreator ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
+    }
 }
 
 void UMarburgumAccountScreen::ShowLocalError(const FText& Text)
@@ -484,15 +518,9 @@ void UMarburgumAccountScreen::HandleReset()
     }
 }
 
-void UMarburgumAccountScreen::HandlePreviousModel()
+void UMarburgumAccountScreen::HandleModelPicked(int32 Index)
 {
-    --ModelIndex;
-    ShowModel();
-}
-
-void UMarburgumAccountScreen::HandleNextModel()
-{
-    ++ModelIndex;
+    ModelIndex = Index;
     ShowModel();
 }
 

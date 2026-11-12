@@ -32,6 +32,8 @@ public:
     void SubmitForTest(const TArray<FString>& Values);
     /** Test driver: pick a model by roster id. */
     void SelectModelForTest(FName Model);
+    /** The creator's 3D preview (ADR-057). */
+    class UMarburgumCharacterPreview* GetPreview() const { return Preview; }
 
 protected:
     virtual void NativeOnInitialized() override;
@@ -47,8 +49,7 @@ private:
     UFUNCTION() void HandleCredentials();
     UFUNCTION() void HandleSendReset();
     UFUNCTION() void HandleReset();
-    UFUNCTION() void HandlePreviousModel();
-    UFUNCTION() void HandleNextModel();
+    void HandleModelPicked(int32 Index);
     UFUNCTION() void HandleCreateCharacter();
     UFUNCTION() void HandleSignOut();
     UFUNCTION() void HandleCommitted(const FText& Text, ETextCommit::Type CommitMethod);
@@ -63,6 +64,7 @@ private:
     UEditableTextBox* AddField(UVerticalBox* Panel, const FText& Label, const FText& Hint, bool bPassword = false);
     UButton* AddButton(class UHorizontalBox* Row, const FText& Label, int32 Kind, float GapAfter);
 
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> Motif;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> StepTitle;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> StepIntro;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> Message;
@@ -73,8 +75,8 @@ private:
     TArray<TArray<TObjectPtr<UEditableTextBox>>> StepFields;
     UPROPERTY(Transient) TArray<TObjectPtr<UButton>> Actions;
 
-    UPROPERTY(Transient) TObjectPtr<UTextBlock> ModelName;
-    UPROPERTY(Transient) TObjectPtr<UTextBlock> ModelCount;
+    UPROPERTY(Transient) TArray<TObjectPtr<class UMarburgumModelCard>> ModelCards;
+    UPROPERTY(Transient) TObjectPtr<class UMarburgumCharacterPreview> Preview;
     int32 ModelIndex = 0;
 
     EMarburgumAccountStep ShownStep = EMarburgumAccountStep::Disabled;
