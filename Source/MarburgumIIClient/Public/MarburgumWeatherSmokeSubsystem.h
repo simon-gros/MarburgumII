@@ -22,7 +22,14 @@ class AMarburgumVehicle;
  * replicated weather turn: a new hourly state, rain setting in and the streets soaking to at least
  * -MB2WeatherWetAtLeast (default 0.5), with the HUD's weather line following; then it walks and its steps splash.
  *
+ * Every phase also checks what the client draws (ADR-062): the weather effects actor's look, the rain curtain, the
+ * clouds, the level's sun and fog against their own, and MPC_Weather's wetness for the ground.
+ *
+ * Look only (-MB2WeatherLookOnly=overcast, snow_lying or fog, with any -MB2WeatherExpect): once the weather has
+ * arrived and settled, the client checks the look for that weather, takes a capture and passes.
+ *
  * Options: -MB2WeatherExpect= -MB2WeatherShot=<path prefix> -MB2WeatherTimeout=<s> -MB2WeatherWetAtLeast=<0..1>
+ * -MB2WeatherLookOnly=<look>
  */
 UCLASS()
 class MARBURGUMIICLIENT_API UMarburgumWeatherSmokeSubsystem : public UGameInstanceSubsystem
@@ -39,6 +46,9 @@ private:
     bool Bind();
     void TickFixed(double Now);
     void TickLive(double Now);
+    void TickLook(double Now);
+    /** Logs the weather effects' state and expects the look of Want: clear, rain, overcast, snow_lying or fog. */
+    void CheckLook(const TCHAR* Event, const FString& Want);
     /** Walks away from the car; true once WalkSeconds have passed and the steps are checked. */
     bool Walk(double Now, bool bExpectWet);
 
@@ -61,6 +71,8 @@ private:
 
     FString Expected = TEXT("clear_dry");
     FString ShotPrefix;
+    FString LookOnly;
+    bool bLookTurned = false;
     double TimeoutSeconds = 300.0;
     double WetAtLeast = 0.5;
     double StartSeconds = 0.0;

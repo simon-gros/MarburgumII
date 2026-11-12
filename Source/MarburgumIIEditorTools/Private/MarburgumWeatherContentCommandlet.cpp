@@ -6,6 +6,7 @@
 #include "HAL/FileManager.h"
 #include "IAssetTools.h"
 #include "MarburgumSurface.h"
+#include "MarburgumWeatherLookContent.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Misc/PackageName.h"
 #include "Misc/Paths.h"
@@ -148,7 +149,7 @@ UMarburgumWeatherContentCommandlet::UMarburgumWeatherContentCommandlet()
 
 int32 UMarburgumWeatherContentCommandlet::Main(const FString& Params)
 {
-    FString Steps = TEXT("surfaces,audio");
+    FString Steps = TEXT("look,surfaces,audio");
     FParse::Value(*Params, TEXT("Steps="), Steps, false);
     TArray<FString> List;
     Steps.ParseIntoArray(List, TEXT(","));
@@ -162,6 +163,15 @@ int32 UMarburgumWeatherContentCommandlet::Main(const FString& Params)
         else if (Step == TEXT("audio"))
         {
             bOk &= MarburgumWeatherContent::ImportFootsteps();
+        }
+        else if (Step == TEXT("look"))
+        {
+            FString Error;
+            if (!MarburgumWeatherLookContent::Write(Error))
+            {
+                UE_LOG(LogMarburgumWeatherContent, Error, TEXT("MB2WEATHERCONTENT look failed: %s"), *Error);
+                bOk = false;
+            }
         }
         else
         {

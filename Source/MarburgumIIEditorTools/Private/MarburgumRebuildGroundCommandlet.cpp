@@ -20,6 +20,7 @@
 #include "Materials/MaterialExpressionAbs.h"
 #include "Materials/MaterialExpressionAdd.h"
 #include "Materials/MaterialExpressionAppendVector.h"
+#include "Materials/MaterialExpressionCollectionParameter.h"
 #include "Materials/MaterialExpressionComponentMask.h"
 #include "Materials/MaterialExpressionConstant.h"
 #include "Materials/MaterialExpressionConstant3Vector.h"
@@ -39,6 +40,9 @@
 #include "Materials/MaterialExpressionVertexNormalWS.h"
 #include "Materials/MaterialExpressionWorldPosition.h"
 #include "Materials/MaterialInstanceConstant.h"
+#include "Materials/MaterialParameterCollection.h"
+#include "MarburgumWeatherLook.h"
+#include "MarburgumWeatherLookContent.h"
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "AssetToolsModule.h"
 #include "MeshDescription.h"
@@ -300,6 +304,15 @@ namespace
         {
             return Node<UMaterialExpressionWorldPosition>();
         }
+        /** One scalar of a material parameter collection (MPC_Weather), by name. */
+        UMaterialExpression* Collected(UMaterialParameterCollection* Collection, const TCHAR* Name)
+        {
+            UMaterialExpressionCollectionParameter* E = Node<UMaterialExpressionCollectionParameter>();
+            E->Collection = Collection;
+            E->ParameterName = Name;
+            E->ParameterId = Collection->GetParameterId(FName(Name));
+            return E;
+        }
         /** Gradient noise over world position: 0..1, features about 1/Scale centimetres. */
         UMaterialExpression* Noise(float Scale, int32 Levels)
         {
@@ -366,11 +379,39 @@ namespace
     }
 
     /**
+     * The weather on the ground (ADR-062), from MPC_Weather's wetness and snow cover, which the client writes from the
+     * server's weather. The wet response is the original's Godot `wetness.gdshaderinc`: porous ground (soil, grass,
+     * stone) darkens to 0.72 and barely changes its sheen; sealed ground (asphalt, paving, concrete) darkens to 0.6 and a
+     * film of water takes its roughness most of the way to 0.18. Glossy says how much of this ground is sealed, 0..1.
+     * Lying snow then whitens whatever faces up, and is matte.
+     */
+    void Weathered(FGraph& G, UMaterialParameterCollection* Weather, UMaterialExpression* Glossy, UMaterialExpression*& Color, UMaterialExpression*& Rough)
+    {
+        if (!Weather)
+        {
+            return;
+        }
+        UMaterialExpression* Wet = G.Saturate(G.Collected(Weather, MarburgumII::WeatherLook::WetnessParameter));
+        UMaterialExpression* Darkest = G.Lerp(G.Const(0.72f), G.Const(0.6f), Glossy);
+        Color = G.Mul(Color, G.Lerp(G.Const(1.0f), Darkest, Wet));
+        UMaterialExpression* Porous = G.Mul(Rough, G.Lerp(G.Const(1.0f), G.Const(0.9f), Wet));
+        UMaterialExpression* Film = G.Lerp(Rough, G.Const(0.18f), G.Mul(Wet, G.Const(0.8f)));
+        Rough = G.Lerp(Porous, Film, Glossy);
+
+        UMaterialExpression* Up = G.Saturate(G.Mul(G.Sub(G.Mask(G.Node<UMaterialExpressionVertexNormalWS>(), false, false, true), G.Const(0.5f)), G.Const(4.0f)));
+        // Snow lies unevenly: thinner in patches, so a dusting shows the ground through it.
+        UMaterialExpression* Patchy = G.Lerp(G.Const(0.7f), G.Const(1.0f), G.Noise(0.004f, 2));
+        UMaterialExpression* Snow = G.Saturate(G.Mul(G.Mul(G.Saturate(G.Collected(Weather, MarburgumII::WeatherLook::SnowCoverParameter)), Up), Patchy));
+        Color = G.Lerp(Color, G.Vector(FLinearColor(0.82f, 0.84f, 0.88f)), Snow);
+        Rough = G.Lerp(Rough, G.Const(0.75f), Snow);
+    }
+
+    /**
      * M_LentPaved: one texture set on the mesh's UV (metres), scaled by InvTile, with a tint, a
      * detail amount (0 for flat paint) and a large gradient-noise brightness change so the
      * repeat does not show.
      */
-    UMaterial* BuildPavedMaster(const FTextureSet& Default, TArray<UPackage*>& Dirty)
+    UMaterial* BuildPavedMaster(const FTextureSet& Default, UMaterialParameterCollection* Weather, TArray<UPackage*>& Dirty)
     {
         FGraph G{ BeginMaterial(FString::Printf(TEXT("%s/Materials/M_LentPaved"), GroundDir), Dirty) };
         UMaterialExpressionTextureCoordinate* UV0 = G.Node<UMaterialExpressionTextureCoordinate>();
@@ -391,6 +432,8 @@ namespace
         UMaterialExpression* NormalOut = G.Lerp(G.Mask(Flat, true, true, true), Normal, G.Scalar(TEXT("NormalStrength"), 1.0f));
         // Output 1 of a texture sample is its red channel.
         UMaterialExpression* RoughOut = G.Saturate(G.Add(G.Mul(Rough, G.Scalar(TEXT("RoughnessScale"), 1.0f), 1), G.Scalar(TEXT("RoughnessBias"), 0.0f)));
+        // All of the paving is sealed: asphalt, setts, pavers, kerbs and paint all take a film of water.
+        Weathered(G, Weather, G.Const(1.0f), Base, RoughOut);
         UMaterialEditorOnlyData* Ed = G.Material->GetEditorOnlyData();
         Ed->BaseColor.Connect(0, Base);
         Ed->Normal.Connect(0, NormalOut);
@@ -437,7 +480,7 @@ namespace
      * weights so edges are ragged rather than blurred, a large brightness variation, and stone
      * retaining wall projected sideways wherever the ground is steeper than about 45 degrees.
      */
-    UMaterial* BuildTerrainMaterial(const TArray<FTextureSet*>& Layers, const FTextureSet& Wall, UTexture2D* Surface, TArray<UPackage*>& Dirty)
+    UMaterial* BuildTerrainMaterial(const TArray<FTextureSet*>& Layers, const FTextureSet& Wall, UTexture2D* Surface, UMaterialParameterCollection* Weather, TArray<UPackage*>& Dirty)
     {
         FGraph G{ BeginMaterial(FString::Printf(TEXT("%s/Materials/M_LentTerrain"), GroundDir), Dirty) };
         UMaterialExpression* World = G.WorldPosition();
@@ -504,6 +547,12 @@ namespace
         Color = G.Lerp(Color, WallColor, Steep);
         Normal = G.Lerp(Normal, WallNormal, Steep);
         Rough = G.Lerp(Rough, WallRough, Steep);
+
+        // Only the hard standing (the base layer, where no other weight is) is sealed; grass, earth, gravel, river
+        // stones and the brick walls soak the rain up.
+        UMaterialExpression* Others = G.Saturate(G.Add(G.Add(Weights, Weights, 1, 2), G.Add(Weights, Weights, 3, 4)));
+        UMaterialExpression* Sealed = G.Mul(G.Sub(G.Const(1.0f), Others), G.Sub(G.Const(1.0f), Steep));
+        Weathered(G, Weather, Sealed, Color, Rough);
 
         UMaterialEditorOnlyData* Ed = G.Material->GetEditorOnlyData();
         Ed->BaseColor.Connect(0, Color);
@@ -916,7 +965,12 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
     Surface->PreEditChange(nullptr);
     Surface->NeverStream = true;
     Surface->PostEditChange();
-    UMaterial* PavedMaster = BuildPavedMaster(Asphalt, Dirty);
+    UMaterialParameterCollection* Weather = MarburgumWeatherLookContent::EnsureCollection(Dirty);
+    if (!Weather)
+    {
+        return 1;
+    }
+    UMaterial* PavedMaster = BuildPavedMaster(Asphalt, Weather, Dirty);
     TArray<UMaterialInterface*> PavedMaterials = {
         PavedInstance(TEXT("MI_LentAsphalt"), PavedMaster, Asphalt, FLinearColor(0.92f, 0.92f, 0.92f), 1.0f, Asphalt.RoughMax - Asphalt.RoughMin, Asphalt.RoughMin, 1.0f, Dirty),
         PavedInstance(TEXT("MI_LentYardAsphalt"), PavedMaster, YardAsphalt, FLinearColor(0.95f, 0.94f, 0.92f), 1.0f, YardAsphalt.RoughMax - YardAsphalt.RoughMin, YardAsphalt.RoughMin, 1.0f, Dirty),
@@ -925,7 +979,7 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
         PavedInstance(TEXT("MI_LentKerb"), PavedMaster, Kerb, FLinearColor(1.05f, 1.04f, 1.02f), 1.0f, Kerb.RoughMax - Kerb.RoughMin, Kerb.RoughMin, 1.0f, Dirty),
         PavedInstance(TEXT("MI_LentRoadPaint"), PavedMaster, Kerb, FLinearColor(0.78f, 0.78f, 0.75f), 0.12f, 0.4f, 0.35f, 0.25f, Dirty),
     };
-    UMaterial* Terrain = BuildTerrainMaterial({ &YardAsphalt, &Earth, &Gravel, &Grass, &Stones }, Wall, Surface, Dirty);
+    UMaterial* Terrain = BuildTerrainMaterial({ &YardAsphalt, &Earth, &Gravel, &Grass, &Stones }, Wall, Surface, Weather, Dirty);
     UMaterial* Water = BuildWaterMaterial(Dirty);
     if (!Water)
     {
@@ -938,6 +992,12 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
         return 1;
     }
     Dirty.Reset();
+    if (FParse::Param(*Params, TEXT("MaterialsOnly")))
+    {
+        // The materials alone (ADR-062): the paved meshes, the ring and the level keep what they have.
+        UE_LOG(LogMarburgumGround, Display, TEXT("MB2GROUND materials rebuilt (paved, terrain, water); meshes and level unchanged"));
+        return Terrain ? 0 : 1;
+    }
 
     // Paved meshes.
     TArray<UStaticMesh*> Meshes;

@@ -12,9 +12,21 @@
 #         seed 1996). The client sees the hourly state turn and the streets soak past wetness 0.5, the HUD's weather
 #         line following the replicated weather; then it walks and its steps splash.
 #
+# Every phase also checks what the client draws (ADR-062): rain curtain, clouds, the level's sun and fog against their
+# own, and MPC_Weather's wetness. Six more phases only look and capture (-MB2WeatherLookOnly), all facing the same
+# way along the promenade so their captures compare:
+#
+#   clear     the clear_dry profile: the level's daylight as built, a few clouds.
+#   rain      the rain_wet profile: rain falling and leaning in the wind, the street soaked.
+#   overcast  the overcast profile: a closed sky, a dimmer sun, the eye opened up, nothing falling.
+#   snow      the winter_cold profile: five centimetres of snow lying, so the ground is white.
+#   fog       the climate at 17 November 2026 07:00 CET, a fog morning (seed 1996): the haze many times its own.
+#   storm     the climate at 12 November 2026 18:30 CET, a thunderstorm: rain, the storm's flashes, and one close
+#             strike (FlashNow) captured.
+#
 # The script compares the dry and wet decelerations and checks the server's weather log in each phase.
 # The client renders offscreen (see interaction-smoke-linux.sh for the Vulkan note).
-# MB2_WEATHER_PHASES="dry wet" runs only those phases (the braking comparison needs both dry and wet).
+# MB2_WEATHER_PHASES="dry wet" runs only those phases (the braking comparison needs both dry and wet; default all).
 # Usage: scripts/weather-smoke-linux.sh [staged|editor]
 # Evidence is written to Saved/WeatherSmoke/<UTC timestamp>/.
 set -euo pipefail
@@ -101,7 +113,7 @@ start_server() {
     exit 1
 }
 
-# run_client <phase> <expect> <extra args...>; output to client-<phase>.log
+# run_client <phase> <expect> <extra client args...>; output to client-<phase>.log
 run_client() {
     local phase="$1" expect="$2"
     shift 2
@@ -142,6 +154,7 @@ expect_log() {
 
 # client_value <phase> <event> <field>: the field of the client's first line for that event
 client_value() {
+    [[ -f "$out_dir/client-$1.log" ]] || return 0
     grep -ao "MB2WSMOKE role=client .* event=$2 .*" "$out_dir/client-$1.log" | head -1 | grep -o " $3=[^ ]*" | head -1 | cut -d= -f2
 }
 
@@ -150,7 +163,7 @@ run_phase() {
     shift 2
     echo "Phase $phase: dedicated server ($mode) on $map, port $port, weather $expect"
     start_server "$phase" "$@"
-    run_client "$phase" "$expect"
+    run_client "$phase" "$expect" ${look_only:+-MB2WeatherLookOnly="$look_only"}
     sleep 1
     stop_server
     local log="$out_dir/server-$phase.log"
@@ -158,7 +171,8 @@ run_phase() {
     expect_log "$log" "weather_errors" 0 "MB2WEATHER role=server event=\(no_climate\|unknown_profile\|bad_clock\)"
 }
 
-phases="${MB2_WEATHER_PHASES:-dry wet live}"
+phases="${MB2_WEATHER_PHASES:-dry wet live clear overcast rain snow fog storm}"
+look_only=""
 echo "Evidence in $out_dir (phases: $phases)"
 for phase in $phases; do
     case "$phase" in
@@ -168,17 +182,43 @@ for phase in $phases; do
             run_phase live auto -MB2Weather=auto -MB2WeatherClock="$live_clock" -MB2WeatherSpeed="$live_speed"
             expect_log "$out_dir/server-live.log" "live_weather_turns" ">=1" "MB2WEATHER role=server event=changed .* source=auto state=light_rain type=rain"
             ;;
+        clear) look_only=clear run_phase clear clear_dry -MB2Weather=clear_dry ;;
+        overcast) look_only=overcast run_phase overcast overcast -MB2Weather=overcast ;;
+        rain) look_only=rain run_phase rain rain_wet -MB2Weather=rain_wet ;;
+        snow) look_only=snow_lying run_phase snow winter_cold -MB2Weather=winter_cold ;;
+        fog) look_only=fog run_phase fog auto -MB2Weather=auto -MB2WeatherClock=2026-11-17T06:00:00Z -MB2WeatherSpeed=1 ;;
+        storm) look_only=storm run_phase storm auto -MB2Weather=auto -MB2WeatherClock=2026-11-12T17:30:00Z -MB2WeatherSpeed=1 ;;
         *) echo "Unknown phase $phase" >&2; exit 2 ;;
     esac
+done
+
+for phase in $phases; do
+    log="$out_dir/client-$phase.log"
+    [[ -f "$log" ]] || continue
+    looks=$(grep -ac "MB2WSMOKE role=client .* event=look[a-z_]* want=" "$log" || true)
+    echo "  client $phase: look checks=$looks (want >= 1)"
+    [[ "$looks" -ge 1 ]] || status=1
+done
+
+# The scene's brightness in each look capture (mean grey of the promenade and river right of the player, clear of the
+# HUD, the player and the car's roof; 0..255), for calibrating the look.
+for phase in clear overcast rain snow fog storm; do
+    shot="$out_dir/$phase-look.png"
+    [[ -f "$shot" ]] || continue
+    mean=$(magick "$shot" -resize 1920x1080! -crop 860x260+1060+440 +repage -colorspace gray -format "%[fx:mean*255]" info: 2>/dev/null || echo "?")
+    echo "  capture $phase: scene mean grey ${mean}"
+    echo "$phase $mean" >> "$out_dir/brightness.txt"
 done
 
 dry_decel="$(client_value dry braked decel)"
 wet_decel="$(client_value wet braked decel)"
 dry_surface="$(client_value dry braked surface)"
 wet_surface="$(client_value wet braked surface)"
-echo "  braking: dry decel=${dry_decel:-?} m/s2 on ${dry_surface:-?}, wet decel=${wet_decel:-?} m/s2 on ${wet_surface:-?} (want wet <= 0.95 x dry)"
-if [[ -z "$dry_decel" || -z "$wet_decel" ]] || ! awk -v d="$dry_decel" -v w="$wet_decel" 'BEGIN { exit !(d > 0 && w <= 0.95 * d) }'; then
-    status=1
+if [[ " $phases " == *" dry "* && " $phases " == *" wet "* ]]; then
+    echo "  braking: dry decel=${dry_decel:-?} m/s2 on ${dry_surface:-?}, wet decel=${wet_decel:-?} m/s2 on ${wet_surface:-?} (want wet <= 0.95 x dry)"
+    if [[ -z "$dry_decel" || -z "$wet_decel" ]] || ! awk -v d="$dry_decel" -v w="$wet_decel" 'BEGIN { exit !(d > 0 && w <= 0.95 * d) }'; then
+        status=1
+    fi
 fi
 
 {

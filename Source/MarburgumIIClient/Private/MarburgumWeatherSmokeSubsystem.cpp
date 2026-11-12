@@ -28,6 +28,8 @@
 #include "UI/MarburgumLocationBanner.h"
 #include "UI/MarburgumUISubsystem.h"
 #include "UnrealClient.h"
+#include "Weather/MarburgumWeatherEffects.h"
+#include "Weather/MarburgumWeatherPresentation.h"
 
 #define MB2_WEATHER_SMOKE_LOG(Format, ...) \
     UE_LOG(LogMarburgumNet, Log, TEXT("MB2WSMOKE role=client expect=%s " Format), *Expected, ##__VA_ARGS__)
@@ -67,6 +69,7 @@ void UMarburgumWeatherSmokeSubsystem::Initialize(FSubsystemCollectionBase& Colle
     FParse::Value(CommandLine, TEXT("MB2WeatherShot="), ShotPrefix);
     FParse::Value(CommandLine, TEXT("MB2WeatherTimeout="), TimeoutSeconds);
     FParse::Value(CommandLine, TEXT("MB2WeatherWetAtLeast="), WetAtLeast);
+    FParse::Value(CommandLine, TEXT("MB2WeatherLookOnly="), LookOnly);
     Expected = Expected.ToLower();
     StartSeconds = FPlatformTime::Seconds();
     TickerHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UMarburgumWeatherSmokeSubsystem::Tick), 0.f);
@@ -295,7 +298,11 @@ bool UMarburgumWeatherSmokeSubsystem::Tick(float DeltaTime)
         Expect(bSaved, FString::Printf(TEXT("shot_not_saved=%s"), *FPaths::GetCleanFilename(PendingShot)));
         PendingShot.Reset();
     }
-    if (Expected == TEXT("auto"))
+    if (!LookOnly.IsEmpty())
+    {
+        TickLook(Now);
+    }
+    else if (Expected == TEXT("auto"))
     {
         TickLive(Now);
     }
@@ -333,6 +340,7 @@ void UMarburgumWeatherSmokeSubsystem::TickFixed(double Now)
         {
             Expect(BannerWeather().StartsWith(bWet ? TEXT("Rain") : TEXT("Clear")), FString::Printf(TEXT("banner_weather=%s"), *BannerWeather()));
         }
+        CheckLook(TEXT("look"), bWet ? TEXT("rain") : TEXT("clear"));
         MB2_WEATHER_SMOKE_LOG("event=surfaces body=%s car=%s", *SurfaceUnder(Character->GetActorLocation()), *SurfaceUnder(Car->GetActorLocation()));
         Survey(Character->GetActorLocation());
         Shot(TEXT("arrival"));
@@ -425,6 +433,7 @@ void UMarburgumWeatherSmokeSubsystem::TickLive(double Now)
         FirstWetness = Weather->Wetness;
         LastState = Weather->State;
         Expect(FirstWetness < WetAtLeast, FString::Printf(TEXT("already_wet=%.3f"), FirstWetness));
+        CheckLook(TEXT("look_start"), TEXT("dry"));
         Shot(TEXT("live-start"));
         Advance(1, Now);
         return;
@@ -447,6 +456,7 @@ void UMarburgumWeatherSmokeSubsystem::TickLive(double Now)
             Expect(BannerWeather() == Want, FString::Printf(TEXT("banner_weather=%s want=%s"), *BannerWeather(), *Want));
             Expect(BannerWeather().Contains(TEXT("wet streets")), FString::Printf(TEXT("banner_not_wet=%s"), *BannerWeather()));
         }
+        CheckLook(TEXT("look_soaked"), TEXT("rain"));
         Shot(TEXT("live-wet"));
         Advance(2, Now);
         return;
@@ -461,6 +471,138 @@ void UMarburgumWeatherSmokeSubsystem::TickLive(double Now)
         return;
     default:
         return;
+    }
+}
+
+void UMarburgumWeatherSmokeSubsystem::TickLook(double Now)
+{
+    const FMarburgumWeather* Weather = AMarburgumGameState::WeatherOf(GetGameInstance()->GetWorld());
+    if (!Weather || !Body())
+    {
+        return;
+    }
+    switch (Step)
+    {
+    case 0:
+        if (!bLookTurned)
+        {
+            // Along the promenade, away from the car, so the capture has the river and the far bank for distance.
+            bLookTurned = true;
+            const AMarburgumVehicle* Car = Vehicle.Get();
+            const FVector Away = Car ? (Body()->GetActorLocation() - Car->GetActorLocation()).GetSafeNormal2D() : Body()->GetActorForwardVector();
+            Controller->SetControlRotation(FRotator(-8.f, Away.Rotation().Yaw, 0.f));
+        }
+        // Long enough for the clouds' and the eye's own adaptation, not just the look's easing.
+        if (!Weather->bKnown || Now - StepSeconds < SettleSeconds + 3.0)
+        {
+            if (Now - StepSeconds > 30.0) Fail(TEXT("weather_never_arrived"));
+            return;
+        }
+        ReportWeather(TEXT("weather"));
+        Expect(Weather->Source == FName(*Expected), FString::Printf(TEXT("source=%s"), *Weather->Source.ToString()));
+        CheckLook(TEXT("look"), LookOnly);
+        Shot(TEXT("look"));
+        Advance(1, Now);
+        return;
+    case 1:
+        if (LookOnly == TEXT("storm"))
+        {
+            // A close strike for the capture: the storm makes its own at random, about three a minute.
+            UWorld* World = GetGameInstance()->GetWorld();
+            UMarburgumWeatherPresentation* Presentation = World ? World->GetSubsystem<UMarburgumWeatherPresentation>() : nullptr;
+            if (AMarburgumWeatherEffects* Effects = Presentation ? Presentation->GetEffects() : nullptr)
+            {
+                Effects->FlashNow(1.0f);
+                Effects->HoldFlash(true);
+                Shot(TEXT("flash"));
+                MB2_WEATHER_SMOKE_LOG("event=flash flashes=%d", Effects->GetFlashes());
+            }
+        }
+        Advance(2, Now);
+        return;
+    case 2:
+    {
+        UWorld* World = GetGameInstance()->GetWorld();
+        UMarburgumWeatherPresentation* Presentation = World ? World->GetSubsystem<UMarburgumWeatherPresentation>() : nullptr;
+        if (AMarburgumWeatherEffects* Effects = Presentation ? Presentation->GetEffects() : nullptr)
+        {
+            Effects->HoldFlash(false);
+        }
+        Pass();
+        return;
+    }
+    default:
+        return;
+    }
+}
+
+void UMarburgumWeatherSmokeSubsystem::CheckLook(const TCHAR* Event, const FString& Want)
+{
+    UWorld* World = GetGameInstance()->GetWorld();
+    const UMarburgumWeatherPresentation* Presentation = World ? World->GetSubsystem<UMarburgumWeatherPresentation>() : nullptr;
+    const AMarburgumWeatherEffects* Effects = Presentation ? Presentation->GetEffects() : nullptr;
+    if (!Effects)
+    {
+        MB2_WEATHER_SMOKE_LOG("event=%s effects=0", Event);
+        Expect(false, TEXT("no_weather_effects"));
+        return;
+    }
+    const MarburgumII::WeatherLook::FLook& Look = Effects->GetCurrentLook();
+    const float Wetness = Effects->WrittenWetness();
+    MB2_WEATHER_SMOKE_LOG("event=%s want=%s effects=1 content=%d%d%d sun=%d fog=%d rain=%.3f snow=%.3f cover=%.3f fog_look=%.3f lean=%.1f bearing=%.0f "
+        "rain_drawn=%d near_drawn=%d shelter=%.2f clouds_drawn=%d sun_ratio=%.3f fog_ratio=%.3f exposure=%.2f mpc_wetness=%.3f snow_cover=%.3f flashes=%d sound=%d",
+        Event, *Want, Effects->CanDrawPrecipitation() ? 1 : 0, Effects->CanDrawClouds() ? 1 : 0, Effects->CanWetGround() ? 1 : 0,
+        Effects->HasSun() ? 1 : 0, Effects->HasFog() ? 1 : 0, Look.Rain, Look.Snow, Look.CloudCover, Look.FogDensityScale, Look.LeanDegrees,
+        Look.LeanBearingDegrees, Effects->IsRainDrawn() ? 1 : 0, Effects->IsNearRainDrawn() ? 1 : 0, Effects->GetShelter(),
+        Effects->AreCloudsDrawn() ? 1 : 0, Effects->SunRatio(), Effects->FogRatio(), Look.ExposureBias, Wetness, Look.SnowCover,
+        Effects->GetFlashes(), Effects->IsSoundPlaying() ? 1 : 0);
+
+    // Lent brings its own sun and haze, and the content step (scripts/create-weather-content.sh look) has run.
+    Expect(Effects->CanDrawPrecipitation() && Effects->CanDrawClouds() && Effects->CanWetGround(), TEXT("weather_content_missing"));
+    Expect(Effects->HasSun() && Effects->HasFog(), TEXT("level_has_no_sun_or_fog"));
+    if (Want == TEXT("clear"))
+    {
+        Expect(!Effects->IsRainDrawn(), TEXT("rain_drawn_when_clear"));
+        Expect(Effects->SunRatio() > 0.9f, FString::Printf(TEXT("clear_sun_ratio=%.3f"), Effects->SunRatio()));
+        Expect(Wetness >= 0.0f && Wetness < 0.01f, FString::Printf(TEXT("clear_mpc_wetness=%.3f"), Wetness));
+    }
+    else if (Want == TEXT("dry"))
+    {
+        Expect(Wetness >= 0.0f && Wetness < WetAtLeast, FString::Printf(TEXT("dry_mpc_wetness=%.3f"), Wetness));
+    }
+    else if (Want == TEXT("rain"))
+    {
+        Expect(Effects->IsRainDrawn() && Look.Rain > 0.05f, FString::Printf(TEXT("rain_not_drawn=%.3f"), Look.Rain));
+        Expect(Effects->AreCloudsDrawn(), TEXT("no_clouds_in_rain"));
+        Expect(Effects->SunRatio() < 0.95f, FString::Printf(TEXT("rain_sun_ratio=%.3f"), Effects->SunRatio()));
+        Expect(Effects->FogRatio() > 1.0f + 2.0f * Look.Rain, FString::Printf(TEXT("rain_fog_ratio=%.3f"), Effects->FogRatio()));
+        Expect(Wetness > 0.3f, FString::Printf(TEXT("rain_mpc_wetness=%.3f"), Wetness));
+    }
+    else if (Want == TEXT("overcast"))
+    {
+        Expect(!Effects->IsRainDrawn(), TEXT("rain_drawn_when_overcast"));
+        Expect(Effects->AreCloudsDrawn() && Look.CloudCover > 0.8f, FString::Printf(TEXT("overcast_cover=%.3f"), Look.CloudCover));
+        Expect(Effects->SunRatio() < 0.95f, FString::Printf(TEXT("overcast_sun_ratio=%.3f"), Effects->SunRatio()));
+        Expect(Look.ExposureBias < -0.3f, FString::Printf(TEXT("overcast_exposure=%.2f"), Look.ExposureBias));
+    }
+    else if (Want == TEXT("snow_lying"))
+    {
+        Expect(Look.SnowCover > 0.9f, FString::Printf(TEXT("snow_cover=%.3f"), Look.SnowCover));
+        Expect(Effects->AreCloudsDrawn(), TEXT("no_clouds_in_winter"));
+    }
+    else if (Want == TEXT("storm"))
+    {
+        Expect(Effects->IsRainDrawn() && Look.Rain > 0.2f, FString::Printf(TEXT("storm_rain=%.3f"), Look.Rain));
+        Expect(Look.FlashesPerMinute > 1.0f && Look.Storm > 0.8f, FString::Printf(TEXT("storm_flashes_per_minute=%.2f storm=%.2f"), Look.FlashesPerMinute, Look.Storm));
+    }
+    else if (Want == TEXT("fog"))
+    {
+        Expect(Effects->FogRatio() > 10.0f, FString::Printf(TEXT("fog_ratio=%.3f"), Effects->FogRatio()));
+        Expect(!Effects->IsRainDrawn(), TEXT("rain_drawn_in_fog"));
+    }
+    else
+    {
+        Expect(false, FString::Printf(TEXT("unknown_look=%s"), *Want));
     }
 }
 

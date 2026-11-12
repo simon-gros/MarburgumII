@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
-# Regenerate the content weather and ground surfaces need (ADR-061) with the C++ editor commandlet (MarburgumIIEditorTools):
+# Regenerate the content weather and ground surfaces need (ADR-061, ADR-062) with the C++ editor commandlet (MarburgumIIEditorTools):
+#   Content/Marburgum/Weather/{SM,M}_WeatherCurtain   the rain and snow curtain round the camera (ADR-062)
+#   Content/Marburgum/Weather/MI_WeatherClouds        the engine's simple volumetric cloud, so a cooked client carries it
+#   Content/Marburgum/Weather/MPC_Weather             the ground's wetness and snow cover, read by Lent's paving and landscape
+#                                                     (their materials come from scripts/rebuild-ground.sh materials)
 #   Content/World/Ground/Surfaces/PM_*        physical materials naming what Lent's paving is made of, set on its paved
 #                                             materials so tyres and feet can tell asphalt from setts
 #   Content/Audio/Footsteps/                  Kenney Impact Sounds 1.0 footsteps (CC0) and the wet-street steps
 #                                             generated from them (`scripts/mb2.sh generate wet-footsteps`)
 # The landscape's surface map, Content/Marburgum/Ground/lent_surface.bin, comes from
 #   tools/lent-ground: cargo run --release -- surface-kinds --surface Data/World/lent_ground/surface.png --out Content/Marburgum/Ground/lent_surface.bin
-# Usage: scripts/create-weather-content.sh [surfaces|audio|all]   (default: all)
+# Usage: scripts/create-weather-content.sh [look|surfaces|audio|all]   (default: all)
 # The commandlet lives in the Editor target, so build MarburgumIIEditor first. Rerun surfaces after a ground rebuild
 # that creates the paved materials afresh.
 set -euo pipefail
@@ -21,10 +25,10 @@ if [[ -z "$ue_root" ]]; then
 fi
 
 case "$which" in
-    surfaces|audio) steps="$which" ;;
-    all) steps="surfaces,audio" ;;
+    look|surfaces|audio) steps="$which" ;;
+    all) steps="look,surfaces,audio" ;;
     *)
-        echo "Usage: $0 [surfaces|audio|all]" >&2
+        echo "Usage: $0 [look|surfaces|audio|all]" >&2
         exit 2
         ;;
 esac
