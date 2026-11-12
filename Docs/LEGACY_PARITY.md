@@ -1,6 +1,6 @@
 # Original Marburgum → MarburgumII parity register
 
-**Status:** Baseline 8 November; implementation status updated through ADR-045 on 11 November 2026 ([earlier audit](DAILY_CHANGE_REVIEW_2026-11-10.md), [latest audit](DEVELOPMENT_UPDATE_2026-11-11.md)). Automated verification and owner approval remain separate.  
+**Status:** Baseline 8 November; reconciled with code/ADR evidence **through ADR-059 on 12 November 2026** ([current audit](DEVELOPMENT_REVIEW_2026-11-12.md)). Recorded engineering functionality is not an owner-accepted release.
 **Companion data:** [`Data/Parity/source-matrix.v0.1.json`](../Data/Parity/source-matrix.v0.1.json).  
 **Authority:** [Vision](VISION.md), [Ontology](ONTOLOGY.md), [Network architecture](NETWORK_ARCHITECTURE.md), [Decisions](DECISIONS.md) and [Roadmap](ROADMAP.md).
 
@@ -16,23 +16,23 @@ Changes made explicitly in this restart take precedence: **Unreal Engine 5.8.3**
 
 | ID | Inherited design area | First target stage | MarburgumII status |
 | --- | --- | --- | --- |
-| `world_geography` | Marburgum geography and district identity | Stage 1 nine-window world; Stage 3 streaming | Active `/Game/World/lent` now covers nine 512 m windows; 870 closed shells, surveyed ground/pavement, crossings and Drava (ADR-040/045); performance, period correction and owner review outstanding |
+| `world_geography` | Marburgum geography and district identity | Stage 1 nine-window world; Stage 3 streaming | `/Game/World/lent` nine-window 1,536 m level, 870 shells, surveyed paving, 422 swim volumes and ADR-053/054 map passes/distant ring; editor-qualified but no World Partition/current packaged performance or owner sign-off |
 | `historical_state` | 1990s culture and period correctness | Stage 3 | Legacy design retained; implementation pending |
-| `characters_population` | Characters, NPCs and virtual population | Stage 1 street slice; Stage 3 population | Angler/three original fighters plus server-controlled pedestrians walking pavement and reacting to fights, bodies, cars and panic (ADR-041/044); one-client editor verification, no packaged/multi-client population qualification |
-| `skills` | Skill progression | Stage 2 | Legacy design retained; implementation pending |
-| `fishing` | Fishing | Stage 2 | Legacy design retained; implementation pending |
-| `missions_story` | Missions, story and evidence | Stage 1 start; Stage 2–5 completion/expansion | First mission starts, saves, grants rod and appears in Journal; fishing required to finish |
-| `reputation_social` | Reputation, relationships and organizations | Stage 2-3 | Legacy design retained; implementation pending |
-| `economy_trading` | Economy and trading | Stage 1-2 | Legacy design retained; implementation pending |
-| `inventory_items` | Items, clues and inventory | Stage 1 | First runtime slice: `fishing_rod` (original id) held in owner-only server custody, durable across restarts; awaiting owner playtest |
+| `characters_population` | Characters, NPCs and virtual population | Stage 1 street slice; Stage 3 population | Angler/three authored fighters plus server-replicated incident-reacting pedestrians (ADR-041/044); editor crowd smoke, not staged two-client density acceptance |
+| `skills` | Skill progression | Stage 2 | Original 0–1990 XP curve with durable Fishing/Reputation advancement and first Skills (K) UMG view (ADR-047); editor mission/restart proof, broader skills/professions still unimplemented |
+| `fishing` | Fishing | Stage 2 | Server-owned Drava cast/bite/strike/catch and original weighted species, durable catch/hand-in (ADR-047/048); editor mission smoke; no current packaged two-client/audio/animation qualification |
+| `missions_story` | Missions, story and evidence | Stage 1 start; Stage 2–5 completion/expansion | All eight original mission flows, choices, item/clue custody, money/XP and restart persistence editor-tested (ADR-049–052); Melje/Tabor use temporary pads; no staged/owner approval |
+| `reputation_social` | Reputation, relationships and organizations | Stage 2–3 | Reputation XP and mission decisions persist through editor restart (ADR-047–052); wider relationships/organizations/social systems remain future scope |
+| `economy_trading` | Economy and trading | Stage 1–2 | Mission cash rewards and durable item/money state exist; general vendor/trader economy, ownership and production-grade ledger remain future scope |
+| `inventory_items` | Items, clues and inventory | Stage 1 | Server-owned inventory, fishing rod and mission evidence/clues survive restart (ADR-014/047–052); comprehensive item/trade/crafting actions unimplemented |
 | `housing` | Housing and property | Stage 3 | Legacy design retained; implementation pending |
 | `combat_fighting` | Unarmed fighting and NPCs answering violence | Stage 1 PvE | Server jab/heavy/guard, three fighters, down/recovery and CC0 audio; prior packaged two-client smoke (ADR-041), IK-corrected feet editor-tested later (ADR-043). Weapons/PvP/expanded consequences absent |
-| `vehicles` | Vehicles and transportation | Stage 1 drive and collisions; Stage 3 traffic | Five original cars, server driving/driver-passenger, parked hatchback on revised carriageway, foot-IK-fixed door clips and ambient NPC run-over/dodge (ADR-039/040/043/044); no persistence, ownership/fuel/traffic/vehicle damage/audio |
+| `vehicles` | Vehicles and transportation | Stage 1 drive and collisions; Stage 3 traffic | Five-car server driving/seats, pedestrian reactions; ADR-056 editor-tested own-car relevance fix after owner-reported 150 m freeze; long packaged drive and traffic/ownership/fuel/audio open |
 | `weather_time` | City time, seasonal weather and environment | Stage 3 | Legacy design retained; implementation pending |
 | `interactions` | Unified urban interaction verbs | Stage 1 | First runtime slice: proximity prompt, client request → server validation → durable receipt on a test fixture; awaiting owner playtest |
 | `jobs_opportunity` | Employment, opportunity scarcity and fairness | Stage 2-4 | Legacy design retained; implementation pending |
-| `user_interface` | Player-facing UI, HUD and journal (visually rebuilt) | Stage 0C–1 | Live UMG shell/chat/prompt/location/objective/condition/swim/vehicle and Character/Inventory/Journal; Skills, Settings and auth/creator missing |
-| `network_persistence` | Dedicated authoritative MMORPG world | Stage 0-4 | Dedicated server and clients qualified; development file store and test identity only (ADR-014) |
+| `user_interface` | Player-facing UI, HUD and journal (visually rebuilt) | Stage 0C–1 | Live UMG session/chat/HUD, Character/Inventory/Journal/**Skills** and editor-tested registration/creator/3D previews (ADR-055/057–059); Settings, localization, focus/scale/controller and owner sign-off open |
+| `network_persistence` | Dedicated authoritative MMORPG world | Stage 0–4 | Dedicated server/clients, dev world store, plus editor-tested HTTPS account/character and single-use world tickets (ADR-055); production email/storage/operations and high load unproven |
 
 The companion JSON contains the original source paths and explicit migration rules for all 17 current domain entries. This table is **not** a claim that the whole content catalogue, source assets, data imports, maps, or network services have been ported.
 
