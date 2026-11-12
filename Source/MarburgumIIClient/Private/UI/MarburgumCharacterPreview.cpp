@@ -86,6 +86,9 @@ AMarburgumCharacterPreviewStage::AMarburgumCharacterPreviewStage()
     Body->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     Body->SetLightingChannels(false, false, true);
     Body->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+    // Texture streaming only follows player views, never scene captures, so in the front end nothing asks for
+    // the body's full mips and the face renders from a low mip. Keep every mip of what the stage shows.
+    Body->bForceMipStreaming = true;
     for (const MarburgumII::Accounts::FCharacterModel& Model : MarburgumII::Accounts::CharacterModels)
     {
         ConstructorHelpers::FObjectFinder<USkeletalMesh> Found(Model.Mesh);

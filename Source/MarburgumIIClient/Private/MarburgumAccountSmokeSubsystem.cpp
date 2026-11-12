@@ -306,6 +306,18 @@ void UMarburgumAccountSmokeSubsystem::TickFirst(double Now)
     case 77:
         if (Now - StepSeconds < SettleSeconds) return;
         Shot(TEXT("creator-close"));
+        Advance(78, Now);
+        return;
+    case 78:
+        // The Protagonist's face up close and from the front, undoing the turn: the textured body, so a blurred mip
+        // shows here first.
+        Form->SelectModelForTest(FName(MarburgumII::Accounts::CharacterModels[0].Id));
+        if (UMarburgumCharacterPreview* Preview = Form->GetPreview()) Preview->TurnForTest(140.f);
+        Advance(79, Now);
+        return;
+    case 79:
+        if (Now - StepSeconds < SettleSeconds * 1.5) return;
+        Shot(*FString::Printf(TEXT("creator-%s-close"), MarburgumII::Accounts::CharacterModels[0].Id));
         Advance(75, Now);
         return;
     case 75:
