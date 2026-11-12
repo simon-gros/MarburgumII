@@ -42,6 +42,12 @@ FMarburgumChoiceUiEvent& FMarburgumClientUiHooks::OnMissionChoiceRequested()
     return Event;
 }
 
+FMarburgumShopUiEvent& FMarburgumClientUiHooks::OnShopToggleRequested()
+{
+    static FMarburgumShopUiEvent Event;
+    return Event;
+}
+
 FMarburgumNumberKeyUiEvent& FMarburgumClientUiHooks::OnNumberKeyPressed()
 {
     static FMarburgumNumberKeyUiEvent Event;

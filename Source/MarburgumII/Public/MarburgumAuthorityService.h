@@ -30,6 +30,11 @@ public:
         AMarburgumInteractable* Target, FName MissionId, FName ChoiceId)
         PURE_VIRTUAL(UMarburgumAuthorityService::HandleMissionChoice, return FMarburgumInteractionReceipt(););
 
+    /** Validate and, if allowed, durably commit a purchase or sale at the counter Target keeps (ADR-060). */
+    virtual FMarburgumInteractionReceipt HandleTrade(AMarburgumPlayerController& Requester, const FGuid& OperationId,
+        AMarburgumInteractable* Target, EMarburgumTradeAction Action, FName ItemId, int32 Quantity)
+        PURE_VIRTUAL(UMarburgumAuthorityService::HandleTrade, return FMarburgumInteractionReceipt(););
+
     /** The active service of a world, if any. */
     static UMarburgumAuthorityService* Get(const UWorld* World);
 };

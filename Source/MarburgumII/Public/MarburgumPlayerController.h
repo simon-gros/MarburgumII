@@ -85,6 +85,15 @@ public:
     void SubmitMissionChoice(const FGuid& OperationId, AMarburgumInteractable* Target, FName MissionId, FName ChoiceId);
 
     /**
+     * Client: buy or sell Quantity of ItemId at the counter Target keeps (ADR-060). Like SubmitInteraction: the same
+     * id is safe to resend, and the answer arrives as an interaction receipt. The server sets every price.
+     */
+    void SubmitTrade(const FGuid& OperationId, AMarburgumInteractable* Target, EMarburgumTradeAction Action, FName ItemId, int32 Quantity);
+
+    /** Client: the counter keeper B would open, the interaction candidate when it keeps a counter. */
+    AMarburgumInteractable* FindShopCandidate() const;
+
+    /**
      * Client: what pressing E at Target would mean for this player's missions, mirrored from the server's rule
      * (MarburgumMissionLogic.h) so the prompt and the choice panel can say it. The server still decides.
      */
@@ -147,6 +156,10 @@ protected:
     UFUNCTION(Server, Reliable)
     void ServerRequestMissionChoice(FGuid OperationId, AMarburgumInteractable* Target, FName MissionId, FName ChoiceId);
 
+    /** The client names the goods and how many; the server prices them, checks the hours, shelf, purse and reach. */
+    UFUNCTION(Server, Reliable)
+    void ServerRequestTrade(FGuid OperationId, AMarburgumInteractable* Target, EMarburgumTradeAction Action, FName ItemId, int32 Quantity);
+
     UFUNCTION(Client, Reliable)
     void ClientReceiveInteractionReceipt(const FMarburgumInteractionReceipt& Receipt);
 
@@ -178,6 +191,7 @@ private:
     void RequestToggleJournal();
     void RequestToggleCharacter();
     void RequestToggleSkills();
+    void RequestToggleShop();
 
     /** Shared request budget for interactions and vehicle requests (MaxRequestsPerSecond). */
     bool AdmitRequest(const TCHAR* What);

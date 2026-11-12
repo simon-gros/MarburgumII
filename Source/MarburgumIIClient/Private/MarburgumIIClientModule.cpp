@@ -31,6 +31,8 @@ public:
             this, &FMarburgumIIClientModule::HandleChoice);
         NumberHandle = FMarburgumClientUiHooks::OnNumberKeyPressed().AddRaw(
             this, &FMarburgumIIClientModule::HandleNumber);
+        ShopHandle = FMarburgumClientUiHooks::OnShopToggleRequested().AddRaw(
+            this, &FMarburgumIIClientModule::HandleShop);
     }
 
     virtual void ShutdownModule() override
@@ -43,6 +45,7 @@ public:
         FMarburgumClientUiHooks::OnSkillsToggleRequested().Remove(SkillsHandle);
         FMarburgumClientUiHooks::OnMissionChoiceRequested().Remove(ChoiceHandle);
         FMarburgumClientUiHooks::OnNumberKeyPressed().Remove(NumberHandle);
+        FMarburgumClientUiHooks::OnShopToggleRequested().Remove(ShopHandle);
     }
 
 private:
@@ -54,6 +57,7 @@ private:
     FDelegateHandle SkillsHandle;
     FDelegateHandle ChoiceHandle;
     FDelegateHandle NumberHandle;
+    FDelegateHandle ShopHandle;
 
     void HandleSkills(APlayerController* Player)
     {
@@ -75,7 +79,21 @@ private:
     {
         if (UMarburgumUISubsystem* UI = GetUI(Player))
         {
+            // An open counter takes the number as a line: Shift sells one back (ADR-060).
+            if (UI->IsShopOpen())
+            {
+                UI->TradeAtShop(Number, Player->IsInputKeyDown(EKeys::LeftShift) || Player->IsInputKeyDown(EKeys::RightShift));
+                return;
+            }
             UI->ChooseOption(Number);
+        }
+    }
+
+    void HandleShop(APlayerController* Player, AMarburgumInteractable* Keeper)
+    {
+        if (UMarburgumUISubsystem* UI = GetUI(Player))
+        {
+            UI->ToggleShop(Keeper);
         }
     }
 

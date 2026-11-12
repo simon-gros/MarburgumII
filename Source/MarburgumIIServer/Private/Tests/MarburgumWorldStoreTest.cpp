@@ -33,7 +33,7 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
     {
         FMarburgumWorldStore Store(Path);
         TestTrue(TEXT("reload"), Store.Load(Error));
-        TestEqual(TEXT("schema"), Store.GetLoadedSchema(), 4);
+        TestEqual(TEXT("schema"), Store.GetLoadedSchema(), 5);
         const FMarburgumStoredCondition* Loaded = Store.Get().Conditions.Find(TEXT("runner"));
         TestTrue(TEXT("condition saved"), Loaded != nullptr);
         if (Loaded)
@@ -147,8 +147,49 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
         TestTrue(TEXT("schema 3 has no skills"), Store.Get().Skills.IsEmpty() && Store.Get().Money.IsEmpty());
     }
 
+    // Schema 5 (ADR-060): shelves, first purchases and a counter receipt round-trip; a schema 4 world has none.
+    {
+        FMarburgumWorldStore Store(Path);
+        FMarburgumWorldRecord Next;
+        Next.Revision = 12;
+        Next.Shelves.FindOrAdd(TEXT("kiosk_67")).Add(TEXT("mariborski_glas"), 11);
+        Next.Shelves.FindOrAdd(TEXT("kiosk_67")).Add(TEXT("ballpoint_pen"), 0);
+        Next.FirstPurchases.Add(TEXT("simon"), { TEXT("kiosk_67") });
+        FMarburgumStoredReceipt Receipt;
+        Receipt.Character = TEXT("simon");
+        Receipt.Kind = TEXT("item_bought");
+        Receipt.Interactable = TEXT("petra_kralj");
+        Receipt.Shop = TEXT("kiosk_67");
+        Receipt.Item = TEXT("mariborski_glas");
+        Receipt.Quantity = 1;
+        Receipt.MoneyDelta = -20;
+        Receipt.SkillXp.Add(TEXT("trading"), 10);
+        Next.Receipts.Add(TEXT("BUY"), Receipt);
+        TestTrue(TEXT("schema 5 commit"), Store.Commit(Next, Error));
+    }
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("schema 5 reload"), Store.Load(Error));
+        TestEqual(TEXT("schema 5 reported"), Store.GetLoadedSchema(), 5);
+        TestEqual(TEXT("shelf kept"), Store.Get().Shelves.FindRef(TEXT("kiosk_67")).FindRef(TEXT("mariborski_glas")), 11);
+        const int32* Empty = Store.Get().Shelves.FindRef(TEXT("kiosk_67")).Find(TEXT("ballpoint_pen"));
+        TestTrue(TEXT("an empty shelf is kept as empty, not as unknown"), Empty && *Empty == 0);
+        TestTrue(TEXT("first purchase kept"), Store.Get().FirstPurchases.FindRef(TEXT("simon")).Contains(TEXT("kiosk_67")));
+        const FMarburgumStoredReceipt Receipt = Store.Get().Receipts.FindRef(TEXT("BUY"));
+        TestEqual(TEXT("receipt shop"), Receipt.Shop, FString(TEXT("kiosk_67")));
+        TestEqual(TEXT("receipt price"), Receipt.MoneyDelta, int64(-20));
+    }
+    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":4,\"revision\":3,")
+        TEXT("\"shelves\":{\"kiosk_67\":{\"mariborski_glas\":-4,\"maribor_postcard\":\"many\"}},\"money\":{\"simon\":30}}"), *Path);
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("schema 4 loads"), Store.Load(Error));
+        TestTrue(TEXT("a negative or non-numeric shelf is not trusted"), Store.Get().Shelves.FindRef(TEXT("kiosk_67")).IsEmpty());
+        TestTrue(TEXT("schema 4 has no first purchases"), Store.Get().FirstPurchases.IsEmpty());
+    }
+
     // A schema this build does not know is refused rather than reinterpreted.
-    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":5,\"revision\":1}"), *Path);
+    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":6,\"revision\":1}"), *Path);
     {
         FMarburgumWorldStore Store(Path);
         TestFalse(TEXT("future schema refused"), Store.Load(Error));

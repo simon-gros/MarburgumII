@@ -319,6 +319,14 @@ void UMarburgumInteractionPrompt::RefreshAuthored(const AMarburgumInteractable& 
         }
         break;
     }
+    // A shopkeeper's counter is a second key, so talking and trading never get in each other's way (ADR-060).
+    if (!Target.GetShopId().IsNone())
+    {
+        const FText Counter = !Target.IsShopKnown() ? LOCTEXT("CounterUnknown", "[B] Counter")
+            : Target.IsShopOpen() ? LOCTEXT("CounterOpen", "[B] Counter, open")
+                                  : LOCTEXT("CounterClosed", "[B] Counter, closed");
+        Detail = Detail.IsEmpty() ? Counter : FText::Format(LOCTEXT("WithCounter", "{0}  ·  {1}"), Detail, Counter);
+    }
     Apply(Target, Verb, Detail, Tone, bKeyActive);
 }
 

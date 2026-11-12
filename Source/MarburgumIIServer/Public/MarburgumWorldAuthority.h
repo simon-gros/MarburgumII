@@ -38,9 +38,14 @@ struct FMarburgumWorldRecord;
  * tears down, it saves the condition if it differs from what the store holds. A full, rested body is
  * stored as no entry, so characters that never ran never cause a commit.
  *
+ * Shop counters (ADR-060): the keeper of a counter carries its shelves and whether it is open on the server's
+ * Europe/Ljubljana clock; a purchase or sale is decided by MarburgumRetailRules.h and stored with the character in
+ * one commit.
+ *
  * Nothing becomes visible to any client before it is on disk; a refusal or failed write changes
  * nothing. Options: -MB2WorldStore=<file> (default Saved/MarburgumII/WorldStore/<Map>.json),
- * -MB2StoreFaultInjection (test-only write faults, see FMarburgumWorldStore).
+ * -MB2StoreFaultInjection (test-only write faults, see FMarburgumWorldStore), -MB2ClockHour=<h> and
+ * -MB2ClockWeekday=<0-6> (the counters' clock, for tests).
  */
 UCLASS()
 class MARBURGUMIISERVER_API UMarburgumWorldAuthority : public UMarburgumAuthorityService
@@ -57,6 +62,9 @@ public:
 
     virtual FMarburgumInteractionReceipt HandleMissionChoice(AMarburgumPlayerController& Requester, const FGuid& OperationId,
         AMarburgumInteractable* Target, FName MissionId, FName ChoiceId) override;
+
+    virtual FMarburgumInteractionReceipt HandleTrade(AMarburgumPlayerController& Requester, const FGuid& OperationId,
+        AMarburgumInteractable* Target, EMarburgumTradeAction Action, FName ItemId, int32 Quantity) override;
 
 private:
     /** One player's line in the water. */
@@ -76,6 +84,8 @@ private:
     void SaveCondition(const AMarburgumPlayerState& State, const TCHAR* Why);
     void ApplyInventory(AMarburgumPlayerState& State) const;
     void ApplyStocks() const;
+    /** Put every counter's shelves and open state on its keeper; also run when the hours may have turned. */
+    void ApplyShops();
     void UpdateLocations();
     FMarburgumInteractionReceipt HandleMissionTarget(FMarburgumInteractionReceipt Receipt, const AMarburgumPlayerController& Requester,
         AMarburgumPlayerState& State, const AMarburgumInteractable& Target);
@@ -102,6 +112,7 @@ private:
     FDelegateHandle TearDownHandle;
     FTimerHandle LocationTimer;
     FTimerHandle FishingTimer;
+    FTimerHandle ShopTimer;
     TMap<TWeakObjectPtr<AMarburgumPlayerController>, FCast> Casts;
     TMap<TWeakObjectPtr<AMarburgumPlayerController>, double> LastCastAt;
     FRandomStream Rolls;

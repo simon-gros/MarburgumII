@@ -241,9 +241,9 @@ sleep 1
 stop_server
 # Counted once the server has exited: the dedicated-server log is block-buffered, so store_loaded
 # may not be on disk yet when the ready line is.
-loaded=$(grep -ac "MB2INTERACT role=server event=store_loaded .* schema=4 " "$out_dir/server-2.log" || true)
+loaded=$(grep -ac "MB2INTERACT role=server event=store_loaded .* schema=5 " "$out_dir/server-2.log" || true)
 store_hash_2="$(sha256sum "$store" 2>/dev/null | cut -d' ' -f1 || true)"
-echo "  server phase 2: store_loaded(schema 4)=$loaded (want 1); store unchanged: $([[ "$store_hash" == "$store_hash_2" ]] && echo yes || echo NO)"
+echo "  server phase 2: store_loaded(schema 5)=$loaded (want 1); store unchanged: $([[ "$store_hash" == "$store_hash_2" ]] && echo yes || echo NO)"
 [[ "$loaded" -eq 1 && "$store_hash" == "$store_hash_2" ]] || status=1
 
 {

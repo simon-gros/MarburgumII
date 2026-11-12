@@ -21,7 +21,7 @@ fn finish(problems: Problems, summary: String) -> u8 {
 }
 
 fn is_store(doc: &Value) -> bool {
-    doc["format"] == "marburgumii.world_store" && doc["schema_version"] == 4
+    doc["format"] == "marburgumii.world_store" && doc["schema_version"] == 5
 }
 
 /// No character's condition was saved (the Gate 1 and Lent smoke clients never run).
@@ -200,14 +200,88 @@ fn check_missions(doc: &Value, key: &str) -> u8 {
     finish(problems, format!("{money} {fishing} {reputation}"))
 }
 
+/// Kiosk 67 (scripts/shop-smoke-linux.sh), after phase 1 on a seeded schema 4 store (revision 1, 50 money, a brass
+/// key): three counter commits, first a newspaper bought with its Trading XP, then sold back, then a pen.
+/// Prints "<revision> <money> <shelves paper,postcard,pen>".
+pub fn shop(store: &str, key: &str, first_op: &str) -> u8 {
+    let doc = match load(store) {
+        Ok(doc) => doc,
+        Err(error) => return finish(Problems(vec![error]), "none 0 -".to_string()),
+    };
+    check_shop(&doc, key, first_op)
+}
+
+fn check_shop(doc: &Value, key: &str, first_op: &str) -> u8 {
+    let mut problems = Problems::default();
+    problems.expect(is_store(doc), "format");
+    problems.expect(doc["revision"] == 4, format!("revision={}", doc["revision"]));
+    let money = doc["money"][key].as_i64().unwrap_or(0);
+    problems.expect(money == 23, format!("money={money}"));
+    let held = &doc["inventories"][key];
+    problems.expect(held["ballpoint_pen"] == 1 && held["brass_key"] == 1 && held.get("mariborski_glas").is_none(),
+        format!("inventory={held}"));
+    problems.expect(doc["skills"][key]["trading"] == 10, format!("skills={}", doc["skills"][key]));
+    problems.expect(doc["first_purchases"][key] == serde_json::json!(["kiosk_67"]), format!("first_purchases={}", doc["first_purchases"]));
+    // Only the lines that ever moved are written; the postcard shelf stays at its starting stock.
+    let shelves = &doc["shelves"]["kiosk_67"];
+    problems.expect(shelves["mariborski_glas"] == 12 && shelves["ballpoint_pen"] == 5 && shelves.get("maribor_postcard").is_none(),
+        format!("shelves={shelves}"));
+    let receipts = doc["receipts"].as_object().cloned().unwrap_or_default();
+    let mut kinds: Vec<(i64, String, String, i64)> = receipts.values()
+        .map(|r| (r["revision"].as_i64().unwrap_or(0), r["kind"].as_str().unwrap_or("").to_string(),
+            r["item"].as_str().unwrap_or("").to_string(), r["money_delta"].as_i64().unwrap_or(0)))
+        .collect();
+    kinds.sort();
+    let want = vec![(2, "item_bought".to_string(), "mariborski_glas".to_string(), -20), (3, "item_sold".to_string(), "mariborski_glas".to_string(), 8),
+        (4, "item_bought".to_string(), "ballpoint_pen".to_string(), -15)];
+    problems.expect(kinds == want, format!("receipts={kinds:?}"));
+    let first = &doc["receipts"][first_op];
+    problems.expect(first["kind"] == "item_bought" && first["shop"] == "kiosk_67" && first["interactable"] == "petra_kralj"
+        && first["character"] == key && first["skill_xp"]["trading"] == 10, format!("first_receipt={first}"));
+    problems.expect(receipts.values().all(|r| r["shop"] == "kiosk_67" && r["character"] == key), "receipt_without_shop");
+    let shelf = |item: &str, start: i64| shelves[item].as_i64().unwrap_or(start);
+    finish(problems, format!("{} {money} {},{},{}", doc["revision"], shelf("mariborski_glas", 12), shelf("maribor_postcard", 8), shelf("ballpoint_pen", 6)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde_json::json;
 
+    fn shop_store() -> Value {
+        json!({
+            "format": "marburgumii.world_store", "schema_version": 5, "revision": 4,
+            "money": { "s": 23 }, "inventories": { "s": { "ballpoint_pen": 1, "brass_key": 1 } },
+            "skills": { "s": { "trading": 10 } }, "first_purchases": { "s": ["kiosk_67"] },
+            "shelves": { "kiosk_67": { "mariborski_glas": 12, "ballpoint_pen": 5 } },
+            "receipts": {
+                "A": { "character": "s", "kind": "item_bought", "interactable": "petra_kralj", "shop": "kiosk_67", "item": "mariborski_glas",
+                    "quantity": 1, "money_delta": -20, "skill_xp": { "trading": 10 }, "revision": 2 },
+                "B": { "character": "s", "kind": "item_sold", "interactable": "petra_kralj", "shop": "kiosk_67", "item": "mariborski_glas",
+                    "quantity": 1, "money_delta": 8, "revision": 3 },
+                "C": { "character": "s", "kind": "item_bought", "interactable": "petra_kralj", "shop": "kiosk_67", "item": "ballpoint_pen",
+                    "quantity": 1, "money_delta": -15, "revision": 4 }
+            }
+        })
+    }
+
+    #[test]
+    fn shop_store_passes_and_a_double_charge_fails() {
+        assert_eq!(check_shop(&shop_store(), "s", "A"), 0);
+        let mut twice = shop_store();
+        twice["money"]["s"] = json!(3);
+        assert_eq!(check_shop(&twice, "s", "A"), 1);
+        let mut overfilled = shop_store();
+        overfilled["shelves"]["kiosk_67"]["mariborski_glas"] = json!(13);
+        assert_eq!(check_shop(&overfilled, "s", "A"), 1);
+        let mut extra = shop_store();
+        extra["receipts"]["D"] = extra["receipts"]["A"].clone();
+        assert_eq!(check_shop(&extra, "s", "A"), 1);
+    }
+
     fn lent_store() -> Value {
         json!({
-            "format": "marburgumii.world_store", "schema_version": 4, "revision": 1, "stocks": {}, "conditions": {},
+            "format": "marburgumii.world_store", "schema_version": 5, "revision": 1, "stocks": {}, "conditions": {},
             "inventories": { "m": { "fishing_rod": 1 } },
             "missions": { "m": { "lent_first_catch": { "stage": "catch_first_fish", "started_revision": 1 } } },
             "receipts": { "OP": { "character": "m", "kind": "mission_started", "interactable": "lent_angler",
@@ -236,7 +310,7 @@ mod tests {
 
     fn condition_store(revision: i64, conditions: Value) -> Value {
         json!({
-            "format": "marburgumii.world_store", "schema_version": 4, "revision": revision, "stocks": {},
+            "format": "marburgumii.world_store", "schema_version": 5, "revision": revision, "stocks": {},
             "inventories": {}, "missions": {}, "conditions": conditions, "receipts": {}
         })
     }
@@ -269,7 +343,7 @@ mod tests {
     #[test]
     fn interaction_store_counts_three_grants() {
         let doc = json!({
-            "format": "marburgumii.world_store", "schema_version": 4, "revision": 3, "conditions": {},
+            "format": "marburgumii.world_store", "schema_version": 5, "revision": 3, "conditions": {},
             "stocks": { "dev_supply_crate": 0 },
             "inventories": { "a": { "fishing_rod": 2 }, "b": { "fishing_rod": 1 } },
             "receipts": { "OP": { "character": "a" }, "X": { "character": "a" }, "Y": { "character": "b" } }
@@ -283,7 +357,7 @@ mod tests {
     #[test]
     fn mission_store_after_the_opening_and_the_kiosk_passes() {
         let doc = json!({
-            "format": "marburgumii.world_store", "schema_version": 4, "revision": 12,
+            "format": "marburgumii.world_store", "schema_version": 5, "revision": 12,
             "stocks": {}, "conditions": {},
             "inventories": { "p": {
                 "fishing_rod": 1, "brass_key": 1, "drava_cashbox": 1,

@@ -71,6 +71,12 @@ public:
     bool ChooseOption(int32 Number);
     bool IsChoiceOpen() const;
 
+    /** Open the counter Keeper keeps, or close the open one; a null keeper only closes (B key, ADR-060). */
+    bool ToggleShop(class AMarburgumInteractable* Keeper);
+    /** Buy one of line Number at the open counter, or sell one back with bSell; false when no counter is open. */
+    bool TradeAtShop(int32 Number, bool bSell);
+    bool IsShopOpen() const;
+
     /** Mounted HUD modules, for evidence capture; null until the session is admitted. */
     const UMarburgumLocationBanner* GetLocationBanner() const { return Banner; }
     const UMarburgumPinnedObjective* GetPinnedObjective() const { return Objective; }
@@ -79,6 +85,7 @@ public:
     const UMarburgumCharacterPanel* GetCharacterPanel() const { return CharacterPanel; }
     const class UMarburgumSkillsPanel* GetSkillsPanel() const { return SkillsPanel; }
     const class UMarburgumChoicePanel* GetChoicePanel() const { return ChoicePanel; }
+    const class UMarburgumShopPanel* GetShopPanel() const { return ShopPanel; }
 
     /** Independent UI scale on top of DPI scaling (0.5 - 3.0). */
     static void SetInterfaceScale(float Scale);
@@ -118,6 +125,7 @@ private:
     UPROPERTY(Transient) TObjectPtr<UMarburgumCharacterPanel> CharacterPanel;
     UPROPERTY(Transient) TObjectPtr<class UMarburgumSkillsPanel> SkillsPanel;
     UPROPERTY(Transient) TObjectPtr<class UMarburgumChoicePanel> ChoicePanel;
+    UPROPERTY(Transient) TObjectPtr<class UMarburgumShopPanel> ShopPanel;
     FDelegateHandle FishingHandle;
     int32 LastFishingAttempt = 0;
     EMarburgumFishingEnd LastFishingEnd = EMarburgumFishingEnd::None;

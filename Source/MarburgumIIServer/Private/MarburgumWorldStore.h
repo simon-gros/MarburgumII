@@ -22,6 +22,8 @@ struct FMarburgumStoredReceipt
     FString Outcome;
     int64 MoneyDelta = 0;
     TMap<FString, int64> SkillXp;
+    /** Schema 5 (ADR-060): the counter of a purchase or sale; Item and Quantity are the goods, MoneyDelta the price. */
+    FString Shop;
     int64 Revision = 0;
     FString CommittedUtc;
 };
@@ -58,7 +60,7 @@ struct FMarburgumStoredCondition
     }
 };
 
-/** Durable authoritative world state for one map (schema `marburgumii.world_store` v4). */
+/** Durable authoritative world state for one map (schema `marburgumii.world_store` v5). */
 struct FMarburgumWorldRecord
 {
     int64 Revision = 0;
@@ -74,6 +76,10 @@ struct FMarburgumWorldRecord
     TMap<FString, TMap<FString, int64>> Skills;
     /** Schema 4 (ADR-049): character key -> money. A character with none is absent. */
     TMap<FString, int64> Money;
+    /** Schema 5 (ADR-060): shop id -> item -> copies left. Absent lines still hold the authored starting stock. */
+    TMap<FString, TMap<FString, int32>> Shelves;
+    /** Schema 5 (ADR-060): character key -> shops where it has made its first purchase (its Trading XP is paid). */
+    TMap<FString, TArray<FString>> FirstPurchases;
     /** Operation id (32 hex digits) -> committed operation. */
     TMap<FString, FMarburgumStoredReceipt> Receipts;
 };
@@ -92,7 +98,7 @@ public:
     /**
      * A missing file is an empty world. A present but unreadable file is an error, never overwritten.
      * Older documents load as-is (schema 1 has no missions, schema 2 no conditions, schema 3 no skills, money
-     * or mission outcomes) and the next commit rewrites them at the current schema.
+     * or mission outcomes, schema 4 no shelves or first purchases) and the next commit rewrites them at the current schema.
      */
     bool Load(FString& OutError);
 

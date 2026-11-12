@@ -24,6 +24,7 @@
 #include "UI/MarburgumInventoryPanel.h"
 #include "UI/MarburgumJournalPanel.h"
 #include "UI/MarburgumChoicePanel.h"
+#include "UI/MarburgumShopPanel.h"
 #include "UI/MarburgumSkillsPanel.h"
 #include "UI/MarburgumLocationBanner.h"
 #include "UI/MarburgumPinnedObjective.h"
@@ -138,6 +139,7 @@ void UMarburgumUISubsystem::TearDown()
     CharacterPanel = nullptr;
     SkillsPanel = nullptr;
     ChoicePanel = nullptr;
+    ShopPanel = nullptr;
 }
 
 void UMarburgumUISubsystem::MountChat(APlayerController* Player)
@@ -230,6 +232,7 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
     Release(CharacterPanel);
     Release(SkillsPanel);
     Release(ChoicePanel);
+    Release(ShopPanel);
     if (!Banner)
     {
         Banner = CreateWidget<UMarburgumLocationBanner>(Player, UMarburgumLocationBanner::StaticClass());
@@ -280,6 +283,11 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
         ChoicePanel = CreateWidget<UMarburgumChoicePanel>(Player, UMarburgumChoicePanel::StaticClass());
         Root->AddToLayer(EMarburgumUILayer::Screens, ChoicePanel);
     }
+    if (!ShopPanel)
+    {
+        ShopPanel = CreateWidget<UMarburgumShopPanel>(Player, UMarburgumShopPanel::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Screens, ShopPanel);
+    }
 }
 
 bool UMarburgumUISubsystem::ToggleSkills()
@@ -328,6 +336,37 @@ bool UMarburgumUISubsystem::ChooseOption(int32 Number)
 bool UMarburgumUISubsystem::IsChoiceOpen() const
 {
     return ChoicePanel && ChoicePanel->IsOpen();
+}
+
+bool UMarburgumUISubsystem::ToggleShop(AMarburgumInteractable* Keeper)
+{
+    if (!ShopPanel || LastPhase != EPhase::Ready)
+    {
+        return false;
+    }
+    if (ShopPanel->IsOpen())
+    {
+        ShopPanel->Close();
+    }
+    else if (Keeper)
+    {
+        CloseScreensExcept(ShopPanel);
+        ShopPanel->Open(Keeper);
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=shop_panel open=%d shop=%s lines=%d counter_open=%d"),
+        MarburgumII::Session::UiLogPrefix, ShopPanel->IsOpen() ? 1 : 0, *ShopPanel->GetShownShop().ToString(),
+        ShopPanel->GetShownLineCount(), ShopPanel->IsShownOpen() ? 1 : 0);
+    return true;
+}
+
+bool UMarburgumUISubsystem::TradeAtShop(int32 Number, bool bSell)
+{
+    return ShopPanel && ShopPanel->Trade(Number, bSell);
+}
+
+bool UMarburgumUISubsystem::IsShopOpen() const
+{
+    return ShopPanel && ShopPanel->IsOpen();
 }
 
 void UMarburgumUISubsystem::HandleFishingChanged(AMarburgumPlayerState* State)
@@ -439,6 +478,10 @@ void UMarburgumUISubsystem::CloseScreensExcept(const UObject* Keep)
     if (ChoicePanel && ChoicePanel.Get() != Keep && ChoicePanel->IsOpen())
     {
         ChoicePanel->Close();
+    }
+    if (ShopPanel && ShopPanel.Get() != Keep && ShopPanel->IsOpen())
+    {
+        ShopPanel->Close();
     }
 }
 
@@ -566,6 +609,32 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"),
             FText::Format(LOCTEXT("Caught", "You landed a {0}. Saved by the server."), ItemName), MarburgumUI::ETone::Success);
         PushRewards();
+        return;
+    }
+    if (Receipt.Effect == EMarburgumInteractionEffect::ItemBought || Receipt.Effect == EMarburgumInteractionEffect::ItemSold)
+    {
+        // A counter (ADR-060): what changed hands, at the server's price.
+        const bool bBought = Receipt.Effect == EMarburgumInteractionEffect::ItemBought;
+        if (!bApplied)
+        {
+            Feed->Push(Key, LOCTEXT("ReceiptKind", "SERVER RECEIPT"),
+                FText::Format(LOCTEXT("TradeDuplicate", "Already done: {0} ×{1}. The server ignored the repeat; nothing changed hands twice."),
+                    ItemName, FText::AsNumber(Receipt.Quantity)), MarburgumUI::ETone::Info);
+            return;
+        }
+        Feed->Push(Key, bBought ? LOCTEXT("BoughtKind", "BOUGHT") : LOCTEXT("SoldKind", "SOLD"),
+            bBought ? FText::Format(LOCTEXT("Bought", "Petra takes the coins and slides {0} ×{1} across the counter. −{2} money, saved by the server."),
+                          ItemName, FText::AsNumber(Receipt.Quantity), FText::AsNumber(-Receipt.MoneyDelta))
+                    : FText::Format(LOCTEXT("Sold", "Petra counts out the coins and takes {0} ×{1} back. +{2} money, saved by the server."),
+                          ItemName, FText::AsNumber(Receipt.Quantity), FText::AsNumber(Receipt.MoneyDelta)),
+            MarburgumUI::ETone::Success);
+        for (const FMarburgumSkillProgress& Award : Receipt.SkillXp)
+        {
+            const FSkillDefinition* Skill = FindSkill(Award.SkillId.ToString());
+            Feed->Push(FName(*(Key.ToString() + TEXT(".xp.") + Award.SkillId.ToString())), LOCTEXT("XpKind", "SKILL"),
+                FText::Format(LOCTEXT("FirstPurchaseXp", "First purchase here: {0} +{1} XP. [K] Skills."),
+                    FText::FromString(Skill ? Skill->DisplayName : Award.SkillId.ToString()), FText::AsNumber(Award.Xp)), MarburgumUI::ETone::Accent);
+        }
         return;
     }
     if (bApplied && Receipt.Effect == EMarburgumInteractionEffect::MissionStarted)
@@ -705,7 +774,33 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
             LOCTEXT("TooEarly", "You struck too early. Whatever was there is gone; cast again."), MarburgumUI::ETone::Warning);
         return;
     case EMarburgumInteractionReason::OutOfStock:
-        Message = LOCTEXT("OutOfStock", "Nothing left to take. Someone else got there first; nothing was changed.");
+        Message = Subject && !Subject->GetShopId().IsNone()
+            ? FText::Format(LOCTEXT("SoldOut", "The last {0} has already gone. Nothing was changed."), ItemName)
+            : LOCTEXT("OutOfStock", "Nothing left to take. Someone else got there first; nothing was changed.");
+        break;
+    case EMarburgumInteractionReason::ShopClosed:
+    {
+        const FShopDefinition* Shop = Subject && !Subject->GetShopId().IsNone() ? FindShop(Subject->GetShopId().ToString()) : nullptr;
+        Message = Shop ? FText::FromString(Shop->ClosedMessage) : LOCTEXT("ShopClosed", "The counter is closed. Nothing was changed.");
+        Tone = MarburgumUI::ETone::Info;
+        break;
+    }
+    case EMarburgumInteractionReason::InvalidQuantity:
+        Message = LOCTEXT("InvalidQuantity", "That quantity is not for sale. Nothing was changed.");
+        break;
+    case EMarburgumInteractionReason::NotOnCounter:
+        Message = LOCTEXT("NotOnCounter", "That is not on the counter. Nothing was changed.");
+        break;
+    case EMarburgumInteractionReason::ItemNotAccepted:
+        Message = FText::Format(LOCTEXT("ItemNotAccepted", "Petra will not take {0} back. Nothing was changed."), ItemName);
+        Tone = MarburgumUI::ETone::Info;
+        break;
+    case EMarburgumInteractionReason::InsufficientItems:
+        Message = FText::Format(LOCTEXT("InsufficientItems", "You have no {0} to sell. Nothing was changed."), ItemName);
+        Tone = MarburgumUI::ETone::Info;
+        break;
+    case EMarburgumInteractionReason::NoCounter:
+        Message = FText::Format(LOCTEXT("NoCounter", "{0} keeps no counter. Nothing was changed."), SubjectName);
         break;
     case EMarburgumInteractionReason::OutOfRange:
         Message = LOCTEXT("OutOfRange", "Too far away. Move closer and try again; nothing was changed.");

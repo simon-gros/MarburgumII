@@ -10,7 +10,8 @@ namespace MarburgumII::Gameplay
     // ---- Catalogue definition types. The tables themselves are generated from Data/Gameplay/gameplay.v0.1.json
     // into MarburgumGameplayCatalogue.h (`mb2 generate gameplay`, ADR-049). Display text is presentation only. ----
 
-    enum class EItemKind : uint8 { Tool, Fish, Clue };
+    /** Goods are what a shop counter sells and buys back (original `trade: retail`, ADR-060). */
+    enum class EItemKind : uint8 { Tool, Fish, Clue, Goods };
 
     /** One registered item definition (ontology `ItemDefinition`), ids and English names from the original items.json. */
     struct FItemDefinition
@@ -135,6 +136,40 @@ namespace MarburgumII::Gameplay
         const TCHAR* CompletionText;
     };
 
+    /** One line on a counter (original shops.json): the shop's price, what it pays back, its starting shelf. */
+    struct FShopOffer
+    {
+        const TCHAR* Item;
+        int32 BuyPrice;
+        /** What the counter pays for one returned; it buys back only below the price it sells at. */
+        int32 SellPrice;
+        /** Copies on the shelf before anyone has bought; selling back never fills it past this. */
+        int32 Stock;
+    };
+
+    /**
+     * A shop counter kept by an NPC (original shops.json and retail_rules.hpp, ADR-060). Hours are civil time in
+     * Europe/Ljubljana on the server's clock: open from OpenMinute (inclusive) to CloseMinute (exclusive) on the days
+     * in DayMask, bit 0 Monday .. bit 6 Sunday. Stock is shared by every player and never restocked.
+     */
+    struct FShopDefinition
+    {
+        const TCHAR* Id;
+        const TCHAR* Name;
+        /** The interactable that keeps the counter. */
+        const TCHAR* Npc;
+        int32 OpenMinute;
+        int32 CloseMinute;
+        uint8 DayMask;
+        const TCHAR* ClosedMessage;
+        /** Most of one good a single purchase or sale may name. */
+        int32 MaxQuantity;
+        /** Trading XP for a character's first purchase at this counter; sales and later purchases give none. */
+        int32 IntroTradingXp;
+        const FShopOffer* Offers;
+        int32 OfferCount;
+    };
+
     /** A registered mission with every stage of the original. */
     struct FMissionDefinition
     {
@@ -176,6 +211,46 @@ namespace MarburgumII::Gameplay
         }
         return nullptr;
     }
+
+    inline const FShopDefinition* FindShop(const FString& Id)
+    {
+        for (const FShopDefinition& Shop : Shops)
+        {
+            if (Id == Shop.Id)
+            {
+                return &Shop;
+            }
+        }
+        return nullptr;
+    }
+
+    /** The counter an interactable keeps, if it keeps one. */
+    inline const FShopDefinition* FindShopKeptBy(const FString& InteractableId)
+    {
+        for (const FShopDefinition& Shop : Shops)
+        {
+            if (InteractableId == Shop.Npc)
+            {
+                return &Shop;
+            }
+        }
+        return nullptr;
+    }
+
+    inline const FShopOffer* FindOffer(const FShopDefinition& Shop, const FString& Item)
+    {
+        for (int32 Index = 0; Index < Shop.OfferCount; ++Index)
+        {
+            if (Item == Shop.Offers[Index].Item)
+            {
+                return &Shop.Offers[Index];
+            }
+        }
+        return nullptr;
+    }
+
+    // The skill a counter's first purchase trains (ADR-060).
+    inline constexpr const TCHAR* TradingSkill = TEXT("trading");
 
     inline const FSkillDefinition* FindSkill(const FString& Id)
     {
@@ -411,7 +486,8 @@ namespace MarburgumII::Gameplay
     // Schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition; schema 4
     // adds skill XP, money and mission outcomes (ADR-047, ADR-049). Older documents load and are rewritten at the
     // current schema by the next commit.
-    inline constexpr int32 WorldStoreSchemaVersion = 4;
+    // Schema 5 adds shop shelves and each character's first purchase per shop (ADR-060).
+    inline constexpr int32 WorldStoreSchemaVersion = 5;
     inline constexpr int32 WorldStoreOldestReadableSchema = 1;
 
     // Prefix for machine-parsed interaction evidence lines (scripts/interaction-smoke-linux.sh).

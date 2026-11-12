@@ -76,6 +76,19 @@ public:
     /** Authority only: set by the world authority after a load or a durable commit. */
     void SetRemainingStockAuthority(int32 NewStock);
 
+    /** The counter this keeps (ADR-060), from the catalogue on every machine; None when it keeps none. */
+    FName GetShopId() const { return ShopId; }
+
+    /** Copies left on each line of the counter, in catalogue offer order; empty until the server has applied its record. */
+    const TArray<int32>& GetShelves() const { return Shelves; }
+    bool IsShopKnown() const { return !ShopId.IsNone() && !Shelves.IsEmpty(); }
+
+    /** The counter is within its hours on the server's clock. */
+    bool IsShopOpen() const { return bShopOpen; }
+
+    /** Authority only: set by the world authority after a load, a durable commit, or when the hours turn. */
+    void SetShopAuthority(const TArray<int32>& NewShelves, bool bNewOpen);
+
     /** Fired on clients when replicated stock changes, and on the server when it is set. */
     static FMarburgumInteractableChanged& OnChanged();
 
@@ -85,6 +98,9 @@ protected:
 
     UFUNCTION()
     void OnRep_CatalogueId();
+
+    UFUNCTION()
+    void OnRep_Shop();
 
     /** Apply CatalogueId's definition; subclasses add their look. */
     virtual void ConfigureFromCatalogue();
@@ -98,4 +114,12 @@ private:
 
     UPROPERTY(ReplicatedUsing = OnRep_CatalogueId)
     FName CatalogueId;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Shop)
+    TArray<int32> Shelves;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Shop)
+    bool bShopOpen = false;
+
+    FName ShopId;
 };

@@ -39,6 +39,12 @@ namespace MarburgumII::Gameplay
         case EMarburgumInteractionReason::TooSoon: return TEXT("too_soon");
         case EMarburgumInteractionReason::CannotFishNow: return TEXT("cannot_fish_now");
         case EMarburgumInteractionReason::TooEarly: return TEXT("too_early");
+        case EMarburgumInteractionReason::NoCounter: return TEXT("no_counter");
+        case EMarburgumInteractionReason::ShopClosed: return TEXT("shop_closed");
+        case EMarburgumInteractionReason::InvalidQuantity: return TEXT("invalid_quantity");
+        case EMarburgumInteractionReason::NotOnCounter: return TEXT("not_on_counter");
+        case EMarburgumInteractionReason::ItemNotAccepted: return TEXT("item_not_accepted");
+        case EMarburgumInteractionReason::InsufficientItems: return TEXT("insufficient_items");
         }
         return TEXT("unknown");
     }
@@ -54,6 +60,18 @@ namespace MarburgumII::Gameplay
         case EMarburgumInteractionEffect::MissionCompleted: return TEXT("mission_completed");
         case EMarburgumInteractionEffect::FishingCast: return TEXT("fishing_cast");
         case EMarburgumInteractionEffect::FishCaught: return TEXT("fish_caught");
+        case EMarburgumInteractionEffect::ItemBought: return TEXT("item_bought");
+        case EMarburgumInteractionEffect::ItemSold: return TEXT("item_sold");
+        }
+        return TEXT("unknown");
+    }
+
+    const TCHAR* ToString(EMarburgumTradeAction Action)
+    {
+        switch (Action)
+        {
+        case EMarburgumTradeAction::Buy: return TEXT("buy");
+        case EMarburgumTradeAction::Sell: return TEXT("sell");
         }
         return TEXT("unknown");
     }

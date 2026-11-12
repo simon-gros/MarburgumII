@@ -55,6 +55,8 @@ void AMarburgumPlayerController::SetupInputComponent()
         InputComponent->BindKey(EKeys::J, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleJournal);
         InputComponent->BindKey(EKeys::C, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleCharacter);
         InputComponent->BindKey(EKeys::K, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleSkills);
+        // B opens the counter of the shopkeeper in reach (ADR-060); E still talks to them.
+        InputComponent->BindKey(EKeys::B, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleShop);
         // Number keys pick an option in an open choice panel (ADR-049).
         const FKey Numbers[] = { EKeys::One, EKeys::Two, EKeys::Three, EKeys::Four, EKeys::Five, EKeys::Six };
         for (int32 Index = 0; Index < UE_ARRAY_COUNT(Numbers); ++Index)
@@ -94,6 +96,21 @@ void AMarburgumPlayerController::RequestToggleSkills()
     {
         FMarburgumClientUiHooks::OnSkillsToggleRequested().Broadcast(this);
     }
+}
+
+void AMarburgumPlayerController::RequestToggleShop()
+{
+    if (IsLocalController())
+    {
+        // With no counter in reach this closes an open panel, if any.
+        FMarburgumClientUiHooks::OnShopToggleRequested().Broadcast(this, FindShopCandidate());
+    }
+}
+
+AMarburgumInteractable* AMarburgumPlayerController::FindShopCandidate() const
+{
+    AMarburgumInteractable* Target = FindInteractionCandidate();
+    return Target && !Target->GetShopId().IsNone() ? Target : nullptr;
 }
 
 void AMarburgumPlayerController::RequestToggleCharacter()
@@ -211,6 +228,41 @@ void AMarburgumPlayerController::ServerRequestMissionChoice_Implementation(FGuid
     if (UMarburgumAuthorityService* Authority = UMarburgumAuthorityService::Get(World))
     {
         Receipt = Authority->HandleMissionChoice(*this, OperationId, Target, MissionId, ChoiceId);
+    }
+    else
+    {
+        Receipt.OperationId = OperationId;
+        Receipt.Outcome = EMarburgumRequestOutcome::Rejected;
+        Receipt.Reason = EMarburgumInteractionReason::AuthorityUnavailable;
+    }
+    ClientReceiveInteractionReceipt(Receipt);
+}
+
+void AMarburgumPlayerController::SubmitTrade(const FGuid& OperationId, AMarburgumInteractable* Target, EMarburgumTradeAction Action,
+    FName ItemId, int32 Quantity)
+{
+    if (!IsLocalController())
+    {
+        return;
+    }
+    PendingOperationId = OperationId;
+    PendingTarget = Target;
+    PendingSinceSeconds = FPlatformTime::Seconds();
+    ServerRequestTrade(OperationId, Target, Action, ItemId, Quantity);
+}
+
+void AMarburgumPlayerController::ServerRequestTrade_Implementation(FGuid OperationId, AMarburgumInteractable* Target,
+    EMarburgumTradeAction Action, FName ItemId, int32 Quantity)
+{
+    UWorld* World = GetWorld();
+    if (!World || !AdmitRequest(TEXT("trade")))
+    {
+        return;
+    }
+    FMarburgumInteractionReceipt Receipt;
+    if (UMarburgumAuthorityService* Authority = UMarburgumAuthorityService::Get(World))
+    {
+        Receipt = Authority->HandleTrade(*this, OperationId, Target, Action, ItemId, Quantity);
     }
     else
     {

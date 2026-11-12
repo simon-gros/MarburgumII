@@ -29,6 +29,9 @@ void AMarburgumInteractable::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AMarburgumInteractable, RemainingStock);
     DOREPLIFETIME_CONDITION(AMarburgumInteractable, CatalogueId, COND_InitialOnly);
+    // Shelves are public: everyone at the kiosk sees the same counter (ADR-060).
+    DOREPLIFETIME(AMarburgumInteractable, Shelves);
+    DOREPLIFETIME(AMarburgumInteractable, bShopOpen);
 }
 
 void AMarburgumInteractable::SetCatalogueIdAuthority(FName Id)
@@ -58,6 +61,8 @@ void AMarburgumInteractable::ConfigureFromCatalogue()
     Dialogue = FText::FromString(Entry->Dialogue);
     InteractionRange = Entry->RangeCm;
     bTestFixture = false;
+    const MarburgumII::Gameplay::FShopDefinition* Shop = MarburgumII::Gameplay::FindShopKeptBy(CatalogueId.ToString());
+    ShopId = Shop ? FName(Shop->Id) : NAME_None;
     // An authored place is a marker the body walks through, not an obstacle on the promenade.
     Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     Mesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
@@ -77,6 +82,24 @@ void AMarburgumInteractable::SetRemainingStockAuthority(int32 NewStock)
     check(HasAuthority());
     RemainingStock = FMath::Max(NewStock, 0);
     ForceNetUpdate();
+    OnChanged().Broadcast(this);
+}
+
+void AMarburgumInteractable::SetShopAuthority(const TArray<int32>& NewShelves, bool bNewOpen)
+{
+    check(HasAuthority());
+    if (Shelves == NewShelves && bShopOpen == bNewOpen)
+    {
+        return;
+    }
+    Shelves = NewShelves;
+    bShopOpen = bNewOpen;
+    ForceNetUpdate();
+    OnChanged().Broadcast(this);
+}
+
+void AMarburgumInteractable::OnRep_Shop()
+{
     OnChanged().Broadcast(this);
 }
 

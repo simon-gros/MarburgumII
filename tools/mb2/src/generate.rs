@@ -62,6 +62,7 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
             "tool" => "Tool",
             "fish" => "Fish",
             "clue" => "Clue",
+            "goods" => "Goods",
             other => return Err(format!("item {}: unknown kind {other}", str_of(item, "id")?)),
         };
         writeln!(out, "        {{ {}, {}, EItemKind::{kind} }},", lit(str_of(item, "id")?), lit(en(item, "name")?)).unwrap();
@@ -181,6 +182,35 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
         }
         out.push_str("    };\n\n");
     }
+    // Shops (ADR-060): offers per shop, then the registry. Days are a mask, bit 0 Monday .. bit 6 Sunday.
+    let shops = catalogue["shops"].as_array().map(Vec::as_slice).unwrap_or(&[]);
+    for (index, shop) in shops.iter().enumerate() {
+        writeln!(out, "    inline constexpr FShopOffer Shop{index}Offers[] = {{").unwrap();
+        for offer in array(shop, "offers")? {
+            writeln!(out, "        {{ {}, {}, {}, {} }},", lit(str_of(offer, "item")?), int(offer, "buy_price")?, int(offer, "sell_price")?,
+                int(offer, "stock")?).unwrap();
+        }
+        out.push_str("    };\n");
+    }
+    if !shops.is_empty() {
+        out.push_str("    inline constexpr FShopDefinition Shops[] = {\n");
+        for (index, shop) in shops.iter().enumerate() {
+            let id = str_of(shop, "id")?;
+            let hours = &shop["hours"];
+            let mut days = 0u32;
+            for day in array(hours, "days")? {
+                match day.as_u64() {
+                    Some(day @ 0..=6) => days |= 1 << day,
+                    _ => return Err(format!("shop {id}: days are 0 (Monday) to 6 (Sunday)")),
+                }
+            }
+            writeln!(out, "        {{ {}, {}, {}, {}, {}, {days}, {}, {}, {}, Shop{index}Offers, UE_ARRAY_COUNT(Shop{index}Offers) }},",
+                lit(id), lit(en(shop, "name")?), lit(str_of(shop, "npc")?), clock(hours, "open", id)?, clock(hours, "close", id)?,
+                lit(en(shop, "closed_message")?), int(shop, "max_purchase_quantity")?, int(shop, "intro_trading_xp")?).unwrap();
+        }
+        out.push_str("    };\n\n");
+    }
+
     out.push_str("    inline constexpr FMissionDefinition Missions[] = {\n");
     for (m, mission) in missions.iter().enumerate() {
         let prefix = format!("Mission{m}");
@@ -216,6 +246,18 @@ fn en<'a>(value: &'a Value, key: &str) -> Result<&'a str, String> {
 
 fn int(value: &Value, key: &str) -> Result<i64, String> {
     value[key].as_i64().ok_or_else(|| format!("missing integer `{key}` in {}", short(value)))
+}
+
+/// Minutes after midnight of an "HH:MM" field.
+fn clock(value: &Value, key: &str, shop: &str) -> Result<i64, String> {
+    let text = str_of(value, key)?;
+    let parsed = text.split_once(':').and_then(|(h, m)| Some((h.parse::<i64>().ok()?, m.parse::<i64>().ok()?)));
+    match parsed {
+        Some((hour, minute)) if text.len() == 5 && (0..=24).contains(&hour) && (0..60).contains(&minute) && hour * 60 + minute <= 1440 => {
+            Ok(hour * 60 + minute)
+        }
+        _ => Err(format!("shop {shop}: {key} must be HH:MM, got {text}")),
+    }
 }
 
 fn short(value: &Value) -> String {

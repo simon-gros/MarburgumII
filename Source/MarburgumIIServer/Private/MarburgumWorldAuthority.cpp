@@ -21,6 +21,8 @@
 #include "MarburgumNpc.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
+#include "MarburgumRetail.h"
+#include "MarburgumRetailRules.h"
 #include "MarburgumWater.h"
 #include "MarburgumWorldStore.h"
 #include "Misc/CommandLine.h"
@@ -141,12 +143,36 @@ namespace
     constexpr const TCHAR* FishLogPrefix = TEXT("MB2FISH");
     // How often the server advances casts: the original's 10 Hz world tick.
     constexpr float FishingTickSeconds = 0.1f;
+    // Counter evidence lines (scripts/shop-smoke-linux.sh).
+    constexpr const TCHAR* ShopLogPrefix = TEXT("MB2SHOP");
+    // How often the server looks at its clock to open or shut the counters.
+    constexpr float ShopHoursCheckSeconds = 10.f;
+
+    /** Europe/Ljubljana now, or the -MB2ClockHour / -MB2ClockWeekday development override. */
+    MarburgumII::Retail::FCivilTime ClockNow()
+    {
+        MarburgumII::Retail::FCivilTime Now = MarburgumII::Retail::LjubljanaFromUnix(FDateTime::UtcNow().ToUnixTimestamp());
+        // Development and smoke overrides, as the original's MARBURGUM_CLOCK_HOUR / MARBURGUM_CLOCK_WEEKDAY:
+        // -MB2ClockHour=<0-24, fractions allowed> and -MB2ClockWeekday=<0 Monday .. 6 Sunday>.
+        float Hour = -1.f;
+        if (FParse::Value(FCommandLine::Get(), TEXT("MB2ClockHour="), Hour) && FMath::IsFinite(Hour) && Hour >= 0.f)
+        {
+            Now.Minute = FMath::Clamp(static_cast<int32>(FMath::Fmod(Hour, 24.f) * 60.f), 0, 24 * 60 - 1);
+        }
+        int32 Weekday = -1;
+        if (FParse::Value(FCommandLine::Get(), TEXT("MB2ClockWeekday="), Weekday) && Weekday >= 0 && Weekday <= 6)
+        {
+            Now.Weekday = Weekday;
+        }
+        return Now;
+    }
 
     EMarburgumInteractionEffect EffectFromKind(const FString& Kind)
     {
         for (const EMarburgumInteractionEffect Effect : { EMarburgumInteractionEffect::ItemGranted,
                  EMarburgumInteractionEffect::MissionStarted, EMarburgumInteractionEffect::StageCompleted,
-                 EMarburgumInteractionEffect::MissionCompleted, EMarburgumInteractionEffect::FishCaught })
+                 EMarburgumInteractionEffect::MissionCompleted, EMarburgumInteractionEffect::FishCaught,
+                 EMarburgumInteractionEffect::ItemBought, EMarburgumInteractionEffect::ItemSold })
         {
             if (Kind == ToString(Effect))
             {
@@ -182,6 +208,8 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
     // Bites and catches are the server's dice; nothing a client sends feeds them.
     Rolls.Initialize(static_cast<int32>(FDateTime::UtcNow().GetTicks() & 0x7fffffff));
     SpawnAuthoredContent(InWorld);
+    InWorld.GetTimerManager().SetTimer(ShopTimer, FTimerDelegate::CreateUObject(this, &UMarburgumWorldAuthority::ApplyShops),
+        ShopHoursCheckSeconds, true);
 
     FString Path;
     if (!FParse::Value(FCommandLine::Get(), TEXT("MB2WorldStore="), Path) || Path.IsEmpty())
@@ -211,6 +239,7 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
     }
 
     ApplyStocks();
+    ApplyShops();
     // A listen-server host has already logged in by now.
     for (FConstPlayerControllerIterator It = InWorld.GetPlayerControllerIterator(); It; ++It)
     {
@@ -243,6 +272,7 @@ void UMarburgumWorldAuthority::Deinitialize()
     {
         World->GetTimerManager().ClearTimer(LocationTimer);
         World->GetTimerManager().ClearTimer(FishingTimer);
+        World->GetTimerManager().ClearTimer(ShopTimer);
     }
     Casts.Reset();
     FGameModeEvents::GameModePostLoginEvent.Remove(PostLoginHandle);
@@ -506,6 +536,11 @@ bool UMarburgumWorldAuthority::Admit(FMarburgumInteractionReceipt& Receipt, AMar
         Receipt.WorldRevision = Prior->Revision;
         const AMarburgumInteractable* PriorTarget = FindInteractable(Prior->Interactable);
         Receipt.StockRemaining = PriorTarget && PriorTarget->IsItemSource() ? CurrentStock(*PriorTarget) : -1;
+        if (const FShopDefinition* PriorShop = Prior->Shop.IsEmpty() ? nullptr : FindShop(Prior->Shop))
+        {
+            const FShopOffer* Offer = FindOffer(*PriorShop, Prior->Item);
+            Receipt.StockRemaining = Offer ? MarburgumII::Retail::ShelfOf(*Offer, Store->Get().Shelves.Find(Prior->Shop)) : -1;
+        }
         return false;
     }
 
@@ -697,6 +732,105 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleMissionChoice(AMarb
     Receipt.ChoiceOutcome = FName(*Decision.Outcome);
     Receipt.MoneyDelta = Decision.MoneyDelta;
     Receipt.SkillXp = ToSkillAwards(Decision.SkillXp);
+    return Finish(Receipt, Requester);
+}
+
+// ---- Shop counters (ADR-060) ----
+
+void UMarburgumWorldAuthority::ApplyShops()
+{
+    using namespace MarburgumII::Retail;
+    if (!bStoreAvailable || !Store)
+    {
+        return;
+    }
+    const FCivilTime Now = ClockNow();
+    for (TActorIterator<AMarburgumInteractable> It(GetWorld()); It; ++It)
+    {
+        const FShopDefinition* Shop = It->GetShopId().IsNone() ? nullptr : FindShop(It->GetShopId().ToString());
+        if (!Shop)
+        {
+            continue;
+        }
+        const TMap<FString, int32>* Shelves = Store->Get().Shelves.Find(Shop->Id);
+        TArray<int32> Lines;
+        for (int32 Index = 0; Index < Shop->OfferCount; ++Index)
+        {
+            Lines.Add(ShelfOf(Shop->Offers[Index], Shelves));
+        }
+        const bool bOpen = IsOpen(*Shop, Now.Weekday, Now.Minute);
+        if (It->IsShopKnown() && It->IsShopOpen() == bOpen && It->GetShelves() == Lines)
+        {
+            continue;
+        }
+        It->SetShopAuthority(Lines, bOpen);
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=counter shop=%s keeper=%s open=%d weekday=%d minute=%d shelves=%s"),
+            ShopLogPrefix, Shop->Id, *It->InteractableId.ToString(), bOpen ? 1 : 0, Now.Weekday, Now.Minute,
+            *FString::JoinBy(Lines, TEXT(","), [](int32 Copies) { return FString::FromInt(Copies); }));
+    }
+}
+
+FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleTrade(AMarburgumPlayerController& Requester, const FGuid& OperationId,
+    AMarburgumInteractable* Target, EMarburgumTradeAction Action, FName ItemId, int32 Quantity)
+{
+    FMarburgumInteractionReceipt Receipt;
+    Receipt.OperationId = OperationId;
+    Receipt.ItemId = ItemId;
+    Receipt.Quantity = Quantity;
+    AMarburgumPlayerState* State = nullptr;
+    if (!Admit(Receipt, Requester, Target, State))
+    {
+        return Finish(Receipt, Requester);
+    }
+    const FShopDefinition* Shop = Target->GetShopId().IsNone() ? nullptr : FindShop(Target->GetShopId().ToString());
+    if (!Shop)
+    {
+        Receipt.Reason = EMarburgumInteractionReason::NoCounter;
+        return Finish(Receipt, Requester);
+    }
+
+    const FString& Character = State->GetCharacterKey();
+    const MarburgumII::Retail::FCivilTime Now = ClockNow();
+    FMarburgumWorldRecord Next;
+    const FMarburgumTradeDecision Decision =
+        MarburgumII::Retail::DecideTrade(Store->Get(), Character, Shop->Id, Action, ItemId.ToString(), Quantity, Now, Next);
+    Receipt.StockRemaining = Decision.Shelf;
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=trade character=%s shop=%s action=%s item=%s quantity=%d weekday=%d minute=%d decision=%s"),
+        ShopLogPrefix, *Character, Shop->Id, ToString(Action), *ItemId.ToString(), Quantity, Now.Weekday, Now.Minute,
+        Decision.bApplied ? ToString(Decision.Effect) : ToString(Decision.Reason));
+    if (!Decision.bApplied)
+    {
+        Receipt.Reason = Decision.Reason;
+        return Finish(Receipt, Requester);
+    }
+
+    // Shelf, money, goods and any first-purchase XP are one all-or-nothing transition.
+    FMarburgumStoredReceipt Stored;
+    Stored.Character = Character;
+    Stored.Kind = ToString(Decision.Effect);
+    Stored.Interactable = Target->InteractableId.ToString();
+    Stored.Shop = Shop->Id;
+    Stored.Item = Decision.Item;
+    Stored.Quantity = Decision.Quantity;
+    Stored.MoneyDelta = Decision.MoneyDelta;
+    if (Decision.TradingXp > 0)
+    {
+        Stored.SkillXp.Add(TradingSkill, Decision.TradingXp);
+    }
+    if (!Commit(Receipt, Next, Stored))
+    {
+        Receipt.StockRemaining = -1;
+        return Finish(Receipt, Requester);
+    }
+
+    // Durable first, visible second.
+    ApplyInventory(*State);
+    ApplyShops();
+
+    Receipt.Outcome = EMarburgumRequestOutcome::Applied;
+    Receipt.Effect = Decision.Effect;
+    Receipt.MoneyDelta = Decision.MoneyDelta;
+    Receipt.SkillXp = ToSkillAwards(Stored.SkillXp);
     return Finish(Receipt, Requester);
 }
 

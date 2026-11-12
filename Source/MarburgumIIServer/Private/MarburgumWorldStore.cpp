@@ -133,6 +133,33 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
     }
     Root->SetObjectField(TEXT("money"), Money);
 
+    TSharedRef<FJsonObject> Shelves = MakeShared<FJsonObject>();
+    for (const FString& Shop : SortedKeys(Source.Shelves))
+    {
+        TSharedRef<FJsonObject> Lines = MakeShared<FJsonObject>();
+        const TMap<FString, int32>& Stock = Source.Shelves[Shop];
+        for (const FString& Item : SortedKeys(Stock))
+        {
+            Lines->SetNumberField(Item, Stock[Item]);
+        }
+        Shelves->SetObjectField(Shop, Lines);
+    }
+    Root->SetObjectField(TEXT("shelves"), Shelves);
+
+    TSharedRef<FJsonObject> FirstPurchases = MakeShared<FJsonObject>();
+    for (const FString& Character : SortedKeys(Source.FirstPurchases))
+    {
+        TArray<FString> Shops = Source.FirstPurchases[Character];
+        Shops.Sort();
+        TArray<TSharedPtr<FJsonValue>> Values;
+        for (const FString& Shop : Shops)
+        {
+            Values.Add(MakeShared<FJsonValueString>(Shop));
+        }
+        FirstPurchases->SetArrayField(Character, Values);
+    }
+    Root->SetObjectField(TEXT("first_purchases"), FirstPurchases);
+
     TSharedRef<FJsonObject> Receipts = MakeShared<FJsonObject>();
     for (const FString& Operation : SortedKeys(Source.Receipts))
     {
@@ -165,6 +192,10 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
         if (Receipt.MoneyDelta != 0)
         {
             Entry->SetNumberField(TEXT("money_delta"), static_cast<double>(Receipt.MoneyDelta));
+        }
+        if (!Receipt.Shop.IsEmpty())
+        {
+            Entry->SetStringField(TEXT("shop"), Receipt.Shop);
         }
         if (!Receipt.SkillXp.IsEmpty())
         {
@@ -341,6 +372,49 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
             }
         }
     }
+    const TSharedPtr<FJsonObject>* Shelves = nullptr;
+    if (Root->TryGetObjectField(TEXT("shelves"), Shelves))
+    {
+        for (const auto& Shop : (*Shelves)->Values)
+        {
+            const TSharedPtr<FJsonObject> Lines = Shop.Value->AsObject();
+            if (!Lines.IsValid())
+            {
+                continue;
+            }
+            TMap<FString, int32>& Stock = Parsed.Shelves.Add(FString(*Shop.Key));
+            for (const auto& Line : Lines->Values)
+            {
+                double Copies = 0.0;
+                // A shelf never holds fewer than none; a value that is not a count is not trusted.
+                if (Line.Value->TryGetNumber(Copies) && FMath::IsFinite(Copies) && Copies >= 0.0 && Copies < 2.0e9)
+                {
+                    Stock.Add(FString(*Line.Key), static_cast<int32>(Copies));
+                }
+            }
+        }
+    }
+    const TSharedPtr<FJsonObject>* FirstPurchases = nullptr;
+    if (Root->TryGetObjectField(TEXT("first_purchases"), FirstPurchases))
+    {
+        for (const auto& Character : (*FirstPurchases)->Values)
+        {
+            const TArray<TSharedPtr<FJsonValue>>* Shops = nullptr;
+            if (!Character.Value->TryGetArray(Shops))
+            {
+                continue;
+            }
+            TArray<FString>& Done = Parsed.FirstPurchases.Add(FString(*Character.Key));
+            for (const TSharedPtr<FJsonValue>& Shop : *Shops)
+            {
+                FString Id;
+                if (Shop->TryGetString(Id) && !Id.IsEmpty())
+                {
+                    Done.AddUnique(Id);
+                }
+            }
+        }
+    }
     const TSharedPtr<FJsonObject>* Receipts = nullptr;
     if (Root->TryGetObjectField(TEXT("receipts"), Receipts))
     {
@@ -378,6 +452,7 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
             {
                 Receipt.MoneyDelta = static_cast<int64>(MoneyDelta);
             }
+            Entry->TryGetStringField(TEXT("shop"), Receipt.Shop);
             const TSharedPtr<FJsonObject>* Xp = nullptr;
             if (Entry->TryGetObjectField(TEXT("skill_xp"), Xp))
             {

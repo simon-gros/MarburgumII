@@ -27,7 +27,13 @@ enum class EMarburgumInteractionReason : uint8
     NoRod,                // Fishing needs a fishing rod in the character's custody (ADR-048).
     TooSoon,              // Casts closer together than the minimum interval.
     CannotFishNow,        // Seated, swimming or down: fishing needs both feet on the bank.
-    TooEarly              // Struck before anything bit: the attempt is over.
+    TooEarly,             // Struck before anything bit: the attempt is over.
+    NoCounter,            // The target keeps no shop counter (ADR-060).
+    ShopClosed,           // Outside the counter's hours; talking to its keeper is still allowed.
+    InvalidQuantity,      // Not a quantity the counter deals in (none, or more than its limit per purchase).
+    NotOnCounter,         // The counter does not sell that.
+    ItemNotAccepted,      // The counter does not buy that back.
+    InsufficientItems     // Selling more copies than the character holds.
 };
 
 /** What a committed interaction did. Replays (Duplicate) report the original effect. */
@@ -40,7 +46,17 @@ enum class EMarburgumInteractionEffect : uint8
     StageCompleted, // Completed the current stage of a mission; MissionStage is the new current stage.
     MissionCompleted, // Completed the final stage (or decision) of a mission; reward and journal entry recorded.
     FishingCast,    // Cast at a fishing spot. Nothing durable changes: the wait is the server's, not the store's.
-    FishCaught      // Struck while a fish was on: the fish and its Fishing XP were committed together.
+    FishCaught,     // Struck while a fish was on: the fish and its Fishing XP were committed together.
+    ItemBought,     // Bought at a counter: shelf, money, goods and any first-purchase Trading XP in one commit (ADR-060).
+    ItemSold        // Sold back at a counter: goods, money and the shelf in one commit.
+};
+
+/** What a request at a shop counter asks for (ADR-060). */
+UENUM(BlueprintType)
+enum class EMarburgumTradeAction : uint8
+{
+    Buy,
+    Sell
 };
 
 /** Where a character's cast has got to (ADR-048); replicated to its owner only. */
@@ -254,7 +270,7 @@ struct FMarburgumInteractionReceipt
     UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Interaction")
     FName ChoiceOutcome;
 
-    /** Money paid (positive) or spent (negative): a mission reward or a choice. */
+    /** Money paid (positive) or spent (negative): a mission reward, a choice, or a counter's price. */
     UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Interaction")
     int64 MoneyDelta = 0;
 
@@ -262,7 +278,7 @@ struct FMarburgumInteractionReceipt
     UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Interaction")
     TArray<FMarburgumSkillProgress> SkillXp;
 
-    /** Stock of the target after this decision; -1 when unknown. */
+    /** Stock of the target after this decision (a counter: the shelf of ItemId); -1 when unknown. */
     UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Interaction")
     int32 StockRemaining = -1;
 
@@ -275,6 +291,7 @@ namespace MarburgumII::Gameplay
 {
     MARBURGUMII_API const TCHAR* ToString(EMarburgumInteractionReason Reason);
     MARBURGUMII_API const TCHAR* ToString(EMarburgumInteractionEffect Effect);
+    MARBURGUMII_API const TCHAR* ToString(EMarburgumTradeAction Action);
     MARBURGUMII_API const TCHAR* ToString(EMarburgumRequestOutcome Outcome);
     MARBURGUMII_API const TCHAR* ToString(EMarburgumFishingPhase Phase);
     MARBURGUMII_API const TCHAR* ToString(EMarburgumFishingEnd End);

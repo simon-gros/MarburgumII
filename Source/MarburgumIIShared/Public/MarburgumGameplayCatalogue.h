@@ -42,6 +42,9 @@ namespace MarburgumII::Gameplay
         { TEXT("prehod_classified_clippings"), TEXT("Prehod classified clippings"), EItemKind::Clue },
         { TEXT("pohorska_bank_file_locator"), TEXT("Pohorska banka archive-file locator"), EItemKind::Clue },
         { TEXT("k67_raeda_concession_copy"), TEXT("K67 Raeda concession copy"), EItemKind::Clue },
+        { TEXT("mariborski_glas"), TEXT("Mariborski Glas"), EItemKind::Goods },
+        { TEXT("maribor_postcard"), TEXT("Maribor picture postcard"), EItemKind::Goods },
+        { TEXT("ballpoint_pen"), TEXT("Ballpoint pen"), EItemKind::Goods },
     };
 
     inline constexpr FSkillDefinition Skills[] = {
@@ -284,6 +287,15 @@ namespace MarburgumII::Gameplay
         { TEXT("hear_milan"), TEXT("Meet Milan \u0160olar in Pristan and ask how he obtained the warehouse lease."), TEXT("milan_solar"), TEXT("Hear Milan's account"), EObjectiveType::Interaction, nullptr, 0, 1, false, Mission7Stage4Required, UE_ARRAY_COUNT(Mission7Stage4Required), nullptr, 0, nullptr, 0, nullptr, 0, false, TEXT("Milan says he paid the entity the registry named, that he stood at the Melje gate in 1990, and that real jobs depended on the transport business. His account complicates the ownership dispute instead of resolving it.") },
         { TEXT("check_k67_concession"), TEXT("Ask Petra whether Kiosk 67 also sits inside the old Raeda property network."), TEXT("petra_kralj"), TEXT("Check the K67 concession"), EObjectiveType::Interaction, nullptr, 0, 1, false, nullptr, 0, Mission7Stage5Grants, UE_ARRAY_COUNT(Mission7Stage5Grants), nullptr, 0, nullptr, 0, false, TEXT("Petra produces a concession copy showing that K67 traces back to Raeda Aprovizacija. The settlement is no longer abstract: any broad property ruling could touch her livelihood.") },
         { TEXT("decide_milan"), TEXT("Return to Milan and decide whether to treat him as a working source or keep the investigation at arm's length."), TEXT("milan_solar"), TEXT("Decide how to work with Milan"), EObjectiveType::Choice, nullptr, 0, 1, false, nullptr, 0, nullptr, 0, nullptr, 0, Mission7Stage6Choices, UE_ARRAY_COUNT(Mission7Stage6Choices), true, TEXT("") },
+    };
+
+    inline constexpr FShopOffer Shop0Offers[] = {
+        { TEXT("mariborski_glas"), 20, 8, 12 },
+        { TEXT("maribor_postcard"), 35, 12, 8 },
+        { TEXT("ballpoint_pen"), 15, 5, 6 },
+    };
+    inline constexpr FShopDefinition Shops[] = {
+        { TEXT("kiosk_67"), TEXT("Kiosk 67"), TEXT("petra_kralj"), 420, 1140, 63, TEXT("The shutter is down. Petra still nods if you have something else to ask, but the counter is closed until morning."), 5, 10, Shop0Offers, UE_ARRAY_COUNT(Shop0Offers) },
     };
 
     inline constexpr FMissionDefinition Missions[] = {

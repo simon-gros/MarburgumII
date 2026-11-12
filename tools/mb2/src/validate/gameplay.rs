@@ -189,6 +189,38 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
         }
         problems.expect(mission.get("provenance").is_some(), format!("mission {id} without provenance"));
     }
+    // Shops (ADR-060): a placed keeper, goods only, buy-back below the price, sane hours, limits and XP.
+    let shops = list(&catalogue, "shops");
+    let goods: Vec<&str> = list(&catalogue, "items").iter().filter(|i| i["kind"] == "goods").map(|i| text(&i["id"])).collect();
+    for shop in shops {
+        let id = text(&shop["id"]);
+        problems.expect(snake.is_match(id), format!("shop id not snake_case: {id}"));
+        problems.expect(shop.get("provenance").is_some(), format!("shop {id} without provenance"));
+        let npc = text(&shop["npc"]);
+        problems.expect(list(&catalogue, "interactables").iter().any(|e| e["id"] == npc && e["kind"] == "npc"),
+            format!("shop {id}: keeper {npc} is not an NPC"));
+        problems.expect(shops.iter().filter(|s| s["npc"] == shop["npc"]).count() == 1, format!("shop {id}: {npc} keeps more than one counter"));
+        problems.expect(shop["hours"]["timezone"] == "Europe/Ljubljana", format!("shop {id}: hours must be Europe/Ljubljana"));
+        problems.expect(shop["max_purchase_quantity"].as_i64().map_or(false, |q| q >= 1), format!("shop {id}: max_purchase_quantity must be positive"));
+        problems.expect(shop["intro_trading_xp"].as_i64().map_or(false, |x| x >= 0), format!("shop {id}: intro_trading_xp must not be negative"));
+        problems.expect(skills.contains(&"trading"), "shops train Trading, which is not registered");
+        let offers = list(shop, "offers");
+        problems.expect(!offers.is_empty(), format!("shop {id}: no offers"));
+        for offer in offers {
+            let item = text(&offer["item"]);
+            problems.expect(goods.contains(&item), format!("shop {id}: {item} is not registered goods"));
+            let (buy, sell, stock) = (offer["buy_price"].as_i64().unwrap_or(-1), offer["sell_price"].as_i64().unwrap_or(-1),
+                offer["stock"].as_i64().unwrap_or(-1));
+            problems.expect(buy > 0 && stock >= 0, format!("shop {id}: {item} needs a positive price and a stock"));
+            problems.expect(sell < buy, format!("shop {id}: {item} would be bought back at or above its price"));
+            problems.expect(offers.iter().filter(|o| o["item"] == offer["item"]).count() == 1, format!("shop {id}: {item} offered twice"));
+        }
+    }
+    for item in &goods {
+        problems.expect(shops.iter().any(|s| list(s, "offers").iter().any(|o| text(&o["item"]) == *item)),
+            format!("goods {item} are on no counter"));
+    }
+
     problems.expect(maps.contains("GrantedItemId = FName(TEXT(\"fishing_rod\"))"), "map commandlet grants an unexpected item");
     problems.expect(maps.contains("bTestFixture = true;"), "map fixtures are not marked as test fixtures");
     let schema = catalogue["world_store"]["schema_version"].to_string();
@@ -220,7 +252,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
 
     // Authority boundary: the reducers and store are ServerOnly; nothing else includes them.
     let sources = source_files(root);
-    for name in ["MarburgumWorldAuthority", "MarburgumWorldStore", "MarburgumMissionRules", "MarburgumFishingRules"] {
+    for name in ["MarburgumWorldAuthority", "MarburgumWorldStore", "MarburgumMissionRules", "MarburgumFishingRules", "MarburgumRetailRules"] {
         let owners: Vec<&String> = sources.iter().map(|(path, _)| path)
             .filter(|path| Path::new(path).file_stem().and_then(|s| s.to_str()) == Some(name)).collect();
         problems.expect(!owners.is_empty() && owners.iter().all(|p| p.starts_with("Source/MarburgumIIServer/")),
@@ -267,8 +299,8 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
 
     vec![format!(
         "Gameplay contract check passed: {} item(s), {} skill(s), {} fishing spot(s), {} area(s), {} interactable(s), {} mission(s), \
-         {reasons} refusal reasons, generated catalogue current, server-only authority and owner-only custody, progress, location, \
+         {} shop(s), {reasons} refusal reasons, generated catalogue current, server-only authority and owner-only custody, progress, location, \
          condition, skills, money and fishing.",
         json_items.len(), skills.len(), list(&catalogue["fishing"], "spots").len(), json_areas.len(), list(&catalogue, "interactables").len(),
-        missions.len())]
+        missions.len(), shops.len())]
 }

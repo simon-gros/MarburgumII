@@ -1,8 +1,8 @@
 {
   "format": "marburgumii.gameplay_catalogue",
-  "version": "0.2.0",
-  "status": "stage1_lent_runtime_with_fishing_skills_and_missions",
-  "description": "Item, skill, fishing, interactable and mission definitions the Unreal runtime uses. `mb2 generate gameplay` writes Source/MarburgumIIShared/Public/MarburgumGameplayCatalogue.h from this file, and `mb2 validate gameplay` fails when the two differ (ADR-049).",
+  "version": "0.3.0",
+  "status": "stage1_lent_runtime_with_fishing_skills_missions_and_kiosk_67",
+  "description": "Item, skill, fishing, interactable, shop and mission definitions the Unreal runtime uses. `mb2 generate gameplay` writes Source/MarburgumIIShared/Public/MarburgumGameplayCatalogue.h from this file, and `mb2 validate gameplay` fails when the two differ (ADR-049).",
   "items": [
     {
       "id": "fishing_rod",
@@ -470,6 +470,45 @@
         "source": "original Marburgum project/data/items.json",
         "source_version": 3,
         "note": "Identifier and English name carried forward; no legacy code or asset."
+      }
+    },
+    {
+      "id": "mariborski_glas",
+      "name": {
+        "en": "Mariborski Glas"
+      },
+      "stacking": "fungible_stack",
+      "kind": "goods",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json (integration/kiosk67-retail-reconciled-20261025)",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; `trade: retail` becomes kind goods (ADR-060). No legacy code or asset."
+      }
+    },
+    {
+      "id": "maribor_postcard",
+      "name": {
+        "en": "Maribor picture postcard"
+      },
+      "stacking": "fungible_stack",
+      "kind": "goods",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json (integration/kiosk67-retail-reconciled-20261025)",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; `trade: retail` becomes kind goods (ADR-060). No legacy code or asset."
+      }
+    },
+    {
+      "id": "ballpoint_pen",
+      "name": {
+        "en": "Ballpoint pen"
+      },
+      "stacking": "fungible_stack",
+      "kind": "goods",
+      "provenance": {
+        "source": "original Marburgum project/data/items.json (integration/kiosk67-retail-reconciled-20261025)",
+        "source_version": 3,
+        "note": "Identifier and English name carried forward; `trade: retail` becomes kind goods (ADR-060). No legacy code or asset."
       }
     }
   ],
@@ -2060,11 +2099,68 @@
       }
     }
   ],
+  "shops": [
+    {
+      "id": "kiosk_67",
+      "name": {
+        "en": "Kiosk 67"
+      },
+      "npc": "petra_kralj",
+      "hours": {
+        "open": "07:00",
+        "close": "19:00",
+        "days": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "day_numbering": "0 Monday .. 6 Sunday",
+        "timezone": "Europe/Ljubljana",
+        "clock": "real civil time on the server: CET, CEST from 01:00 UTC on the last Sunday of March to 01:00 UTC on the last Sunday of October"
+      },
+      "closed_message": {
+        "en": "The shutter is down. Petra still nods if you have something else to ask, but the counter is closed until morning."
+      },
+      "max_purchase_quantity": 5,
+      "stock_policy": "shared_finite",
+      "restock": "none",
+      "intro_trading_xp": 10,
+      "offers": [
+        {
+          "item": "mariborski_glas",
+          "buy_price": 20,
+          "sell_price": 8,
+          "stock": 12
+        },
+        {
+          "item": "maribor_postcard",
+          "buy_price": 35,
+          "sell_price": 12,
+          "stock": 8
+        },
+        {
+          "item": "ballpoint_pen",
+          "buy_price": 15,
+          "sell_price": 5,
+          "stock": 6
+        }
+      ],
+      "prices_note": "Provisional integer gameplay prices, not verified 1990s retail prices.",
+      "provenance": {
+        "source": "original Marburgum project/data/shops.json, project/native/retail_rules.hpp and docs/KIOSK_67_RETAIL.md (integration/kiosk67-retail-reconciled-20261025, never merged to the original main)",
+        "source_version": 1,
+        "note": "Hours, prices, stock, the 5-per-purchase limit, the buy-back cap at the starting stock and the first-purchase Trading XP carried forward (ADR-060). The original kept stock and the character in two files with a crash window between them and remembered only 64 transactions per shop; here both live in the one atomically replaced world store and every receipt is kept."
+      }
+    }
+  ],
   "world_store": {
     "format": "marburgumii.world_store",
-    "schema_version": 4,
+    "schema_version": 5,
     "oldest_readable_schema": 1,
-    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition (ADR-020); schema 4 adds skill XP, money and mission outcomes (ADR-047, ADR-049)"
+    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition (ADR-020); schema 4 adds skill XP, money and mission outcomes (ADR-047, ADR-049); schema 5 adds shop shelves and each character's first purchase per shop (ADR-060)"
   },
   "condition": {
     "walk_speed_mps": 2.2,
