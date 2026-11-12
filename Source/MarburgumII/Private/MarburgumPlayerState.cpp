@@ -19,6 +19,32 @@ void AMarburgumPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Skills, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Money, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Fishing, COND_OwnerOnly);
+    // Who a character is shows to everyone; the account behind it (id, username, email) never replicates.
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, FirstName, COND_InitialOnly);
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, LastName, COND_InitialOnly);
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Model, COND_InitialOnly);
+}
+
+void AMarburgumPlayerState::SetIdentityAuthority(const FString& InFirstName, const FString& InLastName, FName InModel)
+{
+    check(HasAuthority());
+    FirstName = InFirstName;
+    LastName = InLastName;
+    Model = InModel;
+    SetPlayerName(FirstName + TEXT(" ") + LastName);
+    ForceNetUpdate();
+    OnIdentityChanged().Broadcast(this);
+}
+
+void AMarburgumPlayerState::OnRep_Identity()
+{
+    OnIdentityChanged().Broadcast(this);
+}
+
+FMarburgumPlayerStateChanged& AMarburgumPlayerState::OnIdentityChanged()
+{
+    static FMarburgumPlayerStateChanged Delegate;
+    return Delegate;
 }
 
 void AMarburgumPlayerState::SetCharacterKeyAuthority(const FString& Key)

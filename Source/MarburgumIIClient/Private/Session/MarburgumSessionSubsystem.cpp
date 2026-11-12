@@ -9,6 +9,7 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerState.h"
 #include "HAL/PlatformTime.h"
+#include "MarburgumAccountContract.h"
 #include "MarburgumGameState.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumNetworkContract.h"
@@ -16,6 +17,7 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "Session/MarburgumAccountSubsystem.h"
 
 using namespace MarburgumII::Session;
 
@@ -222,6 +224,32 @@ void UMarburgumSessionSubsystem::BeginAttempt(const FString& Address)
     }
     AttemptStartedSeconds = FPlatformTime::Seconds();
     bReconnectScheduled = false;
+    // Signed in (ADR-055): every attempt, a reconnect too, brings a fresh single-use ticket and never the key.
+    if (UMarburgumAccountSubsystem* Accounts = GameInstance->GetSubsystem<UMarburgumAccountSubsystem>(); Accounts && Accounts->IsEnabled())
+    {
+        const EPhase AttemptPhase = View.Phase;
+        Accounts->RequestTicket(FMarburgumTicketReady::CreateWeakLambda(this,
+            [this, Address, AttemptPhase](const FString& Ticket, const FText& Error)
+            {
+                if (View.Phase != AttemptPhase)
+                {
+                    return; // cancelled or superseded while the ticket was on its way
+                }
+                if (Ticket.IsEmpty())
+                {
+                    Fail(EFault::Refused, Error.ToString());
+                    return;
+                }
+                UGameInstance* Instance = GetGameInstance();
+                if (UWorld* Current = Instance ? Instance->GetWorld() : nullptr; Current && GEngine)
+                {
+                    AttemptStartedSeconds = FPlatformTime::Seconds();
+                    GEngine->SetClientTravel(Current, *FString::Printf(TEXT("%s?%s=%s"), *Address, MarburgumII::Accounts::TicketOption, *Ticket),
+                        TRAVEL_Absolute);
+                }
+            }));
+        return;
+    }
     // The address is validated host[:port]; the only option this client adds is its character key.
     const FString Url = CharacterKey.IsEmpty() ? Address
         : FString::Printf(TEXT("%s?%s=%s"), *Address, MarburgumII::Gameplay::CharacterOption, *CharacterKey);

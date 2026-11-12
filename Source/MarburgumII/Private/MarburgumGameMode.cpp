@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+#include "MarburgumAccountContract.h"
 #include "MarburgumCharacter.h"
 #include "MarburgumCombatContract.h"
 #include "MarburgumFighter.h"
@@ -58,6 +59,112 @@ FString AMarburgumGameMode::CheckCharacterKey(const FString& Key) const
     return FString();
 }
 
+bool AMarburgumGameMode::AccountsRequired() const
+{
+#if UE_BUILD_SHIPPING
+    return true;
+#else
+    const UMarburgumAdmissionService* Service = UMarburgumAdmissionService::Get(GetWorld());
+    return Service && Service->RequiresAccounts();
+#endif
+}
+
+void AMarburgumGameMode::PreLoginAsync(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId,
+    const FOnPreLoginCompleteDelegate& OnComplete)
+{
+    using namespace MarburgumII::Accounts;
+    if (!AccountsRequired())
+    {
+        Super::PreLoginAsync(Options, Address, UniqueId, OnComplete);
+        return;
+    }
+    const auto Refuse = [&OnComplete](const TCHAR* Reason, const FString& Message)
+    {
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=admission_refused stage=prelogin reason=%s"), AdmissionLogPrefix, Reason);
+        OnComplete.ExecuteIfBound(Message);
+    };
+    // The engine's own checks (a full server, a banned address) first; the development key path is skipped.
+    FString ErrorMessage;
+    AGameModeBase::PreLogin(Options, Address, UniqueId, ErrorMessage);
+    if (!ErrorMessage.IsEmpty())
+    {
+        OnComplete.ExecuteIfBound(ErrorMessage);
+        return;
+    }
+    if (UGameplayStatics::HasOption(Options, MarburgumII::Gameplay::CharacterOption))
+    {
+        Refuse(TEXT("development_key"), TEXT("This server only admits signed-in players."));
+        return;
+    }
+    const FString Ticket = UGameplayStatics::ParseOption(Options, TicketOption);
+    UMarburgumAdmissionService* Service = UMarburgumAdmissionService::Get(GetWorld());
+    if (!Service || !IsWellFormedTicket(Ticket))
+    {
+        Refuse(Ticket.IsEmpty() ? TEXT("no_ticket") : TEXT("malformed_ticket"), TEXT("Sign in to enter the world."));
+        return;
+    }
+    Service->Redeem(Ticket, FMarburgumTicketRedeemed::CreateWeakLambda(this,
+        [this, Ticket, OnComplete](const FMarburgumAdmittedCharacter& Who, const FString& Error)
+        {
+            if (!Error.IsEmpty())
+            {
+                UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=admission_refused stage=redeem reason=\"%s\""), AdmissionLogPrefix, *Error);
+                OnComplete.ExecuteIfBound(Error);
+                return;
+            }
+            if (FindPlayerByCharacterKey(Who.CharacterId))
+            {
+                UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=admission_refused stage=redeem reason=already_in_world character=%s"),
+                    AdmissionLogPrefix, *Who.CharacterId);
+                OnComplete.ExecuteIfBound(TEXT("This character is already in the world."));
+                return;
+            }
+            Admitted.Add(Ticket, Who);
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=ticket_redeemed character=%s model=%s"), AdmissionLogPrefix,
+                *Who.CharacterId, *Who.Model.ToString());
+            OnComplete.ExecuteIfBound(FString());
+        }));
+}
+
+FString AMarburgumGameMode::InitAccountPlayer(APlayerController* NewPlayerController, const FString& Options)
+{
+    using namespace MarburgumII::Accounts;
+    FMarburgumAdmittedCharacter Who;
+    if (!Admitted.RemoveAndCopyValue(UGameplayStatics::ParseOption(Options, TicketOption), Who))
+    {
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=admission_refused stage=init reason=not_redeemed"), AdmissionLogPrefix);
+        return TEXT("Sign in to enter the world.");
+    }
+    // Checked again here: two pending logins for one character can both pass PreLogin.
+    if (FindPlayerByCharacterKey(Who.CharacterId))
+    {
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=admission_refused stage=init reason=already_in_world character=%s"),
+            AdmissionLogPrefix, *Who.CharacterId);
+        return TEXT("This character is already in the world.");
+    }
+    AMarburgumPlayerState* State = NewPlayerController ? NewPlayerController->GetPlayerState<AMarburgumPlayerState>() : nullptr;
+    if (!State)
+    {
+        return TEXT("Sign in to enter the world.");
+    }
+    State->SetCharacterKeyAuthority(Who.CharacterId);
+    State->SetIdentityAuthority(Who.FirstName, Who.LastName, Who.Model);
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=admitted player=%d character=%s model=%s"), AdmissionLogPrefix, State->GetPlayerId(),
+        *Who.CharacterId, *Who.Model.ToString());
+    return FString();
+}
+
+void AMarburgumGameMode::ChangeName(AController* Controller, const FString& NewName, bool bNameChange)
+{
+    // A signed-in character's name comes from the account service; a client cannot pick another.
+    const AMarburgumPlayerState* State = Controller ? Controller->GetPlayerState<AMarburgumPlayerState>() : nullptr;
+    if (AccountsRequired() && State && State->HasIdentity())
+    {
+        return;
+    }
+    Super::ChangeName(Controller, NewName, bNameChange);
+}
+
 void AMarburgumGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {
     Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
@@ -87,6 +194,10 @@ FString AMarburgumGameMode::InitNewPlayer(APlayerController* NewPlayerController
     if (!Error.IsEmpty())
     {
         return Error;
+    }
+    if (AccountsRequired())
+    {
+        return InitAccountPlayer(NewPlayerController, Options);
     }
     // Checked again here: two pending logins with the same key can both pass PreLogin.
     const FString Key = UGameplayStatics::ParseOption(Options, MarburgumII::Gameplay::CharacterOption);

@@ -25,6 +25,8 @@ class MARBURGUMIICLIENT_API UMarburgumConnectionScreen : public UUserWidget
 
 public:
     void ApplyView(const FMarburgumSessionView& View);
+    /** Who is signed in (ADR-055); hidden when accounts are off. */
+    void ApplyAccount(const struct FMarburgumAccountView& View);
 
     /** Widget that should receive keyboard/controller focus when the screen is shown. */
     UWidget* GetPreferredFocus() const;
@@ -42,6 +44,8 @@ private:
     UFUNCTION()
     void HandleCancelClicked();
     UFUNCTION()
+    void HandleSignOutClicked();
+    UFUNCTION()
     void HandleAddressCommitted(const FText& Text, ETextCommit::Type CommitMethod);
 
     UMarburgumSessionSubsystem* GetSession() const;
@@ -52,6 +56,9 @@ private:
     UWidget* BuildConnectCard();
     UWidget* BuildFooter();
 
+    UPROPERTY(Transient) TObjectPtr<UWidget> AccountRow;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> AccountLabel;
+    UPROPERTY(Transient) TObjectPtr<UButton> SignOutButton;
     UPROPERTY(Transient) TObjectPtr<UEditableTextBox> AddressField;
     UPROPERTY(Transient) TObjectPtr<UButton> ConnectButton;
     UPROPERTY(Transient) TObjectPtr<UButton> RetryButton;

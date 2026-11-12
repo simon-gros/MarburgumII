@@ -69,7 +69,12 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
     virtual void Tick(float DeltaSeconds) override;
+    virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    virtual void OnPlayerStateChanged(APlayerState* NewPlayerState, APlayerState* OldPlayerState) override;
+
+    /** Presentation evidence: the roster model this body wears (ADR-055); None until a signed-in character has one. */
+    FName GetAppliedModel() const { return AppliedModel; }
 
     /** Presentation evidence: a swim clip (the stroke or treading water) is playing on this body. */
     bool IsSwimClipPlaying() const;
@@ -119,6 +124,16 @@ public:
     void StopGuard();
 
 private:
+    /** Wear the body of the signed-in character's chosen model, if it has one (ADR-055). */
+    void ApplyModel();
+    void HandleIdentityChanged(class AMarburgumPlayerState* State);
+
+    /** The roster's bodies, referenced so they cook; index matches MarburgumII::Accounts::CharacterModels. */
+    UPROPERTY()
+    TArray<TObjectPtr<USkeletalMesh>> ModelMeshes;
+    FName AppliedModel;
+    FDelegateHandle IdentityHandle;
+
     void MoveForward(float Value);
     void MoveRight(float Value);
     void MoveBackward(float Value);

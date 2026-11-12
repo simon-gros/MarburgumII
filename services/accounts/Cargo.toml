@@ -1,0 +1,28 @@
+[package]
+name = "mb2-accounts"
+version = "0.1.0"
+edition = "2021"
+description = "Marburgum II account service: email-verified accounts, password sign-in, the first character and world-admission tickets (ADR-055)"
+publish = false
+
+[[bin]]
+name = "mb2-accounts"
+path = "src/main.rs"
+
+[dependencies]
+argon2 = "0.5"
+axum = "0.8"
+axum-server = { version = "0.7", features = ["tls-rustls"] }
+base64 = "0.22"
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+sha2 = "0.10"
+subtle = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "signal", "time"] }
+unicode-normalization = "0.1"
+
+[dev-dependencies]
+http-body-util = "0.1"
+tempfile = "3"
+tower = { version = "0.5", features = ["util"] }

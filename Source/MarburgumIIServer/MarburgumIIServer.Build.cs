@@ -8,6 +8,6 @@ public class MarburgumIIServer : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine", "MarburgumII" });
-        PrivateDependencyModuleNames.AddRange(new[] { "Json", "MarburgumIIShared" });
+        PrivateDependencyModuleNames.AddRange(new[] { "HTTP", "Json", "MarburgumIIShared" });
     }
 }

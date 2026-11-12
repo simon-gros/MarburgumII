@@ -26,6 +26,19 @@ public:
     const FString& GetCharacterKey() const { return CharacterKey; }
     void SetCharacterKeyAuthority(const FString& Key);
 
+    /**
+     * The signed-in character's identity (ADR-055): first and last name (the replicated player name is "First Last")
+     * and body model, visible to everyone. Empty/None for a development key.
+     */
+    bool HasIdentity() const { return !Model.IsNone(); }
+    const FString& GetFirstName() const { return FirstName; }
+    const FString& GetLastName() const { return LastName; }
+    FName GetModel() const { return Model; }
+    /** Authority only, once at admission. */
+    void SetIdentityAuthority(const FString& InFirstName, const FString& InLastName, FName InModel);
+    /** Fired wherever the replicated model arrives, and on the server when set. */
+    static FMarburgumPlayerStateChanged& OnIdentityChanged();
+
     /** Owner-visible: whether this connection has a character that can hold items. */
     bool HasCharacter() const { return bHasCharacter; }
 
@@ -128,9 +141,18 @@ protected:
 
     UFUNCTION()
     void OnRep_Fishing();
+    UFUNCTION()
+    void OnRep_Identity();
 
 private:
     FString CharacterKey;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Identity)
+    FString FirstName;
+    UPROPERTY(ReplicatedUsing = OnRep_Identity)
+    FString LastName;
+    UPROPERTY(ReplicatedUsing = OnRep_Identity)
+    FName Model;
 
     UPROPERTY(ReplicatedUsing = OnRep_Inventory)
     bool bHasCharacter = false;

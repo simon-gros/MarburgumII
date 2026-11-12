@@ -1,0 +1,25 @@
+{
+  "format": "marburgumii.character_models",
+  "version": "0.1.0",
+  "status": "Launch roster for the first-character creator (ADR-055). Every body here is rigged to the UE5 mannequin skeleton and animated by the same set. The selection and its art quality still need the owner's review.",
+  "models": [
+    {
+      "id": "protagonist",
+      "name": { "en": "Protagonist", "sl": "Protagonist" },
+      "mesh": "/Game/Characters/Protagonist/SKM_Protagonist.SKM_Protagonist",
+      "provenance": "Generated and retopologised in this project (ADR-031)"
+    },
+    {
+      "id": "manny",
+      "name": { "en": "Manny", "sl": "Manny" },
+      "mesh": "/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple",
+      "provenance": "Epic UE5 template mannequin, engine-licensed"
+    },
+    {
+      "id": "quinn",
+      "name": { "en": "Quinn", "sl": "Quinn" },
+      "mesh": "/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple",
+      "provenance": "Epic UE5 template mannequin, engine-licensed"
+    }
+  ]
+}

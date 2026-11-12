@@ -19,6 +19,7 @@
 #include "HAL/PlatformTime.h"
 #include "InputCoreTypes.h"
 #include "MarburgumNetworkContract.h"
+#include "Session/MarburgumAccountSubsystem.h"
 #include "UI/MarburgumUIBuilder.h"
 
 #define LOCTEXT_NAMESPACE "MarburgumConnection"
@@ -194,6 +195,16 @@ UWidget* UMarburgumConnectionScreen::BuildConnectCard()
     FBuilder B(*WidgetTree);
 
     UVerticalBox* Body = B.Column();
+    // Signed in (ADR-055): who enters the world, and the way back out.
+    UHorizontalBox* Account = B.Row();
+    AccountLabel = B.Text(FText::GetEmpty(), ETypeRole::BodyStrong);
+    FBuilder::Inline(Account, AccountLabel, T.Space.M, true);
+    SignOutButton = B.Button(LOCTEXT("SignOut", "Sign out"), EButtonKind::Quiet);
+    SignOutButton->OnClicked.AddDynamic(this, &UMarburgumConnectionScreen::HandleSignOutClicked);
+    FBuilder::Inline(Account, SignOutButton, 0.f, false, false);
+    FBuilder::Stack(Body, Account, T.Space.L);
+    AccountRow = Account;
+    AccountRow->SetVisibility(ESlateVisibility::Collapsed);
     FBuilder::Stack(Body, B.Text(LOCTEXT("ServerHeading", "SERVER"), ETypeRole::Overline), T.Space.S);
 
     UHorizontalBox* AddressRow = B.Row();
@@ -267,9 +278,12 @@ UWidget* UMarburgumConnectionScreen::BuildFooter()
     const FTokens& T = Tokens();
     FBuilder B(*WidgetTree);
     const FString Version = GetDefault<UGeneralProjectSettings>()->ProjectVersion;
+    const UGameInstance* GameInstance = GetGameInstance();
+    const UMarburgumAccountSubsystem* Accounts = GameInstance ? GameInstance->GetSubsystem<UMarburgumAccountSubsystem>() : nullptr;
+    const FText AccountNote = Accounts && Accounts->IsEnabled() ? LOCTEXT("AccountsOn", "signed-in entry") : LOCTEXT("AccountsOff", "development key, no account service");
     const FText FooterText = FText::Format(
-        LOCTEXT("Footer", "Development preview  ·  client {0}  ·  network contract v{1}  ·  UI tokens v{2}  ·  no account service"),
-        FText::FromString(Version), FText::AsNumber(MarburgumII::Network::ContractVersion), FText::AsNumber(TokenVersion));
+        LOCTEXT("Footer", "Development preview  ·  client {0}  ·  network contract v{1}  ·  UI tokens v{2}  ·  {3}"),
+        FText::FromString(Version), FText::AsNumber(MarburgumII::Network::ContractVersion), FText::AsNumber(TokenVersion), AccountNote);
     return B.Text(FooterText, ETypeRole::Caption, T.Color.TextMuted);
 }
 
@@ -451,6 +465,30 @@ void UMarburgumConnectionScreen::HandleCancelClicked()
     if (UMarburgumSessionSubsystem* Session = GetSession())
     {
         Session->Cancel();
+    }
+}
+
+void UMarburgumConnectionScreen::ApplyAccount(const FMarburgumAccountView& View)
+{
+    if (!AccountRow)
+    {
+        return;
+    }
+    const bool bSignedIn = View.Step == EMarburgumAccountStep::Ready;
+    AccountRow->SetVisibility(bSignedIn ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+    if (bSignedIn)
+    {
+        AccountLabel->SetText(FText::Format(LOCTEXT("SignedInAs", "{0} {1}  ·  signed in as {2}"),
+            FText::FromString(View.FirstName), FText::FromString(View.LastName), FText::FromString(View.Username)));
+    }
+}
+
+void UMarburgumConnectionScreen::HandleSignOutClicked()
+{
+    const UGameInstance* GameInstance = GetGameInstance();
+    if (UMarburgumAccountSubsystem* Accounts = GameInstance ? GameInstance->GetSubsystem<UMarburgumAccountSubsystem>() : nullptr)
+    {
+        Accounts->SignOut();
     }
 }
 

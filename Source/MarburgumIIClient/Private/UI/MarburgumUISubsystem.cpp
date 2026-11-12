@@ -14,6 +14,8 @@
 #include "MarburgumNetworkContract.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
+#include "Session/MarburgumAccountSubsystem.h"
+#include "UI/MarburgumAccountScreen.h"
 #include "UI/MarburgumConnectionScreen.h"
 #include "UI/MarburgumInteractionPrompt.h"
 #include "MarburgumInteractable.h"
@@ -60,6 +62,11 @@ void UMarburgumUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
     {
         SessionChangedHandle = SessionSubsystem->OnSessionChanged().AddUObject(this, &UMarburgumUISubsystem::HandleSessionChanged);
     }
+    Accounts = Collection.InitializeDependency<UMarburgumAccountSubsystem>();
+    if (UMarburgumAccountSubsystem* AccountSubsystem = Accounts.Get())
+    {
+        AccountChangedHandle = AccountSubsystem->OnAccountChanged().AddUObject(this, &UMarburgumUISubsystem::HandleAccountChanged);
+    }
     PreLoadMapHandle = FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &UMarburgumUISubsystem::HandlePreLoadMap);
     PostLoadMapHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UMarburgumUISubsystem::HandlePostLoadMap);
     FishingHandle = AMarburgumPlayerState::OnFishingChanged().AddUObject(this, &UMarburgumUISubsystem::HandleFishingChanged);
@@ -73,6 +80,10 @@ void UMarburgumUISubsystem::Deinitialize()
     if (UMarburgumSessionSubsystem* SessionSubsystem = Session.Get())
     {
         SessionSubsystem->OnSessionChanged().Remove(SessionChangedHandle);
+    }
+    if (UMarburgumAccountSubsystem* AccountSubsystem = Accounts.Get())
+    {
+        AccountSubsystem->OnAccountChanged().Remove(AccountChangedHandle);
     }
     TearDown();
     Super::Deinitialize();
@@ -114,6 +125,7 @@ void UMarburgumUISubsystem::TearDown()
     }
     Root = nullptr;
     ConnectionScreen = nullptr;
+    AccountScreen = nullptr;
     Feed = nullptr;
     Chat = nullptr;
     Prompt = nullptr;
@@ -818,6 +830,13 @@ void UMarburgumUISubsystem::BuildForWorld(UWorld* World)
 
     ConnectionScreen = CreateWidget<UMarburgumConnectionScreen>(GameInstance, UMarburgumConnectionScreen::StaticClass());
     Root->AddToLayer(EMarburgumUILayer::Screens, ConnectionScreen);
+    if (const UMarburgumAccountSubsystem* AccountSubsystem = Accounts.Get(); AccountSubsystem && AccountSubsystem->IsEnabled() && !bServerWorld)
+    {
+        AccountScreen = CreateWidget<UMarburgumAccountScreen>(GameInstance, UMarburgumAccountScreen::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Screens, AccountScreen);
+        AccountScreen->ApplyView(AccountSubsystem->GetView());
+        ConnectionScreen->ApplyAccount(AccountSubsystem->GetView());
+    }
 
     if (APlayerController* Pending = PendingChatOwner.Get(); Pending && Pending->GetWorld() == World)
     {
@@ -852,9 +871,7 @@ void UMarburgumUISubsystem::HandleSessionChanged(const FMarburgumSessionView& Vi
         CloseScreensExcept(nullptr); // No stale custody or condition view once the session is gone.
     }
     ConnectionScreen->ApplyView(View);
-    const bool bShowScreen = View.Phase != EPhase::Ready;
-    ConnectionScreen->SetVisibility(bShowScreen ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
-    ApplyInputMode(bShowScreen);
+    ApplyFrontEnd();
 
     if (View.Phase == EPhase::Ready)
     {
@@ -878,6 +895,39 @@ void UMarburgumUISubsystem::HandleSessionChanged(const FMarburgumSessionView& Vi
     }
 }
 
+void UMarburgumUISubsystem::HandleAccountChanged(const FMarburgumAccountView& View)
+{
+    if (AccountScreen)
+    {
+        AccountScreen->ApplyView(View);
+    }
+    if (ConnectionScreen)
+    {
+        ConnectionScreen->ApplyAccount(View);
+    }
+    ApplyFrontEnd();
+}
+
+void UMarburgumUISubsystem::ApplyFrontEnd()
+{
+    if (!ConnectionScreen)
+    {
+        return;
+    }
+    const bool bInWorld = LastPhase == EPhase::Ready;
+    const UMarburgumAccountSubsystem* AccountSubsystem = Accounts.Get();
+    const bool bAccountStep = AccountScreen && AccountSubsystem && AccountSubsystem->GetView().Step != EMarburgumAccountStep::Ready
+        && AccountSubsystem->GetView().Step != EMarburgumAccountStep::Disabled;
+    // A signed-out player, or one without a character, sees the account screens; connecting needs both.
+    const bool bShowAccount = !bInWorld && bAccountStep && !MarburgumII::Session::IsAttemptInFlight(LastPhase);
+    if (AccountScreen)
+    {
+        AccountScreen->SetVisibility(bShowAccount ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+    }
+    ConnectionScreen->SetVisibility(!bInWorld && !bShowAccount ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+    ApplyInputMode(!bInWorld);
+}
+
 void UMarburgumUISubsystem::ApplyInputMode(bool bScreenOwnsInput)
 {
     const UGameInstance* GameInstance = GetGameInstance();
@@ -890,7 +940,8 @@ void UMarburgumUISubsystem::ApplyInputMode(bool bScreenOwnsInput)
     if (bScreenOwnsInput && ConnectionScreen)
     {
         FInputModeUIOnly Mode;
-        if (UWidget* Focus = ConnectionScreen->GetPreferredFocus())
+        const bool bAccount = AccountScreen && AccountScreen->GetVisibility() == ESlateVisibility::Visible;
+        if (UWidget* Focus = bAccount ? AccountScreen->GetPreferredFocus() : ConnectionScreen->GetPreferredFocus())
         {
             Mode.SetWidgetToFocus(Focus->TakeWidget());
         }

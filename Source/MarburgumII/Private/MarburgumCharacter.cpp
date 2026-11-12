@@ -13,6 +13,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputCoreTypes.h"
+#include "MarburgumAccountContract.h"
 #include "MarburgumCharacterMovement.h"
 #include "MarburgumCombatContract.h"
 #include "MarburgumFighter.h"
@@ -88,6 +89,12 @@ AMarburgumCharacter::AMarburgumCharacter(const FObjectInitializer& ObjectInitial
     {
         Body->SetSkeletalMesh(Protagonist.Object);
     }
+    // Every body the first-character creator offers shares the mannequin skeleton and this animation (ADR-055).
+    for (const MarburgumII::Accounts::FCharacterModel& Model : MarburgumII::Accounts::CharacterModels)
+    {
+        ConstructorHelpers::FObjectFinder<USkeletalMesh> Found(Model.Mesh);
+        ModelMeshes.Add(Found.Succeeded() ? Found.Object : nullptr);
+    }
     static ConstructorHelpers::FClassFinder<UAnimInstance> Unarmed(TEXT("/Game/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed"));
     if (Unarmed.Succeeded())
     {
@@ -162,8 +169,57 @@ void AMarburgumCharacter::Tick(float DeltaSeconds)
     }
 }
 
+void AMarburgumCharacter::BeginPlay()
+{
+    Super::BeginPlay();
+    IdentityHandle = AMarburgumPlayerState::OnIdentityChanged().AddUObject(this, &AMarburgumCharacter::HandleIdentityChanged);
+    ApplyModel();
+}
+
+void AMarburgumCharacter::OnPlayerStateChanged(APlayerState* NewPlayerState, APlayerState* OldPlayerState)
+{
+    Super::OnPlayerStateChanged(NewPlayerState, OldPlayerState);
+    ApplyModel();
+}
+
+void AMarburgumCharacter::HandleIdentityChanged(AMarburgumPlayerState* State)
+{
+    if (State && State == GetPlayerState())
+    {
+        ApplyModel();
+    }
+}
+
+void AMarburgumCharacter::ApplyModel()
+{
+    const AMarburgumPlayerState* State = GetPlayerState<AMarburgumPlayerState>();
+    if (!State || State->GetModel().IsNone() || State->GetModel() == AppliedModel)
+    {
+        return;
+    }
+    const FName Wanted = State->GetModel();
+    int32 Index = 0;
+    for (const MarburgumII::Accounts::FCharacterModel& Model : MarburgumII::Accounts::CharacterModels)
+    {
+        if (Wanted == FName(Model.Id))
+        {
+            if (ModelMeshes.IsValidIndex(Index) && ModelMeshes[Index])
+            {
+                GetMesh()->SetSkeletalMesh(ModelMeshes[Index]);
+                AppliedModel = Wanted;
+                UE_LOG(LogMarburgumNet, Log, TEXT("%s role=%s event=model_applied player=%d model=%s"),
+                    MarburgumII::Accounts::AdmissionLogPrefix, HasAuthority() ? TEXT("server") : TEXT("client"), State->GetPlayerId(),
+                    *Wanted.ToString());
+            }
+            return;
+        }
+        ++Index;
+    }
+}
+
 void AMarburgumCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    AMarburgumPlayerState::OnIdentityChanged().Remove(IdentityHandle);
     // A body that leaves the world gives its seat back (the original's release_user).
     if (HasAuthority() && Seating.Vehicle)
     {

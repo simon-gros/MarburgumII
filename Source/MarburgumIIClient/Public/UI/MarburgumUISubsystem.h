@@ -37,6 +37,9 @@ class MARBURGUMIICLIENT_API UMarburgumUISubsystem : public UGameInstanceSubsyste
     GENERATED_BODY()
 
 public:
+    /** The account screen, for the first-launch smoke driver; null when accounts are off. */
+    class UMarburgumAccountScreen* GetAccountScreen() const { return AccountScreen; }
+
     virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
@@ -84,6 +87,9 @@ private:
     void HandlePreLoadMap(const FString& MapName);
     void HandlePostLoadMap(UWorld* World);
     void HandleSessionChanged(const FMarburgumSessionView& View);
+    void HandleAccountChanged(const struct FMarburgumAccountView& View);
+    /** Which front-end screen shows: the account screens until a character is ready, then the connection screen. */
+    void ApplyFrontEnd();
 
     void BuildForWorld(UWorld* World);
     void TearDown();
@@ -99,6 +105,7 @@ private:
 
     UPROPERTY(Transient) TObjectPtr<UMarburgumUIRoot> Root;
     UPROPERTY(Transient) TObjectPtr<UMarburgumConnectionScreen> ConnectionScreen;
+    UPROPERTY(Transient) TObjectPtr<class UMarburgumAccountScreen> AccountScreen;
     UPROPERTY(Transient) TObjectPtr<UMarburgumNotificationFeed> Feed;
     UPROPERTY(Transient) TObjectPtr<UMarburgumChatWidget> Chat;
     UPROPERTY(Transient) TObjectPtr<UMarburgumInteractionPrompt> Prompt;
@@ -122,6 +129,8 @@ private:
     FDelegateHandle PreLoadMapHandle;
     FDelegateHandle PostLoadMapHandle;
     FDelegateHandle SessionChangedHandle;
+    TWeakObjectPtr<class UMarburgumAccountSubsystem> Accounts;
+    FDelegateHandle AccountChangedHandle;
 
     MarburgumII::Session::EPhase LastPhase = MarburgumII::Session::EPhase::Starting;
     bool bRecoveredFromLoss = false;
