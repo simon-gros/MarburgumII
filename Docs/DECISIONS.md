@@ -691,3 +691,45 @@ Bringing in the eight original window levels as they are would have brought thei
 - **Colours.** The plaster colours are chosen by id, not from the original's photographs or a 1990s survey. In shade the yellows read slightly olive under the blue sky light.
 - **Water.** It has no shore foam, flow map or caustics. Its surface is the flat sheet of ADR-045 at 6 cm.
 - **Not yet done.** Trees, street furniture, façade detail, LODs and Nanite. A packaged run, frame time and the owner playtest.
+
+## ADR-054 — A second quality pass: islands, banks, façade bands and the distant ring (accepted 2026-11-12)
+
+**Problem.** The owner asked for another quality pass over the whole map. A fresh audit used ADR-053's 47 cameras plus 34 new ones: 22 street-level positions from a different seed, 8 mid-height views and 4 views at the map edge. In order of how much they hurt:
+
+1. **The map edge.** The square still ended in a bare edge over the void (ADR-053, not covered). Seen from the air, the map was a tile floating in grey.
+2. **Grass at the paving's edge.** Grass in islands and beside the paving stood in pits up to several metres deep, or rose as mounds. Each met the paving in a cut, and the paving's edging showed as a dark wall. ADR-053's verge rule only lifts ground up to 60 cm below the paving, within 3 m.
+3. **Flat façades.** Every wall rose as one flat plane from the street to the eaves.
+
+**Decision.**
+
+- **Islands** (`tools/lent-ground`, `fit_islands`). An island is unpaved ground of at most 5,000 m² that does not reach the window's edge and has paving on at least 60 % of its rim. It is fitted to the harmonic surface through the paving round it, 4 cm under the paving's top. A building on the rim is left free, so its wall does not hold the island to the ground under the building. The survey's shape is kept only within 4 cm, plus 12 cm for each metre from the paving, up to 2 m. A pit or a mound in an island therefore eases out from the kerb instead of meeting it in a cut. 736 islands are fitted, and 161,956 landscape points move by more than 5 mm.
+- **Banks** (`BANK_*`). Elsewhere, unpaved ground within 2.5 m of paving falls away from 4 cm under the paving at no more than 0.8 m per metre. Beyond the 0.8 m where it must stay under the paving, it rises at no more than that rate. Ground is moved by at most 1.5 m, eased out over the last metre so a deeper bank keeps no step, and never within 6 m of the Drava or under a building. 3,814 points are raised and 57,163 lowered.
+- **Façade bands** (`MarburgumBuildingMesher`). Every building gets up to three bands, each one closed ring round its outline, mitred at the corners. A band reaches 2 cm into the wall and stands 5 mm proud along a party wall, so no corner lands on the wall's own edges and the shell stays strictly closed:
+  - a plinth from the bottom of the wall to 45 cm above the street, 5 cm proud, in a dark grey-brown render (`MI_facade_socle`);
+  - a string course over the ground floor, 16 cm high and 6 cm proud, on buildings of two storeys or more;
+  - a cornice under the eaves or the roof deck, 22 cm high and 14 cm proud.
+
+  The string course and cornice are a light trim (`MI_facade_trim`), the 1990s Maribor pattern of off-white mouldings on a coloured render. A door now starts on the plinth. 557 buildings have all three bands, 229 have two and 80 have one. The 870 shells have 0 open edges and 3,168,858 triangles (3,026,898 before).
+- **The distant ring** (`lent-ground ring`, `ring.bin`; built and placed by `MarburgumRebuildGround`). The nine survey tiles already read for the ground reach at least 1,432 m from the middle of Stari most on every side. Round the playable ±768 m square they become a low-detail ring of 4 m cells:
+  - Bare ground and tree canopies are one smooth surface. A canopy cell stands at 80 % of its height.
+  - A building cell (at least 3 roof returns 2 m above the ground) is a flat block at the median of its roof returns, with walls wherever it stands above its neighbour. Connected cells form a block, which gets one of three wall renders and a tile or flat roof by how much of it slopes.
+  - The 2014 survey classes the Drava's surface as ground. Cells whose ground returns spread less than 8 cm, lie below 2 m, and join in sheets of at least 2 ha are the river. Dry holes in it up to 1,500 m² (boats, gravel bars) are closed in. The river is a water sheet in `M_DravaWater` at the survey's own level, eased to the square's 6 cm over 150 m, over a bed 1.5 m down.
+  - The ring's inner edge takes the landscape's own heights, 2 cm down, so the two meet without a step.
+
+  The ring is 119 meshes (`/Game/World/Ground/Ring`, 1,036,298 triangles): 85,364 building cells in 1,638 blocks, 143,355 tree cells and 11,539 water cells. Its meshes have no collision, nothing out there can be reached, and the walkability check skips them. The materials are the paved master over the grass textures for ground and canopies, and the buildings' own clay-tile, flat-roof and plaster instances. Its sources are the same ARSO LiDAR tiles already credited in `ground.json` (`ring.json` records the summary).
+
+**Evidence.**
+
+- Before and after captures from the same cameras are in [Captures/map-quality-2](Captures/map-quality-2/): ADR-053 against this pass.
+- `-run=MarburgumRebuildGround -Verify -Every=1` on the saved level gives ADR-053's baseline: 4,094,582 samples, 0 on the landscape, 0 capsules sunk, and the same 11 carriageway rays up to 12 cm. 16,651 rays meet something else first, against 6,868. The new collision beside the paving is the plinth, 5 cm proud at the foot of every wall, so these are taken to be paving triangles there; the cause was not traced ray by ray. The first run also sampled the ring, which has no collision, and found 15 capsules "sunk" just outside the square; the check now skips the ring.
+- Regeneration (DEVELOPMENT.md order, with the ring): 870 façades with 0 open and 0 failed, 521 paved chunks unchanged (`paved.bin` is byte-identical, so their re-saved assets were left as committed), the landscape reading back within 4 mm, 422 water volumes and the car placed.
+- The swim, vehicle, street and combat smokes pass in editor mode on ports 27861–27864. All 11 `Marburgum` automation tests pass.
+- `cargo test` passes 26 tests. The new ones check that an island meets the kerb round it while its pit comes up and its mound down, that ground at the window's edge or walled in is not an island, and the ring's median.
+- The mesher automation test checks that the three-storey rectangle has its three bands.
+
+**Not covered.**
+
+- **Steep grass at the paving.** Banks deeper than the 2.5 m reach still meet paving at up to 0.8 m per metre, and the paving's edging still shows there. Large pits beside plazas that are not islands, more than 40 % of their rim being walls or open ground, keep their depth.
+- **The ring.** It is the survey's surface, not modelled buildings. Its blocks are 4 m steps, and canopies read as soft green mounds near the edge. Its ground is one colour with no streets. There is a visible change of tone where it meets the square, and beyond 1,432 m the atmosphere's ground shows as grey below the horizon.
+- **Bands.** They have one height and depth everywhere. There is no rustication, no window surrounds, and no difference between old-town and post-war buildings.
+- **Not yet done.** Trees and street furniture in the square, LODs and Nanite, a packaged run, frame time and the owner playtest.
