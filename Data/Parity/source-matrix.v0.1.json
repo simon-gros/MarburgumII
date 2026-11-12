@@ -179,9 +179,9 @@
         "docs/NINETIES_AUTHENTICITY_WORLD_STATE_ROADMAP.md"
       ],
       "intent": "Shared local clock, dynamic weather, year-state and consequences for NPCs/mission opportunities.",
-      "migration": "Distinguish civil simulation time from real wall clock; synchronize replicated world state.",
+      "migration": "Distinguish civil simulation time from real wall clock; synchronize replicated world state. ADR-061 ports the original's automatic Maribor climate weather (feat/dynamic-weather) to the server and replicates it; wetness drives car grip on newly classified Lent surfaces and footstep sounds. Weather visuals/audio, a world clock, day/night and gameplay consequences remain pending.",
       "stage": "3",
-      "status": "design_retained_implementation_pending"
+      "status": "server_weather_wet_grip_and_footsteps_editor_tested_visuals_pending"
     },
     {
       "id": "interactions",

@@ -1,0 +1,82 @@
+MarburgumII weather smoke
+result: PASS
+date_utc: 2026-11-12T16:04:36Z
+git_sha: f2a62250a2fd2d187980e7ba2246f62a43de4b13 (dirty)
+mode: editor
+map: /Game/World/lent
+live_clock: 2026-06-18T09:00:00Z x60
+host: Linux 6.18.60-2-cachyos-lts x86_64
+braking: dry decel=5.254 wet decel=4.495
+
+== dry
+MB2SMOKE role=server event=ready map=lent port=27941 contract=1
+MB2WEATHER role=server event=started source=clear_dry seed=1996 clock=2026-11-12T16:02:45.501Z speed=1.000 review_clock=0
+MB2WEATHER role=server event=changed utc=2026-11-12T16:02:45.501Z source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.15 wind=1.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=clear_dry event=start shot=1
+MB2WSMOKE role=client expect=clear_dry event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=clear_dry event=weather known=1 source=clear_dry state=clear_dry type=None precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.150 wind=1.5 banner="Clear  ·  20 °C"
+MB2WSMOKE role=client expect=clear_dry event=ground_hit at=X=7091.900 Y=-12392.600 Z=161.650 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1167 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=clear_dry event=ground_mesh mesh=SM_LentPaved_10_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=clear_dry event=ground_hit at=X=7357.550 Y=-12309.590 Z=160.936 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1167 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=clear_dry event=ground_mesh mesh=SM_LentPaved_10_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=clear_dry event=surfaces body=asphalt car=asphalt
+MB2WSMOKE role=client expect=clear_dry event=survey paving=cobblestone:726,concrete:6,asphalt:99,paving:69 landscape=gravel:132,concrete:196,grass:13,soil:1 other=439
+MB2WSMOKE role=client expect=clear_dry event=shot file=dry-arrival.png saved=1
+MB2WSMOKE role=client expect=clear_dry event=answer action=enter ok=1 reason=-
+MB2WSMOKE role=client expect=clear_dry event=ground_hit at=X=7356.814 Y=-13574.589 Z=166.469 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1144 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=clear_dry event=ground_mesh mesh=SM_LentPaved_9_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=clear_dry event=brake speed=8.422 surface=asphalt
+MB2WSMOKE role=client expect=clear_dry event=ground_hit at=X=7355.860 Y=-14249.578 Z=169.012 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1144 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=clear_dry event=ground_mesh mesh=SM_LentPaved_9_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=clear_dry event=braked speed=8.422 stop_m=6.750 decel=5.254 seconds=1.36 surface=asphalt wetness=0.000
+MB2WSMOKE role=client expect=clear_dry event=answer action=Exit ok=1 reason=-
+MB2WSMOKE role=client expect=clear_dry event=walked metres=8.71 steps=10 hard=10 hard_wet=0 soft=0 crunch=0 surface=cobblestone without_sound=0 all_steps=60
+MB2WSMOKE role=client expect=clear_dry event=shot file=dry-walking.png saved=1
+MB2WSMOKE role=client expect=clear_dry event=pass
+== wet
+MB2SMOKE role=server event=ready map=lent port=27941 contract=1
+MB2WEATHER role=server event=started source=rain_wet seed=1996 clock=2026-11-12T16:03:26.551Z speed=1.000 review_clock=0
+MB2WEATHER role=server event=changed utc=2026-11-12T16:03:26.551Z source=rain_wet state=rain_wet type=rain precipitation=0.700 wetness=1.000 temperature=11.0 snow=0.000 cloud=1.00 wind=5.0
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=rain_wet event=start shot=1
+MB2WSMOKE role=client expect=rain_wet event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=rain_wet event=weather known=1 source=rain_wet state=rain_wet type=rain precipitation=0.700 wetness=1.000 temperature=11.0 snow=0.000 cloud=1.000 wind=5.0 banner="Rain  ·  11 °C  ·  wet streets"
+MB2WSMOKE role=client expect=rain_wet event=ground_hit at=X=7091.900 Y=-12392.600 Z=161.650 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1167 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=rain_wet event=ground_mesh mesh=SM_LentPaved_10_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=rain_wet event=ground_hit at=X=7357.550 Y=-12309.590 Z=160.936 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1167 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=rain_wet event=ground_mesh mesh=SM_LentPaved_10_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=rain_wet event=surfaces body=asphalt car=asphalt
+MB2WSMOKE role=client expect=rain_wet event=survey paving=cobblestone:726,concrete:6,asphalt:99,paving:69 landscape=gravel:132,concrete:196,grass:13,soil:1 other=439
+MB2WSMOKE role=client expect=rain_wet event=shot file=wet-arrival.png saved=1
+MB2WSMOKE role=client expect=rain_wet event=answer action=enter ok=1 reason=-
+MB2WSMOKE role=client expect=rain_wet event=ground_hit at=X=7356.686 Y=-13376.135 Z=165.217 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1144 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=rain_wet event=ground_mesh mesh=SM_LentPaved_9_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=rain_wet event=brake speed=7.160 surface=asphalt
+MB2WSMOKE role=client expect=rain_wet event=ground_hit at=X=7356.000 Y=-13946.471 Z=167.770 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1144 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=rain_wet event=ground_mesh mesh=SM_LentPaved_9_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=rain_wet event=braked speed=7.160 stop_m=5.703 decel=4.495 seconds=1.38 surface=asphalt wetness=1.000
+MB2WSMOKE role=client expect=rain_wet event=answer action=Exit ok=1 reason=-
+MB2WSMOKE role=client expect=rain_wet event=walked metres=8.70 steps=9 hard=0 hard_wet=9 soft=0 crunch=0 surface=cobblestone without_sound=0 all_steps=59
+MB2WSMOKE role=client expect=rain_wet event=shot file=wet-walking.png saved=1
+MB2WSMOKE role=client expect=rain_wet event=pass
+== live
+MB2SMOKE role=server event=ready map=lent port=27941 contract=1
+MB2WEATHER role=server event=started source=auto seed=1996 clock=2026-06-18T09:00:00.227Z speed=60.000 review_clock=1
+MB2WEATHER role=server event=changed utc=2026-06-18T09:00:00.229Z source=auto state=overcast type=none precipitation=0.000 wetness=0.000 temperature=18.4 snow=0.000 cloud=0.95 wind=3.5
+MB2WEATHER role=server event=changed utc=2026-06-18T09:04:33.200Z source=auto state=overcast type=rain precipitation=0.023 wetness=0.017 temperature=18.5 snow=0.000 cloud=0.95 wind=3.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2WEATHER role=server event=changed utc=2026-06-18T09:30:32.556Z source=auto state=light_rain type=rain precipitation=0.153 wetness=0.462 temperature=18.8 snow=0.000 cloud=0.98 wind=3.8
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=auto event=start shot=1
+MB2WSMOKE role=client expect=auto event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=auto event=weather known=1 source=auto state=overcast type=rain precipitation=0.048 wetness=0.100 temperature=18.5 snow=0.000 cloud=0.958 wind=3.6 banner="Overcast  ·  19 °C"
+MB2WSMOKE role=client expect=auto event=shot file=live-live-start.png saved=1
+MB2WSMOKE role=client expect=auto event=turned known=1 source=auto state=light_rain type=rain precipitation=0.153 wetness=0.462 temperature=18.8 snow=0.000 cloud=0.975 wind=3.8 banner="Light rain  ·  19 °C  ·  damp streets"
+MB2WSMOKE role=client expect=auto event=soaked known=1 source=auto state=light_rain type=rain precipitation=0.163 wetness=0.505 temperature=18.8 snow=0.000 cloud=0.977 wind=3.8 banner="Light rain  ·  19 °C  ·  wet streets"
+MB2WSMOKE role=client expect=auto event=shot file=live-live-wet.png saved=1
+MB2WSMOKE role=client expect=auto event=walked metres=9.09 steps=9 hard=0 hard_wet=9 soft=0 crunch=0 surface=cobblestone without_sound=0 all_steps=283
+MB2WSMOKE role=client expect=auto event=shot file=live-walking.png saved=1
+MB2WSMOKE role=client expect=auto event=pass
