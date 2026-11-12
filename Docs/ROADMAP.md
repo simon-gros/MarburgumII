@@ -106,6 +106,8 @@ This is a differentiated **engineering evidence register**, not a declaration th
 
 **Substantial first implementation now exists in editor mode (ADR-047–052):** server-authoritative fishing, the original 0–1990 skill curve, Fishing/Reputation XP, money/item/clue custody and all eight original mission flows with durable decisions and restart evidence. Completion of the first catch is no longer blocked by missing fishing. The final Melje/Tabor interactions currently use **temporary replicated floors beyond the built nine-window map**; mission logic and actual world-production completion are different.
 
+**Kiosk 67 (2026-11-12): qualified in the editor, awaiting a packaged run and the owner playtest.** Petra Kralj's counter from the original's unmerged retail branch is carried over ([ADR-060](DECISIONS.md)): three goods at the original's provisional prices, Monday–Saturday 07:00–19:00 Ljubljana time, shared shelves that are never restocked, buy-back capped at the starting shelf and 10 Trading XP for a first purchase. The shelf and the character change in one world-store commit (schema 5), and replays are answered from durable receipts. B opens the counter at Petra; E still talks to her.
+
 **Next delivery:** a *packaged dedicated-server/two-client* fishing and eight-mission suite with contention/refusal/replay/restart checks; better animation, sound, Skills/Journal/choice feedback, real remote mission terrain, small trading/currency slice and later professions. No general production economy, expanded skills system or owner acceptance is implied by the editor tests.
 
 **Gate:** current packaged server/client authority and progression results, saved outcomes under restart/concurrent access, and explicit owner approval.

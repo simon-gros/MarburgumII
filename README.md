@@ -106,6 +106,7 @@ Recent recorded mission, onboarding and street-world checks are principally **ed
 
 ```bash
 ./scripts/mission-smoke-linux.sh editor
+./scripts/shop-smoke-linux.sh editor
 ./scripts/account-smoke-linux.sh editor
 ./scripts/street-smoke-linux.sh editor
 ```

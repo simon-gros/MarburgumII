@@ -222,6 +222,7 @@ The C# program checks repository manifest contracts, but does not inspect the lo
 
 ```bash
 ./scripts/mission-smoke-linux.sh editor    # all eight original missions, decisions, store/restart; pads beyond map
+./scripts/shop-smoke-linux.sh editor       # Kiosk 67: buy, replay, refusals, sell-back, reach, Sunday restart (ADR-060)
 ./scripts/account-smoke-linux.sh editor    # HTTPS registration, first/returning login, 3D preview, ticket denials
 ./scripts/vehicle-smoke-linux.sh editor    # own-car relevancy; ADR-056 records a reduced-cull comparison separately
 ./scripts/street-smoke-linux.sh editor     # server-led pedestrians and incident reactions
