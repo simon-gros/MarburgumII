@@ -780,3 +780,22 @@ Bringing in the eight original window levels as they are would have brought thei
 The account smoke also asked for both admission tickets before four client starts. On a slow run the second ticket outlived its one minute, and the server refused it as expired instead of as a character already in the world. Each ticket is now asked for just before its join.
 
 **Not covered.** Turning and zooming by controller or keyboard: pointer only. Thumbnails on the cards: they show names. A packaged run and the 720p–4K screen matrix (FL-10). The bodies' art quality and the roster itself, including the protagonist's blurred face texture, are the owner's review. The owner's playtest.
+
+## ADR-058 — The protagonist's face is one concept-projected island, and the creator keeps every mip (accepted 2026-11-12)
+
+**Problem.** In the creator (ADR-057) the protagonist was a smear: the face unreadable, the shirt pockets and the jeans' weave gone. Up close with full detail the face was still broken, with bands across the eyes, a split nose and a dark blotch on the cheek. Three causes:
+
+- **Texture streaming ignores scene captures.** The engine streams a texture's mips for the player views it is told about, and a scene capture is not one. In the front end no player view is near the stage, so the preview drew the body from a low mip. In the world the third-person camera is the player view, and the face read there.
+- **Smart UV cut the face into five islands.** The concept projection is continuous across the cuts, but at every island edge filtering took in the bake margin, which still held the coarse vertex colours.
+- **The normal map drew TRELLIS's guess of the face.** The dense face's eye sockets and mouth are lumps, and baked as normals they lit as hard-edged plates and bands over the photo's own shading. A fold of the low mesh behind the cheek shared the face island's texels; where it was the layer baked into a texel, the front camera could not see it and the texel kept the dark inside-of-cloth colour.
+
+**Decision.**
+
+- **The creator keeps every mip of the body it shows** (`bForceMipStreaming` on the stage's body). Only the stage's one body is affected, and only while the creator is on screen.
+- **The front of the head is one island.** `retopo_bake.py` gives the head's faces above the neck that face the concept camera (normal at least 0.25 toward it, `FACE_FACING`) a planar UV straight along that camera, at twice the body's texel density (`FACE_SCALE=2`), so concept pixels land evenly on texels and nothing cuts across the face. On the head the concept projection no longer asks whether the dense mesh hides the texel: in this island the concept colour at a position is the visible cheek's either way.
+- **The face's normal map is flat where the head takes the concept** (`FACE_FLAT=1`), because the photo already carries the face's shading.
+- **The margin is grown again from the final colours**, so mips and filtering do not bring the vertex colours back across any island's edge.
+
+**Evidence.** `scripts/account-smoke-linux.sh editor` now also turns the body back to the front and saves the protagonist at head and shoulders (`creator-protagonist-close`). It passes before the rebake with the mip fix alone (`Saved/AccountSmoke/20261112T091649Z`) and after it (`20261112T093935Z`). In the creator: before, with every mip, and the close-up before and after the rebake: `Docs/Captures/character-protagonist/creator_face_before_after.jpg`. Blender, same light, the face before and after: `face_bake_before_after.jpg`. The bake's checks: holes 0, about 11.9k quads, 2 overlapping faces outside the face island as before, 15 inside it (the fold behind the cheek, coloured by the same projection). The rig's checks are unchanged (74 weighted bones, fingertip error 1.9 and 2.4 cm, wrist scales 0.99 and 1.12), as are the FBX's units, the pelvis, the import onto `SK_Mannequin` and the matte material (ADR-038). The editor loads all 140 assets under `/Game/Characters` with no failures and the same 12 inherited template references. `scripts/lent-smoke-linux.sh editor` passes with the new body (`Saved/LentSmoke/20261112T094224Z`).
+
+**Not covered.** The face in the world from the front (the Lent smoke sees his back); a packaged run; the owner's playtest. The sides and back of the head keep the vertex colours, with a visible edge where the concept ends on the cheek. The neck and collar keep their pale patches. Below the head the body has about 11% fewer texels across (22% fewer in area), because the face island takes room.
