@@ -84,7 +84,8 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- ring --laz "
 ./scripts/lent-smoke-linux.sh         # Lent slice: location, NPC, saved mission, objective/journal, restart, privacy
 ./scripts/condition-smoke-linux.sh    # Player condition: running costs breath, server-decided, saved at logout/stop, restart
 ./scripts/swim-smoke-linux.sh         # Swimming (ADR-032): swim, sink, held breath, wade out, drown, recovery, saved wait, restart
-./scripts/vehicle-smoke-linux.sh      # Driving (ADR-039): parked car, enter clip, driver + passenger, throttle, steer, brake, reverse, exits
+./scripts/vehicle-smoke-linux.sh      # Driving (ADR-039): parked car, enter clip, driver + passenger, throttle, steer, brake, reverse, exits, exit view (ADR-056)
+MB2_VEHICLE_NET_CULL_M=9 ./scripts/vehicle-smoke-linux.sh   # The same with the car sent within 9 m: only the occupants keep it live (ADR-056)
 ./scripts/combat-smoke-linux.sh       # Fighting (ADR-041): the drinker fights back, guard, jab, heavy swing, too soon, NPC and player floored
 ./scripts/street-smoke-linux.sh editor # Street people (ADR-044): pedestrian graph/spawn/walk, fights, incident responses, car run-over/dodge
 ```
