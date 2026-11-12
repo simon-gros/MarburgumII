@@ -7,7 +7,7 @@
 
 <p align="center">
   <code>Unreal Engine 5.8.3</code> · <code>C++</code> · <code>.NET 10</code> · <code>Rust</code><br>
-  <strong>Pre-alpha development · Linux test builds · Owner playtest pending</strong>
+  <strong>Pre-alpha development · Linux test builds · Owner acceptance pending</strong>
 </p>
 
 <p align="center">
@@ -36,25 +36,27 @@ The default playable development world is now **Lent and its eight neighboring 5
 
 ## Development status
 
-**As of 11 November 2026 (ADR-045):** UE 5.8.3 Editor, dedicated Server and Client have been built on **Linux**; new terrain, fighting, street population and nine-window changes add editor-mode test evidence. The most recent integrated **packaged** gameplay/performance/owner qualification remains outstanding. A series of packaged-server and multiplayer-client tests has established the first network, UI and gameplay slices. **These are engineering qualifications, not a released game or personally approved gameplay.** Tests cover specific recorded source revisions; later art and level changes still need fresh packaging and regression testing before owner acceptance.
+**As of 12 November 2026 (reviewed at `c5d41efc`, ADR-059):** The earlier Linux packaged multiplayer and durable interaction tests are established. Recent **editor-tested** work now includes fishing, 0–1990 skill XP, all eight original mission flows, a self-hosted HTTPS account service, first-character creation and a full-height rotating/zooming 3D preview, two map-quality passes, and protagonist face/head improvements. **This review did not run a new Unreal build or test.** A single current-asset packaged integration, multi-client performance matrix and explicit owner acceptance remain open. [12 November review](Docs/DEVELOPMENT_REVIEW_2026-11-12.md).
 
 | Area | Present development implementation | Evidence / next boundary |
 | --- | --- | --- |
 | **Networking** | Dedicated authoritative server, replicated state, connection/reconnection, refusal of unauthorized mutations | [Stage 0 tests](Docs/STAGE0_EVIDENCE.md) · Windows qualification outstanding |
-| **Interface & chat** | Styled UMG connection shell and component gallery; live HUD modules; general server chat and one-to-one private messaging | [UI captures](Docs/STAGE0C_UI_EVIDENCE.md) · [three-client chat test](Docs/STAGE0C_CHAT_EVIDENCE.md) |
-| **Character** | Third-person protagonist, retopologized and textured, rigged to the UE5 mannequin skeleton; walking and running animations | [Character pipeline](Docs/CHARACTER_PROTAGONIST.md) · owner visual approval pending |
-| **World and streets** | `/Game/World/lent` is now one **1,536 × 1,536 m** level: Lent + eight original neighboring windows; **870** closed building shells, survey-derived terrain and collidable paved roads, neighboring bridges/Drava sheets; 4,089,551 geometry validation samples | [ADR-040/045](Docs/DECISIONS.md) · [latest review](Docs/DEVELOPMENT_UPDATE_2026-11-11.md) · current packaged performance and owner acceptance pending |
-| **Interactions & story** | Server-validated supply-crate transactions, persisted inventory, riverside angler, opening of **“Something in the Water”**, journal and objective tracking | [Interaction](Docs/STAGE1_GATE1_EVIDENCE.md) · [Lent mission](Docs/STAGE1_LENT_EVIDENCE.md) |
+| **Interface & chat** | Rendered UMG session and chat screens, server-backed HUD and first Character, Inventory, Journal and Skills views; Settings, full focus and responsive test matrix outstanding | [UI captures](Docs/STAGE0C_UI_EVIDENCE.md) · [three-client chat](Docs/STAGE0C_CHAT_EVIDENCE.md) · [UI roadmap](Docs/UI_HUD_ROADMAP.md) |
+| **Character** | Mannequin-compatible protagonist and three model choices; creator 3D stage turns/zooms; ADR-058/059 improved face UVs/mips and head geometry | [Character pipeline](Docs/CHARACTER_PROTAGONIST.md) · latest packaged art/owner approval open |
+| **World and streets** | Nine-window, 1,536 × 1,536 m `/Game/World/lent` with 870 shells, collidable surveyed paving, Drava, bridges, ADR-053/054 material/ground/façade improvements and a noncolliding distant ring; **no streaming** | [Map decisions](Docs/DECISIONS.md) · latest packaged performance/owner test open |
+| **Interactions & story** | Authoritative inventory/journal and **all eight original mission flows**, including durable choices, clues, money/XP and restart; Melje/Tabor interactions use temporary remote pads | [ADR-047–052](Docs/DECISIONS.md) · editor proof; packaged two-client/owner approval open |
 | **Movement & condition** | Server-bounded movement; stamina/winded state; swimming, submersion, drowning and recovery, including persisted condition; newly generated swim/vehicle/fight animations have **IK-aligned drawn feet** (ADR-042/043) | [Movement](Docs/STAGE1_MOVEMENT_TIME_EVIDENCE.md) · [condition](Docs/STAGE1_CONDITION_EVIDENCE.md) · [swimming](Docs/STAGE1_SWIM_EVIDENCE.md) |
-| **Cars & driving** | Original five-car catalogue and server-only four-raycast driving, seats and door clips; hatchback now on physically collidable carriageway, with pedestrian car-strike/dodge interactions (ADR-040/044) | [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) · [ADR-039](Docs/DECISIONS.md) |
+| **Cars & driving** | Five-car catalogue, four-raycast authoritative vehicle/seats, pedestrian responses; ADR-056 fixes the own-car freeze reported by owner, with editor reduced-cull evidence | [Vehicle tests](Docs/STAGE1_VEHICLE_EVIDENCE.md) · [ADR-056](Docs/DECISIONS.md) · packaged long drive and owner retest open |
 | **Fighting** | Original unarmed jab, committed swing and held guard, server-chosen NPC targets, stamina/cooldowns, down/recovery, procedural clips and Kenney CC0 impacts; earlier two-client packaged smoke, later IK correction editor-tested | [Fighting](Docs/STAGE1_COMBAT_EVIDENCE.md) · [ADR-041](Docs/DECISIONS.md) |
 | **Street people** | Author-derived ambient groups/looks/reactions; server population walking a surveyed-pavement graph, fleeing/watching fights, reacting to bodies, spreading panic and dodging/being hit by cars; **one-client editor smoke only** | [Street people](Docs/STAGE1_STREET_EVIDENCE.md) · [ADR-044](Docs/DECISIONS.md) |
-| **Rendering** | Optional, client-side NVIDIA feature detection and fallbacks; Unreal TSR is the baseline renderer | [Rendering and platform limits](Docs/RENDERING_NVIDIA.md) |
+| **Accounts & first launch** | Rust HTTPS accounts, verification codes, Argon2id credentials/reset, session, one durable First/Last/model character, single-use world tickets and 3D creator; editor account smoke | [ADR-055/057](Docs/DECISIONS.md) · [onboarding](Docs/FIRST_LAUNCH_ONTOLOGY.md) · real mail sender, packaged matrix and owner gate open |
+| **Fishing, skills & missions** | Drava fishing, original 0–1990 XP curve, durable Fishing/Reputation XP, money/clues and all eight mission flows | [ADR-047–052](Docs/DECISIONS.md) · current packaged multi-client acceptance pending |
+| **Rendering** | Optional client-side NVIDIA feature checks/fallback; Unreal TSR baseline | [Rendering and platform limits](Docs/RENDERING_NVIDIA.md) |
 
 <details>
 <summary><strong>What is not implemented yet?</strong></summary>
 
-A production deployment of the account service and a real email sender (development accounts, email codes, login, the first character and signed-in admission exist since ADR-055); a production database; current packaged nine-window load/performance and multi-client street qualification; the purchased city map; large-scale server operations; and the full mission, economy, skills and population systems, including car ownership, fuel, damage, traffic and vehicle sounds, weapons and any consequence of a fight beyond the fight itself. Current persistence is a **development file store**; characters use development-only test identities unless the server runs with the account service (`-MB2Accounts`). The latest nine-window ground has not been performance-profiled in a packaged client; street people have only a single-client editor smoke. The refined graphics, current level and major gameplay slices still require the owner's **fresh-build personal playtest and explicit approval**.
+A live email sender and hosted account operations (verification codes are currently written to a development outbox); production database/backups; packaged nine-window/crowd/mission/auth performance and multiplayer qualification; the purchased city model, World Partition and shard scaling; vehicle ownership/fuel/traffic/audio, broad professions/trading, fully authored Melje/Tabor ground, ecology art, and expanded consequences of violence. The latest UI, map and model need an **asset-fresh personal owner playtest and explicit sign-off**; the owner's earlier driving defect report (ADR-056) is not approval of the fix.
 
 </details>
 
@@ -100,6 +102,16 @@ Build and stage the distinct Linux server and client executables, then run the e
 ./scripts/combat-smoke-linux.sh
 ```
 
+Recent recorded mission, onboarding and street-world checks are principally **editor-mode** tests, not results of the staged commands above:
+
+```bash
+./scripts/mission-smoke-linux.sh editor
+./scripts/account-smoke-linux.sh editor
+./scripts/street-smoke-linux.sh editor
+```
+
+See [development setup](Docs/DEVELOPMENT.md) for the account HTTPS service, certificates and distinct packaged verification.
+
 To enter the **current default Lent world** manually with development credentials, start the server and client in separate terminals after packaging:
 
 ```bash
@@ -110,7 +122,7 @@ Saved/StagedBuilds/LinuxServer/MarburgumIIServer.sh /Game/World/lent -port=7777 
 Saved/StagedBuilds/LinuxClient/MarburgumIIClient.sh -MB2Character=localtester
 ```
 
-**Controls:** WASD + mouse to move/look · **Shift** run · **E** interact, or get in and out of a car (then W/S drive, brake and reverse, A/D steer, Shift handbrake) · **F** jab · **R** committed swing · **G** hold guard · **C** character · **I** inventory · **J** journal · **Enter** chat. The angler can start the opening mission, but fishing is not available yet. See the [full playthrough instructions](Docs/DEVELOPMENT.md#playing-the-lent-slice-by-hand) for map distinctions, world-store paths, test switches and troubleshooting.
+**Controls:** WASD + mouse to move/look · **Shift** run · **E** interact, or get in and out of a car (then W/S drive, brake and reverse, A/D steer, Shift handbrake) · **F** jab · **R** committed swing · **G** hold guard · **C** character · **I** inventory · **J** journal · **Enter** chat. The angler can begin the mission and **E** casts/strikes for a fish at the Drava bank; **K** opens Skills. These later gameplay paths are editor-qualified, not current packaged owner-accepted features. See the [full playthrough instructions](Docs/DEVELOPMENT.md#playing-the-lent-slice-by-hand) for map distinctions, world-store paths, test switches and troubleshooting.
 
 The network and mission tests use dedicated development fixtures, including the older `/Game/Maps/Lent` blockout. The actual default game, server and editor map is **`/Game/World/lent`**. Do not confuse success on an older smoke fixture with approval of the latest world content.
 
@@ -143,17 +155,13 @@ C# is not the gameplay scripting language, and Rust is not yet part of the runni
 
 ## Roadmap
 
-The project advances through independently tested, owner-approved slices:
+1. **Foundation — qualified in earlier Linux tests:** UE 5.8.3 authoritative client/server, reconnect, chat and durable transactions; latest asset-fresh integration still pending.
+2. **First launch — editor-qualified:** email-confirmed accounts, username/password, character First/Last/model and full-height 3D preview, ticket-gated world entry; real email delivery, packaged UI and owner approval outstanding.
+3. **Nine-window playable district — expanded editor integration:** map/collision/Drava, condition, swimming, unarmed fighting, vehicles, street people, fishing, original skill curve and eight mission flows. This is **not** a finished accepted package.
+4. **Immediate gates:** clean staged rebuild, two/three-client full-system regressions, car long-distance and map performance probes, coherent Settings/focus/Slovene/controller UI and explicit personal owner sign-off.
+5. **Long-term city life:** replace temporary Melje/Tabor floors, develop period art, ecology, trade/professions and transport; add measured streaming and shard operations; evaluate licensed 3D city acquisition separately.
 
-1. **Foundation — implemented, acceptance pending:** Linux UE targets, authoritative networking, connection UI and basic chat.
-2. **First-play onboarding — implemented for development (ADR-055), awaiting the owner playtest:** email verification, secure login, first name, last name and character-model selection, followed by server-gated world entry. A new account does not spawn in the world before its character has been saved. [First-launch ontology](Docs/FIRST_LAUNCH_ONTOLOGY.md).
-3. **Playable Lent — in development:** third-person movement, first interactions, introductory mission, condition, swimming, driving, early HUD and persistent development state. Build a visually coherent, manually approved district.
-4. **Deeper city life — planned:** fishing, ecology, skills, missions, economy, professions, transport and more extensive interaction systems.
-5. **City and operations — planned:** licensed geometry intake, larger-world streaming, population systems, production identities/storage and measured multiplayer scalability.
-
-The [full milestone roadmap](Docs/ROADMAP.md) and [UI/HUD roadmap](Docs/UI_HUD_ROADMAP.md) specify the actual delivery gates. **A major playable feature is not accepted until the owner has tested it in-game and explicitly approved it.** Every acceptance run must use a fresh build and current assets.
-
-The [latest development review](Docs/DEVELOPMENT_UPDATE_2026-11-11.md) tracks ADR-040–045, qualification modes, and the next milestones without implying public-release readiness.
+See the [full roadmap](Docs/ROADMAP.md), [UI roadmap](Docs/UI_HUD_ROADMAP.md) and [12 November development review](Docs/DEVELOPMENT_REVIEW_2026-11-12.md). **Every major gameplay feature requires a personal owner playtest of the exact current assets and explicitly recorded approval.**
 
 ## Documentation
 
@@ -163,7 +171,7 @@ The [latest development review](Docs/DEVELOPMENT_UPDATE_2026-11-11.md) tracks AD
 | **Engineering** | [Development guide](Docs/DEVELOPMENT.md) · [Architecture](Docs/ARCHITECTURE.md) · [Network contract](Docs/NETWORK_ARCHITECTURE.md) · [Engineering decisions](Docs/DECISIONS.md) |
 | **Player experience** | [First launch](Docs/FIRST_LAUNCH_ONTOLOGY.md) · [UI/HUD design](Docs/UI_HUD_DESIGN.md) · [UI ontology](Docs/UI_HUD_ONTOLOGY.md) · [UI roadmap](Docs/UI_HUD_ROADMAP.md) · [Chat](Docs/CHAT.md) |
 | **World & assets** | [Map adoption](Docs/WORLD_MAP_ADOPTION.md) · [Protagonist](Docs/CHARACTER_PROTAGONIST.md) · [Conditional Hunyuan3D pipeline](Docs/ASSET_GENERATION_HUNYUAN3D.md) · [NVIDIA rendering](Docs/RENDERING_NVIDIA.md) |
-| **Verification** | [Main roadmap and gates](Docs/ROADMAP.md) · [Playtest freshness](Docs/PLAYTEST_FRESHNESS.md) · [Stage 0](Docs/STAGE0_EVIDENCE.md) · [Lent](Docs/STAGE1_LENT_EVIDENCE.md) · [Swimming](Docs/STAGE1_SWIM_EVIDENCE.md) · [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) · [Street people](Docs/STAGE1_STREET_EVIDENCE.md) |
+| **Verification** | [12 November review](Docs/DEVELOPMENT_REVIEW_2026-11-12.md) · [Main roadmap](Docs/ROADMAP.md) · [Playtest freshness](Docs/PLAYTEST_FRESHNESS.md) · [Stage 0](Docs/STAGE0_EVIDENCE.md) · [Lent](Docs/STAGE1_LENT_EVIDENCE.md) · [Swimming](Docs/STAGE1_SWIM_EVIDENCE.md) · [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) · [Street people](Docs/STAGE1_STREET_EVIDENCE.md) |
 
 Machine-readable design contracts are under `Data/`; implementation, scripts and tests are under `Source/`, `scripts/`, `tools/` and `native/`. The GitHub workflow validates Rust and C# components; **CI does not replace a real Unreal Editor, client/server build or multiplayer test**.
 
