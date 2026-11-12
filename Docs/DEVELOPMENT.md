@@ -45,7 +45,7 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ./scripts/create-swim-content.sh      # regenerate A_Swim (the original swim cycle on the mannequin) and the Drava water volumes in /Game/World/lent (`-run=MarburgumSwimContent`, ADR-032)
 ./scripts/create-vehicle-content.sh   # regenerate the five catalogue cars (the original procedural bodywork), M_Vehicle, A_EnterVehicle/A_ExitVehicle and the lent_hatchback placement (`-run=MarburgumVehicleContent`, ADR-039)
 ./scripts/create-combat-content.sh    # regenerate A_FightGuard/A_FightJab/A_FightHeavy (the original fight clips on the mannequin) and the CC0 impact sounds in /Game/Audio/Combat (`-run=MarburgumCombatContent`, ADR-041)
-./scripts/create-weather-content.sh   # set PM_asphalt/PM_paving/PM_cobblestone/PM_concrete on Lent's paved materials and import the CC0 and wet footsteps into /Game/Audio/Footsteps (`-run=MarburgumWeatherContent`, ADR-061); the landscape surface map is `lent-ground surface-kinds`, the wet steps `scripts/mb2.sh generate wet-footsteps`
+./scripts/create-weather-content.sh   # the rain/snow curtain, cloud material and MPC_Weather under /Game/Marburgum/Weather (look, ADR-062); set PM_asphalt/PM_paving/PM_cobblestone/PM_concrete on Lent's paved materials and import the CC0 and wet footsteps into /Game/Audio/Footsteps (`-run=MarburgumWeatherContent`, ADR-061); the landscape surface map is `lent-ground surface-kinds`, the wet steps `scripts/mb2.sh generate wet-footsteps`. Run `look` before `-run=MarburgumRebuildGround` (its paving and landscape materials read MPC_Weather); `-run=MarburgumRebuildGround -MaterialsOnly` rebuilds just those materials
 # Lent and its eight neighbouring windows (ADR-045), 1,536 m square round Stari most. Window names and data come from the
 # original's project/assets/terrain ($ORIGINAL); the LiDAR tiles from its tools/fetch_lidar.sh.
 WINDOWS=lent,ljudski_vrt,center,avtobusna,pristan,titov_most,kurilnica,magdalena,pobreska
@@ -224,7 +224,7 @@ The C# program checks repository manifest contracts, but does not inspect the lo
 ```bash
 ./scripts/mission-smoke-linux.sh editor    # all eight original missions, decisions, store/restart; pads beyond map
 ./scripts/shop-smoke-linux.sh editor       # Kiosk 67: buy, replay, refusals, sell-back, reach, Sunday restart (ADR-060)
-./scripts/weather-smoke-linux.sh editor    # weather: dry vs soaked braking, wet footsteps, live climate turning to rain (ADR-061)
+./scripts/weather-smoke-linux.sh editor    # weather: dry vs soaked braking, wet footsteps, live climate turning to rain (ADR-061); the drawn look and captures of clear, overcast, rain, snow, fog and a storm (ADR-062)
 ./scripts/account-smoke-linux.sh editor    # HTTPS registration, first/returning login, 3D preview, ticket denials
 ./scripts/vehicle-smoke-linux.sh editor    # own-car relevancy; ADR-056 records a reduced-cull comparison separately
 ./scripts/street-smoke-linux.sh editor     # server-led pedestrians and incident reactions

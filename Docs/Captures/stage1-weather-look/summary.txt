@@ -1,0 +1,160 @@
+MarburgumII weather smoke
+result: PASS
+date_utc: 2026-11-12T17:09:44Z
+git_sha: 2726f7bf40288af0c37e3ef77da3e5eaa06528e8 (dirty)
+mode: editor
+map: /Game/World/lent
+live_clock: 2026-06-18T09:00:00Z x60
+host: Linux 6.18.60-2-cachyos-lts x86_64
+braking: dry decel=5.389 wet decel=4.511
+
+== dry
+MB2SMOKE role=server event=ready map=lent port=27955 contract=1
+MB2WEATHER role=server event=started source=clear_dry seed=1996 clock=2026-11-12T17:05:35.081Z speed=1.000 review_clock=0
+MB2WEATHER role=server event=changed utc=2026-11-12T17:05:35.081Z source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.15 wind=1.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=clear_dry event=start shot=1
+MB2WSMOKE role=client expect=clear_dry event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=clear_dry event=weather known=1 source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.150 wind=1.5 banner="Clear  ·  20 °C"
+MB2WSMOKE role=client expect=clear_dry event=look want=clear effects=1 content=111 sun=1 fog=1 rain=0.000 snow=0.000 cover=0.150 fog_look=1.000 lean=10.0 bearing=60 rain_drawn=0 near_drawn=0 shelter=0.00 clouds_drawn=1 sun_ratio=0.985 fog_ratio=1.000 exposure=-0.04 mpc_wetness=0.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=clear_dry event=ground_hit at=X=7091.900 Y=-12392.600 Z=161.650 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1167 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=clear_dry event=ground_mesh mesh=SM_LentPaved_10_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=clear_dry event=ground_hit at=X=7357.550 Y=-12309.590 Z=160.936 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1167 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=clear_dry event=ground_mesh mesh=SM_LentPaved_10_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=clear_dry event=surfaces body=asphalt car=asphalt
+MB2WSMOKE role=client expect=clear_dry event=survey paving=cobblestone:726,concrete:6,asphalt:99,paving:69 landscape=gravel:132,concrete:196,grass:13,soil:1 other=439
+MB2WSMOKE role=client expect=clear_dry event=shot file=dry-arrival.png saved=1
+MB2WSMOKE role=client expect=clear_dry event=answer action=enter ok=1 reason=-
+MB2WSMOKE role=client expect=clear_dry event=ground_hit at=X=7356.810 Y=-13579.153 Z=166.492 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1144 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=clear_dry event=ground_mesh mesh=SM_LentPaved_9_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=clear_dry event=brake speed=8.500 surface=asphalt
+MB2WSMOKE role=client expect=clear_dry event=ground_hit at=X=7355.861 Y=-14249.570 Z=169.011 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1144 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=clear_dry event=ground_mesh mesh=SM_LentPaved_9_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=clear_dry event=braked speed=8.500 stop_m=6.704 decel=5.389 seconds=1.32 surface=asphalt wetness=0.000
+MB2WSMOKE role=client expect=clear_dry event=answer action=Exit ok=1 reason=-
+MB2WSMOKE role=client expect=clear_dry event=walked metres=8.70 steps=10 hard=10 hard_wet=0 soft=0 crunch=0 surface=cobblestone without_sound=0 all_steps=60
+MB2WSMOKE role=client expect=clear_dry event=shot file=dry-walking.png saved=1
+MB2WSMOKE role=client expect=clear_dry event=pass
+== wet
+MB2SMOKE role=server event=ready map=lent port=27955 contract=1
+MB2WEATHER role=server event=started source=rain_wet seed=1996 clock=2026-11-12T17:06:15.911Z speed=1.000 review_clock=0
+MB2WEATHER role=server event=changed utc=2026-11-12T17:06:15.911Z source=rain_wet state=rain_wet type=rain precipitation=0.700 wetness=1.000 temperature=11.0 snow=0.000 cloud=1.00 wind=5.0
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=rain_wet event=start shot=1
+MB2WSMOKE role=client expect=rain_wet event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=rain_wet event=weather known=1 source=rain_wet state=rain_wet type=rain precipitation=0.700 wetness=1.000 temperature=11.0 snow=0.000 cloud=1.000 wind=5.0 banner="Rain  ·  11 °C  ·  wet streets"
+MB2WSMOKE role=client expect=rain_wet event=look want=rain effects=1 content=111 sun=1 fog=1 rain=0.700 snow=0.000 cover=1.000 fog_look=3.100 lean=30.5 bearing=60 rain_drawn=1 near_drawn=1 shelter=0.00 clouds_drawn=1 sun_ratio=0.830 fog_ratio=3.100 exposure=-1.40 mpc_wetness=1.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=rain_wet event=ground_hit at=X=7091.900 Y=-12392.600 Z=161.650 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1167 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=rain_wet event=ground_mesh mesh=SM_LentPaved_10_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=rain_wet event=ground_hit at=X=7357.550 Y=-12309.590 Z=160.936 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1167 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=rain_wet event=ground_mesh mesh=SM_LentPaved_10_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=rain_wet event=surfaces body=asphalt car=asphalt
+MB2WSMOKE role=client expect=rain_wet event=survey paving=cobblestone:726,concrete:6,asphalt:99,paving:69 landscape=gravel:132,concrete:196,grass:13,soil:1 other=439
+MB2WSMOKE role=client expect=rain_wet event=shot file=wet-arrival.png saved=1
+MB2WSMOKE role=client expect=rain_wet event=answer action=enter ok=1 reason=-
+MB2WSMOKE role=client expect=rain_wet event=ground_hit at=X=7356.698 Y=-13355.751 Z=165.048 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1144 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=rain_wet event=ground_mesh mesh=SM_LentPaved_9_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=rain_wet event=brake speed=7.093 surface=asphalt
+MB2WSMOKE role=client expect=rain_wet event=ground_hit at=X=7356.030 Y=-13913.386 Z=167.678 component=StaticMeshComponent0 class=StaticMeshComponent owner=StaticMeshActor_1144 physical=PM_asphalt face=-1
+MB2WSMOKE role=client expect=rain_wet event=ground_mesh mesh=SM_LentPaved_9_10 complex_as_simple=3 materials=MI_LentAsphalt:PM_asphalt;MI_LentYardAsphalt:PM_asphalt;MI_LentPavers:PM_paving;MI_LentSetts:PM_cobblestone;MI_LentKerb:PM_concrete;MI_LentRoadPaint:PM_asphalt;
+MB2WSMOKE role=client expect=rain_wet event=braked speed=7.093 stop_m=5.576 decel=4.511 seconds=1.31 surface=asphalt wetness=1.000
+MB2WSMOKE role=client expect=rain_wet event=answer action=Exit ok=1 reason=-
+MB2WSMOKE role=client expect=rain_wet event=walked metres=8.70 steps=9 hard=0 hard_wet=9 soft=0 crunch=0 surface=cobblestone without_sound=0 all_steps=44
+MB2WSMOKE role=client expect=rain_wet event=shot file=wet-walking.png saved=1
+MB2WSMOKE role=client expect=rain_wet event=pass
+== live
+MB2SMOKE role=server event=ready map=lent port=27955 contract=1
+MB2WEATHER role=server event=started source=auto seed=1996 clock=2026-06-18T09:00:00.183Z speed=60.000 review_clock=1
+MB2WEATHER role=server event=changed utc=2026-06-18T09:00:00.185Z source=auto state=overcast type=none precipitation=0.000 wetness=0.000 temperature=18.4 snow=0.000 cloud=0.95 wind=3.5
+MB2WEATHER role=server event=changed utc=2026-06-18T09:04:26.882Z source=auto state=overcast type=rain precipitation=0.022 wetness=0.017 temperature=18.5 snow=0.000 cloud=0.95 wind=3.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2WEATHER role=server event=changed utc=2026-06-18T09:30:26.617Z source=auto state=light_rain type=rain precipitation=0.152 wetness=0.462 temperature=18.8 snow=0.000 cloud=0.98 wind=3.8
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=auto event=start shot=1
+MB2WSMOKE role=client expect=auto event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=auto event=weather known=1 source=auto state=overcast type=rain precipitation=0.047 wetness=0.100 temperature=18.5 snow=0.000 cloud=0.958 wind=3.6 banner="Overcast  ·  19 °C"
+MB2WSMOKE role=client expect=auto event=look_start want=dry effects=1 content=111 sun=1 fog=1 rain=0.040 snow=0.000 cover=0.957 fog_look=1.119 lean=23.0 bearing=54 rain_drawn=1 near_drawn=1 shelter=0.00 clouds_drawn=1 sun_ratio=0.900 fog_ratio=1.111 exposure=-0.69 mpc_wetness=0.075 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=auto event=shot file=live-live-start.png saved=1
+MB2WSMOKE role=client expect=auto event=turned known=1 source=auto state=light_rain type=rain precipitation=0.152 wetness=0.462 temperature=18.8 snow=0.000 cloud=0.975 wind=3.8 banner="Light rain  ·  19 °C  ·  damp streets"
+MB2WSMOKE role=client expect=auto event=soaked known=1 source=auto state=light_rain type=rain precipitation=0.162 wetness=0.505 temperature=18.8 snow=0.000 cloud=0.977 wind=3.8 banner="Light rain  ·  19 °C  ·  wet streets"
+MB2WSMOKE role=client expect=auto event=look_soaked want=rain effects=1 content=111 sun=1 fog=1 rain=0.145 snow=0.000 cover=0.974 fog_look=1.434 lean=23.8 bearing=56 rain_drawn=1 near_drawn=1 shelter=0.00 clouds_drawn=1 sun_ratio=0.888 fog_ratio=1.411 exposure=-0.82 mpc_wetness=0.435 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=auto event=shot file=live-live-wet.png saved=1
+MB2WSMOKE role=client expect=auto event=walked metres=9.11 steps=9 hard=0 hard_wet=9 soft=0 crunch=0 surface=cobblestone without_sound=0 all_steps=263
+MB2WSMOKE role=client expect=auto event=shot file=live-walking.png saved=1
+MB2WSMOKE role=client expect=auto event=pass
+== clear
+MB2SMOKE role=server event=ready map=lent port=27955 contract=1
+MB2WEATHER role=server event=started source=clear_dry seed=1996 clock=2026-11-12T17:07:32.199Z speed=1.000 review_clock=0
+MB2WEATHER role=server event=changed utc=2026-11-12T17:07:32.199Z source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.15 wind=1.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=clear_dry event=start shot=1
+MB2WSMOKE role=client expect=clear_dry event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=clear_dry event=weather known=1 source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.150 wind=1.5 banner="Clear  ·  20 °C"
+MB2WSMOKE role=client expect=clear_dry event=look want=clear effects=1 content=111 sun=1 fog=1 rain=0.000 snow=0.000 cover=0.150 fog_look=1.000 lean=10.0 bearing=60 rain_drawn=0 near_drawn=0 shelter=0.00 clouds_drawn=1 sun_ratio=0.985 fog_ratio=1.000 exposure=-0.04 mpc_wetness=0.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=clear_dry event=shot file=clear-look.png saved=1
+MB2WSMOKE role=client expect=clear_dry event=pass
+== overcast
+MB2SMOKE role=server event=ready map=lent port=27955 contract=1
+MB2WEATHER role=server event=started source=overcast seed=1996 clock=2026-11-12T17:07:55.366Z speed=1.000 review_clock=0
+MB2WEATHER role=server event=changed utc=2026-11-12T17:07:55.366Z source=overcast state=overcast type=none precipitation=0.000 wetness=0.000 temperature=13.0 snow=0.000 cloud=0.95 wind=3.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=overcast event=start shot=1
+MB2WSMOKE role=client expect=overcast event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=overcast event=weather known=1 source=overcast state=overcast type=none precipitation=0.000 wetness=0.000 temperature=13.0 snow=0.000 cloud=0.950 wind=3.5 banner="Overcast  ·  13 °C"
+MB2WSMOKE role=client expect=overcast event=look want=overcast effects=1 content=111 sun=1 fog=1 rain=0.000 snow=0.000 cover=0.950 fog_look=1.000 lean=22.4 bearing=60 rain_drawn=0 near_drawn=0 shelter=0.00 clouds_drawn=1 sun_ratio=0.905 fog_ratio=1.000 exposure=-0.65 mpc_wetness=0.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=overcast event=shot file=overcast-look.png saved=1
+MB2WSMOKE role=client expect=overcast event=pass
+== rain
+MB2SMOKE role=server event=ready map=lent port=27955 contract=1
+MB2WEATHER role=server event=started source=rain_wet seed=1996 clock=2026-11-12T17:08:18.713Z speed=1.000 review_clock=0
+MB2WEATHER role=server event=changed utc=2026-11-12T17:08:18.713Z source=rain_wet state=rain_wet type=rain precipitation=0.700 wetness=1.000 temperature=11.0 snow=0.000 cloud=1.00 wind=5.0
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=rain_wet event=start shot=1
+MB2WSMOKE role=client expect=rain_wet event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=rain_wet event=weather known=1 source=rain_wet state=rain_wet type=rain precipitation=0.700 wetness=1.000 temperature=11.0 snow=0.000 cloud=1.000 wind=5.0 banner="Rain  ·  11 °C  ·  wet streets"
+MB2WSMOKE role=client expect=rain_wet event=look want=rain effects=1 content=111 sun=1 fog=1 rain=0.700 snow=0.000 cover=1.000 fog_look=3.100 lean=30.5 bearing=60 rain_drawn=1 near_drawn=1 shelter=0.00 clouds_drawn=1 sun_ratio=0.830 fog_ratio=3.100 exposure=-1.40 mpc_wetness=1.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=rain_wet event=shot file=rain-look.png saved=1
+MB2WSMOKE role=client expect=rain_wet event=pass
+== snow
+MB2SMOKE role=server event=ready map=lent port=27955 contract=1
+MB2WEATHER role=server event=started source=winter_cold seed=1996 clock=2026-11-12T17:08:41.791Z speed=1.000 review_clock=0
+MB2WEATHER role=server event=changed utc=2026-11-12T17:08:41.791Z source=winter_cold state=winter_cold type=none precipitation=0.000 wetness=0.150 temperature=-2.0 snow=0.050 cloud=0.80 wind=2.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=winter_cold event=start shot=1
+MB2WSMOKE role=client expect=winter_cold event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=winter_cold event=weather known=1 source=winter_cold state=winter_cold type=none precipitation=0.000 wetness=0.150 temperature=-2.0 snow=0.050 cloud=0.800 wind=2.5 banner="Cold  ·  -2 °C  ·  snow lying"
+MB2WSMOKE role=client expect=winter_cold event=look want=snow_lying effects=1 content=111 sun=1 fog=1 rain=0.000 snow=0.000 cover=0.800 fog_look=1.000 lean=16.4 bearing=60 rain_drawn=0 near_drawn=0 shelter=0.00 clouds_drawn=1 sun_ratio=0.920 fog_ratio=1.000 exposure=-0.50 mpc_wetness=0.150 snow_cover=1.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=winter_cold event=shot file=snow-look.png saved=1
+MB2WSMOKE role=client expect=winter_cold event=pass
+== fog
+MB2SMOKE role=server event=ready map=lent port=27955 contract=1
+MB2WEATHER role=server event=started source=auto seed=1996 clock=2026-11-17T06:00:00.003Z speed=1.000 review_clock=1
+MB2WEATHER role=server event=changed utc=2026-11-17T06:00:00.003Z source=auto state=fog type=none precipitation=0.000 wetness=0.000 temperature=2.5 snow=0.000 cloud=0.80 wind=0.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=auto event=start shot=1
+MB2WSMOKE role=client expect=auto event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=auto event=weather known=1 source=auto state=fog type=none precipitation=0.000 wetness=0.000 temperature=2.5 snow=0.000 cloud=0.800 wind=0.5 banner="Fog  ·  3 °C"
+MB2WSMOKE role=client expect=auto event=look want=fog effects=1 content=111 sun=1 fog=1 rain=0.000 snow=0.000 cover=0.800 fog_look=50.000 lean=3.4 bearing=69 rain_drawn=0 near_drawn=0 shelter=0.00 clouds_drawn=1 sun_ratio=0.920 fog_ratio=50.000 exposure=-0.50 mpc_wetness=0.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=auto event=shot file=fog-look.png saved=1
+MB2WSMOKE role=client expect=auto event=pass
+== storm
+MB2SMOKE role=server event=ready map=lent port=27955 contract=1
+MB2WEATHER role=server event=started source=auto seed=1996 clock=2026-11-12T17:30:00.002Z speed=1.000 review_clock=1
+MB2WEATHER role=server event=changed utc=2026-11-12T17:30:00.002Z source=auto state=thunderstorm type=rain precipitation=0.850 wetness=1.000 temperature=6.9 snow=0.000 cloud=1.00 wind=8.0
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=auto event=start shot=1
+MB2WSMOKE role=client expect=auto event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=auto event=weather known=1 source=auto state=thunderstorm type=rain precipitation=0.850 wetness=1.000 temperature=6.9 snow=0.000 cloud=1.000 wind=8.0 banner="Thunderstorm  ·  7 °C  ·  wet streets"
+MB2WSMOKE role=client expect=auto event=look want=storm effects=1 content=111 sun=1 fog=1 rain=0.850 snow=0.000 cover=1.000 fog_look=3.550 lean=43.3 bearing=36 rain_drawn=1 near_drawn=1 shelter=0.00 clouds_drawn=1 sun_ratio=0.815 fog_ratio=3.550 exposure=-1.55 mpc_wetness=1.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=auto event=shot file=storm-look.png saved=1
+MB2WSMOKE role=client expect=auto event=flash flashes=1
+MB2WSMOKE role=client expect=auto event=shot file=storm-flash.png saved=1
+MB2WSMOKE role=client expect=auto event=pass

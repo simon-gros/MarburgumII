@@ -1,0 +1,6 @@
+clear 185.343
+overcast 172.189
+rain 161.541
+snow 188.429
+fog 172.412
+storm 159.226
