@@ -648,3 +648,46 @@ Bringing in the eight original window levels as they are would have brought thei
 **Evidence.** `Marburgum.*` automation passes (11/11). `cargo test` for `tools/mb2` passes (29). The editor mission smoke on port 27911 plays all eight missions, restarts, and the store is unchanged afterwards. `Saved/MissionSmoke/20261112T000431Z`.
 
 **Not covered.** The floors are grey boxes in an empty sky until the Melje and Tabor windows exist. A packaged run and the owner playtest.
+
+## ADR-053 — A quality pass over the nine-window map (accepted 2026-11-12)
+
+**Problem.** The owner asked for a high-quality pass across the whole of `/Game/World/lent` (ADR-045). An audit from 11 aerials, 36 street-level shots and close-ups found, in order of how much they hurt:
+
+1. Paving followed the 2014 survey's bumps: pavers climbed mounds, and a row of teeth ran along some walls.
+2. Grass islands and verges sat below the kerb, with the paving's dark edging showing round them.
+3. Paving and grass were lifted against walls (ADR-040's wall lift and seat), which made ramps and berms. Some buildings stood on a base metres above the surveyed ground beside them.
+4. The grass mask was noisy: hard-standing blobs in lawns, grass specks in yards.
+5. The Drava was a cartoon of white stripes on turquoise.
+6. Flat roofs were nearly black (`MI_roof_bitumen`, a texture of linear albedo 0.035).
+7. Every building used the same beige plaster.
+
+**Decision.**
+
+- **Paving over mounds** (`tools/lent-ground`, `flatten_paving`). A paved point is on a mound when the paving round it falls away by more than 20 cm both ways along at least three of the four axes through it, the two grid axes and the two diagonals, within 6 m. A bank's lip, a convex corner of a terrace, a road on an embankment and a ramp onto a bridge all rise or stay level one way, so they are left alone. Round each mound, within 3 m, the paving comes down to an opening of the paving and the bridge decks that removes raised features narrower than about 10 m. It keeps 5 cm of the survey's texture and comes down by at most 3 m. 45,222 points are lowered.
+- **Paving beside walls.** Within 3 m of a wall the paving eases to the level of the paving 3–6 m out: it comes down by up to 4 m and goes up by up to 30 cm, so it meets the wall on a clean line. 535,155 points are eased. The wall lift of ADR-040 is gone.
+- **Outdoor stairs.** Pavement steeper than about 1 in 4 is the survey seeing a stair's treads. Such pavement is drawn as a smooth ramp (σ 2 m) instead of a row of teeth (52,698 points).
+- **Kerbs on another level.** The kerb rule held every pavement within 9 m of a carriageway to 12–24 cm above it. It did this even when the road ran 4 m below, at the foot of a bank or a terrace wall, so the pavement on the terrace was pulled down in spikes. The rule now holds within 1.5 m of the road as before. Further out it lets go of a road more than 40–90 cm off the pavement's own level, and of a road the blur cannot reach.
+- **Verges.** Unpaved ground within 3 m of paving that lies up to 60 cm below it comes up to 4 cm under the paving's edge, fading out between 1.5 and 3 m. It never goes over the rules that keep the landscape under the paving. A deeper fall, a bank dropping away from a path, keeps its fall. 694,276 points are raised.
+- **Wall footings** (`MarburgumRebuildFacades`). Every wall now reaches 2.5 m below its base (`Footing`), so paving and grass meet it at their own height. Where the surveyed ground beside a building falls further than that, the ground tool records a deeper footing (`ground.json` → `buildings.deep_footings_m`, in 0.5 m steps, at most 12 m), and the façade commandlet builds that one deeper. Four buildings need one: the University library and the University next to the 2014 Minorite dig, at 10 and 9.5 m, and two more at 3 and 4 m. 0 paved points are below a footing, and no landscape is raised to a wall. The façades are now rebuilt once more after the ground tool (DEVELOPMENT.md).
+- **Grass mask.** The orthophoto is averaged over about 1.5 m (3 × 3 samples, 0.5 m apart) before the excess-green test. The grass weight is blurred 0.5 m, where it was 0.35 m.
+- **The Drava** (`M_DravaWater`, built by `MarburgumRebuildGround` and set on every `Drava*` sheet). Single-layer water: scattering 0.01, 0.03, 0.022 and absorption 0.65, 0.2, 0.28 per metre. The ripples are two scales of the engine's tiling `water_n` (12 m and 4.5 m), drifting downstream (plan east) at different speeds, at 40 % strength, with roughness 0.05. Base colour is black and opacity 0: on single-layer water these describe a layer on top of the water such as foam. Left unconnected, opacity is 1 and the river renders as an opaque black sheet.
+- **Building colours and flat roofs.** There are nine plaster instances under `MI_plaster_mineral` and three flat-roof instances under `MI_roof_bitumen`, each with `BaseColorTint` set to a target colour over the texture's linear mean (the parents' tint is 1):
+  - plaster: the original's beige, ochre, pale yellow, cream, warm grey, salmon, sage, off-white and the grey render of post-war blocks;
+  - flat roofs: gravel, weathered grey and dark.
+  Each building picks a plaster and a flat-roof finish from the CRC of its id, weighted towards beige, ochre, yellows and greys, so a rebuild keeps them.
+
+**Evidence.**
+
+- `-run=MarburgumRebuildGround -Verify -Every=1` on the saved level: 4,094,582 samples, 0 on the landscape, 0 capsules sunk. 6,868 hit a bridge deck or an eave first. 11 rays land up to 12 cm above their triangle, the same carriageway slivers under the kerb as in ADR-045. An intermediate build with the kerb rule let go right beside the road gave 140 rays off by up to 1.32 m. This is why the rule still holds within 1.5 m.
+- Regeneration: 870 façades rebuilt with 0 open and 0 failed (3,026,898 triangles). 521 paved chunks with 5,391,116 triangles. The landscape reads back within 4 mm. 422 water volumes, and the car placed.
+- `cargo test` passes 23 tests. The new ones check that a mound in the paving comes down, that a terrace's edges and convex corner keep their height exactly, and that the masked opening ignores points outside its set.
+- Before and after captures from the same 47 cameras (`main` against this branch) are in [Captures/map-quality](Captures/map-quality/): aerials, the Drava, colours and roofs, paving at walls, and paving on banks.
+- The swim, vehicle, street and combat smokes pass in editor mode on ports 27861–27864. The street server placed 12,955 of the 13,098 walk-graph nodes; 14 are wet, as before.
+
+**Not covered.**
+
+- **Map edge.** The square still ends in a bare edge over the void.
+- **Large mounds.** Mounds wider than about 10 m are followed, and so are paved areas that really slope up to a building over more than 3 m, such as plan (167, −96). So are unpaved banks.
+- **Colours.** The plaster colours are chosen by id, not from the original's photographs or a 1990s survey. In shade the yellows read slightly olive under the blue sky light.
+- **Water.** It has no shore foam, flow map or caustics. Its surface is the flat sheet of ADR-045 at 6 cm.
+- **Not yet done.** Trees, street furniture, façade detail, LODs and Nanite. A packaged run, frame time and the owner playtest.
