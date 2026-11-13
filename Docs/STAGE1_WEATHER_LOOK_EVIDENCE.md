@@ -38,7 +38,7 @@ Each look check reads the effects actor on the client: what falls and whether th
 | live, start | "Overcast · 19 °C" (drizzle beginning) | 0.04 | 23° | 0.96 | 0.90 × | 1.1 × | −0.69 EV | wetness 0.075 | — |
 | live, soaked | "Light rain · 19 °C · wet streets" | 0.145 | 23.8° | 0.97 | 0.89 × | 1.4 × | −0.82 EV | wetness 0.435 (easing) | — |
 
-The promenade grey is the mean of the promenade and river right of the player in each look capture (`brightness.txt`), the measure the exposure was calibrated on. The original aimed for overcast and steady rain about 0.8 and 1.5 EV under clear on its city. Before recalibration Lent measured overcast 1.14× and rain 1.15× **brighter** than clear (`20261112T165631Z`).
+The promenade grey is the mean of the promenade and river right of the player in each look capture (`brightness.txt`), the measure the exposure was calibrated on. **Correction (ADR-064):** that measure averaged the screenshots' alpha channel into the grey. Measured without it (`Saved/WeatherSmoke/20261113T200436Z`, fog and storm now at daylit hours), the looks keep the same order and wider steps: clear 129, overcast 95, fog 92, rain 71, storm 68. The original aimed for overcast and steady rain about 0.8 and 1.5 EV under clear on its city. Before recalibration Lent measured overcast 1.14× and rain 1.15× **brighter** than clear (`20261112T165631Z`).
 
 The driving runs still pass ADR-061's checks: braking from full throttle 5.39 m/s² dry and 4.51 m/s² soaked (0.84 ×), ten hard steps dry and splashing steps wet, and the live climate turning to light rain at 10:30 CET.
 

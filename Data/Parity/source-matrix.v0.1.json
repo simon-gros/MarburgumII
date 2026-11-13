@@ -179,9 +179,9 @@
         "docs/NINETIES_AUTHENTICITY_WORLD_STATE_ROADMAP.md"
       ],
       "intent": "Shared local clock, dynamic weather, year-state and consequences for NPCs/mission opportunities.",
-      "migration": "Distinguish civil simulation time from real wall clock; synchronize replicated world state. ADR-061 ports the original's automatic Maribor climate weather (feat/dynamic-weather) to the server and replicates it; wetness drives car grip on newly classified Lent surfaces and footstep sounds. ADR-062 draws and plays it on clients with the original's look and synthesised sound (clouds, light, fog, rain/snow curtain, lightning and thunder) and wet/snowy ground materials. A world clock, day/night, tree sway/season and gameplay consequences remain pending.",
+      "migration": "Distinguish civil simulation time from real wall clock; synchronize replicated world state. ADR-061 ports the original's automatic Maribor climate weather (feat/dynamic-weather) to the server and replicates it; wetness drives car grip on newly classified Lent surfaces and footstep sounds. ADR-062 draws and plays it on clients with the original's look and synthesised sound (clouds, light, fog, rain/snow curtain, lightning and thunder) and wet/snowy ground materials. ADR-064 builds the original's 2026-10-09 shared-world clock decision: one server Europe/Ljubljana clock mirrored into the 1990s (weekday of the mirrored date), replicated as an anchor; the real sun (NOAA) and moon (Schlyter, with phase) over Maribor turn Lent's sun and bring a night light; weather and Kiosk 67 hours read it. Street lamps, tree sway/season and day/night gameplay consequences remain pending.",
       "stage": "3",
-      "status": "server_weather_wet_grip_footsteps_and_look_editor_tested"
+      "status": "server_weather_look_world_clock_and_day_night_editor_tested"
     },
     {
       "id": "interactions",

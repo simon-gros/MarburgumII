@@ -1,0 +1,98 @@
+MarburgumII weather smoke
+result: PASS
+date_utc: 2026-11-13T20:03:25Z
+git_sha: e3f9eb335272fe8f09fcaa1449f4e1768f5c87ae (dirty)
+mode: editor
+map: /Game/World/lent
+live_clock: 2026-06-18T09:00:00Z x60
+host: Linux 6.18.60-2-cachyos-lts x86_64
+braking: dry decel=? wet decel=?
+
+== noon
+MB2SMOKE role=server event=ready map=lent port=7777 contract=1
+[2026.11.13-20.00.49:757][  0]LogMarburgumClock: MB2CLOCK role=server event=started utc=2026-06-21T10:57:00.000Z marburgum="Friday 21 June 1996 12:57" offset=+2 speed=1.000 review=1 sun_elevation=66.88 sun_azimuth=178.7
+MB2WEATHER role=server event=started source=clear_dry seed=1996 clock=2026-06-21T10:57:00.000Z speed=1.000 review_clock=1
+MB2WEATHER role=server event=changed utc=2026-06-21T10:57:00.000Z source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.15 wind=1.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=clear_dry event=start shot=1
+MB2WSMOKE role=client expect=clear_dry event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=clear_dry event=weather known=1 source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.150 wind=1.5 banner="Clear  ·  20 °C"
+MB2WSMOKE role=client expect=clear_dry event=look want=noon effects=1 content=111 sun=1 fog=1 rain=0.000 snow=0.000 cover=0.150 fog_look=1.000 lean=10.0 bearing=60 rain_drawn=0 near_drawn=0 shelter=0.00 clouds_drawn=1 sun_ratio=0.985 fog_ratio=1.000 exposure=-0.04 mpc_wetness=0.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=clear_dry event=look_daylight want=noon utc=2026-06-21T10:57:13.024Z marburgum="Friday 21 June 1996 12:57" banner_clock="Fri 21 Jun 1996  ·  12:57" daylight=1 sun_elevation=66.88 sun_azimuth=178.8 sun_pitch=-66.88 sun_yaw=-1.2 drawn_pitch=-66.88 drawn_yaw=-1.2 sun_scale=1.000 sun_ratio=0.985 moon_elevation=2.95 moon_azimuth=93.7 moon_lit=0.452 night=0.000 night_lux=0.0000 moon_light=0 min_brightness=1.000 fog_glow=1.000 sky_live=1
+MB2WSMOKE role=client expect=clear_dry event=shot file=noon-look.png saved=1
+MB2WSMOKE role=client expect=clear_dry event=pass
+== evening
+MB2SMOKE role=server event=ready map=lent port=7777 contract=1
+[2026.11.13-20.01.13:274][  0]LogMarburgumClock: MB2CLOCK role=server event=started utc=2026-06-21T18:30:00.000Z marburgum="Friday 21 June 1996 20:30" offset=+2 speed=1.000 review=1 sun_elevation=2.86 sun_azimuth=302.1
+MB2WEATHER role=server event=started source=clear_dry seed=1996 clock=2026-06-21T18:30:00.000Z speed=1.000 review_clock=1
+MB2WEATHER role=server event=changed utc=2026-06-21T18:30:00.000Z source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.15 wind=1.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=clear_dry event=start shot=1
+MB2WSMOKE role=client expect=clear_dry event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=clear_dry event=weather known=1 source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.150 wind=1.5 banner="Clear  ·  20 °C"
+MB2WSMOKE role=client expect=clear_dry event=look want=evening effects=1 content=111 sun=1 fog=1 rain=0.000 snow=0.000 cover=0.150 fog_look=1.000 lean=10.0 bearing=60 rain_drawn=0 near_drawn=0 shelter=0.00 clouds_drawn=1 sun_ratio=0.985 fog_ratio=1.000 exposure=-0.04 mpc_wetness=0.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=clear_dry event=look_daylight want=evening utc=2026-06-21T18:30:13.603Z marburgum="Friday 21 June 1996 20:30" banner_clock="Fri 21 Jun 1996  ·  20:30" daylight=1 sun_elevation=2.83 sun_azimuth=302.1 sun_pitch=-2.83 sun_yaw=122.1 drawn_pitch=-2.83 drawn_yaw=122.1 sun_scale=1.000 sun_ratio=0.985 moon_elevation=36.20 moon_azimuth=212.3 moon_lit=0.485 night=0.000 night_lux=0.0000 moon_light=0 min_brightness=1.000 fog_glow=1.000 sky_live=1
+MB2WSMOKE role=client expect=clear_dry event=shot file=evening-look.png saved=1
+MB2WSMOKE role=client expect=clear_dry event=pass
+== dusk
+MB2SMOKE role=server event=ready map=lent port=7777 contract=1
+[2026.11.13-20.01.37:808][  0]LogMarburgumClock: MB2CLOCK role=server event=started utc=2026-11-13T15:50:00.000Z marburgum="Wednesday 13 November 1996 16:50" offset=+1 speed=1.000 review=1 sun_elevation=-4.47 sun_azimuth=248.4
+MB2WEATHER role=server event=started source=clear_dry seed=1996 clock=2026-11-13T15:50:00.000Z speed=1.000 review_clock=1
+MB2WEATHER role=server event=changed utc=2026-11-13T15:50:00.000Z source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.15 wind=1.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=clear_dry event=start shot=1
+MB2WSMOKE role=client expect=clear_dry event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=clear_dry event=weather known=1 source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.150 wind=1.5 banner="Clear  ·  20 °C"
+MB2WSMOKE role=client expect=clear_dry event=look want=dusk effects=1 content=111 sun=1 fog=1 rain=0.000 snow=0.000 cover=0.150 fog_look=1.000 lean=10.0 bearing=60 rain_drawn=0 near_drawn=0 shelter=0.00 clouds_drawn=1 sun_ratio=0.000 fog_ratio=1.000 exposure=-0.04 mpc_wetness=0.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=clear_dry event=look_daylight want=dusk utc=2026-11-13T15:50:13.467Z marburgum="Wednesday 13 November 1996 16:50" banner_clock="Wed 13 Nov 1996  ·  16:50" daylight=1 sun_elevation=-4.50 sun_azimuth=248.4 sun_pitch=4.50 sun_yaw=68.4 drawn_pitch=4.50 drawn_yaw=68.4 sun_scale=0.000 sun_ratio=0.000 moon_elevation=12.39 moon_azimuth=203.1 moon_lit=0.168 night=0.317 night_lux=0.1027 moon_light=0 min_brightness=2.585 fog_glow=0.696 sky_live=1
+MB2WSMOKE role=client expect=clear_dry event=shot file=dusk-look.png saved=1
+MB2WSMOKE role=client expect=clear_dry event=pass
+== moonlit
+MB2SMOKE role=server event=ready map=lent port=7777 contract=1
+[2026.11.13-20.02.01:226][  0]LogMarburgumClock: MB2CLOCK role=server event=started utc=2026-12-24T23:00:00.000Z marburgum="Wednesday 25 December 1996 00:00" offset=+1 speed=1.000 review=1 sun_elevation=-66.83 sun_azimuth=1.6
+MB2WEATHER role=server event=started source=clear_dry seed=1996 clock=2026-12-24T23:00:00.000Z speed=1.000 review_clock=1
+MB2WEATHER role=server event=changed utc=2026-12-24T23:00:00.000Z source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.15 wind=1.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=clear_dry event=start shot=1
+MB2WSMOKE role=client expect=clear_dry event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=clear_dry event=weather known=1 source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.150 wind=1.5 banner="Clear  ·  20 °C"
+MB2WSMOKE role=client expect=clear_dry event=look want=moonlit effects=1 content=111 sun=1 fog=1 rain=0.000 snow=0.000 cover=0.150 fog_look=1.000 lean=10.0 bearing=60 rain_drawn=0 near_drawn=0 shelter=0.00 clouds_drawn=1 sun_ratio=0.000 fog_ratio=1.000 exposure=-0.04 mpc_wetness=0.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=clear_dry event=look_daylight want=moonlit utc=2026-12-24T23:00:12.894Z marburgum="Wednesday 25 December 1996 00:00" banner_clock="Wed 25 Dec 1996  ·  00:00" daylight=1 sun_elevation=-66.83 sun_azimuth=1.8 sun_pitch=66.83 sun_yaw=-178.2 drawn_pitch=66.83 drawn_yaw=-178.3 sun_scale=0.000 sun_ratio=0.000 moon_elevation=65.97 moon_azimuth=148.4 moon_lit=0.987 night=1.000 night_lux=0.4096 moon_light=1 min_brightness=6.000 fog_glow=0.040 sky_live=1
+MB2WSMOKE role=client expect=clear_dry event=shot file=moonlit-look.png saved=1
+MB2WSMOKE role=client expect=clear_dry event=pass
+== moonless
+MB2SMOKE role=server event=ready map=lent port=7777 contract=1
+[2026.11.13-20.02.24:662][  0]LogMarburgumClock: MB2CLOCK role=server event=started utc=2026-11-13T21:00:00.000Z marburgum="Wednesday 13 November 1996 22:00" offset=+1 speed=1.000 review=1 sun_elevation=-54.70 sun_azimuth=315.1
+MB2WEATHER role=server event=started source=clear_dry seed=1996 clock=2026-11-13T21:00:00.000Z speed=1.000 review_clock=1
+MB2WEATHER role=server event=changed utc=2026-11-13T21:00:00.000Z source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.15 wind=1.5
+MB2SMOKE role=server event=login player=256 players=1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=clear_dry event=start shot=1
+MB2WSMOKE role=client expect=clear_dry event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=clear_dry event=weather known=1 source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.150 wind=1.5 banner="Clear  ·  20 °C"
+MB2WSMOKE role=client expect=clear_dry event=look want=moonless effects=1 content=111 sun=1 fog=1 rain=0.000 snow=0.000 cover=0.150 fog_look=1.000 lean=10.0 bearing=60 rain_drawn=0 near_drawn=0 shelter=0.00 clouds_drawn=1 sun_ratio=0.000 fog_ratio=1.000 exposure=-0.04 mpc_wetness=0.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=clear_dry event=look_daylight want=moonless utc=2026-11-13T21:00:13.521Z marburgum="Wednesday 13 November 1996 22:00" banner_clock="Wed 13 Nov 1996  ·  22:00" daylight=1 sun_elevation=-54.73 sun_azimuth=315.2 sun_pitch=54.73 sun_yaw=135.2 drawn_pitch=54.72 drawn_yaw=135.1 sun_scale=0.000 sun_ratio=0.000 moon_elevation=-26.34 moon_azimuth=257.9 moon_lit=0.183 night=1.000 night_lux=0.1149 moon_light=0 min_brightness=6.000 fog_glow=0.040 sky_live=1
+MB2WSMOKE role=client expect=clear_dry event=shot file=moonless-look.png saved=1
+MB2WSMOKE role=client expect=clear_dry event=pass
+== clockrun
+MB2SMOKE role=server event=ready map=lent port=7777 contract=1
+[2026.11.13-20.02.48:821][  0]LogMarburgumClock: MB2CLOCK role=server event=started utc=2026-06-21T02:00:00.011Z marburgum="Friday 21 June 1996 04:00" offset=+2 speed=1440.000 review=1 sun_elevation=-8.92 sun_azimuth=41.2
+MB2WEATHER role=server event=started source=clear_dry seed=1996 clock=2026-06-21T02:00:00.131Z speed=1440.000 review_clock=1
+MB2WEATHER role=server event=changed utc=2026-06-21T02:00:00.154Z source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.15 wind=1.5
+MB2SMOKE role=server event=login player=256 players=1
+[2026.11.13-20.03.19:344][897]LogMarburgumClock: MB2CLOCK role=server event=republished utc=2026-06-21T14:12:31.847Z marburgum="Friday 21 June 1996 16:12" offset=+2 speed=1440.000 review=1 sun_elevation=45.12 sun_azimuth=256.1
+MB2SMOKE role=server event=logout player=256 players=0
+MB2WSMOKE role=client expect=clear_dry event=start shot=1
+MB2WSMOKE role=client expect=clear_dry event=ready player=256 at=X=7091.900 Y=-12392.600 Z=251.800 landscape_map=1
+MB2WSMOKE role=client expect=clear_dry event=weather known=1 source=clear_dry state=clear_dry type=none precipitation=0.000 wetness=0.000 temperature=20.0 snow=0.000 cloud=0.150 wind=1.5 banner="Clear  ·  20 °C"
+MB2WSMOKE role=client expect=clear_dry event=look want=clockrun effects=1 content=111 sun=1 fog=1 rain=0.000 snow=0.000 cover=0.150 fog_look=1.000 lean=10.0 bearing=60 rain_drawn=0 near_drawn=0 shelter=0.00 clouds_drawn=1 sun_ratio=0.985 fog_ratio=1.000 exposure=-0.04 mpc_wetness=0.000 snow_cover=0.000 flashes=0 sound=0
+MB2WSMOKE role=client expect=clear_dry event=look_daylight want=clockrun utc=2026-06-21T07:01:55.680Z marburgum="Friday 21 June 1996 09:01" banner_clock="Fri 21 Jun 1996  ·  09:01" daylight=1 sun_elevation=37.66 sun_azimuth=94.8 sun_pitch=-37.66 sun_yaw=-85.2 drawn_pitch=-37.66 drawn_yaw=-85.2 sun_scale=1.000 sun_ratio=0.985 moon_elevation=-32.37 moon_azimuth=46.6 moon_lit=0.435 night=0.000 night_lux=0.0000 moon_light=0 min_brightness=1.000 fog_glow=1.000 sky_live=1
+MB2WSMOKE role=client expect=clear_dry event=shot file=clockrun-look.png saved=1
+MB2WSMOKE role=client expect=clear_dry event=clockrun speed=1440.0 clock_s=30164.7 real_s=20.00 rate=1508.2 sun_from=37.68,94.8 sun_to=32.82,270.4 moved_deg=109.4
+MB2WSMOKE role=client expect=clear_dry event=look_later_daylight want=clockrun utc=2026-06-21T15:24:47.324Z marburgum="Friday 21 June 1996 17:24" banner_clock="Fri 21 Jun 1996  ·  17:24" daylight=1 sun_elevation=32.82 sun_azimuth=270.4 sun_pitch=-32.82 sun_yaw=90.4 drawn_pitch=-32.82 drawn_yaw=90.4 sun_scale=1.000 sun_ratio=0.985 moon_elevation=38.83 moon_azimuth=154.1 moon_lit=0.472 night=0.000 night_lux=0.0000 moon_light=0 min_brightness=1.000 fog_glow=1.000 sky_live=1
+MB2WSMOKE role=client expect=clear_dry event=shot file=clockrun-later.png saved=1
+MB2WSMOKE role=client expect=clear_dry event=pass
