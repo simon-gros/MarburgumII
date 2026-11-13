@@ -24,12 +24,16 @@
 //!
 //! `lent-ground surface-kinds` reduces `surface.png` to the surface map the game reads at run time for
 //! footsteps and tyre grip on the landscape (kinds.rs, ADR-061).
+//!
+//! `lent-ground places` writes the place names the location banner reads: districts, streets and
+//! squares, and landmarks (places.rs, ADR-063).
 
 mod buildings;
 mod grid;
 mod kinds;
 mod mesh;
 mod osm;
+mod places;
 mod proj;
 mod ring;
 mod shapes;
@@ -813,7 +817,10 @@ const USAGE: &str = "usage:
               --ortho DIR/lent_albedo.jpg,DIR/center_albedo.jpg,... --out DIR [--half 768 --points 3025 --mask 4096]
               [--walk-graph Content/Marburgum/Street/lent_walk_graph.json] [--mode walk]
        lent-ground ring --laz A.laz,B.laz,... --heights DIR/heights.bin --out DIR
-       lent-ground surface-kinds --surface DIR/surface.png --out Content/Marburgum/Ground/lent_surface.bin [--half 768 --cell 2]";
+       lent-ground surface-kinds --surface DIR/surface.png --out Content/Marburgum/Ground/lent_surface.bin [--half 768 --cell 2]
+       lent-ground places --osm osm_lent.json.gz --districts ORIGINAL/project/data/districts.json
+              --landmarks ORIGINAL/project/data/landmarks.json --out Content/Marburgum/Places/lent_places.json
+              [--tiers bespoke --half 768]";
 
 fn main() {
     let mut argv: Vec<String> = std::env::args().skip(1).collect();
@@ -838,6 +845,24 @@ fn main() {
             let number = |k: &str, default: f64| f.get(k).map_or(Ok(default), |v| v.parse::<f64>().map_err(|e| format!("--{k}: {e}")));
             let summary = kinds::build(Path::new(&get("surface")?), number("half", DEFAULT_HALF)?, number("cell", 2.0)?, Path::new(&get("out")?))?;
             eprintln!("surface-kinds: {summary}");
+            Ok(())
+        });
+        if let Err(e) = result {
+            eprintln!("lent-ground: {e}\n{USAGE}");
+            std::process::exit(2);
+        }
+        return;
+    }
+    if argv.first().map(String::as_str) == Some("places") {
+        argv.remove(0);
+        let result = read_flags(argv.into_iter()).and_then(|f| {
+            let get = |k: &str| f.get(k).cloned().ok_or(format!("missing --{k}"));
+            let half = f.get("half").map_or(Ok(DEFAULT_HALF), |v| v.parse::<f64>().map_err(|e| format!("--half: {e}")))?;
+            let tiers = f.get("tiers").cloned().unwrap_or_else(|| "bespoke".to_string());
+            let osm_path = PathBuf::from(get("osm")?);
+            let text = read_osm_text(&osm_path)?;
+            let summary = places::build(&osm_path, &text, Path::new(&get("districts")?), Path::new(&get("landmarks")?), &tiers.split(',').collect::<Vec<_>>(), half, Path::new(&get("out")?))?;
+            eprintln!("places: {summary}");
             Ok(())
         });
         if let Err(e) = result {
@@ -876,19 +901,22 @@ fn main() {
     }
 }
 
+/// An Overpass extract's text, gunzipped when the file is `.gz`.
+fn read_osm_text(path: &Path) -> Result<String, String> {
+    let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    if path.extension().is_some_and(|e| e == "gz") {
+        let mut text = String::new();
+        std::io::Read::read_to_string(&mut flate2::read::GzDecoder::new(&bytes[..]), &mut text).map_err(|e| e.to_string())?;
+        Ok(text)
+    } else {
+        String::from_utf8(bytes).map_err(|e| e.to_string())
+    }
+}
+
 fn run(args: &Args) -> Result<(), String> {
     let t0 = std::time::Instant::now();
     std::fs::create_dir_all(&args.out).map_err(|e| e.to_string())?;
-    let osm_text = {
-        let bytes = std::fs::read(&args.osm).map_err(|e| e.to_string())?;
-        if args.osm.extension().is_some_and(|e| e == "gz") {
-            let mut text = String::new();
-            std::io::Read::read_to_string(&mut flate2::read::GzDecoder::new(&bytes[..]), &mut text).map_err(|e| e.to_string())?;
-            text
-        } else {
-            String::from_utf8(bytes).map_err(|e| e.to_string())?
-        }
-    };
+    let osm_text = read_osm_text(&args.osm)?;
     let osm = osm::read(&osm_text)?;
     let buildings = read_buildings(&args.buildings, &args.placed)?;
     let footprints = shapes::union_all(&buildings.iter().map(|b| shapes::polygon(&[b.outline.clone()])).collect::<Vec<_>>());

@@ -10,6 +10,7 @@
 #include "Components/VerticalBox.h"
 #include "Engine/GameInstance.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumPlaces.h"
 #include "MarburgumPlayerState.h"
 #include "Session/MarburgumSessionSubsystem.h"
 #include "UI/MarburgumUIBuilder.h"
@@ -190,6 +191,17 @@ void UMarburgumCharacterPanel::Rebuild()
         const FText Name = Area ? FText::FromString(Area->DisplayName)
             : State->GetAreaId().IsNone() ? FText::FromString(OutsideAreaName) : FText::FromName(State->GetAreaId());
         FBuilder::Stack(Place, B.Field(LOCTEXT("Area", "Area"), Name), 0.f);
+        // The register quarter or village and the street (ADR-063); none inside a named area or off every street.
+        const MarburgumII::Places::FDistrict* District = State->GetPlace().District.IsEmpty() ? nullptr
+            : MarburgumII::Places::Get().FindDistrictById(State->GetPlace().District);
+        if (District)
+        {
+            FBuilder::Stack(Place, B.Field(LOCTEXT("Quarter", "Quarter"), FText::FromString(District->DisplayName)), 0.f);
+        }
+        if (!State->GetPlace().Street.IsEmpty())
+        {
+            FBuilder::Stack(Place, B.Field(LOCTEXT("Street", "Street"), FText::FromString(State->GetPlace().Street)), 0.f);
+        }
     }
 
     // Custody and missions: summaries; the Inventory (I) and Journal (J) hold the details.

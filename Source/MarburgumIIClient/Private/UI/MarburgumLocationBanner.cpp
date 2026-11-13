@@ -11,6 +11,7 @@
 #include "MarburgumArea.h"
 #include "MarburgumGameState.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumPlaces.h"
 #include "MarburgumPlayerState.h"
 #include "MarburgumWeather.h"
 #include "UI/MarburgumUIBuilder.h"
@@ -47,8 +48,19 @@ void UMarburgumLocationBanner::NativeOnInitialized()
     FBuilder::Stack(Column, KindLabel, T.Space.XS);
     Center(KindLabel);
     NameLabel = B.Text(FText::GetEmpty(), ETypeRole::Title);
-    FBuilder::Stack(Column, NameLabel, T.Space.S);
+    FBuilder::Stack(Column, NameLabel, T.Space.XS);
     Center(NameLabel);
+    // The street or square, then the landmark (ADR-063): collapsed when the player is on none.
+    StreetLabel = B.Text(FText::GetEmpty(), ETypeRole::BodyStrong);
+    StreetLabel->SetJustification(ETextJustify::Center);
+    StreetLabel->SetVisibility(ESlateVisibility::Collapsed);
+    FBuilder::Stack(Column, StreetLabel, T.Space.XS);
+    Center(StreetLabel);
+    LandmarkLabel = B.Text(FText::GetEmpty(), ETypeRole::Body, T.Color.Accent);
+    LandmarkLabel->SetJustification(ETextJustify::Center);
+    LandmarkLabel->SetVisibility(ESlateVisibility::Collapsed);
+    FBuilder::Stack(Column, LandmarkLabel, T.Space.XS);
+    Center(LandmarkLabel);
     UWidget* Rule = B.Rule(T.Color.Accent, 2.f, 64.f);
     FBuilder::Stack(Column, Rule, T.Space.S);
     Center(Rule);
@@ -103,6 +115,37 @@ void UMarburgumLocationBanner::NativeDestruct()
     Super::NativeDestruct();
 }
 
+bool FMarburgumPlaceAnnouncer::Observe(const FString& Place, const FString& Street, const FString& Landmark)
+{
+    if (Place.IsEmpty())
+    {
+        return false;
+    }
+    const bool bNewStreet = !Street.IsEmpty() && Street != LastStreet;
+    if (!Street.IsEmpty())
+    {
+        LastStreet = Street;
+    }
+    const bool bNewLandmark = !Landmark.IsEmpty() && Landmark != LastLandmark;
+    if (!Landmark.IsEmpty())
+    {
+        LastLandmark = Landmark;
+    }
+    if (Place != LastPlace || bNewStreet || bNewLandmark)
+    {
+        LastPlace = Place;
+        return true;
+    }
+    return false;
+}
+
+void FMarburgumPlaceAnnouncer::Reset()
+{
+    LastPlace.Reset();
+    LastStreet.Reset();
+    LastLandmark.Reset();
+}
+
 void UMarburgumLocationBanner::HandleAreaChanged(AMarburgumPlayerState* State)
 {
     const APlayerController* Owner = GetOwningPlayer();
@@ -110,11 +153,17 @@ void UMarburgumLocationBanner::HandleAreaChanged(AMarburgumPlayerState* State)
     {
         return;
     }
-    if (bHasShown && State->GetAreaId() == ShownArea)
+    const FName AreaId = State->GetAreaId();
+    const FMarburgumPlace& Place = State->GetPlace();
+    Describe(AreaId, Place);
+    // The place the announcement keys on: the area, else the district, else the city around them. The street is the
+    // one shown, so a promenade named like its area ("Lent" on Lent) is not a new street.
+    const FString Key = !AreaId.IsNone() ? TEXT("area:") + AreaId.ToString() : Place.District.IsEmpty() ? FString(TEXT("outside")) : Place.District;
+    // Both replicated properties report the same change, and the announcer says nothing the second time.
+    if (Announcer.Observe(Key, GetStreetText(), Place.Landmark))
     {
-        return; // Both replicated properties report the same change.
+        Show();
     }
-    Show(State->GetAreaId());
 }
 
 void UMarburgumLocationBanner::HandleWeatherChanged(const FMarburgumWeather& Weather)
@@ -130,7 +179,7 @@ void UMarburgumLocationBanner::HandleWeatherChanged(const FMarburgumWeather& Wea
     WeatherType = Weather.PrecipitationType;
     if (bTurned && bHasShown && !IsShowing())
     {
-        Show(ShownArea);
+        Show();
     }
 }
 
@@ -139,12 +188,29 @@ FString UMarburgumLocationBanner::GetWeatherText() const
     return WeatherLabel && WeatherLabel->GetVisibility() != ESlateVisibility::Collapsed ? WeatherLabel->GetText().ToString() : FString();
 }
 
-void UMarburgumLocationBanner::Show(FName AreaId)
+FString UMarburgumLocationBanner::GetPlaceText() const
 {
-    bHasShown = true;
+    return NameLabel ? NameLabel->GetText().ToString() : FString();
+}
+
+FString UMarburgumLocationBanner::GetStreetText() const
+{
+    return StreetLabel && StreetLabel->GetVisibility() != ESlateVisibility::Collapsed ? StreetLabel->GetText().ToString() : FString();
+}
+
+FString UMarburgumLocationBanner::GetLandmarkText() const
+{
+    return LandmarkLabel && LandmarkLabel->GetVisibility() != ESlateVisibility::Collapsed ? LandmarkLabel->GetText().ToString() : FString();
+}
+
+void UMarburgumLocationBanner::Describe(FName AreaId, const FMarburgumPlace& Place)
+{
+    using namespace MarburgumII;
     ShownArea = AreaId;
-    const MarburgumII::Gameplay::FAreaDefinition* Area = MarburgumII::Gameplay::FindArea(AreaId.ToString());
-    const AMarburgumArea* Placed = AMarburgumArea::Find(GetWorld(), AreaId);
+    const Places::FCatalogue& Catalogue = Places::Get();
+    const Gameplay::FAreaDefinition* Area = AreaId.IsNone() ? nullptr : Gameplay::FindArea(AreaId.ToString());
+    const AMarburgumArea* Placed = AreaId.IsNone() ? nullptr : AMarburgumArea::Find(GetWorld(), AreaId);
+    const Places::FDistrict* District = Place.District.IsEmpty() ? nullptr : Catalogue.FindDistrictById(Place.District);
 
     if (Area)
     {
@@ -152,18 +218,55 @@ void UMarburgumLocationBanner::Show(FName AreaId)
         NameLabel->SetText(FText::FromString(Area->DisplayName));
         NoteLabel->SetText(Placed && !Placed->Note.IsEmpty() ? Placed->Note : LOCTEXT("Period", "Maribor  ·  1990s"));
     }
-    else if (AreaId.IsNone())
-    {
-        KindLabel->SetText(LOCTEXT("City", "CITY"));
-        NameLabel->SetText(FText::FromString(MarburgumII::Gameplay::OutsideAreaName));
-        NoteLabel->SetText(LOCTEXT("Outside", "Outside the named districts"));
-    }
-    else
+    else if (!AreaId.IsNone())
     {
         // A server newer than this client: show the id rather than nothing, and say so.
         KindLabel->SetText(LOCTEXT("Unknown", "PLACE"));
         NameLabel->SetText(FText::FromName(AreaId));
         NoteLabel->SetText(LOCTEXT("Unregistered", "Not registered in this client version"));
+    }
+    else if (District)
+    {
+        // The register's units: a city quarter, or a village or local community round the city.
+        const bool bQuarter = District->Kind == TEXT("quarter");
+        KindLabel->SetText(bQuarter ? LOCTEXT("Quarter", "QUARTER")
+            : District->Kind == TEXT("local_community") ? LOCTEXT("LocalCommunity", "LOCAL COMMUNITY") : LOCTEXT("Settlement", "SETTLEMENT"));
+        NameLabel->SetText(FText::FromString(District->DisplayName));
+        NoteLabel->SetText(bQuarter ? LOCTEXT("Period", "Maribor  ·  1990s") : LOCTEXT("Municipality", "Municipality of Maribor  ·  1990s"));
+    }
+    else if (!Place.District.IsEmpty())
+    {
+        KindLabel->SetText(LOCTEXT("Unknown", "PLACE"));
+        NameLabel->SetText(FText::FromString(Place.District));
+        NoteLabel->SetText(LOCTEXT("Unregistered", "Not registered in this client version"));
+    }
+    else
+    {
+        KindLabel->SetText(LOCTEXT("City", "CITY"));
+        NameLabel->SetText(FText::FromString(Gameplay::OutsideAreaName));
+        NoteLabel->SetText(LOCTEXT("Outside", "Outside the named districts"));
+    }
+
+    // A street named like the place it runs through (the Lent promenade on Lent) is said once, as the place.
+    const bool bStreet = !Place.Street.IsEmpty() && Place.Street != NameLabel->GetText().ToString();
+    StreetLabel->SetText(FText::FromString(bStreet ? Place.Street : FString()));
+    StreetLabel->SetVisibility(bStreet ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
+
+    const Places::FLandmark* Landmark = Place.Landmark.IsEmpty() ? nullptr : Catalogue.FindLandmark(Place.Landmark);
+    const FString Sight = Landmark ? Landmark->DisplayName : Place.Landmark;
+    LandmarkLabel->SetText(FText::FromString(Sight));
+    LandmarkLabel->SetVisibility(Sight.IsEmpty() ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
+}
+
+void UMarburgumLocationBanner::Show()
+{
+    bHasShown = true;
+    ++Announcements;
+    if (IsShowing())
+    {
+        // Already up (a new street while the place is still showing): hold it afresh rather than fade it in again.
+        Elapsed = FMath::Min(Elapsed, FadeInSeconds);
+        return;
     }
     Elapsed = 0.f;
     Card->SetRenderOpacity(0.f);

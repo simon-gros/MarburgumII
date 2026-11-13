@@ -627,6 +627,55 @@ UMarburgumCreateMapsCommandlet::UMarburgumCreateMapsCommandlet()
 
 namespace MarburgumMaps
 {
+    /**
+     * The original's areas.json `lent` box on the launch map (ADR-063): centre (0, 5, -78) and size (420, 12, 54) in its
+     * metres (x east, y up from the Drava, z south), so X = -z, Y = x, Z = y here. The promenade strip from Stari most's
+     * landing east and west along the river, below the bridge deck; the quarters around it name the rest (MarburgumPlaces.h).
+     */
+    void SetOriginalLentBox(AMarburgumArea& Area)
+    {
+        Area.SetActorLocation(FVector(7800.0, 0.0, 500.0));
+        if (UBoxComponent* Box = Area.FindComponentByClass<UBoxComponent>())
+        {
+            Box->SetBoxExtent(FVector(2700.0, 21000.0, 600.0));
+        }
+        Area.MarkPackageDirty();
+    }
+
+    /** Puts the launch map's Lent area back to the original's box, touching nothing else (-LentArea, ADR-063). */
+    int32 LentArea()
+    {
+        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(TEXT("/Game/World/lent"));
+        if (!World)
+        {
+            UE_LOG(LogMarburgumMaps, Error, TEXT("MB2AREA cannot load /Game/World/lent"));
+            return 1;
+        }
+        int32 Changed = 0;
+        for (TActorIterator<AMarburgumArea> It(World); It; ++It)
+        {
+            if (It->AreaId == FName(TEXT("lent")))
+            {
+                SetOriginalLentBox(**It);
+                const UBoxComponent* Box = It->FindComponentByClass<UBoxComponent>();
+                UE_LOG(LogMarburgumMaps, Display, TEXT("MB2AREA %s lent centre=%s extent=%s"), *It->GetActorLabel(),
+                    *It->GetActorLocation().ToString(), Box ? *Box->GetScaledBoxExtent().ToString() : TEXT("-"));
+                ++Changed;
+            }
+        }
+        if (Changed != 1)
+        {
+            UE_LOG(LogMarburgumMaps, Error, TEXT("MB2AREA found %d lent areas on /Game/World/lent, want 1"), Changed);
+            return 1;
+        }
+        if (!UEditorLoadingAndSavingUtils::SaveMap(World, TEXT("/Game/World/lent")))
+        {
+            UE_LOG(LogMarburgumMaps, Error, TEXT("MB2AREA could not save /Game/World/lent"));
+            return 1;
+        }
+        return 0;
+    }
+
     int32 FictionLent()
     {
         UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(TEXT("/Game/World/lent"));
@@ -814,22 +863,10 @@ namespace MarburgumMaps
         PlaceStart(TEXT("bridge"), BridgeAt, Arrival, 0);
         PlaceStart(TEXT("angler"), AnglerAt + Inland * 200.0, AnglerAt, 0);
 
-        FVector AreaMin = Arrival;
-        FVector AreaMax = Arrival;
-        for (const FBuilding& Building : LentBuildings)
-        {
-            AreaMin = AreaMin.ComponentMin(Building.Origin - Building.Extent);
-            AreaMax = AreaMax.ComponentMax(Building.Origin + Building.Extent);
-        }
-        const FVector AreaCenter = (AreaMin + AreaMax) * 0.5;
-        const FVector AreaExtent = (AreaMax - AreaMin) * 0.5 + FVector(400.0, 400.0, 1500.0);
-        AMarburgumArea* Area = Spawn<AMarburgumArea>(World, FVector(AreaCenter.X, AreaCenter.Y, WalkZ), FRotator::ZeroRotator, TEXT("MB2Area_lent"), TEXT("Marburgum/Opening"));
+        AMarburgumArea* Area = Spawn<AMarburgumArea>(World, FVector::ZeroVector, FRotator::ZeroRotator, TEXT("MB2Area_lent"), TEXT("Marburgum/Opening"));
         Area->AreaId = FName(TEXT("lent"));
         Area->Note = FText::FromString(TEXT("Marburgum  \u00b7  1990s  \u00b7  original Lent geometry, fictional opening-route names"));
-        if (UBoxComponent* Box = Area->FindComponentByClass<UBoxComponent>())
-        {
-            Box->SetBoxExtent(AreaExtent);
-        }
+        SetOriginalLentBox(*Area);
 
         const float SignYaw = FMath::RadiansToDegrees(FMath::Atan2(Riverward.Y, Riverward.X));
         auto PlaceSign = [&](const TCHAR* Label, const TCHAR* Text, const FVector& At)
@@ -936,6 +973,10 @@ int32 UMarburgumCreateMapsCommandlet::Main(const FString& Params)
     if (FParse::Param(*Params, TEXT("FictionLent")))
     {
         return MarburgumMaps::FictionLent();
+    }
+    if (FParse::Param(*Params, TEXT("LentArea")))
+    {
+        return MarburgumMaps::LentArea();
     }
     FString Selection = TEXT("frontend,netsmoke,lent");
     FParse::Value(*Params, TEXT("Maps="), Selection, /*bShouldStopOnSeparator=*/false);

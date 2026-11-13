@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Engine/TimerHandle.h"
 #include "MarburgumAuthorityService.h"
+#include "MarburgumPlaces.h"
 #include "MarburgumWorldAuthority.generated.h"
 
 class AGameModeBase;
@@ -31,7 +32,8 @@ struct FMarburgumWorldRecord;
  * swimming or going down ends the cast. Only a landed fish (with its Fishing XP) is committed.
  *
  * It also derives each player's named area (AMarburgumArea) from the pawn position four times a
- * second; location is never persisted.
+ * second, and with it the district, street and landmark the player is at (ADR-063, MarburgumPlaces.h), each held
+ * through borders, junctions and shared walls by one set of resolvers per player; location is never persisted.
  *
  * Condition (ADR-020): at login it restores the character's saved condition into the player state,
  * where the pawn's movement adopts it; at logout, and for everyone still connected when the world
@@ -115,5 +117,7 @@ private:
     FTimerHandle ShopTimer;
     TMap<TWeakObjectPtr<AMarburgumPlayerController>, FCast> Casts;
     TMap<TWeakObjectPtr<AMarburgumPlayerController>, double> LastCastAt;
+    /** Each player's place resolvers (MarburgumPlaces.h): they remember what was shown, so one set per player. */
+    TMap<TWeakObjectPtr<const AController>, MarburgumII::Places::FPlaceTracker> PlaceTrackers;
     FRandomStream Rolls;
 };

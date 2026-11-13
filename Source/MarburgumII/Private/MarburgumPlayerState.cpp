@@ -13,6 +13,7 @@ void AMarburgumPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Missions, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, bLocationKnown, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, AreaId, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Place, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, bConditionKnown, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Condition, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, bProgressKnown, COND_OwnerOnly);
@@ -110,14 +111,15 @@ FMarburgumPlayerStateChanged& AMarburgumPlayerState::OnMissionsChanged()
     return Event;
 }
 
-void AMarburgumPlayerState::SetAreaAuthority(FName InAreaId)
+void AMarburgumPlayerState::SetAreaAuthority(FName InAreaId, const FMarburgumPlace& InPlace)
 {
     check(HasAuthority());
-    if (bLocationKnown && AreaId == InAreaId)
+    if (bLocationKnown && AreaId == InAreaId && Place == InPlace)
     {
         return;
     }
     AreaId = InAreaId;
+    Place = InPlace;
     bLocationKnown = true;
     ForceNetUpdate();
     OnAreaChanged().Broadcast(this);

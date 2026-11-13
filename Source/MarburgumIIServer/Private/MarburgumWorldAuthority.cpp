@@ -20,6 +20,7 @@
 #include "MarburgumNetworkContract.h"
 #include "MarburgumNpc.h"
 #include "MarburgumPlayerController.h"
+#include "MarburgumPlaces.h"
 #include "MarburgumPlayerState.h"
 #include "MarburgumRetail.h"
 #include "MarburgumRetailRules.h"
@@ -312,6 +313,7 @@ void UMarburgumWorldAuthority::HandleLogout(AGameModeBase* GameMode, AController
     }
     Casts.Remove(Cast<AMarburgumPlayerController>(Exiting));
     LastCastAt.Remove(Cast<AMarburgumPlayerController>(Exiting));
+    PlaceTrackers.Remove(Exiting);
     // The pawn is already gone at logout; the player state holds the last simulated condition.
     if (const AMarburgumPlayerState* State = Exiting->GetPlayerState<AMarburgumPlayerState>())
     {
@@ -421,6 +423,8 @@ void UMarburgumWorldAuthority::UpdateLocations()
     {
         return;
     }
+    // The places file is laid out in the launch map's frame; elsewhere only the areas are named (ADR-063).
+    const bool bPlaces = UWorld::RemovePIEPrefix(World->GetOutermost()->GetName()) == MarburgumII::Places::PlacesMap;
     for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
     {
         const APlayerController* Player = It->Get();
@@ -431,9 +435,26 @@ void UMarburgumWorldAuthority::UpdateLocations()
             continue;
         }
         const FName Area = AMarburgumArea::Resolve(World, Body->GetActorLocation());
-        if (!State->IsLocationKnown() || State->GetAreaId() != Area)
+        const FVector Feet = Body->GetActorLocation();
+        const MarburgumII::Places::FPlaceIds Ids = bPlaces ? PlaceTrackers.FindOrAdd(Player).Resolve(
+            MarburgumII::Places::Get(), FVector2D(Feet.X, Feet.Y), !Area.IsNone()) : MarburgumII::Places::FPlaceIds();
+        FMarburgumPlace Place;
+        Place.District = Ids.District;
+        Place.Street = Ids.Street;
+        Place.Landmark = Ids.Landmark;
+        const bool bAreaChanged = !State->IsLocationKnown() || State->GetAreaId() != Area;
+        if (bAreaChanged || State->GetPlace() != Place)
         {
-            State->SetAreaAuthority(Area);
+            State->SetAreaAuthority(Area, Place);
+            if (bPlaces)
+            {
+                UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=place player=%d district=%s street=\"%s\" landmark=%s x_m=%.2f y_m=%.2f"),
+                    InteractLogPrefix, State->GetPlayerId(), Place.District.IsEmpty() ? TEXT("-") : *Place.District,
+                    *Place.Street, Place.Landmark.IsEmpty() ? TEXT("-") : *Place.Landmark, Feet.X / 100.f, Feet.Y / 100.f);
+            }
+        }
+        if (bAreaChanged)
+        {
             // The server's pawn position (metres) and running time let the Lent smoke bound how fast a
             // client moved (ADR-019, ADR-020).
             const FVector Where = Body->GetActorLocation() / 100.f;

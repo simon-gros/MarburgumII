@@ -9,6 +9,35 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumInventoryChanged, class AMarburgum
 DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumPlayerStateChanged, class AMarburgumPlayerState*);
 
 /**
+ * Where the server places a player by name (ADR-063, MarburgumPlaces.h): the register district, the street or square
+ * and the landmark at the pawn's feet, each held through borders, junctions and shared walls. Ids and a street name,
+ * looked up in the places catalogue for display; empty where there is none.
+ */
+USTRUCT()
+struct FMarburgumPlace
+{
+    GENERATED_BODY()
+
+    /** The district's id (`quarter:<EID>` …). Empty outside every district, and inside a named area. */
+    UPROPERTY()
+    FString District;
+
+    /** The street's or square's name. */
+    UPROPERTY()
+    FString Street;
+
+    /** The landmark's heritage-register EID. */
+    UPROPERTY()
+    FString Landmark;
+
+    bool operator==(const FMarburgumPlace& Other) const
+    {
+        return District == Other.District && Street == Other.Street && Landmark == Other.Landmark;
+    }
+    bool operator!=(const FMarburgumPlace& Other) const { return !(*this == Other); }
+};
+
+/**
  * Network-visible per-player state. The development character key, inventory, missions, current area,
  * condition, skills, money and fishing are server-owned and replicate to their owner only (custody and progress are private),
  * never to other players.
@@ -72,10 +101,13 @@ public:
     FName GetAreaId() const { return AreaId; }
     bool IsLocationKnown() const { return bLocationKnown; }
 
-    /** Authority only: record the area derived from the pawn position. No-op if unchanged. */
-    void SetAreaAuthority(FName InAreaId);
+    /** Owner-visible: the district, street and landmark the server places this player at (ADR-063). */
+    const FMarburgumPlace& GetPlace() const { return Place; }
 
-    /** Fired on the owning client when the replicated area changes, and on the server when set. */
+    /** Authority only: record the area and place derived from the pawn position. No-op if unchanged. */
+    void SetAreaAuthority(FName InAreaId, const FMarburgumPlace& InPlace = FMarburgumPlace());
+
+    /** Fired on the owning client when the replicated area or place changes, and on the server when set. */
     static FMarburgumPlayerStateChanged& OnAreaChanged();
 
     /**
@@ -174,6 +206,9 @@ private:
 
     UPROPERTY(ReplicatedUsing = OnRep_Area)
     FName AreaId;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Area)
+    FMarburgumPlace Place;
 
     UPROPERTY(ReplicatedUsing = OnRep_Condition)
     bool bConditionKnown = false;
