@@ -1,0 +1,73 @@
+MarburgumII place smoke
+result: PASS
+date_utc: 2026-11-12T18:06:28Z
+git_sha: a0bb9c932563cd7c2b5606795dfcc3f287a50a3b (dirty)
+mode: editor
+map: /Game/World/lent
+host: Linux 6.18.60-2-cachyos-lts x86_64
+
+MB2SMOKE role=server event=ready map=lent port=7777 contract=1
+MB2PLACE role=server event=route_armed stops=10 dwell_s=6.0
+MB2PLACE role=server event=area_box actor=MarburgumArea_0 id=lent x_m=78.0 y_m=0.0 z_m=5.0 half_x_m=27.0 half_y_m=210.0 half_z_m=6.0
+MB2SMOKE role=server event=login player=256 players=1
+LogMarburgumPlaces: places: 27 districts, 551 streets, 58 landmarks (0 left out) from ../../../../../marburgum-places/Content/Marburgum/Places/lent_places.json
+MB2INTERACT role=server event=place player=256 district=- street="Usnjarska ulica" landmark=- x_m=70.42 y_m=40.13
+MB2INTERACT role=server event=area player=256 character=mb2p-t17945066999711 area=lent x_m=70.42 y_m=40.13 run_s=0.00
+MB2PLACE role=server event=route stop=stari_most index=0 player=256 ground=1 moved=1 x_m=5.00 y_m=0.00 z_m=16.02
+MB2INTERACT role=server event=place player=256 district=quarter:110700000165311549 street="Stari most" landmark=- x_m=5.00 y_m=0.00
+MB2INTERACT role=server event=area player=256 character=mb2p-t17945066999711 area=- x_m=5.00 y_m=0.00 run_s=0.00
+MB2PLACE role=server event=route stop=vodni_stolp index=1 player=256 ground=1 moved=1 x_m=67.00 y_m=186.00 z_m=2.21
+MB2INTERACT role=server event=place player=256 district=- street="Usnjarska ulica" landmark=1-00445 x_m=67.00 y_m=186.00
+MB2INTERACT role=server event=area player=256 character=mb2p-t17945066999711 area=lent x_m=67.00 y_m=186.00 run_s=0.00
+MB2PLACE role=server event=route stop=zidovski_stolp index=2 player=256 ground=1 moved=1 x_m=97.00 y_m=185.00 z_m=4.04
+MB2INTERACT role=server event=place player=256 district=- street="Židovski trg" landmark=1-06255 x_m=97.00 y_m=185.00
+MB2PLACE role=server event=route stop=sinagoga index=3 player=256 ground=1 moved=1 x_m=109.00 y_m=143.00 z_m=11.77
+MB2INTERACT role=server event=place player=256 district=quarter:110700000165311549 street="Židovski trg" landmark=1-06253 x_m=109.00 y_m=143.00
+MB2INTERACT role=server event=area player=256 character=mb2p-t17945066999711 area=- x_m=109.00 y_m=143.00 run_s=0.00
+MB2PLACE role=server event=route stop=glavni_trg index=4 player=256 ground=1 moved=1 x_m=184.00 y_m=-10.00 z_m=12.43
+MB2INTERACT role=server event=place player=256 district=quarter:110700000165311549 street="Glavni trg" landmark=- x_m=184.00 y_m=-10.00
+MB2PLACE role=server event=route stop=rotovz index=5 player=256 ground=1 moved=1 x_m=206.00 y_m=-17.00 z_m=12.25
+MB2INTERACT role=server event=place player=256 district=quarter:110700000165311549 street="Glavni trg" landmark=1-00439 x_m=206.00 y_m=-17.00
+MB2PLACE role=server event=route stop=stolnica index=6 player=256 ground=1 moved=1 x_m=349.00 y_m=-50.00 z_m=14.88
+MB2INTERACT role=server event=place player=256 district=quarter:110700000165311549 street="Slomškov trg" landmark=1-00427 x_m=349.00 y_m=-50.00
+MB2PLACE role=server event=route stop=grad index=7 player=256 ground=1 moved=1 x_m=527.00 y_m=178.00 z_m=17.56
+MB2INTERACT role=server event=place player=256 district=quarter:110700000165311549 street="Grajska ulica" landmark=1-00431 x_m=527.00 y_m=178.00
+MB2PLACE role=server event=route stop=magdalena index=8 player=256 ground=1 moved=1 x_m=-160.00 y_m=9.00 z_m=17.54
+MB2INTERACT role=server event=place player=256 district=quarter:110700000165311465 street="Trg revolucije" landmark=- x_m=-160.00 y_m=9.00
+MB2PLACE role=server event=route stop=stari_most_back index=9 player=256 ground=1 moved=1 x_m=5.00 y_m=0.00 z_m=16.02
+MB2INTERACT role=server event=place player=256 district=quarter:110700000165311549 street="Stari most" landmark=- x_m=5.00 y_m=0.00
+MB2SMOKE role=server event=logout player=256 players=0
+LogMarburgumPlaces: places: 27 districts, 551 streets, 58 landmarks (0 left out) from ../../../../../marburgum-places/Content/Marburgum/Places/lent_places.json
+MB2PSMOKE role=client event=start stops=10 shot=1 places_loaded=1 districts=27 streets=551 landmarks=58
+MB2PSMOKE role=client event=ready player=256 at=X=7041.600 Y=4013.500 Z=249.600
+MB2PSMOKE role=client event=arrived stop=stari_most at=X=500.000 Y=0.000 Z=1600.034
+MB2PSMOKE role=client event=stop stop=stari_most place="Center" street="Stari most" landmark="" area=- district=quarter:110700000165311549 landmark_eid=- showing=1 announcements=2 match=1
+MB2PSMOKE role=client event=shot file=stop-stari_most.png saved=1
+MB2PSMOKE role=client event=arrived stop=vodni_stolp at=X=6700.000 Y=18600.000 Z=219.332
+MB2PSMOKE role=client event=stop stop=vodni_stolp place="Lent" street="Usnjarska ulica" landmark="Vodni stolp" area=lent district=- landmark_eid=1-00445 showing=1 announcements=3 match=1
+MB2PSMOKE role=client event=shot file=stop-vodni_stolp.png saved=1
+MB2PSMOKE role=client event=arrived stop=zidovski_stolp at=X=9700.000 Y=18500.000 Z=403.029
+MB2PSMOKE role=client event=stop stop=zidovski_stolp place="Lent" street="Židovski trg" landmark="Židovski stolp" area=lent district=- landmark_eid=1-06255 showing=1 announcements=4 match=1
+MB2PSMOKE role=client event=shot file=stop-zidovski_stolp.png saved=1
+MB2PSMOKE role=client event=arrived stop=sinagoga at=X=10900.000 Y=14300.000 Z=1175.136
+MB2PSMOKE role=client event=stop stop=sinagoga place="Center" street="Židovski trg" landmark="Sinagoga" area=- district=quarter:110700000165311549 landmark_eid=1-06253 showing=1 announcements=5 match=1
+MB2PSMOKE role=client event=shot file=stop-sinagoga.png saved=1
+MB2PSMOKE role=client event=arrived stop=glavni_trg at=X=18400.000 Y=-1000.000 Z=1241.463
+MB2PSMOKE role=client event=stop stop=glavni_trg place="Center" street="Glavni trg" landmark="" area=- district=quarter:110700000165311549 landmark_eid=- showing=1 announcements=6 match=1
+MB2PSMOKE role=client event=shot file=stop-glavni_trg.png saved=1
+MB2PSMOKE role=client event=arrived stop=rotovz at=X=20600.000 Y=-1700.000 Z=1223.313
+MB2PSMOKE role=client event=stop stop=rotovz place="Center" street="Glavni trg" landmark="Rotovž" area=- district=quarter:110700000165311549 landmark_eid=1-00439 showing=1 announcements=7 match=1
+MB2PSMOKE role=client event=shot file=stop-rotovz.png saved=1
+MB2PSMOKE role=client event=arrived stop=stolnica at=X=34900.000 Y=-5000.000 Z=1486.767
+MB2PSMOKE role=client event=stop stop=stolnica place="Center" street="Slomškov trg" landmark="Cerkev sv. Janeza Krstnika" area=- district=quarter:110700000165311549 landmark_eid=1-00427 showing=1 announcements=8 match=1
+MB2PSMOKE role=client event=shot file=stop-stolnica.png saved=1
+MB2PSMOKE role=client event=arrived stop=grad at=X=52700.000 Y=17800.000 Z=1754.159
+MB2PSMOKE role=client event=stop stop=grad place="Center" street="Grajska ulica" landmark="Grad" area=- district=quarter:110700000165311549 landmark_eid=1-00431 showing=1 announcements=9 match=1
+MB2PSMOKE role=client event=shot file=stop-grad.png saved=1
+MB2PSMOKE role=client event=arrived stop=magdalena at=X=-16000.000 Y=900.000 Z=1752.548
+MB2PSMOKE role=client event=stop stop=magdalena place="Magdalena" street="Trg revolucije" landmark="" area=- district=quarter:110700000165311465 landmark_eid=- showing=1 announcements=10 match=1
+MB2PSMOKE role=client event=shot file=stop-magdalena.png saved=1
+MB2PSMOKE role=client event=arrived stop=stari_most_back at=X=500.000 Y=0.000 Z=1600.332
+MB2PSMOKE role=client event=stop stop=stari_most_back place="Center" street="Stari most" landmark="" area=- district=quarter:110700000165311549 landmark_eid=- showing=1 announcements=11 match=1
+MB2PSMOKE role=client event=shot file=stop-stari_most_back.png saved=1
+MB2PSMOKE role=client event=pass stops=10

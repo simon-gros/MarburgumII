@@ -73,6 +73,13 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- ring --laz "
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumSwimContent -Steps=water -unattended -nop4 -nosplash -nullrhi
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumVehicleContent -Steps=place -unattended -nop4 -nosplash -nullrhi
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildGround -Verify -unattended -nop4 -nosplash -nullrhi   # every paved triangle: ray and capsule check
+# Place names (ADR-063): the register's districts and the heritage register's bespoke landmarks from the original's data,
+# the named streets and squares from the OpenStreetMap extract, in one file the server and the client read; then put the
+# launch map's Lent area back to the original's areas.json strip, so the quarters name the rest.
+cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- places --osm Data/World/lent_ground/osm_lent.json.gz \
+    --districts "$ORIGINAL/project/data/districts.json" --landmarks "$ORIGINAL/project/data/landmarks.json" \
+    --out Content/Marburgum/Places/lent_places.json
+"$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumCreateMaps -LentArea -unattended -nop4 -nosplash -nullrhi
 # Fixed-camera screenshots of a level for before/after evidence (centimetres; name@eye@target@fov;...)
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor" "$PWD/MarburgumII.uproject" /Game/World/lent -game -RenderOffScreen -windowed -ForceRes -ResX=1920 -ResY=1080 \
     "-MB2ViewShots=overview@-6000,-6000,11000@17000,-6000,2000@60" -MB2ViewShotDir=/abs/dir
@@ -137,7 +144,7 @@ Saved/StagedBuilds/LinuxServer/MarburgumIIServer.sh /Game/World/lent -port=7777 
 Saved/StagedBuilds/LinuxClient/MarburgumIIClient.sh -MB2Character=simon
 ```
 
-You arrive on the Lent promenade, and the location banner names the district. Hold **Shift** to run: the condition card (lower left) shows stamina draining, and after ten seconds you are winded and walk until some breath is back. **C** opens the Character panel. The riverside angler stands 30 m west at the railing. Walk up and press **E** to talk: the server starts "Something in the Water", hands over a fishing rod and pins the objective (top left). Press **E** again and he asks for a fish. Walk to the Drava bank and press **E** to cast; when the line bites, press **E** again to strike, then show him the catch (ADR-048). **K** opens Skills. **J** opens the journal and **I** the inventory. Walk east onto Stari most and back to see the banner change between "Maribor" and "Lent". The store is `.../WorldStore/Lent.json` next to the NetSmoke file named below; delete it to start the mission afresh. The game, editor and server now open the original Unreal Lent level, `/Game/World/lent` (ADR-027). Every Lent façade has been rebuilt with windows, a door and a cornice; the footprints and roofs are the original shells. `/Game/Maps/Lent` is only the older blockout, still used by the mission smokes. The front-end remains, and the UI capture opens it by name.
+You arrive on the Lent promenade, and the location banner names the district. Hold **Shift** to run: the condition card (lower left) shows stamina draining, and after ten seconds you are winded and walk until some breath is back. **C** opens the Character panel. The riverside angler stands 30 m west at the railing. Walk up and press **E** to talk: the server starts "Something in the Water", hands over a fishing rod and pins the objective (top left). Press **E** again and he asks for a fish. Walk to the Drava bank and press **E** to cast; when the line bites, press **E** again to strike, then show him the catch (ADR-048). **K** opens Skills. **J** opens the journal and **I** the inventory. Walk east onto Stari most and back to see the banner change between "Center", the quarter, with "Stari most" under it, and "Lent"; up into the old town it names the street or square you are on and the landmark you walk up to: the Rotovž on Glavni trg, the cathedral on Slomškov trg, the towers along Lent (ADR-063). The store is `.../WorldStore/Lent.json` next to the NetSmoke file named below; delete it to start the mission afresh. The game, editor and server now open the original Unreal Lent level, `/Game/World/lent` (ADR-027). Every Lent façade has been rebuilt with windows, a door and a cornice; the footprints and roofs are the original shells. `/Game/Maps/Lent` is only the older blockout, still used by the mission smokes. The front-end remains, and the UI capture opens it by name.
 
 The original's city hatchback is parked where the original game put it, about 160 m west of the arrival start along the promenade (ADR-039). To start beside its driver's door, connect straight to the server:
 
@@ -225,6 +232,7 @@ The C# program checks repository manifest contracts, but does not inspect the lo
 ./scripts/mission-smoke-linux.sh editor    # all eight original missions, decisions, store/restart; pads beyond map
 ./scripts/shop-smoke-linux.sh editor       # Kiosk 67: buy, replay, refusals, sell-back, reach, Sunday restart (ADR-060)
 ./scripts/weather-smoke-linux.sh editor    # weather: dry vs soaked braking, wet footsteps, live climate turning to rain (ADR-061); the drawn look and captures of clear, overcast, rain, snow, fog and a storm (ADR-062)
+./scripts/place-smoke-linux.sh editor      # place names: the server sets one client down at ten stops through Lent and the old town; the banner's place, street or square and landmark at each, with captures (ADR-063)
 ./scripts/account-smoke-linux.sh editor    # HTTPS registration, first/returning login, 3D preview, ticket denials
 ./scripts/vehicle-smoke-linux.sh editor    # own-car relevancy; ADR-056 records a reduced-cull comparison separately
 ./scripts/street-smoke-linux.sh editor     # server-led pedestrians and incident reactions

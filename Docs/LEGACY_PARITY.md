@@ -16,7 +16,7 @@ Changes made explicitly in this restart take precedence: **Unreal Engine 5.8.3**
 
 | ID | Inherited design area | First target stage | MarburgumII status |
 | --- | --- | --- | --- |
-| `world_geography` | Marburgum geography and district identity | Stage 1 nine-window world; Stage 3 streaming | `/Game/World/lent` nine-window 1,536 m level, 870 shells, surveyed paving, 422 swim volumes and ADR-053/054 map passes/distant ring; editor-qualified but no World Partition/current packaged performance or owner sign-off |
+| `world_geography` | Marburgum geography and district identity | Stage 1 nine-window world; Stage 3 streaming | `/Game/World/lent` nine-window 1,536 m level, 870 shells, surveyed paving, 422 swim volumes and ADR-053/054 map passes/distant ring; place names on the location banner (register quarters/villages, OSM streets and squares, bespoke heritage landmarks, ADR-063; today's names, not yet 1990s); editor-qualified but no World Partition/current packaged performance or owner sign-off |
 | `historical_state` | 1990s culture and period correctness | Stage 3 | Legacy design retained; implementation pending |
 | `characters_population` | Characters, NPCs and virtual population | Stage 1 street slice; Stage 3 population | Angler/three authored fighters plus server-replicated incident-reacting pedestrians (ADR-041/044); editor crowd smoke, not staged two-client density acceptance |
 | `skills` | Skill progression | Stage 2 | Original 0–1990 XP curve with durable Fishing/Reputation advancement and first Skills (K) UMG view (ADR-047); editor mission/restart proof, broader skills/professions still unimplemented |
