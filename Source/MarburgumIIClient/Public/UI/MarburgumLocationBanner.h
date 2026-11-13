@@ -55,6 +55,8 @@ public:
 
     /** The weather line as shown; empty before the server's weather arrives. */
     FString GetWeatherText() const;
+    /** The world clock's line as shown ("Wed 13 Nov 1996  ·  20:15"); empty before the clock is known. */
+    FString GetClockText() const;
 
     /** The place, street and landmark lines as shown; empty when a line is hidden (for evidence capture). */
     FString GetPlaceText() const;
@@ -74,6 +76,8 @@ private:
     /** Fill the place, street and landmark lines for where the server puts the player. */
     void Describe(FName AreaId, const struct FMarburgumPlace& Place);
     void Show();
+    /** Fills the clock line from the world clock (ADR-064). */
+    void UpdateClock();
     void HandleWeatherChanged(const FMarburgumWeather& Weather);
 
     UPROPERTY(Transient) TObjectPtr<UBorder> Card;
@@ -83,6 +87,7 @@ private:
     UPROPERTY(Transient) TObjectPtr<UTextBlock> LandmarkLabel;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> NoteLabel;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> WeatherLabel;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> ClockLabel;
 
     FDelegateHandle AreaHandle;
     FDelegateHandle WeatherHandle;

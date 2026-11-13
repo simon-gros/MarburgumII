@@ -49,6 +49,9 @@ private:
     void TickLook(double Now);
     /** Logs the weather effects' state and expects the look of Want: clear, rain, overcast, snow_lying or fog. */
     void CheckLook(const TCHAR* Event, const FString& Want);
+    /** Day and night (ADR-064): logs the world clock's daylight as drawn; checks it for the daylight looks. */
+    void CheckDaylight(const TCHAR* Event, const FString& Want);
+    static bool IsDaylightLook(const FString& Want);
     /** Walks away from the car; true once WalkSeconds have passed and the steps are checked. */
     bool Walk(double Now, bool bExpectWet);
 
@@ -73,6 +76,11 @@ private:
     FString ShotPrefix;
     FString LookOnly;
     bool bLookTurned = false;
+    /** clockrun: the world clock and the real clock at the first reading. */
+    FDateTime ClockFirstUtc;
+    double ClockFirstReal = 0.0;
+    double ClockFirstElevation = 0.0;
+    double ClockFirstAzimuth = 0.0;
     double TimeoutSeconds = 300.0;
     double WetAtLeast = 0.5;
     double StartSeconds = 0.0;

@@ -1,6 +1,7 @@
 #include "MarburgumGameState.h"
 
 #include "MarburgumNetworkContract.h"
+#include "MarburgumWorldClock.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
@@ -31,6 +32,33 @@ void AMarburgumGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
     DOREPLIFETIME(AMarburgumGameState, AppliedRequestCount);
     DOREPLIFETIME(AMarburgumGameState, RejectedRequestCount);
     DOREPLIFETIME(AMarburgumGameState, Weather);
+    DOREPLIFETIME(AMarburgumGameState, Clock);
+}
+
+FDateTime FMarburgumClock::At(double ServerSecondsNow) const
+{
+    MarburgumII::Clock::FAnchor Anchor;
+    Anchor.Utc = FDateTime(FMath::Max<int64>(UtcTicks, 0));
+    Anchor.ServerSeconds = ServerSeconds;
+    Anchor.Speed = Speed;
+    return Anchor.At(ServerSecondsNow);
+}
+
+void AMarburgumGameState::SetClock(const FMarburgumClock& Next)
+{
+    check(HasAuthority());
+    Clock = Next;
+}
+
+bool AMarburgumGameState::WorldUtc(const UWorld* World, FDateTime& OutUtc)
+{
+    const AMarburgumGameState* State = World ? World->GetGameState<AMarburgumGameState>() : nullptr;
+    if (!State || !State->Clock.bKnown)
+    {
+        return false;
+    }
+    OutUtc = State->Clock.At(State->GetServerWorldTimeSeconds());
+    return true;
 }
 
 const FMarburgumWeather* AMarburgumGameState::WeatherOf(const UWorld* World)

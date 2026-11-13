@@ -78,7 +78,7 @@ fi
 echo "Evidence in $out_dir"
 echo "Dedicated server ($mode) on $map, port $port, walking the place route"
 # Clear dry weather, so the captures read the same on any day.
-setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$out_dir/world-store.json" -MB2Weather=clear_dry -MB2PlaceRoute \
+setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$out_dir/world-store.json" -MB2Weather=clear_dry -MB2Clock=2026-06-18T08:00:00Z -MB2PlaceRoute \
     "${common_args[@]}" > "$server_log" 2>&1 &
 server_pid=$!
 for _ in $(seq 1 240); do

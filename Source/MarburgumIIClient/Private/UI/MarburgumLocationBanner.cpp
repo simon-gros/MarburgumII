@@ -14,6 +14,7 @@
 #include "MarburgumPlaces.h"
 #include "MarburgumPlayerState.h"
 #include "MarburgumWeather.h"
+#include "MarburgumWorldClock.h"
 #include "UI/MarburgumUIBuilder.h"
 
 #define LOCTEXT_NAMESPACE "MarburgumLocationBanner"
@@ -68,6 +69,12 @@ void UMarburgumLocationBanner::NativeOnInitialized()
     NoteLabel->SetJustification(ETextJustify::Center);
     FBuilder::Stack(Column, NoteLabel, T.Space.XS);
     Center(NoteLabel);
+    // The world clock's 1990s date and time (ADR-064), kept current while the banner is up.
+    ClockLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextSecondary);
+    ClockLabel->SetJustification(ETextJustify::Center);
+    ClockLabel->SetVisibility(ESlateVisibility::Collapsed);
+    FBuilder::Stack(Column, ClockLabel, 0.f);
+    Center(ClockLabel);
     WeatherLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextSecondary);
     WeatherLabel->SetJustification(ETextJustify::Center);
     WeatherLabel->SetVisibility(ESlateVisibility::Collapsed);
@@ -183,6 +190,26 @@ void UMarburgumLocationBanner::HandleWeatherChanged(const FMarburgumWeather& Wea
     }
 }
 
+void UMarburgumLocationBanner::UpdateClock()
+{
+    FDateTime Utc;
+    if (!AMarburgumGameState::WorldUtc(GetWorld(), Utc))
+    {
+        return;
+    }
+    const FString Text = MarburgumII::Clock::ShortLabel(MarburgumII::Clock::MarburgumAt(Utc));
+    if (ClockLabel->GetText().ToString() != Text)
+    {
+        ClockLabel->SetText(FText::FromString(Text));
+    }
+    ClockLabel->SetVisibility(ESlateVisibility::HitTestInvisible);
+}
+
+FString UMarburgumLocationBanner::GetClockText() const
+{
+    return ClockLabel && ClockLabel->GetVisibility() != ESlateVisibility::Collapsed ? ClockLabel->GetText().ToString() : FString();
+}
+
 FString UMarburgumLocationBanner::GetWeatherText() const
 {
     return WeatherLabel && WeatherLabel->GetVisibility() != ESlateVisibility::Collapsed ? WeatherLabel->GetText().ToString() : FString();
@@ -269,6 +296,7 @@ void UMarburgumLocationBanner::Show()
         return;
     }
     Elapsed = 0.f;
+    UpdateClock();
     Card->SetRenderOpacity(0.f);
     Card->SetVisibility(ESlateVisibility::HitTestInvisible);
 }
@@ -276,6 +304,8 @@ void UMarburgumLocationBanner::Show()
 void UMarburgumLocationBanner::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
     Super::NativeTick(MyGeometry, InDeltaTime);
+    // Kept current between banners too, so the line is right the moment one comes up.
+    UpdateClock();
     if (Elapsed < 0.f)
     {
         return;

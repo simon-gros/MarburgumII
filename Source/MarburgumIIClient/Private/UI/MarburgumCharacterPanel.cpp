@@ -11,6 +11,8 @@
 #include "Engine/GameInstance.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumPlaces.h"
+#include "MarburgumWorldClock.h"
+#include "MarburgumGameState.h"
 #include "MarburgumPlayerState.h"
 #include "Session/MarburgumSessionSubsystem.h"
 #include "UI/MarburgumUIBuilder.h"
@@ -202,6 +204,14 @@ void UMarburgumCharacterPanel::Rebuild()
         {
             FBuilder::Stack(Place, B.Field(LOCTEXT("Street", "Street"), FText::FromString(State->GetPlace().Street)), 0.f);
         }
+    }
+    // The world clock's 1990s date and time (ADR-064), as the panel was opened.
+    FDateTime Utc;
+    if (AMarburgumGameState::WorldUtc(GetWorld(), Utc))
+    {
+        const MarburgumII::Clock::FCivil Now = MarburgumII::Clock::MarburgumAt(Utc);
+        FBuilder::Stack(Place, B.Field(LOCTEXT("Date", "Date"), FText::FromString(MarburgumII::Clock::DateLabel(Now))), 0.f);
+        FBuilder::Stack(Place, B.Field(LOCTEXT("Time", "Time"), FText::FromString(MarburgumII::Clock::TimeLabel(Now))), 0.f);
     }
 
     // Custody and missions: summaries; the Inventory (I) and Journal (J) hold the details.

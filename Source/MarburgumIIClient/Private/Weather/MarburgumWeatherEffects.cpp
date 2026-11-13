@@ -21,6 +21,9 @@
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
+#include "MarburgumGameState.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "Weather/MarburgumWeatherSynth.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogMarburgumWeatherEffects, Log, All);
@@ -28,6 +31,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogMarburgumWeatherEffects, Log, All);
 namespace MarburgumWeatherEffects
 {
     namespace Look = MarburgumII::WeatherLook;
+    namespace Daylight = MarburgumII::DaylightLook;
 
     /** Seconds for the look to cover about two thirds of the way to a new server weather. */
     constexpr float EaseSeconds = 3.0f;
@@ -108,6 +112,21 @@ AMarburgumWeatherEffects::AMarburgumWeatherEffects()
     Lightning->ForwardShadingPriority = -1;
     Lightning->SetVisibility(false);
 
+    NightLight = CreateDefaultSubobject<UDirectionalLightComponent>(TEXT("NightLight"));
+    NightLight->SetupAttachment(Root);
+    NightLight->SetUsingAbsoluteRotation(true);
+    NightLight->SetMobility(EComponentMobility::Movable);
+    // The moon lights the atmosphere as the second sky light, so a moonlit sky is a faint blue rather than black and a
+    // live-captured sky light picks that up. It casts the night's shadows; by day it is hidden and costs nothing.
+    NightLight->bAtmosphereSunLight = true;
+    NightLight->AtmosphereSunLightIndex = 1;
+    NightLight->CastShadows = true;
+    NightLight->Intensity = 0.0f;
+    NightLight->LightColor = FColor(176, 196, 255);
+    NightLight->LightSourceAngle = 0.53f;
+    NightLight->ForwardShadingPriority = -1;
+    NightLight->SetVisibility(false);
+
     Clouds = CreateDefaultSubobject<UVolumetricCloudComponent>(TEXT("Clouds"));
     Clouds->SetupAttachment(Root);
     Clouds->SetUsingAbsoluteLocation(true);
@@ -121,6 +140,10 @@ void AMarburgumWeatherEffects::BeginPlay()
 {
     Super::BeginPlay();
     Random.Initialize(static_cast<int32>(FPlatformTime::Cycles()));
+    bDaylightOff = FParse::Param(FCommandLine::Get(), TEXT("MB2NoDaylight"));
+    // Calibration only: the eye's adaptation floor in full night, in place of DaylightLook's
+    // (-MB2NightMinBrightness=<scale on the level's>).
+    FParse::Value(FCommandLine::Get(), TEXT("MB2NightMinBrightness="), NightMinBrightnessOverride);
 
     UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, Look::CurtainMesh, nullptr, LOAD_NoWarn);
     UMaterialInterface* Curtain = LoadObject<UMaterialInterface>(nullptr, Look::CurtainMaterial, nullptr, LOAD_NoWarn);
@@ -213,6 +236,7 @@ void AMarburgumWeatherEffects::CaptureBaseline()
             Baseline.SunAngle = Light->LightSourceAngle;
             Baseline.bSunCastsCloudShadows = Light->bCastCloudShadows != 0;
             Baseline.SunCloudShade = Light->CloudShadowOnSurfaceStrength;
+            Baseline.SunRotation = Light->GetComponentRotation();
         }
     }
     for (TActorIterator<ASkyLight> It(World); It; ++It)
@@ -221,6 +245,7 @@ void AMarburgumWeatherEffects::CaptureBaseline()
         {
             Baseline.Sky = Light;
             Baseline.SkyIntensity = Light->Intensity;
+            Baseline.bSkyRealTime = Light->bRealTimeCapture;
             break;
         }
     }
@@ -250,6 +275,7 @@ void AMarburgumWeatherEffects::CaptureBaseline()
             {
                 Baseline.ExposureBias = It->Settings.AutoExposureBias;
             }
+            Baseline.MinBrightness = It->Settings.AutoExposureMinBrightness;
             UE_LOG(LogMarburgumWeatherEffects, Log, TEXT("weather baseline grade %s method=%d%s bias=%.2f%s min=%.2f%s max=%.2f%s"), *It->GetName(),
                 int32(It->Settings.AutoExposureMethod), It->Settings.bOverride_AutoExposureMethod ? TEXT("*") : TEXT(""),
                 It->Settings.AutoExposureBias, It->Settings.bOverride_AutoExposureBias ? TEXT("*") : TEXT(""),
@@ -257,9 +283,11 @@ void AMarburgumWeatherEffects::CaptureBaseline()
                 It->Settings.AutoExposureMaxBrightness, It->Settings.bOverride_AutoExposureMaxBrightness ? TEXT("*") : TEXT(""));
         }
     }
-    UE_LOG(LogMarburgumWeatherEffects, Log, TEXT("weather baseline sun=%s %.2f lux angle=%.2f sky=%s %.2f fog=%s %.4f"),
-        Baseline.Sun.IsValid() ? TEXT("yes") : TEXT("no"), Baseline.SunIntensity, Baseline.SunAngle,
-        Baseline.Sky.IsValid() ? TEXT("yes") : TEXT("no"), Baseline.SkyIntensity,
+    const UDirectionalLightComponent* BaseSun = Baseline.Sun.Get();
+    UE_LOG(LogMarburgumWeatherEffects, Log, TEXT("weather baseline sun=%s %.2f lux angle=%.2f rotation=%s movable=%d sky=%s %.2f live=%d fog=%s %.4f"),
+        BaseSun ? TEXT("yes") : TEXT("no"), Baseline.SunIntensity, Baseline.SunAngle, *Baseline.SunRotation.ToCompactString(),
+        BaseSun && BaseSun->Mobility == EComponentMobility::Movable ? 1 : 0,
+        Baseline.Sky.IsValid() ? TEXT("yes") : TEXT("no"), Baseline.SkyIntensity, Baseline.bSkyRealTime ? 1 : 0,
         Baseline.Fog.IsValid() ? TEXT("yes") : TEXT("no"), Baseline.FogDensity);
 }
 
@@ -269,6 +297,10 @@ void AMarburgumWeatherEffects::RestoreBaseline()
     {
         Sun->SetIntensity(Baseline.SunIntensity);
         Sun->SetLightSourceAngle(Baseline.SunAngle);
+        if (bHasDaylight)
+        {
+            Sun->SetWorldRotation(Baseline.SunRotation);
+        }
         if ((Sun->bCastCloudShadows != 0) != Baseline.bSunCastsCloudShadows || Sun->CloudShadowOnSurfaceStrength != Baseline.SunCloudShade)
         {
             Sun->bCastCloudShadows = Baseline.bSunCastsCloudShadows;
@@ -320,6 +352,7 @@ void AMarburgumWeatherEffects::SetWeather(const MarburgumII::WeatherLook::FInput
         // The first weather is how the world already is, not a change to ease into.
         Current = Target;
         bHasWeather = true;
+        UpdateDaylight();
         UpdateShelter(0.0f);
         Apply(0.0f);
     }
@@ -337,6 +370,7 @@ void AMarburgumWeatherEffects::Tick(float DeltaSeconds)
         return;
     }
     Current = Look::Blend(Current, Target, 1.0f - FMath::Exp(-DeltaSeconds / EaseSeconds));
+    UpdateDaylight();
     FollowCamera();
     UpdateShelter(DeltaSeconds);
     UpdateLightning(DeltaSeconds);
@@ -443,10 +477,18 @@ void AMarburgumWeatherEffects::Apply(float Flash)
     const bool bCloudsShade = !bForeignClouds && CloudMaterial && Now.CloudCover > 0.02f;
     if (UDirectionalLightComponent* Sun = Baseline.Sun.Get())
     {
-        const float Intensity = Baseline.SunIntensity * (bCloudsShade ? Now.SunScale : Now.SunScaleUnclouded);
+        const float Intensity = Baseline.SunIntensity * (bCloudsShade ? Now.SunScale : Now.SunScaleUnclouded) * (bHasDaylight ? Day.SunScale : 1.0f);
         if (Differs(Sun->Intensity, Intensity))
         {
             Sun->SetIntensity(Intensity);
+        }
+        if (bHasDaylight)
+        {
+            const FRotator Wanted(Day.SunPitch, Day.SunYaw, 0.0f);
+            if (!Sun->GetComponentRotation().Equals(Wanted, 0.01f))
+            {
+                Sun->SetWorldRotation(Wanted);
+            }
         }
         const float Angle = FMath::Min(Baseline.SunAngle * Now.SunSoftness, 30.0f);
         if (Differs(Sun->LightSourceAngle, Angle))
@@ -462,9 +504,33 @@ void AMarburgumWeatherEffects::Apply(float Flash)
             Sun->MarkRenderStateDirty();
         }
     }
+    // The moon or the skyglow, dimmed by cloud as the unclouded sun is (no cloud shadows: they follow the sun).
+    {
+        const float SunLux = Baseline.Sun.IsValid() && Baseline.SunIntensity > 0.0f ? Baseline.SunIntensity : 10.0f;
+        const float Lux = bHasDaylight ? SunLux * Day.NightLight * Now.SunScaleUnclouded : 0.0f;
+        const bool bLit = Lux > 1.0e-4f;
+        if (NightLight->IsVisible() != bLit)
+        {
+            NightLight->SetVisibility(bLit);
+        }
+        if (bLit)
+        {
+            if (Differs(NightLight->Intensity, Lux))
+            {
+                NightLight->SetIntensity(Lux);
+            }
+            const FRotator Wanted(Day.NightPitch, Day.NightYaw, 0.0f);
+            if (!NightLight->GetComponentRotation().Equals(Wanted, 0.01f))
+            {
+                NightLight->SetWorldRotation(Wanted);
+            }
+        }
+    }
     if (USkyLightComponent* Sky = Baseline.Sky.Get())
     {
-        const float Intensity = Baseline.SkyIntensity * Now.SkyScale;
+        // A live-captured sky light darkens with the sky by itself; one that is not is dimmed by the clock instead.
+        const float DayScale = bHasDaylight && !Baseline.bSkyRealTime ? Day.StaticSkyScale : 1.0f;
+        const float Intensity = Baseline.SkyIntensity * Now.SkyScale * DayScale;
         if (Differs(Sky->Intensity, Intensity))
         {
             Sky->SetIntensity(Intensity);
@@ -478,7 +544,8 @@ void AMarburgumWeatherEffects::Apply(float Flash)
             Haze->SetFogDensity(Density);
         }
         // The haze lights up with a flash; that is most of what makes a flash read in rain.
-        const FLinearColor Colour = FMath::Lerp(Baseline.FogColour, Now.FogColour, Now.FogColourAmount) * (1.0f + 2.0f * Flash);
+        const float Glow = bHasDaylight ? Day.FogGlow : 1.0f;
+        const FLinearColor Colour = FMath::Lerp(Baseline.FogColour, Now.FogColour, Now.FogColourAmount) * (Glow + 2.0f * Flash);
         if (!Haze->FogInscatteringLuminance.Equals(Colour, 1.0e-4f))
         {
             Haze->SetFogInscatteringColor(Colour);
@@ -488,6 +555,8 @@ void AMarburgumWeatherEffects::Apply(float Flash)
     FPostProcessSettings& Settings = Grade->Settings;
     Settings.bOverride_AutoExposureBias = true;
     Settings.AutoExposureBias = Baseline.ExposureBias + Now.ExposureBias;
+    Settings.bOverride_AutoExposureMinBrightness = true;
+    Settings.AutoExposureMinBrightness = Baseline.MinBrightness * (bHasDaylight ? Day.MinBrightnessScale : 1.0f);
     Settings.bOverride_ColorSaturation = true;
     Settings.ColorSaturation = FVector4(Baseline.Saturation.X * Now.SaturationScale, Baseline.Saturation.Y * Now.SaturationScale,
         Baseline.Saturation.Z * Now.SaturationScale, Baseline.Saturation.W);
@@ -562,6 +631,37 @@ float AMarburgumWeatherEffects::SunRatio() const
 {
     const UDirectionalLightComponent* Sun = Baseline.Sun.Get();
     return Sun && Baseline.SunIntensity > 0.0f ? Sun->Intensity / Baseline.SunIntensity : 1.0f;
+}
+
+float AMarburgumWeatherEffects::NightLightLux() const
+{
+    return NightLight && NightLight->IsVisible() ? NightLight->Intensity : 0.0f;
+}
+
+FRotator AMarburgumWeatherEffects::SunRotationDrawn() const
+{
+    const UDirectionalLightComponent* Sun = Baseline.Sun.Get();
+    return Sun ? Sun->GetComponentRotation() : FRotator::ZeroRotator;
+}
+
+void AMarburgumWeatherEffects::UpdateDaylight()
+{
+    FDateTime Utc;
+    if (bDaylightOff || !AMarburgumGameState::WorldUtc(GetWorld(), Utc))
+    {
+        return;
+    }
+    Day = Daylight::At(Utc);
+    if (FMath::IsFinite(NightMinBrightnessOverride) && NightMinBrightnessOverride > 0.0f)
+    {
+        Day.MinBrightnessScale = FMath::Lerp(1.0f, NightMinBrightnessOverride, Day.Night);
+    }
+    if (!bHasDaylight)
+    {
+        bHasDaylight = true;
+        UE_LOG(LogMarburgumWeatherEffects, Log, TEXT("daylight from the world clock utc=%s sun_elevation=%.2f sun_azimuth=%.1f moon_elevation=%.2f moon_lit=%.3f night=%.3f"),
+            *Utc.ToIso8601(), Day.Sun.ElevationDeg, Day.Sun.AzimuthDeg, Day.Moon.Position.ElevationDeg, Day.Moon.Illumination, Day.Night);
+    }
 }
 
 float AMarburgumWeatherEffects::FogRatio() const

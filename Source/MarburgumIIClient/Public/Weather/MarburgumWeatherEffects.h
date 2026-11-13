@@ -2,7 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "MarburgumDaylightLook.h"
 #include "MarburgumWeatherLook.h"
+#include <limits>
+
 #include "MarburgumWeatherEffects.generated.h"
 
 class UDirectionalLightComponent;
@@ -27,6 +30,11 @@ class UVolumetricCloudComponent;
  * The look follows WeatherLook::Compute and eases towards each new server weather over a few seconds, so a server step
  * never shows. Lightning is decided here, not by the server: the server says how stormy it is and each client sees its
  * own flashes, which is all thunder needs to be. UMarburgumWeatherPresentation spawns one per client world.
+ *
+ * **Day and night (ADR-064).** Under the weather, the world clock on the game state turns the sun to where it is over
+ * Maribor and brings in a night light (the moon, or the city's skyglow), dims the haze's glow and holds the eye back
+ * at night, by MarburgumDaylightLook.h. The weather then scales that, as it scaled the level's clear day before.
+ * -MB2NoDaylight leaves the sun where the level put it, for captures that need the level's own day.
  */
 UCLASS(NotPlaceable, Transient)
 class MARBURGUMIICLIENT_API AMarburgumWeatherEffects : public AActor
@@ -67,6 +75,15 @@ public:
     /** The sun's intensity now over the level's own, and the fog's density likewise; 1 where there is none. */
     float SunRatio() const;
     float FogRatio() const;
+    /** The daylight being drawn, and whether the world clock drives it (false before a clock, or with -MB2NoDaylight). */
+    const MarburgumII::DaylightLook::FDaylight& GetDaylight() const { return Day; }
+    bool HasDaylight() const { return bHasDaylight; }
+    /** The night light's intensity now, lux. */
+    float NightLightLux() const;
+    /** The level's sun's rotation as drawn now; zero where there is no sun. */
+    FRotator SunRotationDrawn() const;
+    /** The level's sky light captures the sky live (so it darkens with it by itself). */
+    bool IsSkyLive() const { return Baseline.bSkyRealTime; }
     /** What MPC_Weather holds now, read back from the world's collection instance; -1 where there is none. */
     float WrittenWetness() const;
 
@@ -87,8 +104,10 @@ private:
         float SunAngle = 0.5f;
         bool bSunCastsCloudShadows = false;
         float SunCloudShade = 1.0f;
+        FRotator SunRotation = FRotator::ZeroRotator;
         TWeakObjectPtr<USkyLightComponent> Sky;
         float SkyIntensity = 0.0f;
+        bool bSkyRealTime = false;
         TWeakObjectPtr<UExponentialHeightFogComponent> Fog;
         float FogDensity = 0.0f;
         FLinearColor FogColour = FLinearColor::White;
@@ -96,6 +115,8 @@ private:
         FVector4 Contrast = FVector4(1.0, 1.0, 1.0, 1.0);
         /** The level's own exposure compensation, which the weather's is added to rather than replacing. */
         float ExposureBias = 0.0f;
+        /** The level's adaptation floor, which night lowers. */
+        float MinBrightness = 0.03f;
     };
 
     void CaptureBaseline();
@@ -106,6 +127,7 @@ private:
     bool CurrentEye(FVector& OutEye) const;
     void UpdateShelter(float DeltaSeconds);
     void UpdateLightning(float DeltaSeconds);
+    void UpdateDaylight();
 
     UPROPERTY(VisibleAnywhere)
     TObjectPtr<USceneComponent> Root;
@@ -121,6 +143,10 @@ private:
 
     UPROPERTY(VisibleAnywhere)
     TObjectPtr<UDirectionalLightComponent> Lightning;
+
+    /** The moon or the city's skyglow (ADR-064); dark by day. */
+    UPROPERTY(VisibleAnywhere)
+    TObjectPtr<UDirectionalLightComponent> NightLight;
 
     UPROPERTY(VisibleAnywhere)
     TObjectPtr<UVolumetricCloudComponent> Clouds;
@@ -150,6 +176,11 @@ private:
     bool bForeignClouds = false;
     MarburgumII::WeatherLook::FLook Target;
     MarburgumII::WeatherLook::FLook Current;
+
+    MarburgumII::DaylightLook::FDaylight Day;
+    bool bHasDaylight = false;
+    bool bDaylightOff = false;
+    float NightMinBrightnessOverride = std::numeric_limits<float>::quiet_NaN();
 
     /** 0 in the open, 1 when a roof is within the near curtain's reach overhead. Eased, so a doorway does not pop. */
     float Shelter = 0.0f;

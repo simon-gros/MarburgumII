@@ -93,7 +93,7 @@ start_server() {
     fi
     local extra=()
     [[ -n "$net_cull_m" ]] && extra+=("-MB2VehicleNetCullM=$net_cull_m")
-    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" -MB2Weather=clear_dry "${common_args[@]}" "${extra[@]}" > "$log" 2>&1 &
+    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" -MB2Weather=clear_dry -MB2Clock=2026-06-18T08:00:00Z "${common_args[@]}" "${extra[@]}" > "$log" 2>&1 &
     server_pid=$!
     for _ in $(seq 1 240); do
         grep -aq "MB2SMOKE role=server event=ready .* port=$port " "$log" && return 0

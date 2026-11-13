@@ -1,7 +1,7 @@
 #include "MarburgumWeatherAuthority.h"
 
 #include "Engine/World.h"
-#include "HAL/PlatformTime.h"
+#include "MarburgumClockAuthority.h"
 #include "MarburgumGameState.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
@@ -52,29 +52,6 @@ void UMarburgumWeatherAuthority::OnWorldBeginPlay(UWorld& InWorld)
         Seed = FCString::Strtoui64(*SeedText, nullptr, 10);
     }
 
-    RealStart = FPlatformTime::Seconds();
-    ClockStart = FDateTime::UtcNow();
-    FString ClockText;
-    if (FParse::Value(Command, TEXT("MB2WeatherClock="), ClockText))
-    {
-        FDateTime Parsed;
-        if (FDateTime::ParseIso8601(*ClockText, Parsed))
-        {
-            ClockStart = Parsed;
-            bReviewClock = true;
-        }
-        else
-        {
-            UE_LOG(LogMarburgumWeather, Error, TEXT("MB2WEATHER role=server event=bad_clock value=\"%s\": running on UTC"), *ClockText);
-        }
-    }
-    double SpeedValue = 1.0;
-    if (FParse::Value(Command, TEXT("MB2WeatherSpeed="), SpeedValue) && FMath::IsFinite(SpeedValue) && SpeedValue > 0.0)
-    {
-        Speed = SpeedValue;
-        bReviewClock = bReviewClock || Speed != 1.0;
-    }
-
     if (Requested == TEXT("auto"))
     {
         FString Error;
@@ -105,7 +82,8 @@ void UMarburgumWeatherAuthority::OnWorldBeginPlay(UWorld& InWorld)
     }
 
     UE_LOG(LogMarburgumWeather, Log, TEXT("MB2WEATHER role=server event=started source=%s seed=%llu clock=%s speed=%.3f review_clock=%d"),
-        Fixed ? *Fixed->Source : TEXT("auto"), Seed, *WeatherUtc().ToIso8601(), Speed, bReviewClock ? 1 : 0);
+        Fixed ? *Fixed->Source : TEXT("auto"), Seed, *WeatherUtc().ToIso8601(), MarburgumII::ServerClock::Speed(),
+        MarburgumII::ServerClock::IsReview() ? 1 : 0);
     Update();
     InWorld.GetTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(this, &UMarburgumWeatherAuthority::Update), UpdateSeconds, true);
 }
@@ -121,11 +99,7 @@ void UMarburgumWeatherAuthority::Deinitialize()
 
 FDateTime UMarburgumWeatherAuthority::WeatherUtc() const
 {
-    if (!bReviewClock)
-    {
-        return FDateTime::UtcNow();
-    }
-    return ClockStart + FTimespan::FromSeconds((FPlatformTime::Seconds() - RealStart) * Speed);
+    return MarburgumII::ServerClock::Now();
 }
 
 FMarburgumWeather UMarburgumWeatherAuthority::ToReplicated(const Weather::FState& State)

@@ -16,6 +16,7 @@
 #include "MarburgumSurface.h"
 #include "MarburgumVehicle.h"
 #include "MarburgumWeather.h"
+#include "MarburgumWorldClock.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
@@ -505,6 +506,53 @@ void UMarburgumWeatherSmokeSubsystem::TickLook(double Now)
         Advance(1, Now);
         return;
     case 1:
+        if (LookOnly == TEXT("clockrun"))
+        {
+            // The clock runs on the client as fast as the server set it, and the sun climbs with it.
+            UWorld* World = GetGameInstance()->GetWorld();
+            UMarburgumWeatherPresentation* Presentation = World ? World->GetSubsystem<UMarburgumWeatherPresentation>() : nullptr;
+            const AMarburgumWeatherEffects* Effects = Presentation ? Presentation->GetEffects() : nullptr;
+            FDateTime Utc;
+            if (!Effects || !AMarburgumGameState::WorldUtc(World, Utc))
+            {
+                Fail(TEXT("clockrun_no_clock"));
+                return;
+            }
+            if (ClockFirstReal == 0.0)
+            {
+                ClockFirstUtc = Utc;
+                ClockFirstReal = Now;
+                ClockFirstElevation = Effects->GetDaylight().Sun.ElevationDeg;
+                ClockFirstAzimuth = Effects->GetDaylight().Sun.AzimuthDeg;
+                return;
+            }
+            if (Now - ClockFirstReal < 20.0)
+            {
+                return;
+            }
+            const AMarburgumGameState* State = World->GetGameState<AMarburgumGameState>();
+            const double Speed = State ? State->Clock.Speed : 1.0;
+            const double ClockSeconds = (Utc - ClockFirstUtc).GetTotalSeconds();
+            const double RealSeconds = Now - ClockFirstReal;
+            const double Rate = ClockSeconds / RealSeconds;
+            // Twenty seconds at a day a minute is eight hours: the sun has moved tens of degrees across the sky,
+            // whenever the run happened to start.
+            const MarburgumII::Clock::FSkyPosition& Later = Effects->GetDaylight().Sun;
+            const auto Towards = [](double Elevation, double Azimuth)
+            {
+                return FRotator(Elevation, Azimuth, 0.0).Vector();
+            };
+            const double Moved = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(
+                FVector::DotProduct(Towards(ClockFirstElevation, ClockFirstAzimuth), Towards(Later.ElevationDeg, Later.AzimuthDeg)), -1.0, 1.0)));
+            MB2_WEATHER_SMOKE_LOG("event=clockrun speed=%.1f clock_s=%.1f real_s=%.2f rate=%.1f sun_from=%.2f,%.1f sun_to=%.2f,%.1f moved_deg=%.1f",
+                Speed, ClockSeconds, RealSeconds, Rate, ClockFirstElevation, ClockFirstAzimuth, Later.ElevationDeg, Later.AzimuthDeg, Moved);
+            // Within a tenth: the server re-sends the clock once its world time has drifted a quarter second from the
+            // wall clock (startup hitches do that), and at a day a minute that step is several clock minutes.
+            Expect(FMath::Abs(Rate - Speed) < 0.1 * Speed, FString::Printf(TEXT("clock_rate=%.1f want=%.1f"), Rate, Speed));
+            Expect(Moved > 20.0, FString::Printf(TEXT("sun_did_not_move=%.1f"), Moved));
+            CheckDaylight(TEXT("look_later"), LookOnly);
+            Shot(TEXT("later"));
+        }
         if (LookOnly == TEXT("storm"))
         {
             // A close strike for the capture: the storm makes its own at random, about three a minute.
@@ -560,7 +608,13 @@ void UMarburgumWeatherSmokeSubsystem::CheckLook(const TCHAR* Event, const FStrin
     // Lent brings its own sun and haze, and the content step (scripts/create-weather-content.sh look) has run.
     Expect(Effects->CanDrawPrecipitation() && Effects->CanDrawClouds() && Effects->CanWetGround(), TEXT("weather_content_missing"));
     Expect(Effects->HasSun() && Effects->HasFog(), TEXT("level_has_no_sun_or_fog"));
-    if (Want == TEXT("clear"))
+    CheckDaylight(Event, Want);
+    if (IsDaylightLook(Want))
+    {
+        // The daylight runs are clear_dry: only the sky changes.
+        Expect(!Effects->IsRainDrawn(), TEXT("rain_drawn_in_daylight_run"));
+    }
+    else if (Want == TEXT("clear"))
     {
         Expect(!Effects->IsRainDrawn(), TEXT("rain_drawn_when_clear"));
         Expect(Effects->SunRatio() > 0.9f, FString::Printf(TEXT("clear_sun_ratio=%.3f"), Effects->SunRatio()));
@@ -603,6 +657,94 @@ void UMarburgumWeatherSmokeSubsystem::CheckLook(const TCHAR* Event, const FStrin
     else
     {
         Expect(false, FString::Printf(TEXT("unknown_look=%s"), *Want));
+    }
+}
+
+bool UMarburgumWeatherSmokeSubsystem::IsDaylightLook(const FString& Want)
+{
+    return Want == TEXT("noon") || Want == TEXT("evening") || Want == TEXT("dusk") || Want == TEXT("moonlit")
+        || Want == TEXT("moonless") || Want == TEXT("clockrun");
+}
+
+void UMarburgumWeatherSmokeSubsystem::CheckDaylight(const TCHAR* Event, const FString& Want)
+{
+    UWorld* World = GetGameInstance()->GetWorld();
+    const UMarburgumWeatherPresentation* Presentation = World ? World->GetSubsystem<UMarburgumWeatherPresentation>() : nullptr;
+    const AMarburgumWeatherEffects* Effects = Presentation ? Presentation->GetEffects() : nullptr;
+    FDateTime Utc;
+    const bool bClock = AMarburgumGameState::WorldUtc(World, Utc);
+    if (!Effects || !bClock)
+    {
+        MB2_WEATHER_SMOKE_LOG("event=%s_daylight clock=%d effects=%d", Event, bClock ? 1 : 0, Effects ? 1 : 0);
+        Expect(bClock, TEXT("no_world_clock"));
+        return;
+    }
+    const MarburgumII::DaylightLook::FDaylight& Day = Effects->GetDaylight();
+    const FRotator Drawn = Effects->SunRotationDrawn();
+    const UMarburgumUISubsystem* UI = GetGameInstance()->GetSubsystem<UMarburgumUISubsystem>();
+    const UMarburgumLocationBanner* Banner = UI ? UI->GetLocationBanner() : nullptr;
+    const FString BannerClock = Banner ? Banner->GetClockText() : FString();
+    MB2_WEATHER_SMOKE_LOG("event=%s_daylight want=%s utc=%s marburgum=\"%s %s\" banner_clock=\"%s\" daylight=%d sun_elevation=%.2f sun_azimuth=%.1f "
+        "sun_pitch=%.2f sun_yaw=%.1f drawn_pitch=%.2f drawn_yaw=%.1f sun_scale=%.3f sun_ratio=%.3f moon_elevation=%.2f moon_azimuth=%.1f moon_lit=%.3f "
+        "night=%.3f night_lux=%.4f moon_light=%d min_brightness=%.3f fog_glow=%.3f sky_live=%d",
+        Event, *Want, *Utc.ToIso8601(), *MarburgumII::Clock::DateLabel(MarburgumII::Clock::MarburgumAt(Utc)),
+        *MarburgumII::Clock::TimeLabel(MarburgumII::Clock::MarburgumAt(Utc)), *BannerClock, Effects->HasDaylight() ? 1 : 0,
+        Day.Sun.ElevationDeg, Day.Sun.AzimuthDeg, Day.SunPitch, Day.SunYaw, Drawn.Pitch, Drawn.Yaw, Day.SunScale, Effects->SunRatio(),
+        Day.Moon.Position.ElevationDeg, Day.Moon.Position.AzimuthDeg, Day.Moon.Illumination, Day.Night, Effects->NightLightLux(),
+        Day.bMoonLight ? 1 : 0, Day.MinBrightnessScale, Day.FogGlow, Effects->IsSkyLive() ? 1 : 0);
+
+    // Every run: the client draws the server's clock, and the sun is where the clock puts it.
+    Expect(Effects->HasDaylight(), TEXT("daylight_not_from_clock"));
+    Expect(FMath::IsNearlyEqual(FRotator::NormalizeAxis(Drawn.Pitch), Day.SunPitch, 0.5f)
+        && FMath::Abs(FRotator::NormalizeAxis(Drawn.Yaw - Day.SunYaw)) < 0.5f,
+        FString::Printf(TEXT("sun_not_turned drawn=%.2f,%.1f want=%.2f,%.1f"), Drawn.Pitch, Drawn.Yaw, Day.SunPitch, Day.SunYaw));
+    if (!IsDaylightLook(Want))
+    {
+        return;
+    }
+    Expect(!BannerClock.IsEmpty(), TEXT("banner_clock_empty"));
+    const float SunLux = Effects->SunRatio();
+    if (Want == TEXT("clockrun"))
+    {
+        // Wherever the fast clock has got to by now; the run itself checks the rate.
+    }
+    else if (Want == TEXT("noon"))
+    {
+        Expect(Day.Sun.ElevationDeg > 60.0, FString::Printf(TEXT("noon_sun_low=%.2f"), Day.Sun.ElevationDeg));
+        Expect(SunLux > 0.9f && Day.Night == 0.0f && Effects->NightLightLux() == 0.0f,
+            FString::Printf(TEXT("day_not_day sun_ratio=%.3f night=%.3f night_lux=%.4f"), SunLux, Day.Night, Effects->NightLightLux()));
+    }
+    else if (Want == TEXT("evening"))
+    {
+        Expect(Day.Sun.ElevationDeg > 0.0 && Day.Sun.ElevationDeg < 8.0, FString::Printf(TEXT("evening_sun=%.2f"), Day.Sun.ElevationDeg));
+        Expect(Day.Sun.AzimuthDeg > 270.0 && Day.Sun.AzimuthDeg < 320.0, FString::Printf(TEXT("evening_sun_not_north_west=%.1f"), Day.Sun.AzimuthDeg));
+        Expect(SunLux > 0.5f, FString::Printf(TEXT("evening_sun_ratio=%.3f"), SunLux));
+    }
+    else if (Want == TEXT("dusk"))
+    {
+        Expect(Day.Sun.ElevationDeg < -1.5 && Day.Sun.ElevationDeg > -8.0, FString::Printf(TEXT("dusk_sun=%.2f"), Day.Sun.ElevationDeg));
+        Expect(SunLux < 0.01f, FString::Printf(TEXT("dusk_sun_ratio=%.3f"), SunLux));
+        Expect(Effects->NightLightLux() > 0.0f && Day.Night > 0.1f && Day.Night < 0.9f,
+            FString::Printf(TEXT("dusk_not_twilight night=%.3f night_lux=%.4f"), Day.Night, Effects->NightLightLux()));
+    }
+    else if (Want == TEXT("moonlit") || Want == TEXT("moonless"))
+    {
+        const bool bMoon = Want == TEXT("moonlit");
+        Expect(SunLux < 0.01f && Day.Night > 0.99f, FString::Printf(TEXT("night_not_night sun_ratio=%.3f night=%.3f"), SunLux, Day.Night));
+        Expect(Day.bMoonLight == bMoon, FString::Printf(TEXT("moon_light=%d"), Day.bMoonLight ? 1 : 0));
+        Expect(Day.MinBrightnessScale > 3.0f && Day.FogGlow < 0.1f, FString::Printf(TEXT("night_eye min_brightness=%.2f fog_glow=%.3f"), Day.MinBrightnessScale, Day.FogGlow));
+        if (bMoon)
+        {
+            Expect(Day.Moon.Illumination > 0.95 && Day.Moon.Position.ElevationDeg > 40.0,
+                FString::Printf(TEXT("moon_not_full_and_high lit=%.3f elevation=%.2f"), Day.Moon.Illumination, Day.Moon.Position.ElevationDeg));
+            // Lent's sun is 8 lux: a full moon high up is about 0.41 lux of night light, the skyglow alone 0.12.
+            Expect(Effects->NightLightLux() > 0.25f, FString::Printf(TEXT("moonlight_lux=%.4f"), Effects->NightLightLux()));
+        }
+        else
+        {
+            Expect(Day.Moon.Position.ElevationDeg < 0.0, FString::Printf(TEXT("moon_up=%.2f"), Day.Moon.Position.ElevationDeg));
+            Expect(Effects->NightLightLux() > 0.05f && Effects->NightLightLux() < 0.2f, FString::Printf(TEXT("skyglow_lux=%.4f"), Effects->NightLightLux()));
+        }
     }
 }
 

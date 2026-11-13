@@ -20,9 +20,23 @@
 #   rain      the rain_wet profile: rain falling and leaning in the wind, the street soaked.
 #   overcast  the overcast profile: a closed sky, a dimmer sun, the eye opened up, nothing falling.
 #   snow      the winter_cold profile: five centimetres of snow lying, so the ground is white.
-#   fog       the climate at 17 November 2026 07:00 CET, a fog morning (seed 1996): the haze many times its own.
-#   storm     the climate at 12 November 2026 18:30 CET, a thunderstorm: rain, the storm's flashes, and one close
-#             strike (FlashNow) captured.
+#   fog       the climate at 22 November 2026 08:30 CET, a fog morning (seed 1996): the haze many times its own.
+#   storm     the climate at 2 July 2026 16:30 CET, a thunderstorm: rain, the storm's flashes, and one close strike
+#             (FlashNow) captured.
+#
+# The world clock (ADR-064) turns the sun and brings the night, so every phase pins it: the profile phases at
+# 18 June 2026 10:00 CEST, the fog and storm at their own daylit hours. Six more phases look at day and night under
+# a clear_dry sky and check the clock, the banner's 1990s date and time, and the sun, moon and night light drawn:
+#
+#   noon      21 June 2026 12:57 CEST, the solstice sun at its highest (67 degrees).
+#   evening   21 June 2026 20:30 CEST, the sun 3 degrees up in the north-west.
+#   dusk      13 November 2026 16:50 CET, civil twilight: the sun 4.5 degrees under, the night light coming in.
+#   moonlit   25 December 2026 00:00 CET, a full moon 66 degrees up lighting the street.
+#   moonless  13 November 2026 22:00 CET, the moon under the horizon: only the city's skyglow.
+#   clockrun  from 21 June 2026 04:00 CEST at a day a minute: the client's clock runs at the server's rate and the
+#             sun it draws moves with it.
+#
+# scripts/daylight-smoke-linux.sh runs just those six.
 #
 # The script compares the dry and wet decelerations and checks the server's weather log in each phase.
 # The client renders offscreen (see interaction-smoke-linux.sh for the Vulkan note).
@@ -36,10 +50,11 @@ mode="${1:-staged}"
 port="${MB2_WEATHER_PORT:-7777}"
 map="/Game/World/lent"
 uproject="$repo_root/MarburgumII.uproject"
-out_dir="$repo_root/Saved/WeatherSmoke/$(date -u +%Y%m%dT%H%M%SZ)"
+out_dir="$repo_root/Saved/${MB2_SMOKE_DIR:-WeatherSmoke}/$(date -u +%Y%m%dT%H%M%SZ)"
 token="t$(date +%s)$RANDOM"
 live_clock="2026-06-18T09:00:00Z"
 live_speed=60
+day_clock="2026-06-18T08:00:00Z"
 
 case "$mode" in
     staged)
@@ -128,7 +143,9 @@ run_client() {
             sleep 3
             code=0
         fi
-        "${client_cmd[@]}" "$url" "${common_args[@]}" "${render_args[@]}" "$@" -MB2WeatherSmoke -MB2WeatherExpect="$expect" \
+        # MB2_CLIENT_EXTRA: extra client options for calibration runs, e.g. -MB2NightExposure=0.5.
+        # shellcheck disable=SC2086
+        "${client_cmd[@]}" "$url" "${common_args[@]}" "${render_args[@]}" "$@" ${MB2_CLIENT_EXTRA:-} -MB2WeatherSmoke -MB2WeatherExpect="$expect" \
             -MB2WeatherShot="$out_dir/$phase" -MB2WeatherTimeout=300 > "$log" 2>&1 || code=$?
     done
     if [[ "$code" -eq 0 ]] && grep -aq "MB2WSMOKE role=client expect=$expect event=pass" "$log"; then
@@ -171,23 +188,55 @@ run_phase() {
     expect_log "$log" "weather_errors" 0 "MB2WEATHER role=server event=\(no_climate\|unknown_profile\|bad_clock\)"
 }
 
-phases="${MB2_WEATHER_PHASES:-dry wet live clear overcast rain snow fog storm}"
+phases="${MB2_WEATHER_PHASES:-dry wet live clear overcast rain snow fog storm noon evening dusk moonlit moonless clockrun}"
+
+# expect_clock <phase> <banner clock pattern>: the client's daylight line shows that 1990s date and time
+expect_clock() {
+    local log="$out_dir/client-$1.log" count
+    count=$(grep -ac "MB2WSMOKE role=client .* event=look_daylight .* banner_clock=\"$2\"" "$log" || true)
+    echo "  client $1: banner_clock ~ \"$2\" lines=$count (want 1)"
+    [[ "$count" -eq 1 ]] || status=1
+}
 look_only=""
 echo "Evidence in $out_dir (phases: $phases)"
 for phase in $phases; do
     case "$phase" in
-        dry) run_phase dry clear_dry -MB2Weather=clear_dry ;;
-        wet) run_phase wet rain_wet -MB2Weather=rain_wet ;;
+        dry) run_phase dry clear_dry -MB2Weather=clear_dry -MB2Clock="$day_clock" ;;
+        wet) run_phase wet rain_wet -MB2Weather=rain_wet -MB2Clock="$day_clock" ;;
         live)
             run_phase live auto -MB2Weather=auto -MB2WeatherClock="$live_clock" -MB2WeatherSpeed="$live_speed"
             expect_log "$out_dir/server-live.log" "live_weather_turns" ">=1" "MB2WEATHER role=server event=changed .* source=auto state=light_rain type=rain"
             ;;
-        clear) look_only=clear run_phase clear clear_dry -MB2Weather=clear_dry ;;
-        overcast) look_only=overcast run_phase overcast overcast -MB2Weather=overcast ;;
-        rain) look_only=rain run_phase rain rain_wet -MB2Weather=rain_wet ;;
-        snow) look_only=snow_lying run_phase snow winter_cold -MB2Weather=winter_cold ;;
-        fog) look_only=fog run_phase fog auto -MB2Weather=auto -MB2WeatherClock=2026-11-17T06:00:00Z -MB2WeatherSpeed=1 ;;
-        storm) look_only=storm run_phase storm auto -MB2Weather=auto -MB2WeatherClock=2026-11-12T17:30:00Z -MB2WeatherSpeed=1 ;;
+        clear) look_only=clear run_phase clear clear_dry -MB2Weather=clear_dry -MB2Clock="$day_clock" ;;
+        overcast) look_only=overcast run_phase overcast overcast -MB2Weather=overcast -MB2Clock="$day_clock" ;;
+        rain) look_only=rain run_phase rain rain_wet -MB2Weather=rain_wet -MB2Clock="$day_clock" ;;
+        snow) look_only=snow_lying run_phase snow winter_cold -MB2Weather=winter_cold -MB2Clock="$day_clock" ;;
+        fog) look_only=fog run_phase fog auto -MB2Weather=auto -MB2Clock=2026-11-22T07:30:00Z ;;
+        storm) look_only=storm run_phase storm auto -MB2Weather=auto -MB2Clock=2026-07-02T15:30:00Z ;;
+        noon)
+            look_only=noon run_phase noon clear_dry -MB2Weather=clear_dry -MB2Clock=2026-06-21T10:57:00Z
+            expect_clock noon "Fri 21 Jun 1996  ·  12:5[789]"
+            ;;
+        evening)
+            look_only=evening run_phase evening clear_dry -MB2Weather=clear_dry -MB2Clock=2026-06-21T18:30:00Z
+            expect_clock evening "Fri 21 Jun 1996  ·  20:3[012]"
+            ;;
+        dusk)
+            look_only=dusk run_phase dusk clear_dry -MB2Weather=clear_dry -MB2Clock=2026-11-13T15:50:00Z
+            expect_clock dusk "Wed 13 Nov 1996  ·  16:5[012]"
+            ;;
+        moonlit)
+            look_only=moonlit run_phase moonlit clear_dry -MB2Weather=clear_dry -MB2Clock=2026-12-24T23:00:00Z
+            expect_clock moonlit "Wed 25 Dec 1996  ·  00:0[012]"
+            ;;
+        moonless)
+            look_only=moonless run_phase moonless clear_dry -MB2Weather=clear_dry -MB2Clock=2026-11-13T21:00:00Z
+            expect_clock moonless "Wed 13 Nov 1996  ·  22:0[012]"
+            ;;
+        clockrun)
+            look_only=clockrun run_phase clockrun clear_dry -MB2Weather=clear_dry -MB2Clock=2026-06-21T02:00:00Z -MB2ClockSpeed=1440
+            expect_log "$out_dir/server-clockrun.log" "clock_started_fast" 1 "MB2CLOCK role=server event=started .* speed=1440.000 review=1"
+            ;;
         *) echo "Unknown phase $phase" >&2; exit 2 ;;
     esac
 done
@@ -202,10 +251,11 @@ done
 
 # The scene's brightness in each look capture (mean grey of the promenade and river right of the player, clear of the
 # HUD, the player and the car's roof; 0..255), for calibrating the look.
-for phase in clear overcast rain snow fog storm; do
+for phase in clear overcast rain snow fog storm noon evening dusk moonlit moonless; do
     shot="$out_dir/$phase-look.png"
     [[ -f "$shot" ]] || continue
-    mean=$(magick "$shot" -resize 1920x1080! -crop 860x260+1060+440 +repage -colorspace gray -format "%[fx:mean*255]" info: 2>/dev/null || echo "?")
+    # -alpha off: the engine's screenshots carry an alpha channel, which must not count as brightness (ADR-064).
+    mean=$(magick "$shot" -alpha off -resize 1920x1080! -crop 860x260+1060+440 +repage -colorspace gray -format "%[fx:mean*255]" info: 2>/dev/null || echo "?")
     echo "  capture $phase: scene mean grey ${mean}"
     echo "$phase $mean" >> "$out_dir/brightness.txt"
 done
@@ -234,7 +284,7 @@ fi
     echo
     for phase in $phases; do
         echo "== $phase"
-        grep -ah "MB2WSMOKE\|MB2WEATHER role=server event=\(started\|changed\)\|MB2SMOKE role=server event=\(ready\|login\|logout\)" \
+        grep -ah "MB2WSMOKE\|MB2CLOCK role=server\|MB2WEATHER role=server event=\(started\|changed\)\|MB2SMOKE role=server event=\(ready\|login\|logout\)" \
             "$out_dir/server-$phase.log" "$out_dir/client-$phase.log" | sed 's/^.*\(MB2WSMOKE\|MB2WEATHER\|MB2SMOKE\)/\1/'
     done
 } > "$out_dir/summary.txt"

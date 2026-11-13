@@ -75,6 +75,38 @@ struct FMarburgumWeather
 };
 
 /**
+ * The world clock as the server keeps it (MarburgumWorldClock.h, ADR-064): the UTC instant it read at a server world
+ * time, and how fast it runs from there. Sent once and again only when the copy would drift, so every client reads the
+ * same clock off its own estimate of the server's world time without a second-by-second stream.
+ */
+USTRUCT(BlueprintType)
+struct FMarburgumClock
+{
+    GENERATED_BODY()
+
+    /** False until the server has set the clock (and on a server that keeps none). */
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Clock")
+    bool bKnown = false;
+
+    /** FDateTime ticks (UTC) at ServerSeconds. */
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Clock")
+    int64 UtcTicks = 0;
+
+    /** The server's world time, seconds, at which the clock read UtcTicks. */
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Clock")
+    double ServerSeconds = 0.0;
+
+    /** Clock seconds per world second: 1 in play. */
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Clock")
+    double Speed = 1.0;
+
+    /** The clock at a server world time (MarburgumII::Clock::FAnchor). */
+    MARBURGUMII_API FDateTime At(double ServerSecondsNow) const;
+
+    bool operator==(const FMarburgumClock& Other) const = default;
+};
+
+/**
  * Server-authored, replicated world state shared by every connected client.
  * Clients only read these values; all mutation entry points are authority-only.
  */
@@ -114,6 +146,19 @@ public:
     DECLARE_EVENT_OneParam(AMarburgumGameState, FWeatherChanged, const FMarburgumWeather&);
     /** Fires on the server and on clients whenever the weather changes. */
     static FWeatherChanged& OnWeatherChanged();
+
+    /** The world clock, set by the server's clock authority (ADR-064). */
+    UPROPERTY(Replicated, BlueprintReadOnly, Category = "Marburgum|Clock")
+    FMarburgumClock Clock;
+
+    /** Authority only: replicates a new clock anchor. */
+    void SetClock(const FMarburgumClock& Next);
+
+    /**
+     * The world clock now, read off this machine's estimate of the server's world time. False before a Marburgum game
+     * state with a clock exists.
+     */
+    static bool WorldUtc(const UWorld* World, FDateTime& OutUtc);
 
     virtual void BeginPlay() override;
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

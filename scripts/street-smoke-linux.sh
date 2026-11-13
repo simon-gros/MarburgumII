@@ -79,7 +79,7 @@ start_server() {
         echo "UDP port $port is already in use; stop the other server or set MB2_STREET_PORT." >&2
         exit 1
     fi
-    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" -MB2StreetProbe -MB2StreetSeed=1990 -MB2Weather=clear_dry "${common_args[@]}" > "$log" 2>&1 &
+    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" -MB2StreetProbe -MB2StreetSeed=1990 -MB2Weather=clear_dry -MB2Clock=2026-06-18T08:00:00Z "${common_args[@]}" > "$log" 2>&1 &
     server_pid=$!
     for _ in $(seq 1 240); do
         grep -aq "MB2SMOKE role=server event=ready .* port=$port " "$log" && return 0

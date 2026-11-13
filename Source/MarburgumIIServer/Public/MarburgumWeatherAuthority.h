@@ -15,8 +15,8 @@ struct FMarburgumWeather;
  * Options:
  *   -MB2Weather=<auto|clear_dry|overcast|rain_wet|winter_cold>  default auto; auto without the climate files falls back
  *                                                                 to clear_dry with a warning
- *   -MB2WeatherClock=<ISO 8601 UTC>   start the weather clock at that instant (reviews and tests)
- *   -MB2WeatherSpeed=<factor>         run that clock faster than real time, e.g. 60 for an hour a minute
+ *   The clock is the world clock (MarburgumClockAuthority.h, ADR-064): -MB2Clock / -MB2ClockSpeed, or under their
+ *   ADR-061 names -MB2WeatherClock / -MB2WeatherSpeed.
  *   -MB2WorldSeed=<n>                 another weather history (default 1996)
  */
 UCLASS()
@@ -29,7 +29,7 @@ public:
     virtual void OnWorldBeginPlay(UWorld& InWorld) override;
     virtual void Deinitialize() override;
 
-    /** The weather clock now: trusted UTC, or the review clock. */
+    /** The world clock now (MarburgumII::ServerClock). */
     FDateTime WeatherUtc() const;
 
     /** The replicated form of a weather state, rounded so a slow drift does not resend it every second. */
@@ -42,10 +42,6 @@ private:
     MarburgumII::Weather::FSimulation Simulation;
     /** Set for a fixed profile; unset runs the climate. */
     TOptional<MarburgumII::Weather::FState> Fixed;
-    FDateTime ClockStart;
-    double RealStart = 0.0;
-    double Speed = 1.0;
-    bool bReviewClock = false;
     FString LoggedState;
     FString LoggedType;
     int32 UpdatesSinceLog = 0;

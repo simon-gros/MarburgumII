@@ -21,6 +21,8 @@
 #include "MarburgumNpc.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlaces.h"
+#include "MarburgumClockAuthority.h"
+#include "MarburgumWorldClock.h"
 #include "MarburgumPlayerState.h"
 #include "MarburgumRetail.h"
 #include "MarburgumRetailRules.h"
@@ -149,10 +151,19 @@ namespace
     // How often the server looks at its clock to open or shut the counters.
     constexpr float ShopHoursCheckSeconds = 10.f;
 
-    /** Europe/Ljubljana now, or the -MB2ClockHour / -MB2ClockWeekday development override. */
+    /**
+     * The world clock's Marburgum date and time (ADR-064): Ljubljana's hour on the mirrored 1990s date, so a counter
+     * keeps the weekday the player is shown. Or the -MB2ClockHour / -MB2ClockWeekday development override.
+     */
     MarburgumII::Retail::FCivilTime ClockNow()
     {
-        MarburgumII::Retail::FCivilTime Now = MarburgumII::Retail::LjubljanaFromUnix(FDateTime::UtcNow().ToUnixTimestamp());
+        const MarburgumII::Clock::FCivil World = MarburgumII::Clock::MarburgumAt(MarburgumII::ServerClock::Now());
+        MarburgumII::Retail::FCivilTime Now;
+        Now.Year = World.Year;
+        Now.Month = World.Month;
+        Now.Day = World.Day;
+        Now.Weekday = World.Weekday;
+        Now.Minute = World.MinuteOfDay();
         // Development and smoke overrides, as the original's MARBURGUM_CLOCK_HOUR / MARBURGUM_CLOCK_WEEKDAY:
         // -MB2ClockHour=<0-24, fractions allowed> and -MB2ClockWeekday=<0 Monday .. 6 Sunday>.
         float Hour = -1.f;
