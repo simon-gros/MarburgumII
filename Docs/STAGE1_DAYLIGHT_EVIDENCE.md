@@ -34,7 +34,7 @@ Every run checks that the client has a clock, that the level's sun is drawn with
 
 At a day a minute the client's clock covered 30,165 clock seconds in 20.00 s of its own time: a rate of 1,508 against the server's 1,440 (the check allows a tenth). The server re-sent the clock once, 30.5 s after start, when its world time had fallen half a second behind the wall clock during startup, and that re-send fell inside the client's window. In those 20 s the sun moved 109° across the sky. The full weather smoke's run gave the same rate.
 
-The first run (`20261113T194955Z`) passed every check but drew the night brighter than noon: the moonlit promenade measured 179 and the moonless one 169, because Lent's auto exposure adapted all the way. Calibration runs with the eye's floor at 1, 6 and 30 times the level's (`Saved/DaylightCal/`) gave a full moon 108, 86 and 22 and a moonless night 94, 26 and 3. Six was kept, and the full moon was dimmed from 0.06 to 0.04 of the sun.
+The first run (`20261113T194955Z`) failed: its server log did not match the fast-clock start check (`clock_started_fast=0`), the banner's clock stood at 08:56 through the day-a-minute run, and it drew the night brighter than noon: the moonlit promenade measured 179 and the moonless one 169, because Lent's auto exposure adapted all the way. Calibration runs with the eye's floor at 1, 6 and 30 times the level's (`Saved/DaylightCal/`) gave a full moon 108, 86 and 22 and a moonless night 94, 26 and 3. Six was kept, and the full moon was dimmed from 0.06 to 0.04 of the sun.
 
 ### Captures
 
