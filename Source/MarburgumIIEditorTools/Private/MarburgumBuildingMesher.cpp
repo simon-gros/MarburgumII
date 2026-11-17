@@ -911,9 +911,9 @@ namespace
         return OffsetOutline(Outline, Offset, Eave);
     }
 
-    void AddOpenings(double Width, double Height, bool bDoor, std::vector<std::array<double, 5>>& Out)
+    void AddOpenings(double Width, double Height, bool bDoor, std::vector<std::array<double, 7>>& Out)
     {
-        // Each opening: U0, U1, V0, V1, door (1) or window (0); U along the wall, V above the ground.
+        // Each opening: U0, U1, V0, V1, door (1) or window (0), storey, bay; U along the wall, V above the ground.
         if (Height < 2.4 || Width < 2.2)
         {
             return;
@@ -929,7 +929,7 @@ namespace
                 const double Top = std::min(2.15 + SocleTop, Storey - 0.4);
                 if (Top - SocleTop > 1.7)
                 {
-                    Out.push_back({ Width * 0.5 - 0.55, Width * 0.5 + 0.55, SocleTop + 0.005, Top, 1.0 });
+                    Out.push_back({ Width * 0.5 - 0.55, Width * 0.5 + 0.55, SocleTop + 0.005, Top, 1.0, 0.0, 0.0 });
                 }
                 continue;
             }
@@ -941,7 +941,7 @@ namespace
             for (int I = 0; I < Count; ++I)
             {
                 const double Centre = Step * (I + 1);
-                Out.push_back({ Centre - 0.55, Centre + 0.55, Sill, Sill + 1.4, 0.0 });
+                Out.push_back({ Centre - 0.55, Centre + 0.55, Sill, Sill + 1.4, 0.0, static_cast<double>(S), static_cast<double>(I) });
             }
         }
     }
@@ -1157,8 +1157,9 @@ namespace
             const double Width = Length(B - A);
             const FVec2 D = Normalize(B - A);
             const FVec2 Outside{ D.Y, -D.X };
-            std::vector<std::array<double, 5>> Openings;
+            std::vector<std::array<double, 7>> Openings;
             AddOpenings(Width, Top - Footprint.Ground, bDoor, Openings);
+            const int Facade = Mesh.Facades++;
             auto Corner = [&](double U, double Z, double W) { return At(A + D * U + Outside * W, Footprint.Ground + Z); };
             auto Box = [&](double U0, double U1, double V0, double V1, double W0, double W1, int Material)
             {
@@ -1188,7 +1189,14 @@ namespace
                     continue;
                 }
                 Ring(Corner, U0, U1, V0, V1, Bar, Back, 0.08);
+                const size_t GlassFrom = Mesh.Triangles.size();
                 Box(U0 + Bar - 0.01, U1 - Bar + 0.01, V0 + Bar - 0.01, V1 - Bar + 0.01, Back, 0.02, Glass);
+                const int Pane = static_cast<int>(Mesh.Panes.size());
+                Mesh.Panes.push_back({ Facade, static_cast<int>(O[5]), static_cast<int>(O[6]) });
+                for (size_t T = GlassFrom; T < Mesh.Triangles.size(); ++T)
+                {
+                    Mesh.Triangles[T].Pane = Pane;
+                }
                 Box(U0 - 0.06, U1 + 0.06, V0 - 0.06, V0 + 0.01, Back, 0.12, Frame);
                 ++Mesh.Windows;
             }

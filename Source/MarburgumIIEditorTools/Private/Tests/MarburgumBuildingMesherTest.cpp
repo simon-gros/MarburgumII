@@ -4,6 +4,8 @@
 
 #include "Misc/AutomationTest.h"
 
+#include <algorithm>
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumBuildingMesherTest,
     "Marburgum.Editor.BuildingMesher",
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
@@ -70,6 +72,22 @@ bool FMarburgumBuildingMesherTest::RunTest(const FString& Parameters)
         }
         TestTrue(FString::Printf(TEXT("%hs starts at its base"), F.Id.c_str()), FMath::IsNearlyEqual(Low, F.Base, 1.0e-6));
         TestTrue(FString::Printf(TEXT("%hs stays within its measured rise"), F.Id.c_str()), High <= F.Eaves + F.RoofRise + 1.0e-4);
+        // Every window's glass, and only the glass, knows its pane, for the household behind it (ADR-066).
+        TestEqual(FString::Printf(TEXT("%hs has a pane per window"), F.Id.c_str()), static_cast<int32>(Mesh.Panes.size()), Mesh.Windows);
+        int32 Mislabelled = 0;
+        std::vector<int32> PerPane(Mesh.Panes.size(), 0);
+        for (const MB::FTriangle& T : Mesh.Triangles)
+        {
+            const bool bGlass = T.Material == MB::Glass;
+            const bool bPane = T.Pane >= 0 && T.Pane < static_cast<int>(Mesh.Panes.size());
+            Mislabelled += bGlass != bPane ? 1 : 0;
+            if (bPane)
+            {
+                ++PerPane[T.Pane];
+            }
+        }
+        TestEqual(FString::Printf(TEXT("%hs labels the glass and nothing else"), F.Id.c_str()), Mislabelled, 0);
+        TestTrue(FString::Printf(TEXT("%hs each pane is a closed box"), F.Id.c_str()), std::all_of(PerPane.begin(), PerPane.end(), [](int32 N) { return N == 12; }));
     }
     MB::FBuildingMesh Rectangle;
     std::string Error;
@@ -77,6 +95,17 @@ bool FMarburgumBuildingMesherTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("The gabled rectangle has two gable ends"), Rectangle.Gables, 2);
     TestEqual(TEXT("The gabled rectangle keeps its gabled roof"), FString(Rectangle.RoofMethod.c_str()), FString(TEXT("gabled")));
     TestEqual(TEXT("The three-storey rectangle has a plinth, a string course and a cornice"), Rectangle.Bands, 3);
+    // Its 18 m long walls have four bays a storey, the door's wall none on the ground floor.
+    int32 Upstairs = 0;
+    int32 MaxBay = 0;
+    for (const MB::FPane& Pane : Rectangle.Panes)
+    {
+        Upstairs += Pane.Storey > 0 ? 1 : 0;
+        MaxBay = FMath::Max(MaxBay, Pane.Bay);
+    }
+    TestTrue(TEXT("The rectangle has upstairs windows"), Upstairs > 0);
+    TestEqual(TEXT("An 18 m wall has bays 0 to 4"), MaxBay, 4);
+    TestTrue(TEXT("Its walls are counted"), Rectangle.Facades >= 2);
     return true;
 }
 

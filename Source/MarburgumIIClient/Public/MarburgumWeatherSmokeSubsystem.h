@@ -52,6 +52,7 @@ private:
     /** Day and night (ADR-064): logs the world clock's daylight as drawn; checks it for the daylight looks. */
     /** The street lamps (ADR-065): standing, grounded, and burning by night only. */
     void CheckLamps(const TCHAR* Event, const FString& Want);
+    void CheckWindows(const TCHAR* Event, const FString& Want);
     void CheckDaylight(const TCHAR* Event, const FString& Want);
     static bool IsDaylightLook(const FString& Want);
     /** Walks away from the car; true once WalkSeconds have passed and the steps are checked. */

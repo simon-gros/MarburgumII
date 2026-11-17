@@ -6,6 +6,7 @@
 #include "HAL/FileManager.h"
 #include "IAssetTools.h"
 #include "MarburgumSurface.h"
+#include "MarburgumLitWindowsContent.h"
 #include "MarburgumStreetLightContent.h"
 #include "MarburgumWeatherLookContent.h"
 #include "Materials/MaterialInstanceConstant.h"
@@ -150,7 +151,7 @@ UMarburgumWeatherContentCommandlet::UMarburgumWeatherContentCommandlet()
 
 int32 UMarburgumWeatherContentCommandlet::Main(const FString& Params)
 {
-    FString Steps = TEXT("look,lamps,surfaces,audio");
+    FString Steps = TEXT("look,lamps,windows,surfaces,audio");
     FParse::Value(*Params, TEXT("Steps="), Steps, false);
     TArray<FString> List;
     Steps.ParseIntoArray(List, TEXT(","));
@@ -171,6 +172,15 @@ int32 UMarburgumWeatherContentCommandlet::Main(const FString& Params)
             if (!MarburgumStreetLightContent::Write(Error))
             {
                 UE_LOG(LogMarburgumWeatherContent, Error, TEXT("MB2WEATHERCONTENT lamps failed: %s"), *Error);
+                bOk = false;
+            }
+        }
+        else if (Step == TEXT("windows"))
+        {
+            FString Error;
+            if (!MarburgumLitWindowsContent::Write(Error))
+            {
+                UE_LOG(LogMarburgumWeatherContent, Error, TEXT("MB2WEATHERCONTENT windows failed: %s"), *Error);
                 bOk = false;
             }
         }

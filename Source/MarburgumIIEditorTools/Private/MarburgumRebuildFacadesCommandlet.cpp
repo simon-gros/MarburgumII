@@ -11,6 +11,7 @@
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "FileHelpers.h"
 #include "MarburgumBuildingMesher.h"
+#include "MarburgumLitWindows.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "MeshDescription.h"
 #include "MeshDescriptionBuilder.h"
@@ -27,6 +28,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogMarburgumFacades, Log, All);
 namespace
 {
     namespace MB = MarburgumBuildings;
+    namespace LitWindows = MarburgumII::LitWindows;
 
     // The footprints of Lent and its eight neighbouring windows, joined across the window edges by
     // `lent-ground merge-buildings` (ADR-045), and the list of the ones the level places, which the
@@ -161,13 +163,20 @@ namespace
         return !OutFootprints.empty();
     }
 
-    void ToMeshDescription(const MB::FBuildingMesh& Mesh, FMeshDescription& Description)
+    void ToMeshDescription(const FString& Id, const MB::FBuildingMesh& Mesh, FMeshDescription& Description)
     {
         FStaticMeshAttributes(Description).Register();
         FMeshDescriptionBuilder Builder;
         Builder.SetMeshDescription(&Description);
         Builder.EnablePolyGroups();
-        Builder.SetNumUVLayers(1);
+        // 0 the planar UV, 1 the generated lightmap's, 2 and 3 the glass's household (MarburgumLitWindows.h).
+        Builder.SetNumUVLayers(LitWindows::UVChannels);
+        TArray<LitWindows::FTag> Tags;
+        Tags.Reserve(static_cast<int32>(Mesh.Panes.size()));
+        for (const MB::FPane& Pane : Mesh.Panes)
+        {
+            Tags.Add(LitWindows::TagOf(Id, Pane.Facade, Pane.Storey, Pane.Bay));
+        }
         TArray<FPolygonGroupID> Groups;
         const TCHAR* Names[MB::MaterialCount] = { TEXT("plaster"), TEXT("roof"), TEXT("frame"), TEXT("glass"), TEXT("flat_roof"), TEXT("socle"), TEXT("trim") };
         for (int32 Index = 0; Index < MB::MaterialCount; ++Index)
@@ -196,11 +205,17 @@ namespace
             const bool bLevel = FMath::Abs(Normal.Z) > 0.9;
             const FVector U = bLevel ? FVector::ForwardVector : FVector::CrossProduct(FVector::UpVector, Normal).GetSafeNormal();
             const FVector V = bLevel ? FVector::RightVector : FVector::CrossProduct(Normal, U).GetSafeNormal();
+            const LitWindows::FTag* Tag = Tri.Pane >= 0 && Tri.Pane < Tags.Num() ? &Tags[Tri.Pane] : nullptr;
+            const FVector2D Household = Tag ? FVector2D(Tag->Evening, Tag->Morning) : FVector2D::ZeroVector;
+            const FVector2D Kind = Tag ? FVector2D(Tag->Kind, Tag->bGround ? 1.0 : 0.0) : FVector2D::ZeroVector;
             const auto Instance = [&](int32 Index, const FVector& Position)
             {
                 const FVertexInstanceID Id = Builder.AppendInstance(Vertices[Index]);
                 Builder.SetInstanceNormal(Id, Normal);
                 Builder.SetInstanceUV(Id, FVector2D(FVector::DotProduct(Position, U), FVector::DotProduct(Position, V)) * 0.01, 0);
+                Builder.SetInstanceUV(Id, FVector2D::ZeroVector, 1);
+                Builder.SetInstanceUV(Id, Household, LitWindows::TagChannel);
+                Builder.SetInstanceUV(Id, Kind, LitWindows::KindChannel);
                 return Id;
             };
             Builder.AppendTriangle(Instance(Tri.A, A), Instance(Tri.B, B), Instance(Tri.C, C), Groups[Tri.Material]);
@@ -344,7 +359,14 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
 
     UMaterialInterface* Parent = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Marburgum/Materials/Masters/M_Building.M_Building"));
     UMaterialInstanceConstant* Frame = Parent ? EnsureMaterial(TEXT("MI_facade_frame"), Parent, FLinearColor(0.22f, 0.14f, 0.09f), 0.58f) : nullptr;
-    UMaterialInstanceConstant* Glass = Parent ? EnsureMaterial(TEXT("MI_facade_glass"), Parent, FLinearColor(0.16f, 0.20f, 0.22f), 0.06f) : nullptr;
+    // The glass is the window glass's (ADR-066), which lights each pane's household at night; by day it is the same tint.
+    UMaterialInterface* WindowGlass = LoadObject<UMaterialInterface>(nullptr, LitWindows::GlassMaterial, nullptr, LOAD_NoWarn | LOAD_Quiet);
+    if (!WindowGlass)
+    {
+        UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE no %s (run scripts/create-weather-content.sh windows)"), LitWindows::GlassMaterial);
+        return 1;
+    }
+    UMaterialInstanceConstant* Glass = Parent ? EnsureMaterial(TEXT("MI_facade_glass"), WindowGlass, FLinearColor(0.16f, 0.20f, 0.22f), 0.06f) : nullptr;
     UMaterialInterface* Plaster = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Marburgum/Materials/Instances/building_envelope/MI_plaster_mineral.MI_plaster_mineral"));
     UMaterialInterface* RoofTile = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Marburgum/Materials/Instances/building_envelope/MI_roof_tile_clay.MI_roof_tile_clay"));
     UMaterialInterface* FlatRoof = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Marburgum/Materials/Instances/building_envelope/MI_roof_bitumen.MI_roof_bitumen"));
@@ -423,7 +445,7 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
         }
 
         FMeshDescription Description;
-        ToMeshDescription(Mesh, Description);
+        ToMeshDescription(Id, Mesh, Description);
         // An existing asset is loaded and changed in place. A fresh package with the same name would
         // be fully loaded from disk when saved, and the old mesh would overwrite the new one.
         const FString PackageName = BuildingPackage(Id, Windows[Index]);

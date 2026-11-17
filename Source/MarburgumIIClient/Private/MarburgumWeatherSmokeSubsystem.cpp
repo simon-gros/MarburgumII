@@ -31,6 +31,7 @@
 #include "UI/MarburgumUISubsystem.h"
 #include "UnrealClient.h"
 #include "Weather/MarburgumWeatherEffects.h"
+#include "Weather/MarburgumLitWindowsPresentation.h"
 #include "Weather/MarburgumStreetLightPresentation.h"
 #include "Weather/MarburgumWeatherPresentation.h"
 
@@ -701,6 +702,7 @@ void UMarburgumWeatherSmokeSubsystem::CheckDaylight(const TCHAR* Event, const FS
         && FMath::Abs(FRotator::NormalizeAxis(Drawn.Yaw - Day.SunYaw)) < 0.5f,
         FString::Printf(TEXT("sun_not_turned drawn=%.2f,%.1f want=%.2f,%.1f"), Drawn.Pitch, Drawn.Yaw, Day.SunPitch, Day.SunYaw));
     CheckLamps(Event, Want);
+    CheckWindows(Event, Want);
     if (!IsDaylightLook(Want))
     {
         return;
@@ -794,6 +796,60 @@ void UMarburgumWeatherSmokeSubsystem::CheckLamps(const TCHAR* Event, const FStri
             FString::Printf(TEXT("no_lamp_light casting=%d brightest=%.3f"), Burning->NumCasting(), Burning->BrightestLux()));
         Expect(Near && Near->Output > 0.5f && Burning->NearestDistanceCm() < 3000.0f,
             FString::Printf(TEXT("no_lamp_near nearest_m=%.1f output=%.3f"), Burning->NearestDistanceCm() / 100.0f, Near ? Near->Output : 0.0f));
+    }
+}
+
+void UMarburgumWeatherSmokeSubsystem::CheckWindows(const TCHAR* Event, const FString& Want)
+{
+    UWorld* World = GetGameInstance()->GetWorld();
+    UMarburgumLitWindowsPresentation* Windows = World ? World->GetSubsystem<UMarburgumLitWindowsPresentation>() : nullptr;
+    if (!Windows)
+    {
+        MB2_WEATHER_SMOKE_LOG("event=%s_windows presentation=0", Event);
+        if (IsDaylightLook(Want))
+        {
+            Expect(false, TEXT("no_lit_windows_presentation"));
+        }
+        return;
+    }
+    const MarburgumII::LitWindows::FState& State = Windows->GetState();
+    const UMarburgumLitWindowsPresentation::FCount Count = Windows->CountWindows();
+    const double Share = Count.Panes > Count.GroundPanes ? static_cast<double>(Count.LitPanes - Count.LitGroundPanes) / (Count.Panes - Count.GroundPanes) : 0.0;
+    MB2_WEATHER_SMOKE_LOG("event=%s_windows want=%s state=%d collection=%d evening=%.3f morning=%.3f ground=%.3f dusk=%.3f buildings=%d households=%d panes=%d "
+        "lit_panes=%d lit_households=%d ground_panes=%d lit_ground_panes=%d upstairs_lit_share=%.3f",
+        Event, *Want, Windows->HasState() ? 1 : 0, Windows->HasCollection() ? 1 : 0, State.Evening, State.Morning, State.Ground, State.Dusk, Count.Buildings,
+        Count.Households, Count.Panes, Count.LitPanes, Count.LitHouseholds, Count.GroundPanes, Count.LitGroundPanes, Share);
+    if (!IsDaylightLook(Want))
+    {
+        return;
+    }
+    // Every daylight run: the façades carry their households, and the clock is written for their glass.
+    Expect(Windows->HasState() && Windows->HasCollection(), TEXT("lit_windows_not_switched"));
+    Expect(Count.Buildings >= 500 && Count.Panes >= 10000 && Count.Households >= Count.Panes / 4,
+        FString::Printf(TEXT("facade_households_missing buildings=%d panes=%d households=%d"), Count.Buildings, Count.Panes, Count.Households));
+    if (Want == TEXT("noon") || Want == TEXT("evening"))
+    {
+        // Daylight: no room's light shows. The June evening's sun is still well up.
+        Expect(State.Dusk == 0.0f && Count.LitPanes == 0, FString::Printf(TEXT("windows_lit_by_day dusk=%.3f lit=%d"), State.Dusk, Count.LitPanes));
+    }
+    else if (Want == TEXT("dusk"))
+    {
+        // A November weekday at ten to five: people coming home, the shops open.
+        Expect(State.Dusk > 0.9f, FString::Printf(TEXT("dusk_windows_dark dusk=%.3f"), State.Dusk));
+        Expect(Share > 0.25 && Share < 0.6, FString::Printf(TEXT("dusk_homes_lit_share=%.3f"), Share));
+        Expect(Count.GroundPanes == 0 || Count.LitGroundPanes > Count.GroundPanes / 2,
+            FString::Printf(TEXT("dusk_shops_dark lit=%d of %d"), Count.LitGroundPanes, Count.GroundPanes));
+    }
+    else if (Want == TEXT("moonless"))
+    {
+        // A November weekday at ten at night: the late news, many still up; the shops shut.
+        Expect(State.Dusk == 1.0f && Share > 0.3 && Share < 0.65, FString::Printf(TEXT("ten_pm_homes_lit_share=%.3f dusk=%.3f"), Share, State.Dusk));
+        Expect(Count.LitGroundPanes <= Count.GroundPanes / 5, FString::Printf(TEXT("shops_lit_at_night lit=%d of %d"), Count.LitGroundPanes, Count.GroundPanes));
+    }
+    else if (Want == TEXT("moonlit"))
+    {
+        // Midnight: most have gone to bed, a few still up.
+        Expect(State.Dusk == 1.0f && Share > 0.03 && Share < 0.25, FString::Printf(TEXT("midnight_homes_lit_share=%.3f"), Share));
     }
 }
 

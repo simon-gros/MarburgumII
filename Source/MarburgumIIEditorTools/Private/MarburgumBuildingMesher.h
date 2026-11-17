@@ -74,6 +74,17 @@ namespace MarburgumBuildings
         int B = 0;
         int C = 0;
         int Material = Plaster;
+        // A window's glass: its index in FBuildingMesh::Panes; -1 for everything else.
+        int Pane = -1;
+    };
+
+    // Where a window pane is, for the household behind it (MarburgumLitWindows.h, ADR-066).
+    struct FPane
+    {
+        // The façade, in the order they are built; the storey, 0 the ground floor; the bay, 0 the first along the wall.
+        int Facade = 0;
+        int Storey = 0;
+        int Bay = 0;
     };
 
     struct FBuildingMesh
@@ -85,6 +96,9 @@ namespace MarburgumBuildings
         int Gables = 0;
         int PartyWalls = 0;
         int Windows = 0;
+        // Every window's glass, in the order built.
+        std::vector<FPane> Panes;
+        int Facades = 0;
         // Façade bands built: plinth, string course, cornice.
         int Bands = 0;
     };

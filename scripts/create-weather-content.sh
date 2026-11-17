@@ -7,13 +7,16 @@
 #   Content/Marburgum/Lights/{SM_StreetLampMast,SM_StreetLampLantern,M_StreetLampMetal,M_StreetLampGlass}
 #                                                     the street lamps the night is lit by (ADR-065); where they stand is
 #                                                     Content/Marburgum/Lights/lent_street_lights.json (lent-ground --mode lamps)
+#   Content/Marburgum/Lights/{M_WindowGlass,MPC_LitWindows}
+#                                                     the façades' glass, lit at night by each pane's household (ADR-066);
+#                                                     run before -run=MarburgumRebuildFacades, which writes the households
 #   Content/World/Ground/Surfaces/PM_*        physical materials naming what Lent's paving is made of, set on its paved
 #                                             materials so tyres and feet can tell asphalt from setts
 #   Content/Audio/Footsteps/                  Kenney Impact Sounds 1.0 footsteps (CC0) and the wet-street steps
 #                                             generated from them (`scripts/mb2.sh generate wet-footsteps`)
 # The landscape's surface map, Content/Marburgum/Ground/lent_surface.bin, comes from
 #   tools/lent-ground: cargo run --release -- surface-kinds --surface Data/World/lent_ground/surface.png --out Content/Marburgum/Ground/lent_surface.bin
-# Usage: scripts/create-weather-content.sh [look|lamps|surfaces|audio|all]   (default: all)
+# Usage: scripts/create-weather-content.sh [look|lamps|windows|surfaces|audio|all]   (default: all)
 # The commandlet lives in the Editor target, so build MarburgumIIEditor first. Rerun surfaces after a ground rebuild
 # that creates the paved materials afresh.
 set -euo pipefail
@@ -28,10 +31,10 @@ if [[ -z "$ue_root" ]]; then
 fi
 
 case "$which" in
-    look|lamps|surfaces|audio) steps="$which" ;;
-    all) steps="look,lamps,surfaces,audio" ;;
+    look|lamps|windows|surfaces|audio) steps="$which" ;;
+    all) steps="look,lamps,windows,surfaces,audio" ;;
     *)
-        echo "Usage: $0 [look|lamps|surfaces|audio|all]" >&2
+        echo "Usage: $0 [look|lamps|windows|surfaces|audio|all]" >&2
         exit 2
         ;;
 esac
