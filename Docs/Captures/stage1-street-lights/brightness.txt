@@ -1,0 +1,5 @@
+noon 130.904
+evening 99.331
+dusk 96.3102
+moonlit 71.988
+moonless 37.2627
