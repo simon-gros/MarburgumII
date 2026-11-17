@@ -107,6 +107,7 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode lamps
 MB2_VEHICLE_NET_CULL_M=9 ./scripts/vehicle-smoke-linux.sh   # The same with the car sent within 9 m: only the occupants keep it live (ADR-056)
 ./scripts/combat-smoke-linux.sh       # Fighting (ADR-041): the drinker fights back, guard, jab, heavy swing, too soon, NPC and player floored
 ./scripts/street-smoke-linux.sh editor # Street people (ADR-044): pedestrian graph/spawn/walk, fights, incident responses, car run-over/dodge
+./scripts/street-hours-smoke-linux.sh editor # Streets by the hour (ADR-067): day, evening, late, night, Friday night, Sunday, rain, people going home at 21:00
 ```
 
 The smoke script starts one headless dedicated server on port 7777 (override with `MB2_SMOKE_PORT`). It runs one client through a refused mutation, an idempotent operation and a disconnect/reconnect, then two concurrent clients. Logs and `summary.txt` go to `Saved/NetSmoke/<UTC timestamp>/`. A nonzero exit means a failed expectation. Map generation is the editor-only C++ commandlet in `MarburgumIIEditorTools`; the PythonScriptPlugin and EditorScriptingUtilities plugins are disabled.
@@ -250,6 +251,7 @@ The C# program checks repository manifest contracts, but does not inspect the lo
 ./scripts/account-smoke-linux.sh editor    # HTTPS registration, first/returning login, 3D preview, ticket denials
 ./scripts/vehicle-smoke-linux.sh editor    # own-car relevancy; ADR-056 records a reduced-cull comparison separately
 ./scripts/street-smoke-linux.sh editor     # server-led pedestrians and incident reactions
+./scripts/street-hours-smoke-linux.sh editor # who is out by the hour, the weekday and the rain; captures of each (ADR-067)
 ```
 
 These are **commands for reproducing earlier recorded results**, not tests executed as part of the documentation review. Before owner acceptance, rebuild/cook all current level/model/data assets for staged clients, repeat a >150 m vehicle drive with passenger after ADR-056, execute two/three-client street/account/mission integration, measure performance and record source SHA, cooked asset digest, screenshots, logs and the owner's explicit decision. See [the 12 November state review](DEVELOPMENT_REVIEW_2026-11-12.md).

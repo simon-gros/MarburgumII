@@ -1,0 +1,44 @@
+MarburgumII street hours smoke
+result: PASS
+date_utc: 2026-11-17T17:14:25Z
+git_sha: c88f9cf36fa4d9103afbbf49ed55aa9c90f4a88a (dirty)
+mode: editor
+map: /Game/World/lent
+phases: home
+host: Linux 6.18.60-2-cachyos-lts x86_64
+
+== home
+MB2_STREET role=server event=street_hour clock=1 marburgum="Tuesday 18 June 1996 20:00" weekday=1 period=evening period_day=1 density=0.90 precipitation=0.00 weather=1.00 players=0 target=0 mix=commuters=0,shoppers=30,pensioners=0,students=25,residents=25,night_people=20
+MB2_STREET role=server event=street_hour clock=1 marburgum="Tuesday 18 June 1996 20:02" weekday=1 period=evening period_day=1 density=0.90 precipitation=0.00 weather=1.00 players=1 target=18 mix=commuters=0,shoppers=30,pensioners=0,students=25,residents=25,night_people=20
+MB2_STREET role=server event=street_summary people=9 target=18 period=evening players=1 incidents=0 walk=9 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=3,pensioners=0,students=3,residents=0,night_people=3
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=8,pensioners=0,students=2,residents=2,night_people=6
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=10,pensioners=0,students=1,residents=2,night_people=5
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=7,pensioners=0,students=2,residents=3,night_people=6
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=7,pensioners=0,students=1,residents=4,night_people=6
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=6,pensioners=0,students=2,residents=4,night_people=6
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=5,pensioners=0,students=4,residents=5,night_people=4
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=6,pensioners=0,students=3,residents=5,night_people=4
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=5,pensioners=0,students=3,residents=5,night_people=5
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=7,pensioners=0,students=2,residents=6,night_people=3
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=6,pensioners=0,students=2,residents=7,night_people=3
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=6,pensioners=0,students=3,residents=7,night_people=2
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=6,pensioners=0,students=3,residents=6,night_people=3
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=5,pensioners=0,students=2,residents=8,night_people=3
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=6,pensioners=0,students=2,residents=7,night_people=3
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=7,pensioners=0,students=2,residents=6,night_people=3
+MB2_STREET role=server event=street_summary people=18 target=18 period=evening players=1 incidents=0 walk=18 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=4,pensioners=0,students=4,residents=7,night_people=3
+MB2_STREET role=server event=street_hour clock=1 marburgum="Tuesday 18 June 1996 21:00" weekday=1 period=late period_day=1 density=0.45 precipitation=0.00 weather=1.00 players=1 target=9 mix=commuters=0,shoppers=0,pensioners=0,students=30,residents=10,night_people=60
+MB2_STREET role=server event=despawn npc=street_45 reason=home group=shoppers nearest_player_m=27.5 people=18 target=9 period=late
+MB2_STREET role=server event=street_summary people=17 target=9 period=late players=1 incidents=0 walk=17 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=4,pensioners=0,students=3,residents=7,night_people=3
+MB2_STREET role=server event=despawn npc=street_59 reason=home group=students nearest_player_m=24.7 people=16 target=9 period=late
+MB2_STREET role=server event=despawn npc=street_52 reason=home group=residents nearest_player_m=25.8 people=15 target=9 period=late
+MB2_STREET role=server event=despawn npc=street_28 reason=home group=residents nearest_player_m=22.8 people=12 target=9 period=late
+MB2_STREET role=server event=despawn npc=street_56 reason=home group=night_people nearest_player_m=22.7 people=10 target=9 period=late
+MB2_STREET role=server event=street_summary people=9 target=9 period=late players=1 incidents=0 walk=9 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=4,pensioners=0,students=1,residents=3,night_people=1
+MB2_STREET role=server event=street_summary people=9 target=9 period=late players=1 incidents=0 walk=9 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=4,pensioners=0,students=1,residents=3,night_people=1
+MB2_STREET role=server event=street_summary people=9 target=9 period=late players=1 incidents=0 walk=9 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=2,pensioners=0,students=3,residents=1,night_people=3
+MB2_STREET role=server event=street_summary people=9 target=9 period=late players=1 incidents=0 walk=9 flee=0 watch=0 gather=0 dodge=0 fight=0 down=0 swimming=0 groups=commuters=0,shoppers=2,pensioners=0,students=4,residents=1,night_people=2
+MB2_STREET role=server event=street_hour clock=1 marburgum="Tuesday 18 June 1996 21:14" weekday=1 period=late period_day=1 density=0.45 precipitation=0.00 weather=1.00 players=0 target=0 mix=commuters=0,shoppers=0,pensioners=0,students=30,residents=10,night_people=60
+MB2SSMOKE role=client event=counted samples=105 fewest=9 most=18 mean=14.9
+MB2SSMOKE role=client event=pass
+spawned: commuters=0 shoppers=31 pensioners=0 students=21 residents=18 night_people=19
