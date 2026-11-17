@@ -9,10 +9,12 @@
 #include "MarburgumCharacter.h"
 #include "MarburgumCharacterMovement.h"
 #include "MarburgumFighter.h"
+#include "MarburgumGameState.h"
 #include "MarburgumNetworkContract.h"
 #include "MarburgumPedestrian.h"
 #include "MarburgumVehicle.h"
 #include "MarburgumWater.h"
+#include "MarburgumWorldClock.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
@@ -166,7 +168,9 @@ void UMarburgumStreetSubsystem::Step(double Time)
             Alarms.Add({ Person->GetActorLocation(), Person->GetAlarmIncident() });
         }
     }
+    UpdateHour(Time);
     MarkSeenAndCull(Time);
+    SendSomeoneHome(Time);
     SpawnPeople(Time, MarburgumStreetPopulation::StepSeconds);
     StepProbe();
     StepWaterProbe(Time);
@@ -182,9 +186,19 @@ void UMarburgumStreetSubsystem::Step(double Time)
             ++ByMood[FMath::Clamp(static_cast<int32>(Person->GetMood()), 0, 6)];
             Swimming += Person->GetCharacterMovement()->IsSwimming() ? 1 : 0;
         }
-        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_summary people=%d players=%d incidents=%d walk=%d flee=%d watch=%d gather=%d dodge=%d fight=%d down=%d swimming=%d"),
-            StreetLogPrefix, People.Num(), Viewers.Num(), Incidents.Num(), ByMood[0], ByMood[1], ByMood[2], ByMood[3], ByMood[4], ByMood[5],
-            ByMood[6], Swimming);
+        int32 ByGroup[GroupCount] = {};
+        for (const TWeakObjectPtr<AMarburgumPedestrian>& Person : People)
+        {
+            ++ByGroup[FMath::Clamp(Person->GetGroupIndex(), 0, GroupCount - 1)];
+        }
+        FString GroupCounts;
+        for (int32 Group = 0; Group < GroupCount; ++Group)
+        {
+            GroupCounts += FString::Printf(TEXT("%s%s=%d"), Group ? TEXT(",") : TEXT(""), Groups[Group].Id, ByGroup[Group]);
+        }
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_summary people=%d target=%d period=%s players=%d incidents=%d walk=%d flee=%d watch=%d gather=%d dodge=%d fight=%d down=%d swimming=%d groups=%s"),
+            StreetLogPrefix, People.Num(), TargetPeople, PeriodNames[static_cast<int32>(Hour.Period)], Viewers.Num(), Incidents.Num(), ByMood[0], ByMood[1],
+            ByMood[2], ByMood[3], ByMood[4], ByMood[5], ByMood[6], Swimming, *GroupCounts);
     }
 }
 
@@ -377,6 +391,85 @@ void UMarburgumStreetSubsystem::MarkSeenAndCull(double Time)
     People.RemoveAll([](const TWeakObjectPtr<AMarburgumPedestrian>& Person) { return !Person.IsValid(); });
 }
 
+void UMarburgumStreetSubsystem::UpdateHour(double Time)
+{
+    // Without a clock (a map run with none) the street keeps ADR-044's: day, under a clear sky.
+    FDateTime Utc;
+    bClockKnown = AMarburgumGameState::WorldUtc(GetWorld(), Utc);
+    MarburgumII::Clock::FCivil Local;
+    if (bClockKnown)
+    {
+        Local = MarburgumII::Clock::MarburgumAt(Utc);
+        Hour = StreetHourAt(Local.Weekday, Local.HourOfDay());
+    }
+    else
+    {
+        Hour = StreetHourAt(1, 12.0);
+    }
+    const FMarburgumWeather* Sky = AMarburgumGameState::WeatherOf(GetWorld());
+    const float Falling = Sky && Sky->bKnown ? Sky->Precipitation : 0.f;
+    Weather = WeatherShare(Falling);
+    TargetPeople = PeopleFor(Viewers.Num(), Hour.Density * Weather);
+
+    // Logged when the period, the day or the number changes, not every step.
+    const FString Key = FString::Printf(TEXT("%d/%d/%d/%d"), static_cast<int32>(Hour.Period), Hour.Weekday, TargetPeople, bClockKnown ? 1 : 0);
+    if (Key == LoggedHour)
+    {
+        return;
+    }
+    LoggedHour = Key;
+    FString Mix;
+    for (int32 Group = 0; Group < GroupCount; ++Group)
+    {
+        Mix += FString::Printf(TEXT("%s%s=%d"), Group ? TEXT(",") : TEXT(""), Groups[Group].Id, Hour.Mix[Group]);
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_hour clock=%d marburgum=\"%s %s\" weekday=%d period=%s period_day=%d density=%.2f precipitation=%.2f weather=%.2f players=%d target=%d mix=%s"),
+        StreetLogPrefix, bClockKnown ? 1 : 0, bClockKnown ? *MarburgumII::Clock::DateLabel(Local) : TEXT("-"), bClockKnown ? *MarburgumII::Clock::TimeLabel(Local) : TEXT("-"),
+        bClockKnown ? Local.Weekday : -1, PeriodNames[static_cast<int32>(Hour.Period)], Hour.Weekday, Hour.Density, Falling, Weather, Viewers.Num(),
+        TargetPeople, *Mix);
+}
+
+void UMarburgumStreetSubsystem::SendSomeoneHome(double Time)
+{
+    if (Viewers.IsEmpty() || CountPeople() <= TargetPeople || Time - LastHomeSeconds < HomeEverySeconds)
+    {
+        return;
+    }
+    AMarburgumPedestrian* Furthest = nullptr;
+    double FurthestCm = -1.0;
+    for (const TWeakObjectPtr<AMarburgumPedestrian>& Weak : People)
+    {
+        AMarburgumPedestrian* Person = Weak.Get();
+        // Only someone walking about whom nobody has seen lately: not a body, not anyone fleeing, watching or fighting.
+        if (!Person || Person == WaterProbe.Get() || Person->IsDown() || Person->GetMood() != EMarburgumStreetMood::Walk
+            || Time - Person->LastSeenSeconds <= UnseenSeconds)
+        {
+            continue;
+        }
+        double Nearest = TNumericLimits<double>::Max();
+        for (const FMarburgumStreetViewer& Viewer : Viewers)
+        {
+            Nearest = FMath::Min(Nearest, FVector::Dist2D(Viewer.Location, Person->GetActorLocation()));
+        }
+        // Nobody goes home closer to a player than anybody appears: someone just behind them does not vanish.
+        if (Nearest >= SpawnOutOfViewMinCm && Nearest > FurthestCm)
+        {
+            FurthestCm = Nearest;
+            Furthest = Person;
+        }
+    }
+    if (!Furthest)
+    {
+        return;
+    }
+    LastHomeSeconds = Time;
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=despawn npc=%s reason=home group=%s nearest_player_m=%.1f people=%d target=%d period=%s"),
+        StreetLogPrefix, *Furthest->GetNpcId().ToString(), Groups[FMath::Clamp(Furthest->GetGroupIndex(), 0, GroupCount - 1)].Id, FurthestCm / 100.0,
+        CountPeople(), TargetPeople, PeriodNames[static_cast<int32>(Hour.Period)]);
+    Furthest->Destroy();
+    People.RemoveAll([](const TWeakObjectPtr<AMarburgumPedestrian>& Person) { return !Person.IsValid(); });
+}
+
 bool UMarburgumStreetSubsystem::SpawnPointOk(const FVector& At, bool bInView, bool bNearPlayers) const
 {
     for (const FMarburgumStreetViewer& Viewer : Viewers)
@@ -444,7 +537,7 @@ AMarburgumPedestrian* UMarburgumStreetSubsystem::SpawnAt(int32 Node, const FVect
     using namespace MarburgumStreetPopulation;
     const FVector NodeAt = Graph.GetNodes()[Node].Location;
     const FVector At = Override ? *Override : NodeAt;
-    const int32 GroupIndex = PickWeighted(LentMix, UE_ARRAY_COUNT(LentMix), Random.FRand());
+    const int32 GroupIndex = PickWeighted(Hour.Mix, GroupCount, Random.FRand());
     const FGroup& Group = Groups[GroupIndex];
     const int32 LookIndex = FMath::Max(0, PickLook(Group, Random.FRand()));
     const EPersonality Personality = PickPersonality(Group, Random.FRand());
@@ -617,8 +710,7 @@ void UMarburgumStreetSubsystem::SpawnPeople(double Time, float DeltaSeconds)
         return;
     }
     SpawnBudget = FMath::Min(SpawnBudget + SpawnsPerSecond * DeltaSeconds, 6.0);
-    const int32 Target = FMath::Min(PeoplePerPlayer * Viewers.Num(), MaxPeople);
-    while (CountPeople() < Target && SpawnBudget >= 1.0)
+    while (CountPeople() < TargetPeople && SpawnBudget >= 1.0)
     {
         SpawnBudget -= 1.0;
         const FMarburgumStreetViewer& Viewer = Viewers[ViewerCursor++ % Viewers.Num()];

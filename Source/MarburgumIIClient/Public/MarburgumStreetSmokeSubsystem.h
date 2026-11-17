@@ -22,7 +22,11 @@ class AMarburgumVehicle;
  *      in its way and one further on who will. The first goes down under the car; the second jumps aside.
  *   4. The car stops. Somebody gathers round, or runs from, the person lying in the road.
  *
- * Options: -MB2StreetShot=<path prefix> -MB2StreetTimeout=<s>
+ * With -MB2StreetCount=<s> (ADR-067) it only stands there instead, looking along the street, and counts the people
+ * within 70 m by group every second for that long, then captures `count` and passes: the hours smoke reads how
+ * full the street is at the server's hour (scripts/street-hours-smoke-linux.sh).
+ *
+ * Options: -MB2StreetShot=<path prefix> -MB2StreetTimeout=<s> -MB2StreetCount=<s>
  */
 UCLASS()
 class MARBURGUMIICLIENT_API UMarburgumStreetSmokeSubsystem : public UGameInstanceSubsystem
@@ -38,6 +42,8 @@ private:
     bool Tick(float DeltaTime);
     bool Bind();
     void Run(double Now);
+    /** -MB2StreetCount: stand and count. */
+    void RunCount(double Now);
     void Observe();
     void People(TArray<AMarburgumPedestrian*>& Out, double WithinCm) const;
     AMarburgumCharacter* Body() const;
@@ -54,6 +60,12 @@ private:
 
     FString ShotPrefix;
     double TimeoutSeconds = 300.0;
+    double CountSeconds = 0.0;
+    double LastCountSeconds = 0.0;
+    int32 FewestCounted = TNumericLimits<int32>::Max();
+    int32 MostCounted = 0;
+    int32 Samples = 0;
+    int64 SampleTotal = 0;
     double StartSeconds = 0.0;
     int32 Step = 0;
     double StepSeconds = 0.0;

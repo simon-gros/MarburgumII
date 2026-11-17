@@ -2,13 +2,14 @@
   "format": "marburgumii.street",
   "version": "0.1.0",
   "status": "stage1_lent_street_people",
-  "description": "Street people carried forward from the original Marburgum's ambient population: who walks Lent, how far off they appear and go, and what each personality does about a fight, a run-over, someone on the ground, being hit or being walked into. Mirrors MarburgumIIShared/Public/MarburgumStreetContract.h; `mb2 validate street` keeps them in step. Distances in metres, speeds in metres per second, times in seconds. Decision weights are relative, per column [stranger, player].",
+  "description": "Street people carried forward from the original Marburgum's ambient population: who walks Lent and when, how far off they appear and go, and what each personality does about a fight, a run-over, someone on the ground, being hit or being walked into. Mirrors MarburgumIIShared/Public/MarburgumStreetContract.h; `mb2 validate street` keeps them in step. Distances in metres, speeds in metres per second, times in seconds. Decision weights are relative, per column [stranger, player].",
   "provenance": {
-    "source": "magna-raedarum-marburgum: UnrealMarburgum/Source/MarburgumServer/Private/MarburgumAmbientPopulation.cpp and MarburgumRunOver, docs/AMBIENT_STREETS.md, project/data/population_groups.json, project/data/npc_visual_profiles.json (branches main, feat/ambient-react-to-bodies, feat/ambient-panic-spread)",
+    "source": "magna-raedarum-marburgum: UnrealMarburgum/Source/MarburgumServer/Private/MarburgumAmbientPopulation.cpp and MarburgumRunOver, docs/AMBIENT_STREETS.md, project/data/population_groups.json, project/data/npc_visual_profiles.json (population_groups.json `periods` and `zones.old_town` for the hours; branches main, feat/ambient-react-to-bodies, feat/ambient-panic-spread)",
     "copied_unchanged": [
       "groups (archetypes, walk speeds, personality mixes)",
+      "the night people group (archetypes, walk speed, personality mix) and its looks",
       "looks (profile colours and scale)",
-      "old_town day mix",
+      "old_town periods, street density and group mix by period, weekdays (the day row with ADR-044's residents)",
       "decisions: body, attacked, bumped",
       "fight clearance, watch standoff, crowd spread, body notice and stand-by distances",
       "run-over strike speed, margin, damage per m/s and down time"
@@ -19,7 +20,11 @@
       "graph walking: continuous heading with weighted branches (the original used GTA III's 45-degree headings)",
       "fight notice radius 30 m (the original's 40 m was San Andreas')",
       "flee, watch and dodge timings",
-      "colour and size variation within a look"
+      "colour and size variation within a look",
+      "the weekend: Friday and Saturday evenings and Saturday and Sunday mornings one hour later, after ADR-066; nobody commutes at the weekend and the shops are shut on a Sunday, so those shares walk as residents",
+      "rain: what falls thins the street by 0.75 x precipitation",
+      "going home: one unseen person every 2 s, the furthest and never within 22 m of a player, while more are out than the hour wants",
+      "the night people's display name"
     ],
     "excluded": [
       "San Andreas decision weights",
@@ -27,8 +32,10 @@
       "GTA III wander, signal clock and car following",
       "crime points, pursuit, officers",
       "ambient traffic and carjacking (Marburgum II has no traffic yet)",
-      "attractors, time of day and weekend tables (no world clock yet)",
-      "placeholder San Andreas / GTA III bodies"
+      "attractors (no bus stops, cafés or venues on the graph yet)",
+      "placeholder San Andreas / GTA III bodies",
+      "the original's weekend (Friday 20:00 to Sunday 20:00, with its own tables) and its rain rule, which came in from a reverse-engineering report of San Andreas' population cycle",
+      "districts other than the old town: Lent and its neighbours all walk as the old town"
     ]
   },
   "rules": {
@@ -356,14 +363,91 @@
         "tough": 15,
         "weak": 15
       }
+    },
+    {
+      "id": "night_people",
+      "name": "Night owl",
+      "archetypes": [
+        "night_bus_teen",
+        "evening_walker",
+        "night_guard",
+        "belligerent_drinker"
+      ],
+      "walk_speed": [
+        1.0,
+        1.5
+      ],
+      "personality": {
+        "norm": 40,
+        "tough": 50,
+        "weak": 10
+      }
     }
   ],
-  "lent_mix": {
-    "commuters": 20,
-    "shoppers": 40,
-    "pensioners": 20,
-    "students": 20,
-    "residents": 10
+  "hours": {
+    "_comment": "Who is out when (ADR-067), on the world clock: its Ljubljana hour and the mirrored 1990s date's weekday. `density` is the share of people_per_player; `mix` the relative weights over the groups. Weekdays are the original's old_town tables.",
+    "periods": {
+      "night": [
+        0,
+        6
+      ],
+      "morning": [
+        6,
+        9
+      ],
+      "day": [
+        9,
+        17
+      ],
+      "evening": [
+        17,
+        21
+      ],
+      "late": [
+        21,
+        24
+      ]
+    },
+    "density": {
+      "night": 0.15,
+      "morning": 0.6,
+      "day": 1.0,
+      "evening": 0.9,
+      "late": 0.45
+    },
+    "mix": {
+      "night": {
+        "residents": 20,
+        "night_people": 80
+      },
+      "morning": {
+        "commuters": 50,
+        "shoppers": 20,
+        "pensioners": 15,
+        "students": 15
+      },
+      "day": {
+        "commuters": 20,
+        "shoppers": 40,
+        "pensioners": 20,
+        "students": 20,
+        "residents": 10
+      },
+      "evening": {
+        "shoppers": 30,
+        "students": 25,
+        "residents": 25,
+        "night_people": 20
+      },
+      "late": {
+        "students": 30,
+        "residents": 10,
+        "night_people": 60
+      }
+    },
+    "weekend_later_hours": 1,
+    "rain_thinning": 0.75,
+    "home_every_seconds": 2.0
   },
   "looks": [
     {
@@ -498,6 +582,27 @@
       "primary_color": "#6a5e68",
       "secondary_color": "#322c32",
       "scale": 0.96
+    },
+    {
+      "profile": "lent_passerby",
+      "archetype": "evening_walker",
+      "primary_color": "#4e5c68",
+      "secondary_color": "#2a3036",
+      "scale": 0.99
+    },
+    {
+      "profile": "hall_three_night_guard",
+      "archetype": "night_guard",
+      "primary_color": "#313a42",
+      "secondary_color": "#1f2428",
+      "scale": 1.05
+    },
+    {
+      "profile": "lent_drunk",
+      "archetype": "belligerent_drinker",
+      "primary_color": "#5a3a3a",
+      "secondary_color": "#2a2222",
+      "scale": 1.04
     }
   ]
 }

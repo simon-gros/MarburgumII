@@ -49,6 +49,10 @@ struct FMarburgumStreetViewer
  * every frame, a car at 2.5 m/s or more knocks down anyone standing inside its body (swept back over the frame
  * and a little ahead), street person or Lent cast alike.
  *
+ * How many are out, and who, follows the world clock and the weather (ADR-067, StreetHourAt): busy by day, thin in
+ * the small hours, night owls in the late evening, an hour later on Friday and Saturday nights. With more out than
+ * the hour wants, people nobody is looking at go home.
+ *
  * Off with -MB2Street=0 (or MB2_STREET=0). Logs carry MB2_STREET.
  */
 UCLASS()
@@ -84,12 +88,19 @@ public:
 
     double Now() const;
     int32 CountPeople() const;
+    /** The street's hour, the weather's share and the people it keeps now (ADR-067). */
+    const MarburgumII::Street::FStreetHour& GetHour() const { return Hour; }
+    int32 GetTargetPeople() const { return TargetPeople; }
 
 private:
     void Step(double Now);
     void GatherViewers();
     void GatherIncidents(double Now);
     void MarkSeenAndCull(double Now);
+    /** The hour on the world clock and what falls from the sky, worked into who is out and how many (ADR-067). */
+    void UpdateHour(double Now);
+    /** Over the hour's number: the furthest person nobody has seen lately goes home, one every HomeEverySeconds. */
+    void SendSomeoneHome(double Now);
     void SpawnPeople(double Now, float DeltaSeconds);
     bool TrySpawnFor(const FMarburgumStreetViewer& Viewer, bool bInView);
     /** A new street person at a walk-graph node, or (Override) somewhere off it, walking away from the node. */
@@ -127,6 +138,13 @@ private:
     /** Bodies on the ground and their incident ids, kept while they stay down. */
     TMap<TWeakObjectPtr<AActor>, int32> BodyIncidents;
     double LastSummarySeconds = 0.0;
+    MarburgumII::Street::FStreetHour Hour;
+    float Weather = 1.f;
+    int32 TargetPeople = 0;
+    /** Whether the world clock was known at the last update, and the hour's key last logged. */
+    bool bClockKnown = false;
+    FString LoggedHour;
+    double LastHomeSeconds = -1000.0;
     bool bProbe = false;
     bool bProbeDone = false;
     bool bWaterProbeDone = false;

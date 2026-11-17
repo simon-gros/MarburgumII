@@ -56,6 +56,83 @@ bool FMarburgumStreetRulesTest::RunTest(const FString& Parameters)
     }
     TestTrue(TEXT("pensioners are never tough"), PickPersonality(Groups[2], 0.36) != EPersonality::Tough);
 
+    // Who is out when (ADR-067). Weekdays 0 Monday .. 6 Sunday.
+    {
+        const auto Is = [this](const TCHAR* What, int32 Weekday, double At, EPeriod Want, int32 WantDay)
+        {
+            const FStreetHour Hour = StreetHourAt(Weekday, At);
+            TestTrue(FString::Printf(TEXT("%s is %s"), What, PeriodNames[static_cast<int32>(Want)]), Hour.Period == Want);
+            TestEqual(FString::Printf(TEXT("%s belongs to day %d"), What, WantDay), Hour.Weekday, WantDay);
+            return Hour;
+        };
+        const FStreetHour TuesdayDay = Is(TEXT("Tuesday 10:00"), 1, 10.0, EPeriod::Day, 1);
+        TestEqual(TEXT("a weekday's day is full"), TuesdayDay.Density, 1.f);
+        for (int32 Group = 0; Group < GroupCount; ++Group)
+        {
+            TestEqual(TEXT("a weekday's day is ADR-044's mix"), TuesdayDay.Mix[Group], LentMixByPeriod[2][Group]);
+        }
+        const FStreetHour TuesdayNight = Is(TEXT("Tuesday 03:00"), 1, 3.0, EPeriod::Night, 1);
+        TestEqual(TEXT("the small hours are thin"), TuesdayNight.Density, 0.15f);
+        TestTrue(TEXT("the small hours are night owls"), TuesdayNight.Mix[NightPeople] > TuesdayNight.Mix[Residents] && TuesdayNight.Mix[Commuters] == 0);
+        Is(TEXT("Tuesday 05:59"), 1, 5.99, EPeriod::Night, 1);
+        const FStreetHour TuesdayMorning = Is(TEXT("Tuesday 06:00"), 1, 6.0, EPeriod::Morning, 1);
+        TestEqual(TEXT("a weekday morning is commuters first"), TuesdayMorning.Mix[Commuters], 50);
+        Is(TEXT("Tuesday 19:00"), 1, 19.0, EPeriod::Evening, 1);
+        Is(TEXT("Tuesday 21:30"), 1, 21.5, EPeriod::Late, 1);
+        // Friday and Saturday nights run an hour later; Saturday and Sunday mornings start an hour later.
+        Is(TEXT("Friday 21:30"), 4, 21.5, EPeriod::Evening, 4);
+        Is(TEXT("Friday 22:30"), 4, 22.5, EPeriod::Late, 4);
+        Is(TEXT("Saturday 00:30"), 5, 0.5, EPeriod::Late, 4);
+        Is(TEXT("Saturday 01:30"), 5, 1.5, EPeriod::Night, 5);
+        Is(TEXT("Saturday 06:30"), 5, 6.5, EPeriod::Night, 5);
+        const FStreetHour SaturdayMorning = Is(TEXT("Saturday 07:30"), 5, 7.5, EPeriod::Morning, 5);
+        TestEqual(TEXT("nobody commutes on a Saturday"), SaturdayMorning.Mix[Commuters], 0);
+        TestEqual(TEXT("the commuters' share walks as residents"), SaturdayMorning.Mix[Residents], 50);
+        TestEqual(TEXT("Saturday morning's shops are open"), SaturdayMorning.Mix[Shoppers], 20);
+        Is(TEXT("Saturday 21:30"), 5, 21.5, EPeriod::Evening, 5);
+        Is(TEXT("Sunday 00:30"), 6, 0.5, EPeriod::Late, 5);
+        const FStreetHour SundayDay = Is(TEXT("Sunday 12:00"), 6, 12.0, EPeriod::Day, 6);
+        TestEqual(TEXT("the shops are shut on a Sunday"), SundayDay.Mix[Shoppers], 0);
+        TestEqual(TEXT("nobody commutes on a Sunday"), SundayDay.Mix[Commuters], 0);
+        TestEqual(TEXT("Sunday's day walks as residents"), SundayDay.Mix[Residents], 70);
+        const FStreetHour SundayEvening = Is(TEXT("Sunday 19:00"), 6, 19.0, EPeriod::Evening, 6);
+        TestEqual(TEXT("Sunday's evening is a weekday's"), SundayEvening.Mix[Shoppers], 30);
+        Is(TEXT("Sunday 21:30"), 6, 21.5, EPeriod::Late, 6);
+        Is(TEXT("Monday 00:30"), 0, 0.5, EPeriod::Night, 0);
+        Is(TEXT("Monday 06:30"), 0, 6.5, EPeriod::Morning, 0);
+
+        // Every hour of every day has somebody to send out, and every group walks at some hour.
+        int32 Walks[GroupCount] = {};
+        for (int32 Weekday = 0; Weekday < 7; ++Weekday)
+        {
+            for (int32 Quarter = 0; Quarter < 96; ++Quarter)
+            {
+                const FStreetHour Hour = StreetHourAt(Weekday, Quarter / 4.0);
+                int32 Total = 0;
+                for (int32 Group = 0; Group < GroupCount; ++Group)
+                {
+                    Total += Hour.Mix[Group];
+                    Walks[Group] += Hour.Mix[Group];
+                }
+                TestTrue(TEXT("every hour has a mix"), Total > 0 && Hour.Density > 0.f && Hour.Density <= 1.f);
+            }
+        }
+        for (int32 Group = 0; Group < GroupCount; ++Group)
+        {
+            TestTrue(FString::Printf(TEXT("%s walk at some hour"), Groups[Group].Id), Walks[Group] > 0);
+        }
+
+        // The weather and the count.
+        TestEqual(TEXT("a dry street keeps everyone"), WeatherShare(0.f), 1.f);
+        TestEqual(TEXT("a downpour keeps a quarter"), WeatherShare(1.f), 0.25f);
+        TestEqual(TEXT("out of range falls clamp"), WeatherShare(3.f), 0.25f);
+        TestEqual(TEXT("one player by day"), PeopleFor(1, 1.f), PeoplePerPlayer);
+        TestEqual(TEXT("one player in the small hours"), PeopleFor(1, 0.15f), 3);
+        TestEqual(TEXT("three players by day hit the cap"), PeopleFor(3, 1.f), MaxPeople);
+        TestEqual(TEXT("nobody about, nobody out"), PeopleFor(0, 1.f), 0);
+        TestEqual(TEXT("a late evening in the rain"), PeopleFor(1, 0.45f * WeatherShare(0.6f)), 5);
+    }
+
     // Run over: the swept body.
     const FVector2D Forward(1.0, 0.0);
     TestTrue(TEXT("inside the body"), InSweptBody(FVector2D(100.0, 50.0), FVector2D::ZeroVector, Forward, 180.0, 75.0, 0.0));

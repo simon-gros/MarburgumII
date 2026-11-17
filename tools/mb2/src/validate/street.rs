@@ -1,6 +1,6 @@
 //! Street people (ADR-044): the street data and the shared C++ contract carry the same rules, decision tables,
-//! groups and looks (the original's ambient population); every table answers something; every group can be
-//! dressed; San Andreas' crime and pursuit vocabulary stays out; and the walk graph the server reads is there,
+//! groups and looks (the original's ambient population) and the same hours (ADR-067); every table answers
+//! something; every group can be dressed and walks at some hour; San Andreas' crime and pursuit vocabulary stays out; and the walk graph the server reads is there,
 //! staged, and mostly one network.
 
 use regex::Regex;
@@ -94,6 +94,58 @@ fn decision_rows(contract: &str) -> Vec<[[i64; 2]; 4]> {
         .collect()
 }
 
+const PERIODS: [&str; 5] = ["night", "morning", "day", "evening", "late"];
+
+fn int_list(text: &str) -> Vec<f64> {
+    text.split(',').filter_map(|n| n.trim().trim_end_matches('f').parse().ok()).collect()
+}
+
+/// Who is out when (ADR-067): the periods cover the day in order, and their density and mix match the contract's;
+/// every row has somebody in it and every group walks at some hour. Returns the number of periods.
+fn check_hours(data: &Value, contract: &str, data_groups: &[Value], problems: &mut Problems) -> usize {
+    let hours = &data["hours"];
+    let starts = Regex::new(r"PeriodStartHours\[\] = \{ ([^}]*) \}").unwrap().captures(contract).map(|c| int_list(&c[1])).unwrap_or_default();
+    let density = Regex::new(r"LentDensity\[\] = \{ ([^}]*) \}").unwrap().captures(contract).map(|c| int_list(&c[1])).unwrap_or_default();
+    let rows: Vec<Vec<f64>> = contract
+        .find("LentMixByPeriod[][GroupCount] = {")
+        .map(|start| {
+            Regex::new(r"\{ (\d+(?:, \d+)+) \}").unwrap().captures_iter(&contract[start..]).take(PERIODS.len()).map(|c| int_list(&c[1])).collect()
+        })
+        .unwrap_or_default();
+    problems.expect(starts.len() == PERIODS.len() && density.len() == PERIODS.len() && rows.len() == PERIODS.len(),
+        format!("hours: contract has {} starts, {} densities, {} mix rows", starts.len(), density.len(), rows.len()));
+    let mut end = 0.0;
+    let mut walks = vec![0.0; data_groups.len()];
+    for (i, period) in PERIODS.iter().enumerate() {
+        let span: Vec<f64> = hours["periods"][period].as_array().map(|a| a.iter().filter_map(Value::as_f64).collect()).unwrap_or_default();
+        problems.expect(span.len() == 2 && close(span[0], end) && span[1] > span[0], format!("hours: period {period} {span:?} does not follow {end}"));
+        problems.expect(starts.get(i).is_some_and(|&s| span.first().is_some_and(|&d| close(s, d))), format!("hours: {period} starts at {span:?} in data, {:?} in the contract", starts.get(i)));
+        end = span.get(1).copied().unwrap_or(f64::NAN);
+        let want = hours["density"][period].as_f64();
+        problems.expect(matches!((want, density.get(i)), (Some(w), Some(&h)) if close(w, h) && w > 0.0 && w <= 1.0),
+            format!("hours: {period} density data {want:?} vs contract {:?}", density.get(i)));
+        let want_mix: Vec<f64> = data_groups.iter().map(|g| hours["mix"][period][g["id"].as_str().unwrap_or("")].as_f64().unwrap_or(0.0)).collect();
+        let unknown: Vec<&String> = hours["mix"][period].as_object().map(|o| o.keys().filter(|k| !data_groups.iter().any(|g| g["id"].as_str() == Some(k.as_str()))).collect()).unwrap_or_default();
+        problems.expect(unknown.is_empty(), format!("hours: {period} mixes groups that do not exist: {unknown:?}"));
+        problems.expect(rows.get(i) == Some(&want_mix) && want_mix.iter().sum::<f64>() > 0.0, format!("hours: {period} mix data {want_mix:?} vs contract {:?}", rows.get(i)));
+        for (k, w) in want_mix.iter().enumerate() {
+            walks[k] += w;
+        }
+    }
+    problems.expect(close(end, 24.0), format!("hours: the periods end at {end}, not 24"));
+    for (g, total) in data_groups.iter().zip(&walks) {
+        problems.expect(*total > 0.0, format!("hours: group {} never walks", g["id"]));
+    }
+    for (key, name) in [("weekend_later_hours", "WeekendLaterHours"), ("rain_thinning", "RainThinning"), ("home_every_seconds", "HomeEverySeconds")] {
+        let want = hours[key].as_f64();
+        let have = constant(contract, name);
+        problems.expect(matches!((want, have), (Some(w), Some(h)) if close(w, h)), format!("hours {key}: data {want:?} vs contract {name} {have:?}"));
+    }
+    // Rain thins the street; it never empties it.
+    problems.expect(hours["rain_thinning"].as_f64().is_some_and(|r| (0.0..1.0).contains(&r)), "hours: rain would empty the street");
+    PERIODS.len()
+}
+
 pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     let data = read_json(root, DATA, problems);
     let contract = read(root, CONTRACT, problems);
@@ -172,10 +224,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
             problems.expect(looks.iter().any(|l| &l.1 == archetype), format!("group {id}: no look for archetype {archetype}"));
         }
     }
-    let mix: Vec<i64> = Regex::new(r"LentMix\[\] = \{ ([^}]*) \}").unwrap().captures(&contract)
-        .map(|c| c[1].split(',').filter_map(|n| n.trim().parse().ok()).collect()).unwrap_or_default();
-    let data_mix: Vec<i64> = data_groups.iter().map(|g| data["lent_mix"][g["id"].as_str().unwrap_or("")].as_i64().unwrap_or(-1)).collect();
-    problems.expect(mix == data_mix && mix.iter().sum::<i64>() > 0, format!("Lent mix: data {data_mix:?} vs contract {mix:?}"));
+    let periods = check_hours(&data, &contract, &data_groups, problems);
 
     // Out of scope by decision (ADR-041, ADR-044).
     let lowered = format!("{contract}\n{pedestrian}\n{subsystem}").to_lowercase();
@@ -192,7 +241,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     problems.expect(ini.contains("+DirectoriesToAlwaysStageAsUFS=(Path=\"Marburgum/Street\")"), "the walk graph is not staged into packaged builds");
 
     vec![format!(
-        "Street contract OK: {} rules, {} decision tables, {} groups and {} looks match {DATA}; walk graph {} nodes ({} in the largest network), staged.",
+        "Street contract OK: {} rules, {} decision tables, {} groups, {} looks and {periods} hours of the day match {DATA}; walk graph {} nodes ({} in the largest network), staged.",
         RULES.len(),
         rows.len(),
         groups.len(),

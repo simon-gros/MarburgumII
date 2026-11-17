@@ -250,6 +250,10 @@ namespace MarburgumII::Street
         { TEXT("ivana_zupan"), TEXT("block_resident"), 0x7a6a5c, 0x3a342e, 0.94f },
         { TEXT("tabor_block_walker"), TEXT("block_walker"), 0x4a5348, 0x262a26, 1.04f },
         { TEXT("tabor_courtyard_walker"), TEXT("courtyard_walker"), 0x6a5e68, 0x322c32, 0.96f },
+        // The night's people (ADR-067), after the rest so the indices above stay what clients already know.
+        { TEXT("lent_passerby"), TEXT("evening_walker"), 0x4e5c68, 0x2a3036, 0.99f },
+        { TEXT("hall_three_night_guard"), TEXT("night_guard"), 0x313a42, 0x1f2428, 1.05f },
+        { TEXT("lent_drunk"), TEXT("belligerent_drinker"), 0x5a3a3a, 0x2a2222, 1.04f },
     };
 
     /** A population group: its looks (by archetype), walking pace and how many are norm, tough or weak. */
@@ -265,8 +269,8 @@ namespace MarburgumII::Street
         int32 Personality[3];
     };
 
-    // The groups that walk Lent by day (the original's old_town day mix); the rest wait for other districts and
-    // a world clock.
+    // The groups that walk the old town (the original's old_town mixes, ADR-067); workers, people outdoors and the
+    // rest wait for other districts.
     inline constexpr FGroup Groups[] = {
         { TEXT("commuters"), TEXT("Commuter"), { TEXT("commuter"), TEXT("office_casual"), TEXT("office_bookkeeper"), TEXT("postal_worker"), TEXT("delivery_clerk") },
             1.35f, 1.65f, { 75, 10, 15 } },
@@ -278,11 +282,133 @@ namespace MarburgumII::Street
             1.3f, 1.7f, { 55, 35, 10 } },
         { TEXT("residents"), TEXT("Resident"), { TEXT("block_resident"), TEXT("block_walker"), TEXT("courtyard_walker"), TEXT("neighbour"), TEXT("bus_stop_regular") },
             1.0f, 1.4f, { 70, 15, 15 } },
+        { TEXT("night_people"), TEXT("Night owl"), { TEXT("night_bus_teen"), TEXT("evening_walker"), TEXT("night_guard"), TEXT("belligerent_drinker"), nullptr },
+            1.0f, 1.5f, { 40, 50, 10 } },
+    };
+    inline constexpr int32 GroupCount = UE_ARRAY_COUNT(Groups);
+    enum EGroupIndex : int32 { Commuters, Shoppers, Pensioners, Students, Residents, NightPeople };
+
+    // ---- Who is out when (ADR-067) ----
+    //
+    // The original's time-of-day tables for the old town (population_groups.json `periods` and `zones.old_town`),
+    // read on the world clock (ADR-064): its Ljubljana hour and the mirrored 1990s date's own weekday. ADR-044 left
+    // them out for want of a clock. The weekday tables are copied unchanged. The original's weekend (Friday 20:00 to
+    // Sunday 20:00, with its own tables) and its rain rule came in from a reverse-engineering report of San
+    // Andreas' population cycle, so they stay out; Marburgum II's own weekend and rain are below.
+
+    enum class EPeriod : uint8 { Night, Morning, Day, Evening, Late, Count };
+    inline constexpr const TCHAR* PeriodNames[] = { TEXT("night"), TEXT("morning"), TEXT("day"), TEXT("evening"), TEXT("late") };
+    /** The hour each period begins on a weekday: night 0-6, morning 6-9, day 9-17, evening 17-21, late 21-24. */
+    inline constexpr int32 PeriodStartHours[] = { 0, 6, 9, 17, 21 };
+    /** How full the street is in each period, of PeoplePerPlayer (old_town `pedestrians`). */
+    inline constexpr float LentDensity[] = { 0.15f, 0.6f, 1.0f, 0.9f, 0.45f };
+    /**
+     * Who is out in each period: relative weights over Groups (old_town `pedestrian_mix`). The day row is ADR-044's,
+     * which added its residents to the original's.
+     */
+    inline constexpr int32 LentMixByPeriod[][GroupCount] = {
+        // commuters, shoppers, pensioners, students, residents, night people
+        { 0, 0, 0, 0, 20, 80 },
+        { 50, 20, 15, 15, 0, 0 },
+        { 20, 40, 20, 20, 10, 0 },
+        { 0, 30, 0, 25, 25, 20 },
+        { 0, 0, 0, 30, 10, 60 },
+    };
+    static_assert(UE_ARRAY_COUNT(PeriodNames) == static_cast<int32>(EPeriod::Count));
+    static_assert(UE_ARRAY_COUNT(PeriodStartHours) == static_cast<int32>(EPeriod::Count));
+    static_assert(UE_ARRAY_COUNT(LentDensity) == static_cast<int32>(EPeriod::Count));
+    static_assert(UE_ARRAY_COUNT(LentMixByPeriod) == static_cast<int32>(EPeriod::Count));
+
+    // Marburgum II's own weekend, after the lit windows' households (ADR-066): Friday and Saturday evenings run this
+    // many hours later, into the small hours of Saturday and Sunday, and Saturday and Sunday mornings start as late.
+    // Nobody commutes on a Saturday or a Sunday, and the shops are shut on a Sunday (MarburgumLitWindows.h
+    // ShopsOpen): their share of the street walks as residents instead.
+    inline constexpr int32 WeekendLaterHours = 1;
+
+    // Marburgum II's own rain: whatever falls (rain, sleet or snow, MarburgumWeather.h's 0..1) keeps people in.
+    // A downpour leaves a quarter of them.
+    inline constexpr float RainThinning = 0.75f;
+
+    // With more people out than the hour wants, one nobody has seen for UnseenSeconds goes home this often, the
+    // furthest first, and never nearer a player than SpawnOutOfViewMinCm. Anyone in sight stays.
+    inline constexpr float HomeEverySeconds = 2.f;
+
+    /** The street at an hour of the Marburgum clock. */
+    struct FStreetHour
+    {
+        EPeriod Period = EPeriod::Day;
+        /** The day the period belongs to (0 Monday): Saturday's small hours are Friday's late evening. */
+        int32 Weekday = 1;
+        /** Of PeoplePerPlayer, before the weather. */
+        float Density = 1.f;
+        int32 Mix[GroupCount] = {};
     };
 
-    /** Lent's mix by day: relative weights over Groups (the original's old_town day row, plus its residents). */
-    inline constexpr int32 LentMix[] = { 20, 40, 20, 20, 10 };
-    static_assert(UE_ARRAY_COUNT(LentMix) == UE_ARRAY_COUNT(Groups));
+    /** The street at Hour (0..24, with minutes as a fraction) on Weekday (0 Monday .. 6 Sunday) of the Marburgum clock. */
+    inline FStreetHour StreetHourAt(int32 Weekday, double Hour)
+    {
+        FStreetHour Out;
+        Weekday = ((Weekday % 7) + 7) % 7;
+        const bool bLateNight = Weekday == 4 || Weekday == 5;
+        const bool bLateMorning = Weekday == 5 || Weekday == 6;
+        Out.Weekday = Weekday;
+        if (bLateMorning && Hour < WeekendLaterHours)
+        {
+            Out.Period = EPeriod::Late;
+            Out.Weekday = Weekday - 1;
+        }
+        else if (Hour < PeriodStartHours[1] + (bLateMorning ? WeekendLaterHours : 0))
+        {
+            Out.Period = EPeriod::Night;
+        }
+        else if (Hour < PeriodStartHours[2])
+        {
+            Out.Period = EPeriod::Morning;
+        }
+        else if (Hour < PeriodStartHours[3])
+        {
+            Out.Period = EPeriod::Day;
+        }
+        else if (Hour < PeriodStartHours[4] + (bLateNight ? WeekendLaterHours : 0))
+        {
+            Out.Period = EPeriod::Evening;
+        }
+        else
+        {
+            Out.Period = EPeriod::Late;
+        }
+        const int32 Period = static_cast<int32>(Out.Period);
+        Out.Density = LentDensity[Period];
+        for (int32 Group = 0; Group < GroupCount; ++Group)
+        {
+            Out.Mix[Group] = LentMixByPeriod[Period][Group];
+        }
+        const bool bWeekend = Out.Weekday == 5 || Out.Weekday == 6;
+        const bool bSundayDaylight = Out.Weekday == 6 && (Out.Period == EPeriod::Morning || Out.Period == EPeriod::Day);
+        if (bWeekend)
+        {
+            Out.Mix[Residents] += Out.Mix[Commuters];
+            Out.Mix[Commuters] = 0;
+        }
+        if (bSundayDaylight)
+        {
+            Out.Mix[Residents] += Out.Mix[Shoppers];
+            Out.Mix[Shoppers] = 0;
+        }
+        return Out;
+    }
+
+    /** The share of people the weather leaves out of doors: Precipitation is MarburgumWeather.h's 0..1. */
+    inline float WeatherShare(float Precipitation)
+    {
+        return 1.f - RainThinning * FMath::Clamp(Precipitation, 0.f, 1.f);
+    }
+
+    /** How many people the street keeps for this many players at this share (density times weather). */
+    inline int32 PeopleFor(int32 Players, float Share)
+    {
+        return Players <= 0 ? 0 : FMath::Clamp(FMath::RoundToInt(PeoplePerPlayer * Players * FMath::Max(0.f, Share)), 0, MaxPeople);
+    }
 
     inline int32 PickWeighted(const int32* Weights, int32 Count, double Roll)
     {

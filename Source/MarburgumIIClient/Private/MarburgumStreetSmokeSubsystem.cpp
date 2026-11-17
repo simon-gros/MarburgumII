@@ -10,6 +10,7 @@
 #include "MarburgumNetworkContract.h"
 #include "MarburgumPedestrian.h"
 #include "MarburgumPlayerController.h"
+#include "MarburgumStreetContract.h"
 #include "MarburgumVehicle.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
@@ -56,9 +57,10 @@ void UMarburgumStreetSmokeSubsystem::Initialize(FSubsystemCollectionBase& Collec
     Super::Initialize(Collection);
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetShot="), ShotPrefix);
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetTimeout="), TimeoutSeconds);
+    FParse::Value(FCommandLine::Get(), TEXT("MB2StreetCount="), CountSeconds);
     StartSeconds = FPlatformTime::Seconds();
     TickerHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UMarburgumStreetSmokeSubsystem::Tick), 0.f);
-    MB2_STREET_SMOKE_LOG("event=start shot=%d", ShotPrefix.IsEmpty() ? 0 : 1);
+    MB2_STREET_SMOKE_LOG("event=start shot=%d count_s=%.0f", ShotPrefix.IsEmpty() ? 0 : 1, CountSeconds);
 }
 
 void UMarburgumStreetSmokeSubsystem::Deinitialize()
@@ -234,8 +236,67 @@ bool UMarburgumStreetSmokeSubsystem::Tick(float DeltaTime)
         return true;
     }
     Observe();
-    Run(Now);
+    if (CountSeconds > 0.0)
+    {
+        RunCount(Now);
+    }
+    else
+    {
+        Run(Now);
+    }
     return true;
+}
+
+void UMarburgumStreetSmokeSubsystem::RunCount(double Now)
+{
+    if (Step == 0)
+    {
+        if (Now - StepSeconds >= SettleSeconds)
+        {
+            Advance(1, Now);
+            LastCountSeconds = 0.0;
+        }
+        return;
+    }
+    if (Step != 1)
+    {
+        return;
+    }
+    if (Now - LastCountSeconds >= 1.0)
+    {
+        LastCountSeconds = Now;
+        TArray<AMarburgumPedestrian*> Near;
+        People(Near, CountWithinCm);
+        int32 ByGroup[MarburgumII::Street::GroupCount] = {};
+        for (const AMarburgumPedestrian* Person : Near)
+        {
+            ++ByGroup[FMath::Clamp(Person->GetGroupIndex(), 0, MarburgumII::Street::GroupCount - 1)];
+        }
+        FString Groups;
+        for (int32 Group = 0; Group < MarburgumII::Street::GroupCount; ++Group)
+        {
+            Groups += FString::Printf(TEXT("%s%s=%d"), Group ? TEXT(",") : TEXT(""), MarburgumII::Street::Groups[Group].Id, ByGroup[Group]);
+        }
+        // The first half fills the street; the second is what it holds.
+        const double Elapsed = Now - StepSeconds;
+        if (Elapsed >= CountSeconds * 0.5)
+        {
+            FewestCounted = FMath::Min(FewestCounted, Near.Num());
+            MostCounted = FMath::Max(MostCounted, Near.Num());
+            SampleTotal += Near.Num();
+            ++Samples;
+        }
+        MB2_STREET_SMOKE_LOG("event=count t_s=%.0f people=%d groups=%s", Elapsed, Near.Num(), *Groups);
+    }
+    if (Now - StepSeconds < CountSeconds)
+    {
+        return;
+    }
+    MB2_STREET_SMOKE_LOG("event=counted samples=%d fewest=%d most=%d mean=%.1f", Samples, Samples ? FewestCounted : 0, MostCounted,
+        Samples ? static_cast<double>(SampleTotal) / Samples : 0.0);
+    Shot(TEXT("count"));
+    Advance(2, Now);
+    PassAt = Now + 5.0;
 }
 
 void UMarburgumStreetSmokeSubsystem::Run(double Now)
