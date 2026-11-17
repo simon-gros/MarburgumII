@@ -186,6 +186,9 @@ run_phase() {
     local log="$out_dir/server-$phase.log"
     expect_log "$log" "weather_started" 1 "MB2WEATHER role=server event=started source=$expect "
     expect_log "$log" "weather_errors" 0 "MB2WEATHER role=server event=\(no_climate\|unknown_profile\|bad_clock\)"
+    # The street lamps stand on the server too, so their posts block there (ADR-065).
+    expect_log "$log" "lamps_placed" 1 "MB2LAMPS role=server event=placed lamps=[0-9]\{4,\} .* meshes=1"
+    expect_log "$out_dir/client-$phase.log" "client_lamps_placed" 1 "MB2LAMPS role=client event=placed lamps=[0-9]\{4,\} .* meshes=1"
 }
 
 phases="${MB2_WEATHER_PHASES:-dry wet live clear overcast rain snow fog storm noon evening dusk moonlit moonless clockrun}"

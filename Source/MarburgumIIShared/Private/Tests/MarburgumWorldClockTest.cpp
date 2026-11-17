@@ -170,7 +170,10 @@ bool FMarburgumDaylightLookTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("no sun at night"), Night.SunScale == 0.0f);
     TestTrue(TEXT("full night"), FMath::IsNearlyEqual(Night.Night, 1.0f));
     TestTrue(TEXT("the skyglow and nothing more"), FMath::IsNearlyEqual(Night.NightLight, SkyglowOverSun, 1.0e-4f) && !Night.bMoonLight);
-    TestTrue(TEXT("the eye held back"), FMath::IsNearlyEqual(Night.MinBrightnessScale, NightMinBrightnessScale));
+    TestTrue(TEXT("the eye held back: a dark scene as by the floor alone"),
+        FMath::IsNearlyEqual(Night.MinBrightnessScale / FMath::Pow(2.0f, Night.ExposureBias), NightMinBrightnessScale, 1.0e-4f));
+    TestTrue(TEXT("a lamp-lit scene darker than by day"), FMath::IsNearlyEqual(Night.ExposureBias, NightLitExposureBiasEV));
+    TestTrue(TEXT("no bias by day"), Morning.ExposureBias == 0.0f);
     TestTrue(TEXT("the haze no longer glowing"), Night.FogGlow < 0.1f);
     TestTrue(TEXT("the skyglow from high in the south"), FMath::IsNearlyEqual(Night.NightPitch, -SkyglowElevationDeg, 0.01f));
 

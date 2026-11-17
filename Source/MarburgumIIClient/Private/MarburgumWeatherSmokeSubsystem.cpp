@@ -13,6 +13,7 @@
 #include "MarburgumGround.h"
 #include "MarburgumNetworkContract.h"
 #include "MarburgumPlayerController.h"
+#include "MarburgumStreetLamps.h"
 #include "MarburgumSurface.h"
 #include "MarburgumVehicle.h"
 #include "MarburgumWeather.h"
@@ -30,6 +31,7 @@
 #include "UI/MarburgumUISubsystem.h"
 #include "UnrealClient.h"
 #include "Weather/MarburgumWeatherEffects.h"
+#include "Weather/MarburgumStreetLightPresentation.h"
 #include "Weather/MarburgumWeatherPresentation.h"
 
 #define MB2_WEATHER_SMOKE_LOG(Format, ...) \
@@ -698,6 +700,7 @@ void UMarburgumWeatherSmokeSubsystem::CheckDaylight(const TCHAR* Event, const FS
     Expect(FMath::IsNearlyEqual(FRotator::NormalizeAxis(Drawn.Pitch), Day.SunPitch, 0.5f)
         && FMath::Abs(FRotator::NormalizeAxis(Drawn.Yaw - Day.SunYaw)) < 0.5f,
         FString::Printf(TEXT("sun_not_turned drawn=%.2f,%.1f want=%.2f,%.1f"), Drawn.Pitch, Drawn.Yaw, Day.SunPitch, Day.SunYaw));
+    CheckLamps(Event, Want);
     if (!IsDaylightLook(Want))
     {
         return;
@@ -732,7 +735,8 @@ void UMarburgumWeatherSmokeSubsystem::CheckDaylight(const TCHAR* Event, const FS
         const bool bMoon = Want == TEXT("moonlit");
         Expect(SunLux < 0.01f && Day.Night > 0.99f, FString::Printf(TEXT("night_not_night sun_ratio=%.3f night=%.3f"), SunLux, Day.Night));
         Expect(Day.bMoonLight == bMoon, FString::Printf(TEXT("moon_light=%d"), Day.bMoonLight ? 1 : 0));
-        Expect(Day.MinBrightnessScale > 3.0f && Day.FogGlow < 0.1f, FString::Printf(TEXT("night_eye min_brightness=%.2f fog_glow=%.3f"), Day.MinBrightnessScale, Day.FogGlow));
+        Expect(Day.MinBrightnessScale / FMath::Pow(2.0f, Day.ExposureBias) > 3.0f && Day.ExposureBias < -0.5f && Day.FogGlow < 0.1f,
+            FString::Printf(TEXT("night_eye min_brightness=%.2f bias=%.2f fog_glow=%.3f"), Day.MinBrightnessScale, Day.ExposureBias, Day.FogGlow));
         if (bMoon)
         {
             Expect(Day.Moon.Illumination > 0.95 && Day.Moon.Position.ElevationDeg > 40.0,
@@ -745,6 +749,51 @@ void UMarburgumWeatherSmokeSubsystem::CheckDaylight(const TCHAR* Event, const FS
             Expect(Day.Moon.Position.ElevationDeg < 0.0, FString::Printf(TEXT("moon_up=%.2f"), Day.Moon.Position.ElevationDeg));
             Expect(Effects->NightLightLux() > 0.05f && Effects->NightLightLux() < 0.2f, FString::Printf(TEXT("skyglow_lux=%.4f"), Effects->NightLightLux()));
         }
+    }
+}
+
+void UMarburgumWeatherSmokeSubsystem::CheckLamps(const TCHAR* Event, const FString& Want)
+{
+    namespace Lights = MarburgumII::StreetLights;
+    UWorld* World = GetGameInstance()->GetWorld();
+    const UMarburgumStreetLampsSubsystem* Standing = World ? World->GetSubsystem<UMarburgumStreetLampsSubsystem>() : nullptr;
+    const AMarburgumStreetLamps* Lamps = Standing ? Standing->GetLamps() : nullptr;
+    const UMarburgumStreetLightPresentation* Burning = World ? World->GetSubsystem<UMarburgumStreetLightPresentation>() : nullptr;
+    const int32 Nearest = Burning ? Burning->NearestLamp() : INDEX_NONE;
+    const Lights::FOutput* Near = Burning ? Burning->OutputOf(Nearest) : nullptr;
+    MB2_WEATHER_SMOKE_LOG("event=%s_lamps want=%s lamps=%d grounded=%d meshes=%d sky=%d sun_elevation=%.2f switch_on=%.2f burning=%d casting=%d "
+        "nearest_m=%.1f nearest_kind=%d nearest_output=%.3f nearest_kelvin=%.0f nearest_on_s=%.0f brightest_lux=%.3f",
+        Event, *Want, Standing ? Standing->NumRead() : 0, Standing ? Standing->NumGrounded() : 0, Lamps && Lamps->HasMeshes() ? 1 : 0,
+        Burning && Burning->HasSky() ? 1 : 0, Burning ? Burning->GetSky().SunElevationDeg : 0.0, Burning ? Burning->SwitchOnDeg() : 0.0,
+        Burning ? Burning->NumBurning() : 0, Burning ? Burning->NumCasting() : 0, Burning ? Burning->NearestDistanceCm() / 100.0f : 0.0f,
+        Near && Lamps ? static_cast<int32>(Lamps->GetLamps()[Nearest].Kind) : -1, Near ? Near->Output : 0.0f, Near ? Near->Kelvin : 0.0f,
+        Near ? Near->OnSeconds : 0.0, Burning ? Burning->BrightestLux() : 0.0f);
+    if (!IsDaylightLook(Want))
+    {
+        return;
+    }
+    // Every daylight run: the lamps stand, grounded, drawn, and switched by the clock.
+    Expect(Standing && Lamps && Standing->NumRead() >= 1000, FString::Printf(TEXT("lamps_missing=%d"), Standing ? Standing->NumRead() : 0));
+    Expect(Standing && Standing->NumGrounded() >= Standing->NumRead() * 97 / 100,
+        FString::Printf(TEXT("lamps_not_grounded=%d/%d"), Standing ? Standing->NumGrounded() : 0, Standing ? Standing->NumRead() : 0));
+    Expect(Lamps && Lamps->HasMeshes(), TEXT("lamp_meshes_missing"));
+    Expect(Burning && Burning->HasSky() && Burning->NumLamps() == (Standing ? Standing->NumRead() : -1), TEXT("lamps_not_switched"));
+    if (!Burning || !Standing)
+    {
+        return;
+    }
+    if (Want == TEXT("noon") || Want == TEXT("evening"))
+    {
+        Expect(Burning->NumBurning() == 0 && Burning->NumCasting() == 0,
+            FString::Printf(TEXT("lamps_on_by_day burning=%d casting=%d"), Burning->NumBurning(), Burning->NumCasting()));
+    }
+    else if (Want == TEXT("dusk") || Want == TEXT("moonlit") || Want == TEXT("moonless"))
+    {
+        Expect(Burning->NumBurning() == Burning->NumLamps(), FString::Printf(TEXT("lamps_dark_at_night burning=%d of %d"), Burning->NumBurning(), Burning->NumLamps()));
+        Expect(Burning->NumCasting() > 0 && Burning->BrightestLux() > 0.5f * Lights::LanternPeakLux,
+            FString::Printf(TEXT("no_lamp_light casting=%d brightest=%.3f"), Burning->NumCasting(), Burning->BrightestLux()));
+        Expect(Near && Near->Output > 0.5f && Burning->NearestDistanceCm() < 3000.0f,
+            FString::Printf(TEXT("no_lamp_near nearest_m=%.1f output=%.3f"), Burning->NearestDistanceCm() / 100.0f, Near ? Near->Output : 0.0f));
     }
 }
 

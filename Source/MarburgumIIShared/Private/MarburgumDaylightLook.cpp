@@ -74,7 +74,10 @@ namespace MarburgumII::DaylightLook
             + Towards(SkyglowElevationDeg, SkyglowAzimuthDeg) * GlowPart).GetSafeNormal();
         RotationTowards(Direction.IsNearlyZero() ? Towards(SkyglowElevationDeg, SkyglowAzimuthDeg) : Direction, Out.NightPitch, Out.NightYaw);
 
-        Out.MinBrightnessScale = FMath::Lerp(1.0f, NightMinBrightnessScale, Out.Night);
+        // The floor scene (darker than the floor) keeps ADR-064's exposure, lerp(1, NightMinBrightnessScale): the bias
+        // darkens it by 2^bias, and the lowered floor opens the eye by exactly as much. A lit scene gets the bias alone.
+        Out.ExposureBias = NightLitExposureBiasEV * Out.Night;
+        Out.MinBrightnessScale = FMath::Lerp(1.0f, NightMinBrightnessScale, Out.Night) * FMath::Pow(2.0f, Out.ExposureBias);
         Out.FogGlow = FMath::Lerp(1.0f, NightFogGlow, Out.Night);
         Out.StaticSkyScale = FMath::Lerp(1.0f, 0.1f, Out.Night);
         return Out;

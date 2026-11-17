@@ -8,6 +8,8 @@
 #
 # The client renders offscreen (see interaction-smoke-linux.sh for the Vulkan note).
 # Usage: scripts/place-smoke-linux.sh [staged|editor]
+# MB2_PLACE_CLOCK=<ISO 8601 UTC> sets the server's world clock (default a June morning); a night walks the route under the
+# street lamps (ADR-065).
 # Evidence is written to Saved/PlaceSmoke/<UTC timestamp>/.
 set -euo pipefail
 
@@ -78,7 +80,7 @@ fi
 echo "Evidence in $out_dir"
 echo "Dedicated server ($mode) on $map, port $port, walking the place route"
 # Clear dry weather, so the captures read the same on any day.
-setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$out_dir/world-store.json" -MB2Weather=clear_dry -MB2Clock=2026-06-18T08:00:00Z -MB2PlaceRoute \
+setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$out_dir/world-store.json" -MB2Weather=clear_dry -MB2Clock="${MB2_PLACE_CLOCK:-2026-06-18T08:00:00Z}" -MB2PlaceRoute \
     "${common_args[@]}" > "$server_log" 2>&1 &
 server_pid=$!
 for _ in $(seq 1 240); do

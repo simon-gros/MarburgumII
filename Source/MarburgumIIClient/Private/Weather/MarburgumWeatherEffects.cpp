@@ -554,7 +554,7 @@ void AMarburgumWeatherEffects::Apply(float Flash)
 
     FPostProcessSettings& Settings = Grade->Settings;
     Settings.bOverride_AutoExposureBias = true;
-    Settings.AutoExposureBias = Baseline.ExposureBias + Now.ExposureBias;
+    Settings.AutoExposureBias = Baseline.ExposureBias + Now.ExposureBias + (bHasDaylight ? Day.ExposureBias : 0.0f);
     Settings.bOverride_AutoExposureMinBrightness = true;
     Settings.AutoExposureMinBrightness = Baseline.MinBrightness * (bHasDaylight ? Day.MinBrightnessScale : 1.0f);
     Settings.bOverride_ColorSaturation = true;
@@ -654,7 +654,7 @@ void AMarburgumWeatherEffects::UpdateDaylight()
     Day = Daylight::At(Utc);
     if (FMath::IsFinite(NightMinBrightnessOverride) && NightMinBrightnessOverride > 0.0f)
     {
-        Day.MinBrightnessScale = FMath::Lerp(1.0f, NightMinBrightnessOverride, Day.Night);
+        Day.MinBrightnessScale = FMath::Lerp(1.0f, NightMinBrightnessOverride, Day.Night) * FMath::Pow(2.0f, Day.ExposureBias);
     }
     if (!bHasDaylight)
     {

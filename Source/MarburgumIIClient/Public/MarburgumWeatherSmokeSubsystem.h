@@ -50,6 +50,8 @@ private:
     /** Logs the weather effects' state and expects the look of Want: clear, rain, overcast, snow_lying or fog. */
     void CheckLook(const TCHAR* Event, const FString& Want);
     /** Day and night (ADR-064): logs the world clock's daylight as drawn; checks it for the daylight looks. */
+    /** The street lamps (ADR-065): standing, grounded, and burning by night only. */
+    void CheckLamps(const TCHAR* Event, const FString& Want);
     void CheckDaylight(const TCHAR* Event, const FString& Want);
     static bool IsDaylightLook(const FString& Want);
     /** Walks away from the car; true once WalkSeconds have passed and the steps are checked. */

@@ -40,6 +40,13 @@ namespace MarburgumII::DaylightLook
      * day; at six times it a moonless night is 26, the street and the far bank in silhouette.
      */
     inline constexpr float NightMinBrightnessScale = 6.0f;
+    /**
+     * A night scene lit brighter than that floor, under a street lamp (ADR-065), is shown this much darker than the same
+     * brightness by day. Lent's histogram exposure would otherwise bring a lamp-lit wall filling the view to the grey of
+     * a sunny one. The floor is lowered by as much, so a scene darker than it (moonlight, skyglow) is shown exactly as
+     * NightMinBrightnessScale alone showed it.
+     */
+    inline constexpr float NightLitExposureBiasEV = -1.0f;
     /** The haze's glow in full night, as a fraction of the level's. */
     inline constexpr float NightFogGlow = 0.04f;
 
@@ -61,6 +68,8 @@ namespace MarburgumII::DaylightLook
         float Night = 0.0f;
         /** The factor on the level's adaptation floor. */
         float MinBrightnessScale = 1.0f;
+        /** Added to the level's exposure bias, EV: NightLitExposureBiasEV in full night. */
+        float ExposureBias = 0.0f;
         /** The haze's inscattering over the level's. */
         float FogGlow = 1.0f;
         /** For a sky light that does not capture the sky live: its strength over the level's. */
