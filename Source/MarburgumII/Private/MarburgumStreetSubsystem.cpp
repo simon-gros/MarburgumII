@@ -42,6 +42,11 @@ namespace MarburgumStreetPopulation
     constexpr double SameFightCm = 600.0;
     // A body is noticed while it stays down; its incident is refreshed every step and lapses this soon after.
     constexpr double BodyHoldSeconds = 0.5;
+    // The probe's finder (smoke only): sent once the run-over has faded this long, to pavement this far from the body.
+    constexpr double ProbeFinderAfterSeconds = 1.0;
+    constexpr double ProbeFinderNearCm = 800.0;
+    constexpr double ProbeFinderFarCm = 1500.0;
+    constexpr double ProbeFinderHeightCm = 200.0;
     constexpr float HalfHeightCm = 88.f;
     constexpr double SummarySeconds = 10.0;
     // The water probe (ADR-046): the node nearest the first player (within this) with the river this far off it
@@ -103,10 +108,13 @@ void UMarburgumStreetSubsystem::OnWorldBeginPlay(UWorld& InWorld)
     int32 Seed = 1990;
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetSeed="), Seed);
     bProbe = FParse::Param(FCommandLine::Get(), TEXT("MB2StreetProbe"));
+    int32 Places = 1;
+    FParse::Value(FCommandLine::Get(), TEXT("MB2StreetPlaces="), Places);
+    bPlaces = Places != 0;
     Random.Initialize(Seed);
     bEnabled = true;
-    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_ready graph=\"%s\" %s seed=%d load_ms=%.0f"), StreetLogPrefix,
-        *FPaths::GetCleanFilename(Path), *Report, Seed, (FPlatformTime::Seconds() - Started) * 1000.0);
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_ready graph=\"%s\" %s seed=%d places=%d load_ms=%.0f"), StreetLogPrefix,
+        *FPaths::GetCleanFilename(Path), *Report, Seed, bPlaces ? 1 : 0, (FPlatformTime::Seconds() - Started) * 1000.0);
 }
 
 void UMarburgumStreetSubsystem::Deinitialize()
@@ -183,13 +191,23 @@ void UMarburgumStreetSubsystem::Step(double Time)
     if (Time - LastSummarySeconds >= MarburgumStreetPopulation::SummarySeconds)
     {
         LastSummarySeconds = Time;
-        int32 ByMood[7] = {};
+        int32 ByMood[8] = {};
         // Nobody walks into the river (ADR-046); anyone in it got there some other way, and is counted.
         int32 Swimming = 0;
+        int32 AtPlaces[AttractorCount] = {};
         for (const TWeakObjectPtr<AMarburgumPedestrian>& Person : People)
         {
-            ++ByMood[FMath::Clamp(static_cast<int32>(Person->GetMood()), 0, 6)];
+            ++ByMood[FMath::Clamp(static_cast<int32>(Person->GetMood()), 0, 7)];
             Swimming += Person->GetCharacterMovement()->IsSwimming() ? 1 : 0;
+            if (Graph.GetAttractors().IsValidIndex(Person->GetAttractor()))
+            {
+                ++AtPlaces[Graph.GetAttractors()[Person->GetAttractor()].Kind];
+            }
+        }
+        FString PlaceCounts;
+        for (int32 Kind = 0; Kind < AttractorCount; ++Kind)
+        {
+            PlaceCounts += FString::Printf(TEXT("%s%s=%d"), Kind ? TEXT(",") : TEXT(""), AttractorNames[Kind], AtPlaces[Kind]);
         }
         int32 ByGroup[GroupCount] = {};
         for (const TWeakObjectPtr<AMarburgumPedestrian>& Person : People)
@@ -201,9 +219,9 @@ void UMarburgumStreetSubsystem::Step(double Time)
         {
             GroupCounts += FString::Printf(TEXT("%s%s=%d"), Group ? TEXT(",") : TEXT(""), Groups[Group].Id, ByGroup[Group]);
         }
-        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_summary people=%d target=%d period=%s players=%d incidents=%d walk=%d flee=%d watch=%d gather=%d dodge=%d fight=%d down=%d swimming=%d groups=%s"),
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_summary people=%d target=%d period=%s players=%d incidents=%d walk=%d flee=%d watch=%d gather=%d dodge=%d fight=%d down=%d visit=%d swimming=%d groups=%s at_places=%s went_in=%d came_out=%d found_waiting=%d"),
             StreetLogPrefix, People.Num(), TargetPeople, PeriodNames[static_cast<int32>(Hour.Period)], Viewers.Num(), Incidents.Num(), ByMood[0], ByMood[1],
-            ByMood[2], ByMood[3], ByMood[4], ByMood[5], ByMood[6], Swimming, *GroupCounts);
+            ByMood[2], ByMood[3], ByMood[4], ByMood[5], ByMood[6], ByMood[7], Swimming, *GroupCounts, *PlaceCounts, WentIn, CameOut, FoundWaiting);
     }
 }
 
@@ -365,6 +383,12 @@ void UMarburgumStreetSubsystem::MarkSeenAndCull(double Time)
         {
             Reason = TEXT("nobody_about");
         }
+        else if (Person->HasGoneIn())
+        {
+            // Through a door (ADR-069): off the street.
+            Reason = TEXT("went_in");
+            ++WentIn;
+        }
         else if (Person->IsOut())
         {
             // Someone lying in the street stays a while: taken away once nobody is close and nobody sees it.
@@ -449,10 +473,44 @@ void UMarburgumStreetSubsystem::UpdateHour(double Time)
     {
         Mix += FString::Printf(TEXT("%s%s=%d"), Group ? TEXT(",") : TEXT(""), Groups[Group].Id, Hour.Mix[Group]);
     }
-    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_hour clock=%d marburgum=\"%s %s\" weekday=%d period=%s period_day=%d zones=%s zone=%s density=%.2f precipitation=%.2f weather=%.2f players=%d target=%d mix=%s"),
+    FString Open;
+    for (int32 Kind = 0; Kind < AttractorCount; ++Kind)
+    {
+        Open += FString::Printf(TEXT("%s%s=%.2f"), Kind ? TEXT(",") : TEXT(""), AttractorNames[Kind], AttractorOpenNow(static_cast<EAttractor>(Kind)));
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_hour clock=%d marburgum=\"%s %s\" weekday=%d period=%s period_day=%d zones=%s zone=%s density=%.2f precipitation=%.2f weather=%.2f players=%d target=%d mix=%s open=%s"),
         StreetLogPrefix, bClockKnown ? 1 : 0, bClockKnown ? *MarburgumII::Clock::DateLabel(Local) : TEXT("-"), bClockKnown ? *MarburgumII::Clock::TimeLabel(Local) : TEXT("-"),
         bClockKnown ? Local.Weekday : -1, PeriodNames[static_cast<int32>(Hour.Period)], Hour.Weekday, ZoneList.IsEmpty() ? TEXT("-") : *ZoneList,
-        ZoneNames[static_cast<int32>(Hour.Zone)], Hour.Density, Falling, Weather, Viewers.Num(), TargetPeople, *Mix);
+        ZoneNames[static_cast<int32>(Hour.Zone)], Hour.Density, Falling, Weather, Viewers.Num(), TargetPeople, *Mix, *Open);
+}
+
+float UMarburgumStreetSubsystem::AttractorOpenNow(EAttractor Kind) const
+{
+    return AttractorOpen(Kind, StreetHourAt(ClockWeekday, ClockHour), ClockWeekday, ClockHour);
+}
+
+int32 UMarburgumStreetSubsystem::FreeSlot(int32 Attractor) const
+{
+    if (!Graph.GetAttractors().IsValidIndex(Attractor))
+    {
+        return INDEX_NONE;
+    }
+    uint32 Taken = 0;
+    for (const TWeakObjectPtr<AMarburgumPedestrian>& Person : People)
+    {
+        if (Person.IsValid() && Person->GetAttractor() == Attractor)
+        {
+            Taken |= 1u << FMath::Clamp(Person->GetAttractorSlot(), 0, 31);
+        }
+    }
+    for (int32 Slot = 0; Slot < Graph.GetAttractors()[Attractor].Spots.Num(); ++Slot)
+    {
+        if ((Taken & (1u << Slot)) == 0)
+        {
+            return Slot;
+        }
+    }
+    return INDEX_NONE;
 }
 
 EZone UMarburgumStreetSubsystem::ZoneAt(const FVector& At) const
@@ -522,36 +580,53 @@ bool UMarburgumStreetSubsystem::SpawnPointOk(const FVector& At, bool bInView, bo
     return true;
 }
 
-bool UMarburgumStreetSubsystem::TrySpawnFor(const FMarburgumStreetViewer& Viewer, bool bInView)
+FVector UMarburgumStreetSubsystem::SpawnProbe(const FMarburgumStreetViewer& Viewer, bool bInView)
 {
     using namespace MarburgumStreetPopulation;
     const double FacingYaw = FMath::RadiansToDegrees(FMath::Atan2(Viewer.Facing.Y, Viewer.Facing.X));
+    double Yaw;
+    double Distance;
+    if (bInView)
+    {
+        Yaw = FacingYaw + Random.FRandRange(-(ViewHalfAngleDegrees - InViewInsetDegrees), ViewHalfAngleDegrees - InViewInsetDegrees);
+        Distance = Random.FRandRange(SpawnInViewMinCm, SpawnInViewMaxCm);
+    }
+    else
+    {
+        Yaw = FacingYaw + 180.0 + Random.FRandRange(-(180.0 - ViewHalfAngleDegrees), 180.0 - ViewHalfAngleDegrees);
+        Distance = Random.FRandRange(SpawnOutOfViewMinCm, SpawnOutOfViewMaxCm);
+    }
+    return Viewer.Location + FRotator(0.0, Yaw, 0.0).Vector() * Distance;
+}
+
+bool UMarburgumStreetSubsystem::InSpawnBand(const FMarburgumStreetViewer& Viewer, const FVector& At, bool bInView) const
+{
+    using namespace MarburgumStreetPopulation;
+    // Snapped to a node, the place must still lie inside the band where people are kept, or they go at once, and on the
+    // side of the view it was picked for: an "in view" node the player cannot see is never marked seen.
+    const double FromViewer = FVector::Dist2D(Viewer.Location, At);
+    return FromViewer <= (bInView ? CullCm - 200.0 : KeepCm - OutOfViewKeepMarginCm)
+        && (bInView ? InViewOf(Viewer, At, InViewInsetDegrees) : !InViewOf(Viewer, At)) && SpawnPointOk(At, bInView);
+}
+
+bool UMarburgumStreetSubsystem::TrySpawnFor(const FMarburgumStreetViewer& Viewer, bool bInView)
+{
+    using namespace MarburgumStreetPopulation;
+    // Some come out of an open café or shop, or are already waiting at a stop, rather than walking in (ADR-069).
+    if (bPlaces && Random.FRand() < DoorSpawnShare && TrySpawnAtPlace(Viewer, bInView))
+    {
+        return true;
+    }
     for (int32 Probe = 0; Probe < ProbesPerSpawn; ++Probe)
     {
-        double Yaw;
-        double Distance;
-        if (bInView)
-        {
-            Yaw = FacingYaw + Random.FRandRange(-(ViewHalfAngleDegrees - InViewInsetDegrees), ViewHalfAngleDegrees - InViewInsetDegrees);
-            Distance = Random.FRandRange(SpawnInViewMinCm, SpawnInViewMaxCm);
-        }
-        else
-        {
-            Yaw = FacingYaw + 180.0 + Random.FRandRange(-(180.0 - ViewHalfAngleDegrees), 180.0 - ViewHalfAngleDegrees);
-            Distance = Random.FRandRange(SpawnOutOfViewMinCm, SpawnOutOfViewMaxCm);
-        }
-        const FVector Point = Viewer.Location + FRotator(0.0, Yaw, 0.0).Vector() * Distance;
+        const FVector Point = SpawnProbe(Viewer, bInView);
         const int32 Node = Graph.NearestNode(Point, ProbeNodeCm, ProbeHeightCm);
         if (Node == INDEX_NONE || Graph.GetNodes()[Node].bRoad)
         {
             continue;
         }
         const FVector At = Graph.GetNodes()[Node].Location;
-        // Snapped to a node, the place must still lie inside the band where people are kept, or they go at once, and
-        // on the side of the view it was picked for: an "in view" node the player cannot see is never marked seen.
-        const double FromViewer = FVector::Dist2D(Viewer.Location, At);
-        if (FromViewer > (bInView ? CullCm - 200.0 : KeepCm - OutOfViewKeepMarginCm) || (bInView ? !InViewOf(Viewer, At, InViewInsetDegrees) : InViewOf(Viewer, At))
-            || !SpawnPointOk(At, bInView) || Graph.Touching(Node).IsEmpty())
+        if (!InSpawnBand(Viewer, At, bInView) || Graph.Touching(Node).IsEmpty())
         {
             continue;
         }
@@ -567,6 +642,52 @@ bool UMarburgumStreetSubsystem::TrySpawnFor(const FMarburgumStreetViewer& Viewer
         }
     }
     return false;
+}
+
+bool UMarburgumStreetSubsystem::TrySpawnAtPlace(const FMarburgumStreetViewer& Viewer, bool bInView)
+{
+    using namespace MarburgumStreetPopulation;
+    TArray<int32> Near;
+    Graph.AttractorsWithin(SpawnProbe(Viewer, bInView), ProbeNodeCm, Near);
+    if (Near.IsEmpty())
+    {
+        return false;
+    }
+    const int32 Attractor = Near[Random.RandHelper(Near.Num())];
+    const FMarburgumWalkGraph::FAttractor& Place = Graph.GetAttractors()[Attractor];
+    const EAttractor Kind = static_cast<EAttractor>(Place.Kind);
+    const EVisit Action = AttractorKinds[Place.Kind].Visit;
+    if (Action == EVisit::Look || Graph.Touching(Place.Node).IsEmpty() || Random.FRand() >= AttractorOpenNow(Kind))
+    {
+        return false;
+    }
+    const int32 Slot = Action == EVisit::Wait ? FreeSlot(Attractor) : 0;
+    if (Slot == INDEX_NONE)
+    {
+        return false;
+    }
+    const FVector At = Place.Spots[Slot];
+    if (!InSpawnBand(Viewer, At, bInView))
+    {
+        return false;
+    }
+    const double Distance = FVector::Dist2D(Viewer.Location, At);
+    AMarburgumPedestrian* Person = SpawnAt(Place.Node, &At, Action == EVisit::Wait ? TEXT("waiting") : TEXT("door"), Distance);
+    if (!Person)
+    {
+        return false;
+    }
+    if (Action == EVisit::Wait)
+    {
+        Person->StartAt(Attractor, Slot, Now());
+        ++FoundWaiting;
+    }
+    else
+    {
+        Person->ComeOutAt(Attractor);
+        ++CameOut;
+    }
+    return true;
 }
 
 AMarburgumPedestrian* UMarburgumStreetSubsystem::SpawnAt(int32 Node, const FVector* Override, const TCHAR* Why, double PlayerDistanceCm)
@@ -610,8 +731,13 @@ AMarburgumPedestrian* UMarburgumStreetSubsystem::SpawnAt(int32 Node, const FVect
 
 void UMarburgumStreetSubsystem::StepProbe()
 {
-    if (!bProbe || bProbeDone)
+    if (!bProbe)
     {
+        return;
+    }
+    if (bProbeDone)
+    {
+        StepProbeFinder();
         return;
     }
     TArray<AMarburgumVehicle*> Cars;
@@ -652,6 +778,10 @@ void UMarburgumStreetSubsystem::StepProbe()
             if (AMarburgumPedestrian* Person = SpawnAt(Node, &At, Probe.bDodges ? TEXT("probe_dodges") : TEXT("probe_stands"), Probe.AheadCm))
             {
                 Person->MakeProbe(At + Right * 500.0, 20.0, Probe.bDodges, Probe.Vitality);
+                if (!Probe.bDodges)
+                {
+                    ProbeVictim = Person;
+                }
             }
         }
         // Witnesses on the pavement either side of where it will happen.
@@ -671,6 +801,57 @@ void UMarburgumStreetSubsystem::StepProbe()
             *Car->VehicleId.ToString(), Car->GetForwardSpeed(), Witnesses);
         return;
     }
+}
+
+void UMarburgumStreetSubsystem::StepProbeFinder()
+{
+    using namespace MarburgumStreetPopulation;
+    if (bProbeFinderDone || !ProbeVictim.IsValid())
+    {
+        return;
+    }
+    const int32* Id = BodyIncidents.Find(TWeakObjectPtr<AActor>(ProbeVictim.Get()));
+    const FMarburgumStreetIncident* Body = Id ? FindIncident(*Id) : nullptr;
+    if (!Body)
+    {
+        ProbeBodySince = -1.0;
+        return;
+    }
+    const double Time = Now();
+    if (ProbeBodySince < 0.0)
+    {
+        ProbeBodySince = Time;
+    }
+    // The run-over is louder than the body and answered first by everyone near it; wait for it to fade, so the one
+    // who comes along now has only the body to answer (the witnesses are all taken up with the run-over).
+    if (Time - ProbeBodySince < RunOverIncidentSeconds + ProbeFinderAfterSeconds)
+    {
+        return;
+    }
+    bProbeFinderDone = true;
+    TArray<int32> Near;
+    Graph.NodesWithin(Body->Location, ProbeFinderFarCm, Near);
+    int32 Best = INDEX_NONE;
+    double BestDistance = TNumericLimits<double>::Max();
+    for (const int32 Node : Near)
+    {
+        const FVector At = Graph.GetNodes()[Node].Location;
+        const double Distance = FVector::Dist2D(At, Body->Location);
+        if (!Graph.GetNodes()[Node].bRoad && Distance >= ProbeFinderNearCm && FMath::Abs(At.Z - Body->Location.Z) <= ProbeFinderHeightCm
+            && Distance < BestDistance && SpawnPointOk(At, false, true))
+        {
+            Best = Node;
+            BestDistance = Distance;
+        }
+    }
+    AMarburgumPedestrian* Finder = Best != INDEX_NONE ? SpawnAt(Best, nullptr, TEXT("probe_finder"), BestDistance) : nullptr;
+    if (!Finder)
+    {
+        UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=probe_finder_skipped incident=%d nodes=%d"), StreetLogPrefix, Body->Id, Near.Num());
+        return;
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=probe_finder npc=%s incident=%d body_m=%.1f"), StreetLogPrefix,
+        *Finder->GetNpcId().ToString(), Body->Id, BestDistance / 100.0);
 }
 
 void UMarburgumStreetSubsystem::StepWaterProbe(double Time)

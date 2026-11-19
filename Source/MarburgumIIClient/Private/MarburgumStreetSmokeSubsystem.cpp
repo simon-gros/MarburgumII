@@ -204,16 +204,16 @@ void UMarburgumStreetSmokeSubsystem::Report(const TCHAR* Event, double Now)
 {
     TArray<AMarburgumPedestrian*> Near;
     People(Near, CountWithinCm);
-    int32 Moods[7] = {};
+    int32 Moods[8] = {};
     for (const AMarburgumPedestrian* Person : Near)
     {
-        ++Moods[FMath::Clamp(static_cast<int32>(Person->GetMood()), 0, 6)];
+        ++Moods[FMath::Clamp(static_cast<int32>(Person->GetMood()), 0, 7)];
     }
     const AMarburgumCharacter* Character = Body();
     const FVector At = Character ? Character->GetActorLocation() : FVector::ZeroVector;
-    MB2_STREET_SMOKE_LOG("event=%s step=%d step_s=%.1f pos=%.0f,%.0f,%.0f people=%d walk=%d flee=%d watch=%d gather=%d dodge=%d fight=%d down=%d "
+    MB2_STREET_SMOKE_LOG("event=%s step=%d step_s=%.1f pos=%.0f,%.0f,%.0f people=%d walk=%d flee=%d watch=%d gather=%d dodge=%d fight=%d down=%d visit=%d "
                          "most_flee=%d most_watch=%d most_down=%d most_gather=%d most_dodge=%d nearest_appear_m=%.1f",
-        Event, Step, Now - StepSeconds, At.X, At.Y, At.Z, Near.Num(), Moods[0], Moods[1], Moods[2], Moods[3], Moods[4], Moods[5], Moods[6], MostFleeing,
+        Event, Step, Now - StepSeconds, At.X, At.Y, At.Z, Near.Num(), Moods[0], Moods[1], Moods[2], Moods[3], Moods[4], Moods[5], Moods[6], Moods[7], MostFleeing,
         MostWatching, MostDown, MostGathered, MostDodging, NearestSpawnCm == TNumericLimits<double>::Max() ? -1.0 : NearestSpawnCm / 100.0);
 }
 
@@ -294,9 +294,12 @@ void UMarburgumStreetSmokeSubsystem::RunCount(double Now)
         TArray<AMarburgumPedestrian*> Near;
         People(Near, CountWithinCm);
         int32 ByGroup[MarburgumII::Street::GroupCount] = {};
+        // Standing at, or on their way to, a bus stop, a door or a sight (ADR-069): the mood replicates.
+        int32 Visiting = 0;
         for (const AMarburgumPedestrian* Person : Near)
         {
             ++ByGroup[FMath::Clamp(Person->GetGroupIndex(), 0, MarburgumII::Street::GroupCount - 1)];
+            Visiting += Person->GetMood() == EMarburgumStreetMood::Visit ? 1 : 0;
         }
         FString Groups;
         for (int32 Group = 0; Group < MarburgumII::Street::GroupCount; ++Group)
@@ -312,7 +315,7 @@ void UMarburgumStreetSmokeSubsystem::RunCount(double Now)
             SampleTotal += Near.Num();
             ++Samples;
         }
-        MB2_STREET_SMOKE_LOG("event=count t_s=%.0f people=%d groups=%s", Elapsed, Near.Num(), *Groups);
+        MB2_STREET_SMOKE_LOG("event=count t_s=%.0f people=%d visiting=%d groups=%s", Elapsed, Near.Num(), Visiting, *Groups);
     }
     if (Now - StepSeconds < CountSeconds)
     {

@@ -2,9 +2,9 @@
   "format": "marburgumii.street",
   "version": "0.1.0",
   "status": "stage1_lent_street_people",
-  "description": "Street people carried forward from the original Marburgum's ambient population: who walks Lent and its neighbours, where and when, how far off they appear and go, and what each personality does about a fight, a run-over, someone on the ground, being hit or being walked into. Mirrors MarburgumIIShared/Public/MarburgumStreetContract.h; `mb2 validate street` keeps them in step. Distances in metres, speeds in metres per second, times in seconds. Decision weights are relative, per column [stranger, player].",
+  "description": "Street people carried forward from the original Marburgum's ambient population: who walks Lent and its neighbours, where and when, how far off they appear and go, and what each personality does about a fight, a run-over, someone on the ground, being hit or being walked into, and which bus stops, cafés, shops and sights draw them in when. Mirrors MarburgumIIShared/Public/MarburgumStreetContract.h; `mb2 validate street` keeps them in step. Distances in metres, speeds in metres per second, times in seconds. Decision weights are relative, per column [stranger, player].",
   "provenance": {
-    "source": "magna-raedarum-marburgum: UnrealMarburgum/Source/MarburgumServer/Private/MarburgumAmbientPopulation.cpp and MarburgumRunOver, docs/AMBIENT_STREETS.md, project/data/population_groups.json, project/data/npc_visual_profiles.json (population_groups.json `periods` and `zones` for the hours and districts, project/data/road_graph.json for every walk node's zone and activity; branches main, feat/ambient-react-to-bodies, feat/ambient-panic-spread)",
+    "source": "magna-raedarum-marburgum: UnrealMarburgum/Source/MarburgumServer/Private/MarburgumAmbientPopulation.cpp and MarburgumRunOver, docs/AMBIENT_STREETS.md, project/data/population_groups.json, project/data/npc_visual_profiles.json (population_groups.json `periods` and `zones` for the hours and districts, project/data/road_graph.json for every walk node's zone and activity and the attractors, population_groups.json `attractors` and the groups' `visits` for the places that draw people in; branches main, feat/ambient-react-to-bodies, feat/ambient-panic-spread)",
     "copied_unchanged": [
       "groups (archetypes, walk speeds, personality mixes)",
       "the night people group (archetypes, walk speed, personality mix) and its looks",
@@ -16,7 +16,10 @@
       "run-over strike speed, margin, damage per m/s and down time",
       "every walk node's zone and activity: the nearest node of the original's road graph (tools/build_road_graph.py classify)",
       "busy streets fill first: a newcomer is put on a street with a chance of its activity, at least 0.15 (TrySpawnPedestrian)",
-      "each player's number from the zone of the walk node nearest them (Spawn, PedestrianDensityAt)"
+      "each player's number from the zone of the walk node nearest them (Spawn, PedestrianDensityAt)",
+      "the attractors: bus stops, cafés, restaurants, bars, fast food, shops and sights (road_graph.json, tools/build_road_graph.py load_attractors), each kind's action (wait, enter, look), dwell and how open it is per period, and each group's visit chance per kind (population_groups.json)",
+      "visiting: one roll per node passed, at the place's node and the nodes joined to it within 40 m; three at most wait at a stop or look at a sight, 0.8 m apart along the kerb; a sight is looked at from 3 m; whoever goes in leaves the street; 0.3 of newcomers come out of an open door or are already waiting at an open stop (TryVisit, StepVisit, TrySpawnAtDoor)",
+      "a venue's door is the point of its building's outline nearest the pavement (annotate_attractors), on Marburgum II's joined footprints"
     ],
     "marburgum_ii_own": [
       "decisions: fight (the original's row was San Andreas' shipped R_Norm/R_Tough/R_Weak values) and run_over (none in the original)",
@@ -30,7 +33,12 @@
       "going home: one unseen person every 2 s, the furthest and never within 22 m of a player, while more are out than the hour wants",
       "the night people's display name",
       "a walk node with no original node within 100 m is rural, activity 0.05 (the original's answer for a street with nothing near it)",
-      "the workers' and out-walking groups' display names"
+      "the workers' and out-walking groups' display names",
+      "each place pinned again to this walk graph: the nearest node within 40 m (not on the carriageway) with a clear way to it, never across the carriageway, through a building or the river; the spot clear of the carriageway, the river and 0.45 m of every building, within 1.5 m of a venue's door; in the game, a spot that fails the level's check is tried up to 1.5 m nearer its node",
+      "people already waiting at a stop appear whenever it is open (the original spawned them only 09:00-19:59, as San Andreas did)",
+      "shops keep the 1990s shop hours of the lit windows and Kiosk 67: 07:00-19:00 on weekdays, to 13:00 on Saturday, shut on Sunday",
+      "nobody goes straight back to the place they have just left",
+      "somebody who cannot reach their spot in 30 s, or finds the river or a fight in the way, gives up and walks on"
     ],
     "excluded": [
       "San Andreas decision weights",
@@ -38,12 +46,12 @@
       "GTA III wander, signal clock and car following",
       "crime points, pursuit, officers",
       "ambient traffic and carjacking (Marburgum II has no traffic yet)",
-      "attractors (no bus stops, cafés or venues on the graph yet)",
       "placeholder San Andreas / GTA III bodies",
       "the original's weekend (Friday 20:00 to Sunday 20:00, with its own tables) and its rain rule, which came in from a reverse-engineering report of San Andreas' population cycle",
       "each zone's police share (ADR-006: the police stay out)",
       "San Andreas' deficit fill of the group furthest below its share (a newcomer's group is a weighted roll, as ADR-044's)",
-      "the zones' car densities and car mixes (no traffic yet)"
+      "the zones' car densities and car mixes (no traffic yet)",
+      "the original's 09:00-19:59 window for people already waiting at a stop (San Andreas' spawn hours for attractor users)"
     ]
   },
   "rules": {
@@ -929,5 +937,142 @@
       "secondary_color": "#353a34",
       "scale": 1
     }
-  ]
+  ],
+  "attractors": {
+    "_comment": "Places that draw people in (ADR-069): the original's attractors, on the world clock. `open` per period is how open a kind is (0..1); a passer-by's chance of going to an open place is their group's `visits` weight for its kind times that. Shops are open only in the 1990s shop hours. Every place is pinned to a walk-graph node with its spots (Content/Marburgum/Street/lent_walk_graph.json `attractors`, lent-ground --mode attractors).",
+    "kinds": {
+      "bus_stop": {
+        "action": "wait",
+        "dwell": [
+          20,
+          90
+        ],
+        "open": {
+          "night": 0.2,
+          "morning": 1.0,
+          "day": 0.8,
+          "evening": 0.8,
+          "late": 0.4
+        }
+      },
+      "cafe": {
+        "action": "enter",
+        "open": {
+          "night": 0.0,
+          "morning": 0.8,
+          "day": 1.0,
+          "evening": 0.8,
+          "late": 0.2
+        }
+      },
+      "restaurant": {
+        "action": "enter",
+        "open": {
+          "night": 0.0,
+          "morning": 0.1,
+          "day": 0.8,
+          "evening": 1.0,
+          "late": 0.3
+        }
+      },
+      "bar": {
+        "action": "enter",
+        "open": {
+          "night": 0.5,
+          "morning": 0.0,
+          "day": 0.2,
+          "evening": 0.8,
+          "late": 1.0
+        }
+      },
+      "fast_food": {
+        "action": "enter",
+        "open": {
+          "night": 0.3,
+          "morning": 0.3,
+          "day": 0.8,
+          "evening": 0.8,
+          "late": 0.8
+        }
+      },
+      "shop": {
+        "action": "enter",
+        "open": {
+          "night": 0.0,
+          "morning": 0.5,
+          "day": 1.0,
+          "evening": 0.5,
+          "late": 0.0
+        }
+      },
+      "sight": {
+        "action": "look",
+        "dwell": [
+          8,
+          25
+        ],
+        "open": {
+          "night": 0.1,
+          "morning": 0.5,
+          "day": 1.0,
+          "evening": 0.8,
+          "late": 0.3
+        }
+      }
+    },
+    "visits": {
+      "commuters": {
+        "bus_stop": 0.5,
+        "cafe": 0.15,
+        "fast_food": 0.1,
+        "shop": 0.1
+      },
+      "shoppers": {
+        "shop": 0.5,
+        "cafe": 0.3,
+        "restaurant": 0.1,
+        "sight": 0.05
+      },
+      "pensioners": {
+        "bus_stop": 0.4,
+        "shop": 0.3,
+        "cafe": 0.2,
+        "sight": 0.1
+      },
+      "students": {
+        "bus_stop": 0.4,
+        "fast_food": 0.3,
+        "cafe": 0.2,
+        "bar": 0.15
+      },
+      "residents": {
+        "bus_stop": 0.2,
+        "shop": 0.25,
+        "cafe": 0.1,
+        "bar": 0.05
+      },
+      "night_people": {
+        "bar": 0.5,
+        "fast_food": 0.3
+      },
+      "workers": {
+        "bus_stop": 0.3,
+        "fast_food": 0.2,
+        "bar": 0.1,
+        "shop": 0.1
+      },
+      "outdoor": {
+        "sight": 0.4,
+        "cafe": 0.15,
+        "bus_stop": 0.1
+      }
+    },
+    "reach": 40.0,
+    "capacity": 3,
+    "slot_spacing": 0.8,
+    "sight_stand_off": 3.0,
+    "door_spawn_share": 0.3,
+    "reach_seconds": 30.0,
+    "shop_hours": "1990s: weekdays 07:00-19:00, Saturday to 13:00, shut on Sunday (MarburgumLitWindows.h ShopsOpen)"
+  }
 }
