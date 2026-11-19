@@ -221,6 +221,107 @@ bool FMarburgumStreetRulesTest::RunTest(const FString& Parameters)
             Graph.GetNodes()[0].Zone == static_cast<uint8>(EZone::OldTown) && Graph.GetNodes()[0].Activity == 1.f);
     }
 
+    // Places that draw people in (ADR-069): the original's hours and visit chances, the 1990s shop hours, the spots.
+    {
+        TestEqual(TEXT("a bus stop by name"), AttractorNamed(TEXT("bus_stop")), EAttractor::BusStop);
+        TestEqual(TEXT("a sight by name"), AttractorNamed(TEXT("sight")), EAttractor::Sight);
+        TestEqual(TEXT("an unknown kind"), AttractorNamed(TEXT("casino")), EAttractor::Count);
+        const auto Open = [](EAttractor Kind, int32 Weekday, double Hour) { return AttractorOpen(Kind, StreetHourAt(Weekday, Hour), Weekday, Hour); };
+        // Tuesday
+        TestEqual(TEXT("a cafe by day"), Open(EAttractor::Cafe, 1, 10.0), 1.f);
+        TestEqual(TEXT("a shop by day"), Open(EAttractor::Shop, 1, 10.0), 1.f);
+        TestEqual(TEXT("a bar by day"), Open(EAttractor::Bar, 1, 10.0), 0.2f);
+        TestEqual(TEXT("a bus stop in the morning"), Open(EAttractor::BusStop, 1, 7.5), 1.f);
+        TestEqual(TEXT("a cafe at three in the morning"), Open(EAttractor::Cafe, 1, 3.0), 0.f);
+        TestEqual(TEXT("a bar at three in the morning"), Open(EAttractor::Bar, 1, 3.0), 0.5f);
+        TestEqual(TEXT("a bar late"), Open(EAttractor::Bar, 1, 22.0), 1.f);
+        TestEqual(TEXT("a restaurant in the evening"), Open(EAttractor::Restaurant, 1, 19.0), 1.f);
+        TestEqual(TEXT("a sight by day"), Open(EAttractor::Sight, 1, 12.0), 1.f);
+        // The 1990s shop hours: from 07:00 to 19:00 on weekdays, to 13:00 on Saturday, shut on Sunday.
+        TestEqual(TEXT("a shop at half past six"), Open(EAttractor::Shop, 1, 6.5), 0.f);
+        TestEqual(TEXT("a shop at seven"), Open(EAttractor::Shop, 1, 7.0), 0.5f);
+        TestEqual(TEXT("a shop after seven in the evening"), Open(EAttractor::Shop, 1, 19.5), 0.f);
+        TestEqual(TEXT("a shop on Saturday morning"), Open(EAttractor::Shop, 5, 11.0), 1.f);
+        TestEqual(TEXT("a shop on Saturday afternoon"), Open(EAttractor::Shop, 5, 14.0), 0.f);
+        TestEqual(TEXT("a shop on Sunday"), Open(EAttractor::Shop, 6, 11.0), 0.f);
+        TestEqual(TEXT("a cafe on Sunday"), Open(EAttractor::Cafe, 6, 11.0), 1.f);
+        // The weekend's later evening: at half past nine on a Friday the bars are still at their evening's.
+        TestEqual(TEXT("a bar at half past nine on Tuesday"), Open(EAttractor::Bar, 1, 21.5), 1.f);
+        TestEqual(TEXT("a bar at half past nine on Friday"), Open(EAttractor::Bar, 4, 21.5), 0.8f);
+        TestEqual(TEXT("a commuter at an open stop"), VisitChance(Commuters, EAttractor::BusStop, 1.f), 0.5f);
+        TestEqual(TEXT("a shopper at a shop half open"), VisitChance(Shoppers, EAttractor::Shop, 0.5f), 0.25f);
+        TestEqual(TEXT("night owls never shop"), VisitChance(NightPeople, EAttractor::Shop, 1.f), 0.f);
+        TestEqual(TEXT("nobody goes to a shut place"), VisitChance(Pensioners, EAttractor::Cafe, 0.f), 0.f);
+        TestEqual(TEXT("no such group"), VisitChance(GroupCount, EAttractor::Cafe, 1.f), 0.f);
+        for (int32 Kind = 0; Kind < AttractorCount; ++Kind)
+        {
+            float Most = 0.f;
+            float Hours = 0.f;
+            for (int32 Group = 0; Group < GroupCount; ++Group)
+            {
+                Most = FMath::Max(Most, Visits[Group][Kind]);
+            }
+            for (int32 Period = 0; Period < PeriodCount; ++Period)
+            {
+                Hours = FMath::Max(Hours, AttractorKinds[Kind].Open[Period]);
+            }
+            TestTrue(FString::Printf(TEXT("somebody goes to a %s, at some hour"), AttractorNames[Kind]), Most > 0.f && Hours > 0.f);
+            TestTrue(FString::Printf(TEXT("a %s's stay"), AttractorNames[Kind]),
+                AttractorKinds[Kind].Visit == EVisit::Enter || (AttractorKinds[Kind].DwellMin > 0.f && AttractorKinds[Kind].DwellMin <= AttractorKinds[Kind].DwellMax));
+        }
+        for (int32 Group = 0; Group < GroupCount; ++Group)
+        {
+            float Total = 0.f;
+            for (int32 Kind = 0; Kind < AttractorCount; ++Kind)
+            {
+                Total += Visits[Group][Kind];
+            }
+            TestTrue(FString::Printf(TEXT("%s go somewhere"), Groups[Group].Id), Total > 0.f);
+        }
+        const FVector2D Out(0.0, 300.0);
+        TestTrue(TEXT("the first spot is the spot"), AttractorSlotOffset(Out, 0).IsNearlyZero());
+        const FVector2D Second = AttractorSlotOffset(Out, 1);
+        const FVector2D Third = AttractorSlotOffset(Out, 2);
+        TestTrue(TEXT("the next along the kerb, across the way out"), FMath::IsNearlyEqual(Second.Size(), AttractorSlotSpacingCm) && FMath::IsNearlyZero(Second.Dot(Out)));
+        TestTrue(TEXT("and the one after on the other side"), (Second + Third).IsNearlyZero());
+        TestTrue(TEXT("the fourth two places along"), FMath::IsNearlyEqual(AttractorSlotOffset(Out, 3).Size(), 2.0 * AttractorSlotSpacingCm));
+
+        // In the graph: a place draws at its node and at the nodes joined to it within reach; one at a dropped node goes.
+        TArray<FMarburgumWalkGraph::FNode> Nodes;
+        for (const FVector& At : { FVector(0.0, 0.0, 0.0), FVector(1000.0, 0.0, 0.0), FVector(6000.0, 0.0, 0.0), FVector(9000.0, 9000.0, 0.0) })
+        {
+            FMarburgumWalkGraph::FNode Node;
+            Node.Location = At;
+            Nodes.Add(Node);
+        }
+        TArray<FMarburgumWalkGraph::FEdge> Edges;
+        Edges.Add({ 0, 1, 1000.0, 1 });
+        Edges.Add({ 1, 2, 5000.0, 1 });
+        TArray<FMarburgumWalkGraph::FAttractor> Places;
+        FMarburgumWalkGraph::FAttractor Stop;
+        Stop.Kind = static_cast<uint8>(EAttractor::BusStop);
+        Stop.Node = 1;
+        Stop.Spots.Add(FVector(1000.0, 300.0, 0.0));
+        Places.Add(Stop);
+        FMarburgumWalkGraph::FAttractor Lone;
+        Lone.Kind = static_cast<uint8>(EAttractor::Cafe);
+        Lone.Node = 3;
+        Lone.Spots.Add(FVector(9000.0, 9300.0, 0.0));
+        Places.Add(Lone);
+        FMarburgumWalkGraph Graph;
+        Graph.Build(Nodes, Edges, Places);
+        TestEqual(TEXT("the place at the lone node is dropped"), Graph.GetAttractors().Num(), 1);
+        TestEqual(TEXT("drawn at its own node"), Graph.AttractorsFrom(1).Num(), 1);
+        TestEqual(TEXT("and at the node 10 m along"), Graph.AttractorsFrom(0).Num(), 1);
+        TestEqual(TEXT("but not 50 m along"), Graph.AttractorsFrom(2).Num(), 0);
+        TestEqual(TEXT("no such node"), Graph.AttractorsFrom(99).Num(), 0);
+        TArray<int32> Near;
+        Graph.AttractorsWithin(FVector(1000.0, 1000.0, 0.0), 800.0, Near);
+        TestEqual(TEXT("a place within 8 m of a point"), Near.Num(), 1);
+        Graph.AttractorsWithin(FVector(4000.0, 1000.0, 0.0), 800.0, Near);
+        TestEqual(TEXT("none far from it"), Near.Num(), 0);
+    }
+
     // The water's footprint (ADR-046): over a column, from its bottom up to a drop above its surface.
     {
         FMarburgumWaterColumns Water;

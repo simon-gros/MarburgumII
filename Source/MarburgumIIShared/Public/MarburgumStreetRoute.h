@@ -9,8 +9,12 @@
  * turns up there is that district's people. The server sets the first player down at each in turn (-MB2StreetRoute,
  * UMarburgumStreetRouteWalker) and the client counts who is about (-MB2StreetSmoke -MB2StreetCount=).
  *
+ * The street-places smoke (ADR-069, scripts/street-places-smoke-linux.sh, -MB2StreetRouteName=places) takes the
+ * PlaceStops instead, PlaceDwellSeconds at each: a node 8-16 m from a cluster of the places that draw people in, looking
+ * at it.
+ *
  * Plan metres, x east and y south of the middle of Stari most; Yaw is the Unreal yaw towards most of the nodes round
- * the stop, so the captures look along the street.
+ * the stop (for the places, toward the cluster), so the captures look along the street.
  */
 namespace MarburgumII::StreetRoute
 {
@@ -39,4 +43,20 @@ namespace MarburgumII::StreetRoute
     inline constexpr double LeadSeconds = 6.0;
 
     inline constexpr const TCHAR* ServerOption = TEXT("MB2StreetRoute");
+
+    /**
+     * ADR-069: within 60 m, the old town's cafés and restaurants by Glavni trg (2 cafés, 5 restaurants, 2 bars, 1 fast
+     * food, 1 shop); the sights by the Drava (3 sights, 5 cafés, 2 restaurants); the shops in Magdalena (4, and fast
+     * food); three bus stops among the houses; and a shopping street with one of nearly every kind.
+     */
+    inline constexpr FStop PlaceStops[] = {
+        { TEXT("venues"), -88.55, -269.94, -162.6f, MarburgumII::Street::EZone::OldTown },
+        { TEXT("sights"), 145.63, -497.73, 121.7f, MarburgumII::Street::EZone::OldTown },
+        { TEXT("shops"), 21.65, 252.44, -4.5f, MarburgumII::Street::EZone::Residential },
+        { TEXT("bus_stops"), -678.5, 670.62, -164.7f, MarburgumII::Street::EZone::Residential },
+        { TEXT("mixed"), 356.54, -365.13, -43.5f, MarburgumII::Street::EZone::Commercial },
+    };
+    inline constexpr double PlaceDwellSeconds = 120.0;
+    /** -MB2StreetRouteName=places picks PlaceStops. */
+    inline constexpr const TCHAR* RouteNameOption = TEXT("MB2StreetRouteName=");
 }

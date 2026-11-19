@@ -11,7 +11,10 @@ class UWorld;
  * for one walking along it, and neither may be in the river (UMarburgumWaterSubsystem, ADR-046). Whatever fails
  * is dropped, so the graph never leads anyone into a wall or the water.
  *
- * Each node also carries the original's zone and activity (ADR-068, tools/lent-ground street-zones), when the file has them.
+ * Each node also carries the original's zone and activity (ADR-068, tools/lent-ground street-zones), when the file has them,
+ * and the graph the places that draw people in (ADR-069, tools/lent-ground --mode attractors): each a bus stop, a venue's
+ * door or a sight, reached from one node, with up to AttractorCapacity spots to stand at, every one checked like a node,
+ * and the way to it from the node like an edge. A place whose first spot fails is dropped.
  *
  * Positions are Unreal centimetres, on the walking surface. Edges are undirected.
  */
@@ -30,6 +33,19 @@ public:
         float Activity = 1.f;
     };
 
+    /** A place that draws people in (ADR-069). */
+    struct FAttractor
+    {
+        /** MarburgumStreetContract.h EAttractor. */
+        uint8 Kind = 0;
+        /** The node it is reached from. */
+        int32 Node = INDEX_NONE;
+        /** The place itself: the door, the stop, the sight; at standing height. */
+        FVector Place = FVector::ZeroVector;
+        /** Where its visitors stand, on the ground: the first spot, then along the kerb either side (venues have one). */
+        TArray<FVector, TInlineAllocator<3>> Spots;
+    };
+
     struct FEdge
     {
         int32 A = 0;
@@ -40,8 +56,8 @@ public:
 
     /** Reads and checks the graph; OutReport says what was kept. False with OutError when there is none. */
     bool Load(UWorld& World, const FString& Path, FString& OutReport, FString& OutError);
-    /** From already-grounded nodes (tests). */
-    void Build(TArray<FNode> InNodes, TArray<FEdge> InEdges);
+    /** From already-grounded nodes (tests); attractors name nodes by their index in InNodes. */
+    void Build(TArray<FNode> InNodes, TArray<FEdge> InEdges, TArray<FAttractor> InAttractors = {});
 
     bool IsEmpty() const { return Nodes.IsEmpty(); }
     const TArray<FNode>& GetNodes() const { return Nodes; }
@@ -58,6 +74,12 @@ public:
     /** Every node within RadiusCm (horizontal). */
     void NodesWithin(const FVector& At, double RadiusCm, TArray<int32>& Out) const;
 
+    const TArray<FAttractor>& GetAttractors() const { return Attractors; }
+    /** The places that draw people at a node: its own and those of the nodes joined to it within AttractorReachCm. */
+    const TArray<int32>& AttractorsFrom(int32 Node) const;
+    /** Every place within RadiusCm (horizontal) of a point. */
+    void AttractorsWithin(const FVector& At, double RadiusCm, TArray<int32>& Out) const;
+
     static constexpr double CellCm = 2000.0;
 
 private:
@@ -69,4 +91,7 @@ private:
     TArray<TArray<int32>> NodeEdges;
     TMap<FIntPoint, TArray<int32>> Cells;
     int32 Largest = INDEX_NONE;
+    TArray<FAttractor> Attractors;
+    TArray<TArray<int32>> NodeAttractors;
+    TMap<FIntPoint, TArray<int32>> AttractorCells;
 };

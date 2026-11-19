@@ -28,9 +28,13 @@
 //! `--mode lamps` places the street lamps along the lit streets, from the streets, `top.bin` and the walk graph
 //! (lamps.rs, ADR-065).
 //!
+//! `--mode attractors` pins the original's bus stops, cafés, shops and sights to the walk graph, each with a spot to
+//! stand at, from the streets (attractors.rs, ADR-069).
+//!
 //! `lent-ground places` writes the place names the location banner reads: districts, streets and
 //! squares, and landmarks (places.rs, ADR-063).
 
+mod attractors;
 mod buildings;
 mod grid;
 mod kinds;
@@ -122,6 +126,9 @@ struct Args {
     /// `lamps`: only the street lamps (lamps.rs), from the streets, the `top.bin` already in the output and the walk
     /// graph at `walk_graph`, into `lamps`.
     lamps: Option<PathBuf>,
+    /// `attractors`: only the places that draw people in (attractors.rs), from the streets and the original's road graph
+    /// at this path, into the walk graph at `walk_graph`.
+    attractors: Option<PathBuf>,
     laz: Vec<PathBuf>,
     osm: PathBuf,
     buildings: PathBuf,
@@ -156,14 +163,20 @@ fn parse_args(map: &HashMap<String, String>) -> Result<Args, String> {
     let _ = EXTENT.set(extent);
     let walk_only = map.get("mode").is_some_and(|m| m == "walk");
     let lamps_only = map.get("mode").is_some_and(|m| m == "lamps");
-    let optional = |k: &str| if walk_only || lamps_only { Ok(map.get(k).cloned().unwrap_or_default()) } else { get(k) };
+    let attractors_only = map.get("mode").is_some_and(|m| m == "attractors");
+    let optional = |k: &str| if walk_only || lamps_only || attractors_only { Ok(map.get(k).cloned().unwrap_or_default()) } else { get(k) };
     let lamps = if lamps_only { Some(PathBuf::from(get("lamps")?)) } else { None };
     if lamps_only && !map.contains_key("walk-graph") {
         return Err("--mode lamps needs --walk-graph (the walk graph it keeps clear of) and --lamps".into());
     }
+    let attractors = if attractors_only { Some(PathBuf::from(get("road-graph")?)) } else { None };
+    if attractors_only && !map.contains_key("walk-graph") {
+        return Err("--mode attractors needs --walk-graph (the walk graph it pins them to) and --road-graph".into());
+    }
     Ok(Args {
         walk_only,
         lamps,
+        attractors,
         laz: list(&optional("laz")?),
         osm: PathBuf::from(get("osm")?),
         buildings: PathBuf::from(get("buildings")?),
@@ -832,6 +845,8 @@ const USAGE: &str = "usage:
               [--walk-graph Content/Marburgum/Street/lent_walk_graph.json] [--mode walk]
        lent-ground --mode lamps --osm osm_lent.json.gz --buildings buildings.json --placed placed.txt --out DIR
               --walk-graph Content/Marburgum/Street/lent_walk_graph.json --lamps Content/Marburgum/Lights/lent_street_lights.json
+       lent-ground --mode attractors --osm osm_lent.json.gz --buildings buildings.json --placed placed.txt --out DIR
+              --walk-graph Content/Marburgum/Street/lent_walk_graph.json --road-graph ORIGINAL/project/data/road_graph.json
        lent-ground ring --laz A.laz,B.laz,... --heights DIR/heights.bin --out DIR
        lent-ground surface-kinds --surface DIR/surface.png --out Content/Marburgum/Ground/lent_surface.bin [--half 768 --cell 2]
        lent-ground places --osm osm_lent.json.gz --districts ORIGINAL/project/data/districts.json
@@ -959,6 +974,13 @@ fn run(args: &Args) -> Result<(), String> {
     if args.walk_only {
         let top = read_f32(&args.out.join("top.bin"), EXTENT.get().expect("extent set").points, half())?;
         return write_walk_graph(args, &osm, &st, &footprints, &top);
+    }
+    if let Some(road_graph) = &args.attractors {
+        let inputs = attractors::Inputs { carriageway: &st.carriageway, footprints: &footprints, water: &st.water, half: half() };
+        let walk = args.walk_graph.as_ref().expect("checked in parse_args");
+        let summary = attractors::annotate(&inputs, walk, road_graph)?;
+        eprintln!("attractors: {summary} ({:.1}s)", t0.elapsed().as_secs_f64());
+        return Ok(());
     }
     if let Some(out) = &args.lamps {
         let top = read_f32(&args.out.join("top.bin"), EXTENT.get().expect("extent set").points, half())?;

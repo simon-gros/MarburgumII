@@ -55,6 +55,10 @@ struct FMarburgumStreetViewer
  * those who walk the district they appear in, on its busier streets first. With more out than the hour wants, people
  * nobody is looking at go home.
  *
+ * Bus stops, cafés, restaurants, bars, fast food, shops and sights draw people in (ADR-069, the walk graph's attractors),
+ * by their hours: passers-by wait at a stop, look at a sight or go in at a door, and a share of the newcomers come out of
+ * an open door, or are already waiting at a stop, rather than walking in from out of sight. Whoever went in is taken away.
+ *
  * Off with -MB2Street=0 (or MB2_STREET=0). Logs carry MB2_STREET.
  */
 UCLASS()
@@ -95,6 +99,12 @@ public:
     /** The zone of the street nearest a place (ADR-068): its nearest walk-graph node's, or the countryside. */
     MarburgumII::Street::EZone ZoneAt(const FVector& At) const;
     int32 GetTargetPeople() const { return TargetPeople; }
+    /** How open places of a kind are now (ADR-069, AttractorOpen on the world clock), 0..1. */
+    float AttractorOpenNow(MarburgumII::Street::EAttractor Kind) const;
+    /** The first free spot at a place, or INDEX_NONE when everyone's there it holds. */
+    int32 FreeSlot(int32 Attractor) const;
+    /** Whether places draw people in and let them out (ADR-069); -MB2StreetPlaces=0 leaves the street as before them. */
+    bool PlacesOn() const { return bPlaces; }
 
 private:
     void Step(double Now);
@@ -107,10 +117,20 @@ private:
     void SendSomeoneHome(double Now);
     void SpawnPeople(double Now, float DeltaSeconds);
     bool TrySpawnFor(const FMarburgumStreetViewer& Viewer, bool bInView);
+    /** A point to look for somebody new round a player: in view 40-55 m ahead, or out of view 22-35 m behind. */
+    FVector SpawnProbe(const FMarburgumStreetViewer& Viewer, bool bInView);
+    /** Whether a newcomer at At is somewhere they are kept, on the side of the view they were picked for. */
+    bool InSpawnBand(const FMarburgumStreetViewer& Viewer, const FVector& At, bool bInView) const;
+    /** ADR-069: somebody out of an open door near a probe, or already waiting at an open stop there. */
+    bool TrySpawnAtPlace(const FMarburgumStreetViewer& Viewer, bool bInView);
     /** A new street person at a walk-graph node, or (Override) somewhere off it, walking away from the node. */
     AMarburgumPedestrian* SpawnAt(int32 Node, const FVector* Override, const TCHAR* Why, double PlayerDistanceCm);
-    /** -MB2StreetProbe: once a player drives, a person who will not jump clear stands in the car's way. */
+    /**
+     * -MB2StreetProbe: once a player drives, a person who will not jump clear stands in the car's way. Once the
+     * run-over has faded and only the body is left, one passer-by is put on the pavement within notice of it.
+     */
     void StepProbe();
+    void StepProbeFinder();
     /**
      * -MB2StreetProbe, ADR-046: once a player is about, a person on the pavement nearest the river is scared
      * from the land side, so running straight away would be into the Drava, and is watched for a while.
@@ -152,8 +172,17 @@ private:
     bool bClockKnown = false;
     FString LoggedHour;
     double LastHomeSeconds = -1000.0;
+    /** Since the street began (ADR-069): people who went in at a door, came out of one, or were waiting at a stop. */
+    int32 WentIn = 0;
+    int32 CameOut = 0;
+    int32 FoundWaiting = 0;
+    bool bPlaces = true;
     bool bProbe = false;
     bool bProbeDone = false;
+    /** The probe who goes down, the time their body was first an incident, and whether a finder has been sent to it. */
+    TWeakObjectPtr<AMarburgumPedestrian> ProbeVictim;
+    double ProbeBodySince = -1.0;
+    bool bProbeFinderDone = false;
     bool bWaterProbeDone = false;
     TWeakObjectPtr<AMarburgumPedestrian> WaterProbe;
     double WaterProbeUntil = 0.0;

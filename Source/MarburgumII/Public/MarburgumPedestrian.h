@@ -20,6 +20,8 @@ enum class EMarburgumStreetMood : uint8
     Dodge,
     Fight,
     Down,
+    /** Going to, or at, a place that draws people in (ADR-069): a bus stop, a venue's door, a sight. */
+    Visit,
 };
 
 /**
@@ -35,6 +37,10 @@ enum class EMarburgumStreetMood : uint8
  * Someone already running from or watching a fight scares the people near them into answering the same fight.
  * A player walking into them, or hitting them, is answered the same way; the ones who fight back become hostile
  * fighters against that player (the fighter rules of ADR-041), and walk on once it is over.
+ *
+ * Reaching a node by a bus stop, a café, a shop or a sight that is open (ADR-069), they may go to it, by their group's
+ * visit chance for that kind of place times how open it is: they wait at the stop facing the road, or look at the sight
+ * from a little way off, and walk on; or they go in at the door and leave the street.
  *
  * A car strikes them as it does the Lent cast (KnockDownAuthority): down, then up and running from where it
  * happened, or out for good if it was fast enough, until nobody is about to see them taken away.
@@ -72,6 +78,15 @@ public:
     bool IsOut() const { return IsIncapacitatedAuthority() && (bOut || GetVitalityPoints() == 0); }
     /** Server: walking into walls, cut off the graph. Nobody minds when they go. */
     bool IsLost() const { return bLost; }
+    /** Server: the place they are going to or at (FMarburgumWalkGraph::GetAttractors()), and their spot there; else INDEX_NONE. */
+    int32 GetAttractor() const { return Mood == EMarburgumStreetMood::Visit ? Attractor : INDEX_NONE; }
+    int32 GetAttractorSlot() const { return AttractorSlot; }
+    /** Server: went in at a door, off the street. The street takes them away. */
+    bool HasGoneIn() const { return bGoneIn; }
+    /** Server, before anyone sees them: already at a place, at this spot, part of the way through their visit. */
+    void StartAt(int32 InAttractor, int32 Slot, double Now);
+    /** Server, before anyone sees them: just out of a door, walking to the place's node. */
+    void ComeOutAt(int32 InAttractor);
 
     /**
      * Server, smoke tests only (-MB2StreetProbe): stand still watching At for Seconds, jumping clear of cars or
@@ -109,6 +124,10 @@ private:
     void StepFlee(double Now);
     void StepWatch(double Now);
     void StepGather(double Now);
+    /** At a node: a place there that is open may draw them in (ADR-069). True when it did. */
+    bool TryVisit(int32 Node, double Now);
+    void BeginVisit(int32 InAttractor, int32 Slot, double Now);
+    void StepVisit(double Now);
 
     // ---- The graph ----
     /** Picks the next edge at Node: the way closest to Heading, or away from Threat when fleeing. */
@@ -174,6 +193,14 @@ private:
     bool bFleeOffGraph = false;
     double NextBumpSeconds = 0.0;
     FVector LastProgressLocation = FVector::ZeroVector;
+    /** The place they are visiting, their spot at it, and whether they are there. */
+    int32 Attractor = INDEX_NONE;
+    int32 AttractorSlot = 0;
+    bool bAtAttractor = false;
+    bool bGoneIn = false;
+    /** The node they last rolled for a place at, and the place they were last at: neither again straight away. */
+    int32 LastVisitNode = INDEX_NONE;
+    int32 LastAttractor = INDEX_NONE;
 
     /** Built from the replicated indices on every machine (GetDefinition). */
     mutable MarburgumII::Combat::FNpcDefinition StreetDefinition = {};

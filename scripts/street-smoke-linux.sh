@@ -5,19 +5,23 @@
 # offscreen, starts at the hatchback's driver door (?MB2Start=lent_hatchback):
 #
 #   people appear round it, out of sight, and walk; it throws punches at the air and people near flee or watch;
-#   it drives off: the first probe goes down under the car, the second jumps aside; people answer the body.
+#   it drives off: the first probe goes down under the car, the second jumps aside; people answer the run-over,
+#   and once it has faded a passer-by sent along the pavement answers the body.
 #   and, as it arrives, a person by the Drava is scared from the land side and runs along the bank, not into the
 #   river (ADR-046); nobody on the street is ever in the water.
 #
 # The server must log the walk graph loaded, people spawned and despawned, reactions to the fight, the run-over,
 # the dodge and the body. The server runs the clear_dry weather (ADR-061) so a real wet day never changes how the car
 # meets the probes. Evidence is written to Saved/StreetSmoke/<UTC timestamp>/.
-# Usage: scripts/street-smoke-linux.sh [staged|editor]   (port: MB2_STREET_PORT, default 27761)
+# Usage: scripts/street-smoke-linux.sh [staged|editor]   (port: MB2_STREET_PORT, default 27761; the street's seed:
+# MB2_STREET_SEED, default 1990; MB2_STREET_PLACES=0 leaves out the places that draw people in, ADR-069)
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-staged}"
 port="${MB2_STREET_PORT:-27761}"
+seed="${MB2_STREET_SEED:-1990}"
+places="${MB2_STREET_PLACES:-1}"
 map="/Game/World/lent"
 uproject="$repo_root/MarburgumII.uproject"
 out_dir="$repo_root/Saved/StreetSmoke/$(date -u +%Y%m%dT%H%M%SZ)"
@@ -79,7 +83,7 @@ start_server() {
         echo "UDP port $port is already in use; stop the other server or set MB2_STREET_PORT." >&2
         exit 1
     fi
-    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" -MB2StreetProbe -MB2StreetSeed=1990 -MB2Weather=clear_dry -MB2Clock=2026-06-18T08:00:00Z "${common_args[@]}" > "$log" 2>&1 &
+    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" -MB2StreetProbe -MB2StreetSeed="$seed" -MB2StreetPlaces="$places" -MB2Weather=clear_dry -MB2Clock=2026-06-18T08:00:00Z "${common_args[@]}" > "$log" 2>&1 &
     server_pid=$!
     for _ in $(seq 1 240); do
         grep -aq "MB2SMOKE role=server event=ready .* port=$port " "$log" && return 0
@@ -145,6 +149,7 @@ expect_log "$log" "probe" 1 "MB2_STREET role=server event=probe vehicle=lent_hat
 expect_log "$log" "run_over" ">=1" "MB2_STREET role=server event=run_over npc=street_.* vehicle=lent_hatchback .* player_driving=1 "
 expect_log "$log" "dodged" ">=1" "MB2_STREET role=server event=dodge npc=street_"
 expect_log "$log" "answered_run_over" ">=1" "MB2_STREET role=server event=react .* event=run_over "
+expect_log "$log" "probe_finder" 1 "MB2_STREET role=server event=probe_finder npc=street_"
 expect_log "$log" "answered_body" ">=1" "MB2_STREET role=server event=react .* event=body "
 # The person the car put out lies there until nobody is close and nobody sees it: never culled like a walker.
 victim=$(grep -ao "MB2_STREET role=server event=run_over npc=street_[0-9]* .* out=1 " "$log" | head -1 | sed 's/.* npc=\(street_[0-9]*\) .*/\1/' || true)
@@ -167,6 +172,8 @@ expect_log "$log" "water_probe_dry" 1 "MB2_STREET role=server event=water_probe_
     echo "git_sha: $(git -C "$repo_root" rev-parse HEAD)$(git -C "$repo_root" diff --quiet HEAD -- Source Config Content || echo ' (dirty)')"
     echo "mode: $mode"
     echo "map: $map"
+    echo "seed: $seed"
+    echo "places: $places"
     echo "host: $(uname -srm)"
     echo
     grep -ah "MB2SSMOKE\|MB2_STREET role=server event=\(street_ready\|street_summary\|incident\|react\|run_over\|dodge\|probe\|gathered\|despawn\|water_edge\|water_probe\|water_probe_done\|water_probe_skipped\)\|MB2SMOKE role=server event=\(ready\|login\|logout\)" \

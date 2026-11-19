@@ -1,7 +1,8 @@
 //! Street people (ADR-044): the street data and the shared C++ contract carry the same rules, decision tables,
 //! groups and looks (the original's ambient population) and the same hours (ADR-067) in every zone (ADR-068); every table answers
 //! something; every group can be dressed and walks at some hour; San Andreas' crime and pursuit vocabulary stays out; and the walk graph the server reads is there,
-//! staged, mostly one network, and every node of it on a known zone.
+//! staged, mostly one network, and every node of it on a known zone. The places that draw people in (ADR-069) match too:
+//! every kind's action, stay and hours, every group's visit chances, and the places pinned on the walk graph.
 
 use regex::Regex;
 use serde_json::Value;
@@ -180,6 +181,93 @@ fn check_hours(data: &Value, contract: &str, subsystem: &str, graph: &Value, dat
     names.len()
 }
 
+/// Places that draw people in (ADR-069): the kinds, their actions, stays and hours, and the groups' visit chances, are the
+/// same in the data and the contract, in the walk graph's order of kinds; every kind draws somebody at some hour and every
+/// group goes somewhere. Every place on the walk graph is a known kind at a node off the carriageway. Returns the places
+/// per kind.
+fn check_attractors(data: &Value, contract: &str, graph: &Value, data_groups: &[Value], problems: &mut Problems) -> Vec<usize> {
+    let section = &data["attractors"];
+    let names: Vec<String> = contract
+        .find("AttractorNames[] = {")
+        .map(|start| {
+            let body = &contract[start..];
+            let body = &body[..body.find("};").unwrap_or(body.len())];
+            Regex::new(r#"TEXT\("(\w+)"\)"#).unwrap().captures_iter(body).map(|c| c[1].to_string()).collect()
+        })
+        .unwrap_or_default();
+    let kinds = section["kinds"].as_object().cloned().unwrap_or_default();
+    let data_names: Vec<&String> = kinds.keys().collect();
+    problems.expect(!names.is_empty() && data_names.iter().map(|n| n.as_str()).eq(names.iter().map(String::as_str)),
+        format!("attractors: data kinds {data_names:?} vs contract {names:?}"));
+    let graph_kinds: Vec<&str> = graph["attractors"]["kinds"].as_array().map(|a| a.iter().filter_map(Value::as_str).collect()).unwrap_or_default();
+    problems.expect(graph_kinds.iter().copied().eq(names.iter().map(String::as_str)), format!("attractors: walk graph kinds {graph_kinds:?} vs contract {names:?}"));
+
+    let row = Regex::new(r"\{ EVisit::(\w+), ([0-9.]+)f, ([0-9.]+)f, \{ ([^}]*) \} \}").unwrap();
+    let rows: Vec<(String, f64, f64, Vec<f64>)> = contract
+        .find("AttractorKinds[] = {")
+        .map(|start| {
+            let body = &contract[start..];
+            let body = &body[..body.find("\n    };").unwrap_or(body.len())];
+            row.captures_iter(body).map(|c| (c[1].to_lowercase(), c[2].parse().unwrap_or(-1.0), c[3].parse().unwrap_or(-1.0), int_list(&c[4]))).collect()
+        })
+        .unwrap_or_default();
+    problems.expect(rows.len() == names.len(), format!("attractors: contract has {} kind rows for {} kinds", rows.len(), names.len()));
+    let visits = table_rows(contract, "Visits[][AttractorCount] = {");
+    problems.expect(visits.len() == data_groups.len(), format!("attractors: contract has {} visit rows for {} groups", visits.len(), data_groups.len()));
+    let mut drawn = vec![0.0; names.len()];
+    for (k, name) in names.iter().enumerate() {
+        let kind = &section["kinds"][name];
+        let Some((action, dwell_min, dwell_max, open)) = rows.get(k) else { continue };
+        problems.expect(kind["action"].as_str() == Some(action.as_str()), format!("attractors: {name} action data {:?} vs contract {action}", kind["action"]));
+        let dwell: Vec<f64> = kind["dwell"].as_array().map(|a| a.iter().filter_map(Value::as_f64).collect()).unwrap_or_else(|| vec![0.0, 0.0]);
+        problems.expect(dwell.len() == 2 && close(dwell[0], *dwell_min) && close(dwell[1], *dwell_max) && dwell[0] <= dwell[1]
+            && (action == "enter" || dwell[0] > 0.0), format!("attractors: {name} stay data {dwell:?} vs contract [{dwell_min}, {dwell_max}]"));
+        let want: Vec<f64> = PERIODS.iter().map(|p| kind["open"][p].as_f64().unwrap_or(f64::NAN)).collect();
+        problems.expect(want.len() == open.len() && want.iter().zip(open).all(|(w, h)| close(*w, *h) && (0.0..=1.0).contains(w)),
+            format!("attractors: {name} hours data {want:?} vs contract {open:?}"));
+        problems.expect(open.iter().any(|&o| o > 0.0), format!("attractors: a {name} is never open"));
+    }
+    for (g, group) in data_groups.iter().enumerate() {
+        let id = group["id"].as_str().unwrap_or("");
+        let unknown: Vec<&String> = section["visits"][id].as_object().map(|o| o.keys().filter(|k| !names.contains(k)).collect()).unwrap_or_default();
+        problems.expect(unknown.is_empty(), format!("attractors: {id} visit kinds that do not exist: {unknown:?}"));
+        let want: Vec<f64> = names.iter().map(|n| section["visits"][id][n].as_f64().unwrap_or(0.0)).collect();
+        problems.expect(visits.get(g) == Some(&want) && want.iter().all(|w| (0.0..=1.0).contains(w)), format!("attractors: {id} visits data {want:?} vs contract {:?}", visits.get(g)));
+        problems.expect(want.iter().sum::<f64>() > 0.0, format!("attractors: {id} never go anywhere"));
+        for (k, w) in want.iter().enumerate() {
+            drawn[k] += w;
+        }
+    }
+    for (name, total) in names.iter().zip(&drawn) {
+        problems.expect(*total > 0.0, format!("attractors: nobody ever goes to a {name}"));
+    }
+    for (key, name, factor) in [("reach", "AttractorReachCm", 100.0), ("capacity", "AttractorCapacity", 1.0), ("slot_spacing", "AttractorSlotSpacingCm", 100.0),
+        ("sight_stand_off", "SightStandOffCm", 100.0), ("door_spawn_share", "DoorSpawnShare", 1.0), ("reach_seconds", "AttractorReachSeconds", 1.0)] {
+        let want = section[key].as_f64().map(|v| v * factor);
+        let have = constant(contract, name);
+        problems.expect(matches!((want, have), (Some(w), Some(h)) if close(w, h)), format!("attractors {key}: data {want:?} vs contract {name} {have:?}"));
+    }
+
+    // On the walk graph (lent-ground --mode attractors): a known kind, at a node off the carriageway, with a spot.
+    let nodes = graph["nodes"].as_array().map(Vec::as_slice).unwrap_or_default();
+    let road = graph["flags"]["road"].as_u64().unwrap_or(2);
+    let mut by_kind = vec![0usize; names.len()];
+    let mut bad = 0usize;
+    for item in graph["attractors"]["items"].as_array().map(Vec::as_slice).unwrap_or_default() {
+        let kind = item.get(2).and_then(Value::as_u64).map(|k| k as usize);
+        let node = item.get(3).and_then(Value::as_u64).and_then(|n| nodes.get(n as usize));
+        let spot = item.get(4).and_then(Value::as_f64).zip(item.get(5).and_then(Value::as_f64));
+        match (kind, node, spot) {
+            (Some(k), Some(n), Some(_)) if k < names.len() && n.get(3).and_then(Value::as_u64).is_some_and(|f| f & road == 0) => by_kind[k] += 1,
+            _ => bad += 1,
+        }
+    }
+    problems.expect(bad == 0, format!("walk graph: {bad} attractors without a known kind, a node off the carriageway and a spot"));
+    problems.expect(by_kind.iter().sum::<usize>() >= 100 && by_kind.iter().all(|&n| n > 0),
+        format!("walk graph: attractors by kind {by_kind:?} (lent-ground --mode attractors)"));
+    by_kind
+}
+
 /// Every walk node carries a zone the contract knows and an activity in 0..1 (ADR-068). Returns the nodes per zone.
 fn check_graph_zones(graph: &Value, zone_count: usize, problems: &mut Problems) -> Vec<usize> {
     let mut by_zone = vec![0usize; zone_count];
@@ -277,6 +365,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     }
     let zone_count = check_hours(&data, &contract, &subsystem, &graph, &data_groups, problems);
     let by_zone = check_graph_zones(&graph, zone_count, problems);
+    let by_kind = check_attractors(&data, &contract, &graph, &data_groups, problems);
 
     // Out of scope by decision (ADR-041, ADR-044).
     let lowered = format!("{contract}\n{pedestrian}\n{subsystem}").to_lowercase();
@@ -293,12 +382,14 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     problems.expect(ini.contains("+DirectoriesToAlwaysStageAsUFS=(Path=\"Marburgum/Street\")"), "the walk graph is not staged into packaged builds");
 
     vec![format!(
-        "Street contract OK: {} rules, {} decision tables, {} groups, {} looks and {zone_count} zones' hours match {DATA}; walk graph {} nodes ({} in the largest network, by zone {by_zone:?}), staged.",
+        "Street contract OK: {} rules, {} decision tables, {} groups, {} looks, {zone_count} zones' hours and {} kinds of place match {DATA}; walk graph {} nodes ({} in the largest network, by zone {by_zone:?}), {} places (by kind {by_kind:?}), staged.",
         RULES.len(),
         rows.len(),
         groups.len(),
         looks.len(),
+        by_kind.len(),
         nodes,
-        largest
+        largest,
+        by_kind.iter().sum::<usize>()
     )]
 }

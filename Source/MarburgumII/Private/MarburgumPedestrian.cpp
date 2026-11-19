@@ -37,6 +37,10 @@ namespace MarburgumStreetPerson
     constexpr double BumpLookSeconds = 0.3;
     constexpr double BumpCooldownSeconds = 3.0;
     constexpr double BumpAnswerSeconds = 3.0;
+    // At a place's spot (ADR-069), as at a body's.
+    constexpr double SpotArriveCm = 45.0;
+    // At a bus stop they face the road: a point this far beyond the spot, away from the pavement.
+    constexpr double FaceAheadCm = 300.0;
     constexpr uint8 EdgeKindCrossing = 2;
     constexpr uint8 EdgeKindCorner = 3;
 
@@ -133,6 +137,7 @@ const TCHAR* AMarburgumPedestrian::MoodIntent(EMarburgumStreetMood Value)
     case EMarburgumStreetMood::Dodge: return IntentDodge;
     case EMarburgumStreetMood::Fight: return IntentFight;
     case EMarburgumStreetMood::Down: return IntentDown;
+    case EMarburgumStreetMood::Visit: return IntentVisit;
     default: return IntentWalk;
     }
 }
@@ -231,6 +236,9 @@ void AMarburgumPedestrian::Think()
         StepGather(Now);
         break;
     case EMarburgumStreetMood::Dodge:
+        break;
+    case EMarburgumStreetMood::Visit:
+        StepVisit(Now);
         break;
     default:
         StepWalk(Now, TickSeconds);
@@ -400,7 +408,7 @@ bool AMarburgumPedestrian::Answer(const FMarburgumStreetIncident& Incident, EEve
     default:
         // Carry on. The same incident is not rolled again, and nobody walks into a fight anyway (StepWalk).
         bUnbothered = true;
-        if (Mood != EMarburgumStreetMood::Walk)
+        if (Mood != EMarburgumStreetMood::Walk && Mood != EMarburgumStreetMood::Visit)
         {
             EndMood();
             bUnbothered = true;
@@ -414,7 +422,7 @@ bool AMarburgumPedestrian::Answer(const FMarburgumStreetIncident& Incident, EEve
 
 bool AMarburgumPedestrian::SenseBumps(double Now)
 {
-    if (Now < NextBumpSeconds || Mood != EMarburgumStreetMood::Walk)
+    if (Now < NextBumpSeconds || (Mood != EMarburgumStreetMood::Walk && Mood != EMarburgumStreetMood::Visit))
     {
         return false;
     }
@@ -469,6 +477,13 @@ bool AMarburgumPedestrian::SenseBumps(double Now)
 void AMarburgumPedestrian::SetMood(EMarburgumStreetMood NewMood, double Until)
 {
     MoodUntil = Until;
+    // Leaving a place, for whatever reason, frees their spot at it.
+    if (NewMood != EMarburgumStreetMood::Visit && Attractor != INDEX_NONE)
+    {
+        LastAttractor = Attractor;
+        Attractor = INDEX_NONE;
+        bAtAttractor = false;
+    }
     if (NewMood == Mood)
     {
         return;
@@ -790,6 +805,11 @@ void AMarburgumPedestrian::StepWalk(double Now, double DeltaSeconds)
     HeadingYaw = FRotator::NormalizeAxis(HeadingYaw + Random.FRandRange(-1.f, 1.f) * HeadingDriftDegreesPerSecond * DeltaSeconds * 10.0);
     if (FVector::Dist2D(Here, Graph.GetNodes()[ToNode].Location) < NodeArriveCm)
     {
+        // Something here that draws them in: a bus stop, an open café, a sight.
+        if (TryVisit(ToNode, Now))
+        {
+            return;
+        }
         TakeNextEdge(ToNode, false);
     }
     // Nobody walks into a fight, whatever they made of it, or into the river: turn back short of it.
@@ -836,6 +856,151 @@ void AMarburgumPedestrian::StepWalk(double Now, double DeltaSeconds)
         LogEvent(TEXT("stuck"), FString::Printf(TEXT("turn_backs=%d"), TurnBacks));
     }
     WalkTo(EdgeGoal());
+}
+
+// ---- Places that draw people in (ADR-069) ----
+
+bool AMarburgumPedestrian::TryVisit(int32 Node, double Now)
+{
+    // Passing by: at most one roll per node, whatever is there.
+    if (Node == LastVisitNode || !Street()->PlacesOn())
+    {
+        return false;
+    }
+    LastVisitNode = Node;
+    UMarburgumStreetSubsystem* S = Street();
+    const FMarburgumWalkGraph& Graph = S->GetGraph();
+    struct FOption
+    {
+        int32 Attractor;
+        int32 Slot;
+        double Chance;
+    };
+    TArray<FOption, TInlineAllocator<8>> Options;
+    double Total = 0.0;
+    for (const int32 Candidate : Graph.AttractorsFrom(Node))
+    {
+        if (Candidate == LastAttractor)
+        {
+            continue;
+        }
+        const EAttractor Kind = static_cast<EAttractor>(Graph.GetAttractors()[Candidate].Kind);
+        const double Chance = VisitChance(GroupIndex, Kind, S->AttractorOpenNow(Kind));
+        // A venue swallows its customers; a full stop or sight draws nobody else.
+        const int32 Slot = AttractorKinds[static_cast<int32>(Kind)].Visit == EVisit::Enter ? 0 : S->FreeSlot(Candidate);
+        if (Chance > 0.0 && Slot != INDEX_NONE)
+        {
+            Options.Add({ Candidate, Slot, Chance });
+            Total += Chance;
+        }
+    }
+    if (Options.IsEmpty() || RandomUnit() >= FMath::Min(1.0, Total))
+    {
+        return false;
+    }
+    double Left = RandomUnit() * Total;
+    const FOption* Pick = &Options.Last();
+    for (const FOption& Option : Options)
+    {
+        Left -= Option.Chance;
+        if (Left <= 0.0)
+        {
+            Pick = &Option;
+            break;
+        }
+    }
+    BeginVisit(Pick->Attractor, Pick->Slot, Now);
+    return true;
+}
+
+void AMarburgumPedestrian::BeginVisit(int32 InAttractor, int32 Slot, double Now)
+{
+    const FMarburgumWalkGraph& Graph = Street()->GetGraph();
+    const FMarburgumWalkGraph::FAttractor& Place = Graph.GetAttractors()[InAttractor];
+    SetMood(EMarburgumStreetMood::Visit, Now + AttractorReachSeconds);
+    Attractor = InAttractor;
+    AttractorSlot = FMath::Clamp(Slot, 0, Place.Spots.Num() - 1);
+    bAtAttractor = false;
+    SetPace(WalkPaceCm);
+    LastProgressSeconds = Now;
+    LastProgressLocation = GetActorLocation();
+    LogEvent(TEXT("visit"), FString::Printf(TEXT("attractor=%d kind=%s action=%s slot=%d spot_m=%.1f"), InAttractor, AttractorNames[Place.Kind],
+        VisitNames[static_cast<int32>(AttractorKinds[Place.Kind].Visit)], AttractorSlot,
+        FVector::Dist2D(GetActorLocation(), Place.Spots[AttractorSlot]) / 100.0));
+}
+
+void AMarburgumPedestrian::StartAt(int32 InAttractor, int32 Slot, double Now)
+{
+    LastVisitNode = Street()->GetGraph().GetAttractors()[InAttractor].Node;
+    BeginVisit(InAttractor, Slot, Now);
+}
+
+void AMarburgumPedestrian::ComeOutAt(int32 InAttractor)
+{
+    const FMarburgumWalkGraph& Graph = Street()->GetGraph();
+    const FMarburgumWalkGraph::FAttractor& Place = Graph.GetAttractors()[InAttractor];
+    // Out of the door to the pavement, and on from there; not back in at once.
+    Edge = INDEX_NONE;
+    ToNode = Place.Node;
+    bRejoining = true;
+    LastVisitNode = Place.Node;
+    LastAttractor = InAttractor;
+    HeadingYaw = (Graph.GetNodes()[Place.Node].Location - GetActorLocation()).Rotation().Yaw;
+    LogEvent(TEXT("came_out"), FString::Printf(TEXT("attractor=%d kind=%s"), InAttractor, AttractorNames[Place.Kind]));
+}
+
+void AMarburgumPedestrian::StepVisit(double Now)
+{
+    const FMarburgumWalkGraph& Graph = Street()->GetGraph();
+    if (!Graph.GetAttractors().IsValidIndex(Attractor))
+    {
+        EndMood();
+        return;
+    }
+    const FMarburgumWalkGraph::FAttractor& Place = Graph.GetAttractors()[Attractor];
+    const EVisit Action = AttractorKinds[Place.Kind].Visit;
+    const FVector Spot = Place.Spots[FMath::Clamp(AttractorSlot, 0, Place.Spots.Num() - 1)];
+    const FVector Here = GetActorLocation();
+    if (!bAtAttractor)
+    {
+        if (FVector::Dist2D(Here, Spot) > MarburgumStreetPerson::SpotArriveCm)
+        {
+            // Not into a fight or the river, and not for ever against something in the way: they think better of it.
+            const bool bStuck = FVector::Dist2D(Here, LastProgressLocation) < MarburgumStreetPerson::ProgressCm && Now - LastProgressSeconds > StuckSeconds * 2.0;
+            if (bWaterAhead || InFight(Spot) || bStuck)
+            {
+                LogEvent(TEXT("visit_given_up"), FString::Printf(TEXT("attractor=%d kind=%s water=%d fight=%d stuck=%d spot_m=%.1f"), Attractor,
+                    AttractorNames[Place.Kind], bWaterAhead ? 1 : 0, InFight(Spot) ? 1 : 0, bStuck ? 1 : 0, FVector::Dist2D(Here, Spot) / 100.0));
+                EndMood();
+                return;
+            }
+            if (FVector::Dist2D(Here, LastProgressLocation) >= MarburgumStreetPerson::ProgressCm)
+            {
+                LastProgressLocation = Here;
+                LastProgressSeconds = Now;
+            }
+            WalkTo(Spot);
+            return;
+        }
+        if (Action == EVisit::Enter)
+        {
+            // Through the door and off the street.
+            Stop();
+            bGoneIn = true;
+            LogEvent(TEXT("went_in"), FString::Printf(TEXT("attractor=%d kind=%s"), Attractor, AttractorNames[Place.Kind]));
+            return;
+        }
+        bAtAttractor = true;
+        const FAttractorKind& Kind = AttractorKinds[Place.Kind];
+        MoodUntil = Now + Random.FRandRange(Kind.DwellMin, Kind.DwellMax);
+        SetStateAndIntent(EMarburgumFighterState::Idle, Action == EVisit::Look ? EMarburgumFighterIntent::Watch : EMarburgumFighterIntent::Wait);
+        LogEvent(TEXT("arrived"), FString::Printf(TEXT("attractor=%d kind=%s slot=%d stay_s=%.0f"), Attractor, AttractorNames[Place.Kind], AttractorSlot,
+            MoodUntil - Now));
+    }
+    Stop();
+    // A sight is looked at; at a stop they face the road, away from the pavement.
+    const FVector Out = (Place.Spots[0] - Graph.GetNodes()[Place.Node].Location).GetSafeNormal2D();
+    FaceToward(Action == EVisit::Look ? Place.Place : Spot + Out * MarburgumStreetPerson::FaceAheadCm);
 }
 
 // ---- Being hit ----

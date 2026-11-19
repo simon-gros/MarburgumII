@@ -36,8 +36,14 @@ void UMarburgumStreetRouteWalker::OnWorldBeginPlay(UWorld& InWorld)
     {
         return;
     }
-    UE_LOG(LogMarburgumNet, Log, TEXT("MB2_STREET role=server event=route_armed stops=%d dwell_s=%.1f"),
-        UE_ARRAY_COUNT(MarburgumII::StreetRoute::Stops), MarburgumII::StreetRoute::DwellSeconds);
+    using namespace MarburgumII::StreetRoute;
+    FString Name = TEXT("districts");
+    FParse::Value(FCommandLine::Get(), RouteNameOption, Name);
+    const bool bPlaces = Name == TEXT("places");
+    Route = bPlaces ? TArrayView<const FStop>(PlaceStops) : TArrayView<const FStop>(Stops);
+    Dwell = bPlaces ? PlaceDwellSeconds : DwellSeconds;
+    UE_LOG(LogMarburgumNet, Log, TEXT("MB2_STREET role=server event=route_armed route=%s stops=%d dwell_s=%.1f"), bPlaces ? TEXT("places") : TEXT("districts"),
+        Route.Num(), Dwell);
     InWorld.GetTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(this, &UMarburgumStreetRouteWalker::Tick), TickSeconds, true);
 }
 
@@ -70,9 +76,9 @@ void UMarburgumStreetRouteWalker::Tick()
     {
         return;
     }
-    if (Next >= UE_ARRAY_COUNT(Stops))
+    if (Next >= Route.Num())
     {
-        if (Next == UE_ARRAY_COUNT(Stops))
+        if (Next == Route.Num())
         {
             UE_LOG(LogMarburgumNet, Log, TEXT("MB2_STREET role=server event=route_done stops=%d"), Next);
             ++Next;
@@ -80,7 +86,7 @@ void UMarburgumStreetRouteWalker::Tick()
         return;
     }
 
-    const FStop& Stop = Stops[Next];
+    const FStop& Stop = Route[Next];
     const FVector2D Ground = MarburgumII::Places::FromPlan(Stop.East, Stop.South);
     // Set down on the walkable top: the first static surface a line straight down meets.
     FHitResult Hit;
@@ -101,5 +107,5 @@ void UMarburgumStreetRouteWalker::Tick()
         Found == MarburgumII::Street::EZone::Count ? TEXT("-") : MarburgumII::Street::ZoneNames[static_cast<int32>(Found)],
         At.X / 100.0, At.Y / 100.0, At.Z / 100.0);
     ++Next;
-    NextAt = Now + DwellSeconds;
+    NextAt = Now + Dwell;
 }

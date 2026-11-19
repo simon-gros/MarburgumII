@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MarburgumLitWindows.h"
 
 // Street people from the original Marburgum (ADR-044): the ambient population of its Unreal port
 // (UnrealMarburgum/Source/MarburgumServer/.../MarburgumAmbientPopulation.{h,cpp}, docs/AMBIENT_STREETS.md and
@@ -32,6 +33,7 @@ namespace MarburgumII::Street
     inline constexpr const TCHAR* IntentDodge = TEXT("dodge");
     inline constexpr const TCHAR* IntentFight = TEXT("fight");
     inline constexpr const TCHAR* IntentDown = TEXT("down");
+    inline constexpr const TCHAR* IntentVisit = TEXT("visit");
 
     // Personalities (the original's norm / tough / weak).
     enum class EPersonality : uint8 { Norm, Tough, Weak, Count };
@@ -570,6 +572,133 @@ namespace MarburgumII::Street
         }
         const int32 Pick = FMath::Clamp(static_cast<int32>(FMath::Clamp(Roll, 0.0, 0.999999) * Count), 0, FMath::Max(0, Count - 1));
         return Count > 0 ? FindLook(Group.Archetypes[Pick]) : INDEX_NONE;
+    }
+
+    // ---- Places that draw people in (ADR-069) ----
+    //
+    // The original's attractors (project/data/road_graph.json `attractors`, population_groups.json `attractors` and each
+    // group's `visits`; FPopulation::TryVisit, StepVisit and TrySpawnAtDoor): bus stops, cafés, restaurants, bars, fast
+    // food, shops and sights, each pinned to the walk node people reach it from (tools/lent-ground --mode attractors).
+    // Somebody walking about who reaches that node, or one next to it within AttractorReachCm, goes to a place there that
+    // is open, with a chance of their group's visit weight for its kind times how open it is: they wait at a bus stop,
+    // look at a sight for a while and walk on, or go into a venue and leave the street. People also come out of open
+    // doors, and some are already waiting at a stop when they appear. The kinds, their actions, dwell times, hours and
+    // the groups' weights are the original author's, copied unchanged. Its people already waiting at a stop were spawned
+    // only 09:00-19:59 "as San Andreas spawns attractor users", which stays out: here a stop has people waiting whenever
+    // it is open. Shops keep the 1990s shop hours the lit windows and Kiosk 67 keep (ShopsOpen), so none is open on a
+    // Sunday. And nobody goes straight back to the place they have just left (the original's people could).
+
+    /** The original's ATTRACTOR_KINDS, in its order, which is the walk graph's. */
+    enum class EAttractor : uint8 { BusStop, Cafe, Restaurant, Bar, FastFood, Shop, Sight, Count };
+    inline constexpr const TCHAR* AttractorNames[] = { TEXT("bus_stop"), TEXT("cafe"), TEXT("restaurant"), TEXT("bar"), TEXT("fast_food"),
+        TEXT("shop"), TEXT("sight") };
+    inline constexpr int32 AttractorCount = static_cast<int32>(EAttractor::Count);
+
+    /** What somebody does there: wait a while (a bus stop), go in and leave the street (a venue), look a while (a sight). */
+    enum class EVisit : uint8 { Wait, Enter, Look };
+    inline constexpr const TCHAR* VisitNames[] = { TEXT("wait"), TEXT("enter"), TEXT("look") };
+
+    struct FAttractorKind
+    {
+        EVisit Visit;
+        /** Seconds there, for waiting and looking. */
+        float DwellMin;
+        float DwellMax;
+        /** Per period, 0..1: how open it is (night, morning, day, evening, late). */
+        float Open[PeriodCount];
+    };
+
+    inline constexpr FAttractorKind AttractorKinds[] = {
+        { EVisit::Wait, 20.f, 90.f, { 0.2f, 1.0f, 0.8f, 0.8f, 0.4f } }, // bus_stop
+        { EVisit::Enter, 0.f, 0.f, { 0.0f, 0.8f, 1.0f, 0.8f, 0.2f } }, // cafe
+        { EVisit::Enter, 0.f, 0.f, { 0.0f, 0.1f, 0.8f, 1.0f, 0.3f } }, // restaurant
+        { EVisit::Enter, 0.f, 0.f, { 0.5f, 0.0f, 0.2f, 0.8f, 1.0f } }, // bar
+        { EVisit::Enter, 0.f, 0.f, { 0.3f, 0.3f, 0.8f, 0.8f, 0.8f } }, // fast_food
+        { EVisit::Enter, 0.f, 0.f, { 0.0f, 0.5f, 1.0f, 0.5f, 0.0f } }, // shop
+        { EVisit::Look, 8.f, 25.f, { 0.1f, 0.5f, 1.0f, 0.8f, 0.3f } }, // sight
+    };
+
+    /** Each group's chance (0..1) of going to an open place of each kind it passes (the groups' `visits`). */
+    inline constexpr float Visits[][AttractorCount] = {
+        // bus stop, cafe, restaurant, bar, fast food, shop, sight
+        { 0.5f, 0.15f, 0.0f, 0.0f, 0.1f, 0.1f, 0.0f }, // commuters
+        { 0.0f, 0.3f, 0.1f, 0.0f, 0.0f, 0.5f, 0.05f }, // shoppers
+        { 0.4f, 0.2f, 0.0f, 0.0f, 0.0f, 0.3f, 0.1f }, // pensioners
+        { 0.4f, 0.2f, 0.0f, 0.15f, 0.3f, 0.0f, 0.0f }, // students
+        { 0.2f, 0.1f, 0.0f, 0.05f, 0.0f, 0.25f, 0.0f }, // residents
+        { 0.0f, 0.0f, 0.0f, 0.5f, 0.3f, 0.0f, 0.0f }, // night_people
+        { 0.3f, 0.0f, 0.0f, 0.1f, 0.2f, 0.1f, 0.0f }, // workers
+        { 0.1f, 0.15f, 0.0f, 0.0f, 0.0f, 0.0f, 0.4f }, // outdoor
+    };
+    static_assert(UE_ARRAY_COUNT(AttractorNames) == AttractorCount);
+    static_assert(UE_ARRAY_COUNT(AttractorKinds) == AttractorCount);
+    static_assert(UE_ARRAY_COUNT(Visits) == GroupCount);
+
+    // The original's: a place draws people from its own walk node and the nodes joined to it within this; at most this
+    // many wait at a stop or look at a sight, each this far along the kerb from the last; a sight is looked at from
+    // this far off (the ground tool places the spot); and this share of newcomers come out of an open door when there
+    // is one where they would appear.
+    inline constexpr float AttractorReachCm = 4000.f;
+    inline constexpr int32 AttractorCapacity = 3;
+    inline constexpr float AttractorSlotSpacingCm = 80.f;
+    inline constexpr float SightStandOffCm = 300.f;
+    inline constexpr float DoorSpawnShare = 0.3f;
+    // Marburgum II's own: somebody who cannot reach their spot in this long gives up and walks on.
+    inline constexpr float AttractorReachSeconds = 30.f;
+
+    /** The kind of a walk-graph name, or Count for one the game does not know. */
+    inline EAttractor AttractorNamed(const FString& Name)
+    {
+        for (int32 Kind = 0; Kind < AttractorCount; ++Kind)
+        {
+            if (Name == AttractorNames[Kind])
+            {
+                return static_cast<EAttractor>(Kind);
+            }
+        }
+        return EAttractor::Count;
+    }
+
+    /**
+     * How open a place of this kind is, 0..1, in the street's hour (StreetHourAt, whose period has the weekend's later
+     * evenings and mornings) at Hour on Weekday of the Marburgum clock: a shop only in the 1990s shop hours.
+     */
+    inline float AttractorOpen(EAttractor Kind, const FStreetHour& Street, int32 Weekday, double Hour)
+    {
+        const int32 Index = static_cast<int32>(Kind);
+        if (Index < 0 || Index >= AttractorCount)
+        {
+            return 0.f;
+        }
+        if (Kind == EAttractor::Shop && !MarburgumII::LitWindows::ShopsOpen(((Weekday % 7) + 7) % 7, Hour))
+        {
+            return 0.f;
+        }
+        return AttractorKinds[Index].Open[static_cast<int32>(Street.Period)];
+    }
+
+    /** The chance somebody of Group goes to a place of this kind that is Open (0..1) as they pass it. */
+    inline float VisitChance(int32 Group, EAttractor Kind, float Open)
+    {
+        const int32 Index = static_cast<int32>(Kind);
+        if (Group < 0 || Group >= GroupCount || Index < 0 || Index >= AttractorCount)
+        {
+            return 0.f;
+        }
+        return Visits[Group][Index] * FMath::Clamp(Open, 0.f, 1.f);
+    }
+
+    /** Where the Slot'th visitor stands, along the kerb either side of the first spot: 0, then +1, -1, +2, ... places along. */
+    inline FVector2D AttractorSlotOffset(const FVector2D& FromNodeToSpot, int32 Slot)
+    {
+        if (Slot <= 0)
+        {
+            return FVector2D::ZeroVector;
+        }
+        FVector2D Along = FromNodeToSpot.GetSafeNormal();
+        Along = Along.IsNearlyZero() ? FVector2D(1.0, 0.0) : FVector2D(-Along.Y, Along.X);
+        const double Side = Slot % 2 == 1 ? 1.0 : -1.0;
+        return Along * Side * ((Slot + 1) / 2) * AttractorSlotSpacingCm;
     }
 
     // ---- Run over, as pure rules ----
