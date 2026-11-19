@@ -194,6 +194,9 @@ private:
     float EnterClipRemaining = 0.f;
     /** Seconds the player has left the driving camera alone after looking around. */
     float FreeLookRemaining = 0.f;
+    /** Server: refused swings answered in the current one-second window (ResolveSwingAuthority). */
+    double RefusalWindowStart = -1.0;
+    int32 RefusalsInWindow = 0;
     float OnFootArmLength = 350.f;
     FVector OnFootBoomOffset = FVector::ZeroVector;
 };

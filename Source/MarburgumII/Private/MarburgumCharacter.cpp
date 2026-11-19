@@ -552,6 +552,24 @@ void AMarburgumCharacter::ResolveSwingAuthority(bool bHeavy, const TCHAR* Refusa
     }
     if (Refusal)
     {
+        // A swing request rides on every move, so a modified client can ask on each of them. Accepted swings are
+        // held back by the cooldown; refusals get the same budget as other requests (GameplayContract.h), and
+        // beyond it go unanswered and unlogged (no reliable-RPC amplification). The client predicts refusals.
+        const double Now = GetWorld()->GetTimeSeconds();
+        if (Now - RefusalWindowStart >= 1.0)
+        {
+            RefusalWindowStart = Now;
+            RefusalsInWindow = 0;
+        }
+        if (++RefusalsInWindow > MarburgumII::Gameplay::MaxRequestsPerSecond)
+        {
+            if (RefusalsInWindow == MarburgumII::Gameplay::MaxRequestsPerSecond + 1)
+            {
+                UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=swing_dropped player=%d reason=rate"),
+                    CombatLogPrefix, State ? State->GetPlayerId() : -1);
+            }
+            return;
+        }
         Result.Reason = Refusal;
     }
     else
