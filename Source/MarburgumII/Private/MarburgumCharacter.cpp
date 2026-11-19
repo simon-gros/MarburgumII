@@ -11,6 +11,7 @@
 #include "Engine/SkeletalMesh.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerInput.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputCoreTypes.h"
 #include "MarburgumAccountContract.h"
@@ -461,11 +462,22 @@ bool AMarburgumCharacter::IsTreadingWater() const
 void AMarburgumCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
-    // Direct key bindings until an input-mapping/rebinding design exists (UI-02 input work).
-    PlayerInputComponent->BindAxisKey(EKeys::W, this, &AMarburgumCharacter::MoveForward);
-    PlayerInputComponent->BindAxisKey(EKeys::S, this, &AMarburgumCharacter::MoveBackward);
-    PlayerInputComponent->BindAxisKey(EKeys::D, this, &AMarburgumCharacter::MoveRight);
-    PlayerInputComponent->BindAxisKey(EKeys::A, this, &AMarburgumCharacter::MoveLeft);
+    // Fixed keys until an input-mapping/rebinding design exists (UI-02 input work). W/S and D/A are engine-defined
+    // axis mappings: binding a digital key straight as an axis (BindAxisKey) trips the engine's IsAxis1D ensure on
+    // every possession, a stack walk and a crash-report folder each time (QA 2026-11-19).
+    static const FName MoveForwardAxis(TEXT("MB2_MoveForward"));
+    static const FName MoveRightAxis(TEXT("MB2_MoveRight"));
+    static const bool bMovementAxesMapped = []()
+    {
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(MoveForwardAxis, EKeys::W, 1.f));
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(MoveForwardAxis, EKeys::S, -1.f));
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(MoveRightAxis, EKeys::D, 1.f));
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(MoveRightAxis, EKeys::A, -1.f));
+        return true;
+    }();
+    (void)bMovementAxesMapped;
+    PlayerInputComponent->BindAxis(MoveForwardAxis, this, &AMarburgumCharacter::MoveForward);
+    PlayerInputComponent->BindAxis(MoveRightAxis, this, &AMarburgumCharacter::MoveRight);
     PlayerInputComponent->BindAxisKey(EKeys::MouseX, this, &AMarburgumCharacter::Turn);
     PlayerInputComponent->BindAxisKey(EKeys::MouseY, this, &AMarburgumCharacter::LookUp);
     PlayerInputComponent->BindKey(EKeys::SpaceBar, IE_Pressed, this, &ACharacter::Jump);
@@ -654,16 +666,6 @@ void AMarburgumCharacter::MoveRight(float Value)
         const FRotator Yaw(0.f, Controller->GetControlRotation().Yaw, 0.f);
         AddMovementInput(FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y), Value);
     }
-}
-
-void AMarburgumCharacter::MoveBackward(float Value)
-{
-    MoveForward(-Value);
-}
-
-void AMarburgumCharacter::MoveLeft(float Value)
-{
-    MoveRight(-Value);
 }
 
 void AMarburgumCharacter::Turn(float Value)
