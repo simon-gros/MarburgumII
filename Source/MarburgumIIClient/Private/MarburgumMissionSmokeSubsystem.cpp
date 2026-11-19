@@ -257,7 +257,21 @@ void UMarburgumMissionSmokeSubsystem::TickFish(double Now)
         return;
     case 3:
         if (!R) return;
-        Expect(R->Effect == EMarburgumInteractionEffect::FishingCast, FString::Printf(TEXT("cast_1=%s/%s"), ToString(R->Outcome), ToString(R->Reason)));
+        if (!bCastReplayed)
+        {
+            Expect(R->Effect == EMarburgumInteractionEffect::FishingCast, FString::Printf(TEXT("cast_1=%s/%s"), ToString(R->Outcome), ToString(R->Reason)));
+            // The same cast id again, as a retry would send it: Duplicate, and the line stays in the water (QA 2026-11-19).
+            bCastReplayed = true;
+            Receipts.Remove(Op);
+            if (AMarburgumPlayerController* Local = Controller.Get())
+            {
+                Local->SubmitInteraction(Op, Find(Spot));
+            }
+            MB2_MISSION_LOG("event=submit kind=cast_1_replay op=%s", *Op.ToString(EGuidFormats::Digits));
+            return;
+        }
+        Expect(R->Outcome == EMarburgumRequestOutcome::Duplicate && R->Effect == EMarburgumInteractionEffect::FishingCast && Line.IsActive(),
+            FString::Printf(TEXT("cast_1_replay=%s/%s/%s active=%d"), ToString(R->Outcome), ToString(R->Effect), ToString(R->Reason), Line.IsActive() ? 1 : 0));
         // Strike at once: nothing can have bitten in under the original's 1.5 s minimum wait.
         Op = Submit(Find(Spot), TEXT("strike_too_early"));
         Advance(4, Now);

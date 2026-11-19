@@ -327,6 +327,7 @@ void UMarburgumWorldAuthority::HandleLogout(AGameModeBase* GameMode, AController
     }
     Casts.Remove(Cast<AMarburgumPlayerController>(Exiting));
     LastCastAt.Remove(Cast<AMarburgumPlayerController>(Exiting));
+    LastCastOperation.Remove(Cast<AMarburgumPlayerController>(Exiting));
     PlaceTrackers.Remove(Exiting);
     // The pawn is already gone at logout; the player state holds the last simulated condition.
     if (const AMarburgumPlayerState* State = Exiting->GetPlayerState<AMarburgumPlayerState>())
@@ -909,6 +910,15 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleFishing(FMarburgumI
     const FString& Character = State.GetCharacterKey();
     const FString SpotId = Spot.InteractableId.ToString();
     const double Now = GetWorld()->GetTimeSeconds();
+    // A cast changes nothing durable, so no stored receipt answers its replay: the same id resent (a retry, a
+    // duplicated packet) must not strike the line it cast, nor cast again once that line is over.
+    if (const FGuid* CastOperation = LastCastOperation.Find(&Requester); CastOperation && *CastOperation == Receipt.OperationId)
+    {
+        Receipt.Outcome = EMarburgumRequestOutcome::Duplicate;
+        Receipt.Effect = EMarburgumInteractionEffect::FishingCast;
+        Receipt.WorldRevision = Store->Get().Revision;
+        return Finish(Receipt, Requester);
+    }
     if (FCast* Line = Casts.Find(&Requester))
     {
         if (!Line->bBite)
@@ -974,6 +984,7 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleFishing(FMarburgumI
     Line.BiteAt = Now + MarburgumII::Fishing::BiteDelaySeconds(Rolls.GetUnsignedInt());
     Casts.Add(&Requester, Line);
     LastCastAt.Add(&Requester, Now);
+    LastCastOperation.Add(&Requester, Receipt.OperationId);
 
     FMarburgumFishingStatus Status = State.GetFishing();
     Status.SpotId = Spot.InteractableId;

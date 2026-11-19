@@ -335,8 +335,12 @@ bool AMarburgumPlayerController::AdmitRequest(const TCHAR* What)
     }
     if (++RequestsInWindow > MarburgumII::Gameplay::MaxRequestsPerSecond)
     {
-        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=%s_dropped player=%d reason=rate"),
-            MarburgumII::Gameplay::InteractLogPrefix, What, PlayerState ? PlayerState->GetPlayerId() : -1);
+        // One line for the first drop in a window: a flood must not become a flood of log lines either.
+        if (RequestsInWindow == MarburgumII::Gameplay::MaxRequestsPerSecond + 1)
+        {
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=%s_dropped player=%d reason=rate"),
+                MarburgumII::Gameplay::InteractLogPrefix, What, PlayerState ? PlayerState->GetPlayerId() : -1);
+        }
         return false;
     }
     return true;
@@ -712,6 +716,10 @@ AMarburgumGameState* AMarburgumPlayerController::GetMarburgumGameState() const
 
 void AMarburgumPlayerController::ServerSubmitOperation_Implementation(FGuid OperationId)
 {
+    if (!AdmitRequest(TEXT("operation")))
+    {
+        return;
+    }
     AMarburgumGameState* GameState = GetMarburgumGameState();
     const EMarburgumRequestOutcome Outcome = GameState
         ? GameState->CommitOperation(OperationId)
@@ -729,6 +737,10 @@ void AMarburgumPlayerController::ServerSubmitOperation_Implementation(FGuid Oper
 
 void AMarburgumPlayerController::ServerRequestContractVersion_Implementation(int32 RequestedVersion)
 {
+    if (!AdmitRequest(TEXT("contract_change")))
+    {
+        return;
+    }
     // The contract version is server-defined; any client request to change it is refused.
     AMarburgumGameState* GameState = GetMarburgumGameState();
     if (GameState)

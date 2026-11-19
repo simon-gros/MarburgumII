@@ -105,6 +105,13 @@ EMarburgumRequestOutcome AMarburgumGameState::CommitOperation(const FGuid& Opera
     {
         return EMarburgumRequestOutcome::Duplicate;
     }
+    // Bounded: the oldest ids are forgotten, so a long session cannot grow the set without limit.
+    CommittedOperationOrder.Add(OperationId);
+    if (CommittedOperationOrder.Num() > MaxRememberedOperations)
+    {
+        CommittedOperationIds.Remove(CommittedOperationOrder[0]);
+        CommittedOperationOrder.RemoveAt(0);
+    }
 
     ++AppliedRequestCount;
     return EMarburgumRequestOutcome::Applied;
