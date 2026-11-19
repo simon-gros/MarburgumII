@@ -590,7 +590,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         if (Subject && !Subject->Dialogue.IsEmpty())
         {
             Feed->Push(FName(*(Key.ToString() + TEXT(".said"))), MarburgumUI::Caps(SubjectName),
-                FText::Format(LOCTEXT("Said", "\u201C{0}\u201D"), Subject->Dialogue), MarburgumUI::ETone::Info);
+                FText::Format(LOCTEXT("Said", "\u201C{0}\u201D"), Subject->Dialogue), MarburgumUI::ETone::Info, true);
         }
     };
     auto PushGranted = [&]()
@@ -697,7 +697,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         if (!Told.IsEmpty())
         {
             Feed->Push(FName(*(Key.ToString() + TEXT(".told"))), MarburgumUI::Caps(MissionDisplayName(Receipt.MissionId)),
-                FText::FromString(Told), MarburgumUI::ETone::Info);
+                FText::FromString(Told), MarburgumUI::ETone::Info, true);
         }
         if (Receipt.Effect == EMarburgumInteractionEffect::MissionCompleted)
         {
@@ -762,7 +762,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         {
             // Talking to someone with no business for you still gets their line.
             Feed->Push(FName(*(Key.ToString() + TEXT(".said"))), MarburgumUI::Caps(SubjectName),
-                FText::Format(LOCTEXT("Said", "\u201C{0}\u201D"), Subject->Dialogue), MarburgumUI::ETone::Info);
+                FText::Format(LOCTEXT("Said", "\u201C{0}\u201D"), Subject->Dialogue), MarburgumUI::ETone::Info, true);
             return;
         }
         Message = FText::Format(LOCTEXT("NothingToDo", "{0} has nothing more for you right now. Nothing was changed."), SubjectName);

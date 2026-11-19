@@ -15,6 +15,10 @@ namespace
 {
     constexpr float FeedWidth = 380.f;
     constexpr float TopOffset = 96.f;
+    /** About 15 characters a second of reading on top of a glance, never past 12 s. */
+    constexpr double GlanceSeconds = 2.0;
+    constexpr double SecondsPerCharacter = 1.0 / 15.0;
+    constexpr double LongestSeconds = 12.0;
 }
 
 void UMarburgumNotificationFeed::NativeOnInitialized()
@@ -39,7 +43,7 @@ void UMarburgumNotificationFeed::NativeOnInitialized()
     SetVisibility(ESlateVisibility::HitTestInvisible);
 }
 
-void UMarburgumNotificationFeed::Push(FName DedupeKey, const FText& Kind, const FText& Message, ETone Tone)
+void UMarburgumNotificationFeed::Push(FName DedupeKey, const FText& Kind, const FText& Message, ETone Tone, bool bStory)
 {
     if (!Stack)
     {
@@ -52,15 +56,35 @@ void UMarburgumNotificationFeed::Push(FName DedupeKey, const FText& Kind, const 
             RemoveEntry(Index);
         }
     }
-    while (Entries.Num() >= MaxVisible)
-    {
-        RemoveEntry(0);
-    }
+    Waiting.RemoveAll([DedupeKey](const FQueued& Queued) { return Queued.Key == DedupeKey; });
 
+    const FQueued Toast{ DedupeKey, Kind, Message, Tone, bStory };
+    if (Entries.Num() >= MaxVisible)
+    {
+        // A story line is not pushed out by the rewards that came with it: it takes the oldest other toast's place.
+        const int32 Other = bStory ? Entries.IndexOfByPredicate([](const FEntry& Entry) { return !Entry.bStory; }) : INDEX_NONE;
+        if (Other == INDEX_NONE)
+        {
+            Waiting.Add(Toast);
+            if (Waiting.Num() > MaxWaiting)
+            {
+                Waiting.RemoveAt(0);
+            }
+            return;
+        }
+        RemoveEntry(Other);
+    }
+    Show(Toast);
+}
+
+void UMarburgumNotificationFeed::Show(const FQueued& Queued)
+{
     FBuilder B(*WidgetTree);
-    UBorder* Toast = B.Toast(Kind, Message, Tone);
+    UBorder* Toast = B.Toast(Queued.Kind, Queued.Message, Queued.Tone);
     FBuilder::Stack(Stack, Toast, Tokens().Space.S);
-    Entries.Add({ DedupeKey, Toast, FPlatformTime::Seconds() });
+    const double Reading = GlanceSeconds + SecondsPerCharacter * (Queued.Kind.ToString().Len() + Queued.Message.ToString().Len());
+    const double Life = FMath::Clamp(Reading, static_cast<double>(Tokens().ToastSeconds), LongestSeconds);
+    Entries.Add({ Queued.Key, Toast, FPlatformTime::Seconds(), Life, Queued.bStory });
 }
 
 void UMarburgumNotificationFeed::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -72,15 +96,21 @@ void UMarburgumNotificationFeed::NativeTick(const FGeometry& MyGeometry, float I
     {
         UWidget* Widget = Entries[Index].Widget.Get();
         const double Age = Now - Entries[Index].ShownSeconds;
-        if (!Widget || Age >= T.ToastSeconds)
+        if (!Widget || Age >= Entries[Index].LifeSeconds)
         {
             RemoveEntry(Index);
             continue;
         }
-        const double Remaining = T.ToastSeconds - Age;
+        const double Remaining = Entries[Index].LifeSeconds - Age;
         const float FadeIn = FMath::Clamp(static_cast<float>(Age / T.FadeSeconds), 0.f, 1.f);
         const float FadeOut = FMath::Clamp(static_cast<float>(Remaining / (T.FadeSeconds * 2.0)), 0.f, 1.f);
         Widget->SetRenderOpacity(FMath::Min(FadeIn, FadeOut));
+    }
+    while (Entries.Num() < MaxVisible && Waiting.Num() > 0)
+    {
+        const FQueued Next = Waiting[0];
+        Waiting.RemoveAt(0);
+        Show(Next);
     }
 }
 
