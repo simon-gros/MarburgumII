@@ -34,7 +34,7 @@ The six commits reviewed between **18 and 19 November 2026** extend the existing
 
 | District identity | Places and routines | AI reliability |
 | :--- | :--- | :--- |
-| **ADR-068**: population composition now follows the district and street activity, with distinct day, evening, night and weekend behavior. | **ADR-069**: 239 mapped bus stops, cafés, restaurants, bars, fast-food venues, shops and sights now influence where pedestrians go, wait and enter or exit. | **ADR-070**: blocked hostile pursuit gives up, blocked pedestrian edges stop reversing repeatedly, and lane separation improves passing; its new assertions still need execution. |
+| **ADR-068**: population composition now follows the district and street activity, with distinct day, evening, night and weekend behavior. | **ADR-069**: 239 mapped bus stops, cafés, restaurants, bars, fast-food venues, shops and sights now influence where pedestrians go, wait and enter or exit. | **ADR-070**: blocked hostile pursuit gives up, blocked pedestrian edges stop reversing repeatedly, and lane separation improves passing. The editor rule tests passed on 19 November 2026; a rendered or packaged smoke of that change has not. |
 
 A separate change corrected a **clean-checkout compilation regression**. District and destination features have recorded **one-client editor-mode** smoke results; these are not evidence of a newly packaged, multi-client, owner-approved build.
 

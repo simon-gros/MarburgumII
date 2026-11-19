@@ -37,7 +37,7 @@ Historical day-by-day reviews, evidence documents and accepted architectural dec
 
 | Priority | Task | Exit proof |
 | --- | --- | --- |
-| **P0, next** | Reproduce and execute ADR-070's previously unrun rule assertions; inspect a blocked chase, blocked pavement/river edge and pass-lane overlap using the current editor | Exact clean SHA + UE 5.8.3 UHT/UBT result, deterministic test log, visual capture, negative/control cases and bug register |
+| **P0, next** | ADR-070's `CombatRules` and `StreetRules` passed in editor automation on 19 November 2026 (exit 0). Still inspect a blocked chase, blocked pavement/river edge and pass-lane overlap in a rendered run. The walk graph has 49 side components, one of them a bridge piece | Rendered capture, negative cases, and a ground-tool decision on the side components. Not a packaged crowd run |
 | **P0** | Seal and freshly package a matched Linux dedicated server and two clients with the zoned+attractor walk graph and current data | Fresh cooked hashes, server/client build manifests, no untracked/licensed input omissions, exact map/content versions |
 | **P0** | Integrated two/three-client street regression: distinct districts, day/night/Sunday/weather, visits/door and stop behavior, incident propagation, combat pursuit and restart/reconnect | Client/server authority and replication, counts/density, no path oscillation, timing and bandwidth/CPU/performance logs |
 | **P0** | Re-run known gameplay gates: >150 m driver/passenger vehicle, first-time/returning login and denied tickets, fishing/all eight mission flows with store restart and contention | Reproduced original owner defect and verified fix; negative/replay cases; explicit evidence |

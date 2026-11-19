@@ -43,6 +43,7 @@ There is no behavior tree, no perception component, no navigation mesh, and no W
 | New mission framework | **REQUIRES APPROVAL** | The eight missions already have prerequisites, stages, choices, one reward and restart. Do not replace them. |
 | Mission sites in Melje and Tabor on real ground | **TO BE DONE** | Logic is done. The sites are temporary floors (ADR-052). |
 | Packaged two-client mission and street qualification | **TO BE DONE** | Editor smokes exist. Not a fresh packaged suite. |
+| Side pieces of the walk graph, including a bridge piece | **TO BE DONE** | Counted on `lent_walk_graph.json` 2026-11-19: 50 components, 12,335 nodes in the largest, 763 off it. Nearest gaps about 5–50 m. One 47-node piece has 18 bridge-flagged nodes, 14 m from the main graph. Not stitched by hand. |
 | Distance-based think rates, pooling, relevance budgets beyond cull | **TO BE DONE** | Population is capped and culled. No measurement of think cost at the cap in this pass. |
 | Owner playtest of street and combat | **REQUIRES APPROVAL** | ADR-008. This pass did not play the game. |
 
@@ -55,7 +56,7 @@ There is no behavior tree, no perception component, no navigation mesh, and no W
 
 ## Verification
 
-Editor automation on 2026-11-19, after the modules were rebuilt (binaries 21:51, run 21:53, log `Saved/AIRules/rules.log`, exit 0): `Marburgum.Gameplay.CombatRules` Success, `Marburgum.Gameplay.StreetRules` Success. That covers the blocked-chase give-up, a clear blow still landing, and reverse-once / hold. It is not a rendered street or combat smoke, not a packaged two-client run, and not an owner playtest.
+Editor automation on 2026-11-19, after the modules were rebuilt (binaries 21:51, run 21:53, log `Saved/AIRules/rules.log`, exit 0; repeated at 21:54, log `Saved/Automation/adr070-rules-rebuilt.log`, exit 0): `Marburgum.Gameplay.CombatRules` Success, `Marburgum.Gameplay.StreetRules` Success. That covers the blocked-chase give-up, a clear blow still landing, and reverse-once / hold. It is not a rendered street or combat smoke, not a packaged two-client run, and not an owner playtest. A visit that used the whole 30 s without arriving did not log `visit_given_up`, and a second think before the street step could log `went_in` again. Both are fixed in source and still need a rendered places smoke.
 
 
 ## Next verified delivery

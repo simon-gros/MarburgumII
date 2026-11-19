@@ -207,6 +207,20 @@ void AMarburgumPedestrian::Think()
 
     if (Mood != EMarburgumStreetMood::Walk && Now >= MoodUntil)
     {
+        // The 30 s walk to a door, stop or sight (ADR-069) used to end with no visit_given_up line.
+        // Water, a fight and a stuck approach already log one. A dwell that runs out is not a give-up.
+        if (Mood == EMarburgumStreetMood::Visit && !bAtAttractor && !bGoneIn)
+        {
+            const FMarburgumWalkGraph& Graph = S->GetGraph();
+            if (Graph.GetAttractors().IsValidIndex(Attractor))
+            {
+                const FMarburgumWalkGraph::FAttractor& Place = Graph.GetAttractors()[Attractor];
+                const int32 Slot = FMath::Clamp(AttractorSlot, 0, FMath::Max(0, Place.Spots.Num() - 1));
+                const double SpotM = Place.Spots.IsValidIndex(Slot) ? FVector::Dist2D(Here, Place.Spots[Slot]) / 100.0 : -1.0;
+                LogEvent(TEXT("visit_given_up"), FString::Printf(TEXT("attractor=%d kind=%s water=0 fight=0 stuck=0 timeout=1 spot_m=%.1f"),
+                    Attractor, AttractorNames[Place.Kind], SpotM));
+            }
+        }
         EndMood();
     }
     if (bUnbothered && !S->FindIncident(AnsweredIncident))
@@ -1008,6 +1022,12 @@ void AMarburgumPedestrian::StepVisit(double Now)
     const FVector Here = GetActorLocation();
     if (!bAtAttractor)
     {
+        if (bGoneIn)
+        {
+            // Cull takes them off the street on the street step. Thinking again must not log went_in twice.
+            Stop();
+            return;
+        }
         if (FVector::Dist2D(Here, Spot) > MarburgumStreetPerson::SpotArriveCm)
         {
             // Not into a fight or the river, and not for ever against something in the way: they think better of it.
