@@ -25,6 +25,8 @@ public:
     static FMarburgumLocalPlayerUiEvent& OnJournalToggleRequested();
     static FMarburgumLocalPlayerUiEvent& OnCharacterToggleRequested();
     static FMarburgumLocalPlayerUiEvent& OnSkillsToggleRequested();
+    /** Escape in play: close what is open, or open the system menu. */
+    static FMarburgumLocalPlayerUiEvent& OnBackRequested();
     static FMarburgumChoiceUiEvent& OnMissionChoiceRequested();
     static FMarburgumShopUiEvent& OnShopToggleRequested();
     static FMarburgumNumberKeyUiEvent& OnNumberKeyPressed();

@@ -59,3 +59,9 @@ FMarburgumScrollUiEvent& FMarburgumClientUiHooks::OnScrollRequested()
     static FMarburgumScrollUiEvent Event;
     return Event;
 }
+
+FMarburgumLocalPlayerUiEvent& FMarburgumClientUiHooks::OnBackRequested()
+{
+    static FMarburgumLocalPlayerUiEvent Event;
+    return Event;
+}

@@ -55,6 +55,7 @@ void AMarburgumPlayerController::SetupInputComponent()
         InputComponent->BindKey(EKeys::J, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleJournal);
         InputComponent->BindKey(EKeys::C, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleCharacter);
         InputComponent->BindKey(EKeys::K, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleSkills);
+        InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &AMarburgumPlayerController::RequestBack);
         // B opens the counter of the shopkeeper in reach (ADR-060); E still talks to them.
         InputComponent->BindKey(EKeys::B, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleShop);
         // The wheel and Page Up/Down scroll an open management screen taller than the screen (QA 2026-11-19).
@@ -94,6 +95,14 @@ void AMarburgumPlayerController::RequestToggleInventory()
     if (IsLocalController())
     {
         FMarburgumClientUiHooks::OnInventoryToggleRequested().Broadcast(this);
+    }
+}
+
+void AMarburgumPlayerController::RequestBack()
+{
+    if (IsLocalController())
+    {
+        FMarburgumClientUiHooks::OnBackRequested().Broadcast(this);
     }
 }
 

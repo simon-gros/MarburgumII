@@ -61,6 +61,13 @@ public:
     bool ToggleCharacter();
     bool IsCharacterOpen() const;
 
+    /**
+     * Escape in play: closes an open decision, counter or management screen; with none open, opens or closes the
+     * system menu (back to the street, leave the world, quit).
+     */
+    void Back();
+    bool IsSystemMenuOpen() const;
+
     /** Scroll the open management screen (inventory, journal, character or skills) by Lines; false if none is open. */
     bool ScrollOpenScreen(float Lines);
 
@@ -112,6 +119,7 @@ private:
     void MountGameplayHud(APlayerController* Player);
     /** Closes every open management screen except Keep (nullptr closes all). */
     void CloseScreensExcept(const UObject* Keep);
+    void SetSystemMenuOpen(bool bOpen);
 
     UPROPERTY(Transient) TObjectPtr<UMarburgumUIRoot> Root;
     UPROPERTY(Transient) TObjectPtr<UMarburgumConnectionScreen> ConnectionScreen;
@@ -129,6 +137,7 @@ private:
     UPROPERTY(Transient) TObjectPtr<class UMarburgumSkillsPanel> SkillsPanel;
     UPROPERTY(Transient) TObjectPtr<class UMarburgumChoicePanel> ChoicePanel;
     UPROPERTY(Transient) TObjectPtr<class UMarburgumShopPanel> ShopPanel;
+    UPROPERTY(Transient) TObjectPtr<class UMarburgumSystemMenu> SystemMenu;
     FDelegateHandle FishingHandle;
     int32 LastFishingAttempt = 0;
     EMarburgumFishingEnd LastFishingEnd = EMarburgumFishingEnd::None;

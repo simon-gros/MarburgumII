@@ -5,6 +5,7 @@
 #include "Engine/World.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Misc/App.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
@@ -26,6 +27,7 @@
 #include "UI/MarburgumChoicePanel.h"
 #include "UI/MarburgumShopPanel.h"
 #include "UI/MarburgumSkillsPanel.h"
+#include "UI/MarburgumSystemMenu.h"
 #include "UI/MarburgumLocationBanner.h"
 #include "UI/MarburgumPinnedObjective.h"
 #include "UI/MarburgumPlayerCondition.h"
@@ -236,6 +238,7 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
     Release(SkillsPanel);
     Release(ChoicePanel);
     Release(ShopPanel);
+    Release(SystemMenu);
     if (!Banner)
     {
         Banner = CreateWidget<UMarburgumLocationBanner>(Player, UMarburgumLocationBanner::StaticClass());
@@ -291,6 +294,81 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
         ShopPanel = CreateWidget<UMarburgumShopPanel>(Player, UMarburgumShopPanel::StaticClass());
         Root->AddToLayer(EMarburgumUILayer::Screens, ShopPanel);
     }
+    if (!SystemMenu)
+    {
+        SystemMenu = CreateWidget<UMarburgumSystemMenu>(Player, UMarburgumSystemMenu::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Modal, SystemMenu);
+        SystemMenu->OnResume.BindUObject(this, &UMarburgumUISubsystem::SetSystemMenuOpen, false);
+        SystemMenu->OnLeave.BindWeakLambda(this, [this]()
+        {
+            SetSystemMenuOpen(false);
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=leave_world"), MarburgumII::Session::UiLogPrefix);
+            if (UMarburgumSessionSubsystem* SessionSubsystem = Session.Get())
+            {
+                SessionSubsystem->Disconnect();
+            }
+        });
+        SystemMenu->OnQuit.BindWeakLambda(this, [this]()
+        {
+            const UGameInstance* GameInstance = GetGameInstance();
+            UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=quit"), MarburgumII::Session::UiLogPrefix);
+            UKismetSystemLibrary::QuitGame(World, World ? World->GetFirstPlayerController() : nullptr, EQuitPreference::Quit, false);
+        });
+    }
+}
+
+void UMarburgumUISubsystem::Back()
+{
+    if (LastPhase != EPhase::Ready)
+    {
+        return;
+    }
+    if (IsSystemMenuOpen())
+    {
+        SetSystemMenuOpen(false);
+        return;
+    }
+    const bool bScreenOpen = IsInventoryOpen() || IsJournalOpen() || IsCharacterOpen() || IsSkillsOpen() || IsChoiceOpen() || IsShopOpen();
+    if (bScreenOpen)
+    {
+        CloseScreensExcept(nullptr);
+        return;
+    }
+    SetSystemMenuOpen(true);
+}
+
+bool UMarburgumUISubsystem::IsSystemMenuOpen() const
+{
+    return SystemMenu && SystemMenu->IsOpen();
+}
+
+void UMarburgumUISubsystem::SetSystemMenuOpen(bool bOpen)
+{
+    APlayerController* Controller = SystemMenu ? SystemMenu->GetOwningPlayer() : nullptr;
+    if (!SystemMenu || !Controller)
+    {
+        return;
+    }
+    if (bOpen)
+    {
+        SystemMenu->Open();
+        FInputModeUIOnly Mode;
+        if (UWidget* Focus = SystemMenu->GetPreferredFocus())
+        {
+            Mode.SetWidgetToFocus(Focus->TakeWidget());
+        }
+        Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        Controller->SetInputMode(Mode);
+        Controller->SetShowMouseCursor(true);
+    }
+    else
+    {
+        SystemMenu->Close();
+        Controller->SetInputMode(FInputModeGameOnly());
+        Controller->SetShowMouseCursor(false);
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=system_menu open=%d"), MarburgumII::Session::UiLogPrefix, bOpen ? 1 : 0);
 }
 
 bool UMarburgumUISubsystem::ToggleSkills()
@@ -997,6 +1075,10 @@ void UMarburgumUISubsystem::HandleSessionChanged(const FMarburgumSessionView& Vi
     if (View.Phase != EPhase::Ready)
     {
         CloseScreensExcept(nullptr); // No stale custody or condition view once the session is gone.
+        if (SystemMenu)
+        {
+            SystemMenu->Close(); // The front-end takes the input from here (ApplyFrontEnd).
+        }
     }
     ConnectionScreen->ApplyView(View);
     ApplyFrontEnd();

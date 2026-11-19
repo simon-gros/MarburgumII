@@ -18,6 +18,7 @@
 #include "GeneralProjectSettings.h"
 #include "HAL/PlatformTime.h"
 #include "InputCoreTypes.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "MarburgumNetworkContract.h"
 #include "Session/MarburgumAccountSubsystem.h"
 #include "UI/MarburgumUIBuilder.h"
@@ -261,7 +262,11 @@ UWidget* UMarburgumConnectionScreen::BuildConnectCard()
     FBuilder::Inline(Actions, RetryButton, T.Space.S);
     CancelButton = B.Button(LOCTEXT("Cancel", "Cancel"), EButtonKind::Quiet);
     CancelButton->OnClicked.AddDynamic(this, &UMarburgumConnectionScreen::HandleCancelClicked);
-    FBuilder::Inline(Actions, CancelButton, 0.f);
+    FBuilder::Inline(Actions, CancelButton, T.Space.S);
+    // FIRST_LAUNCH_ONTOLOGY: the title screen has a way out of the game, not only an OS shortcut.
+    UButton* QuitButton = B.Button(LOCTEXT("Quit", "Quit"), EButtonKind::Quiet);
+    QuitButton->OnClicked.AddDynamic(this, &UMarburgumConnectionScreen::HandleQuitClicked);
+    FBuilder::Inline(Actions, QuitButton, 0.f);
     FBuilder::Stack(Body, Actions, 0.f);
     if (UVerticalBoxSlot* ActionsSlot = Cast<UVerticalBoxSlot>(Actions->Slot))
     {
@@ -465,6 +470,12 @@ void UMarburgumConnectionScreen::HandleRetryClicked()
     {
         Session->Retry();
     }
+}
+
+void UMarburgumConnectionScreen::HandleQuitClicked()
+{
+    UWorld* World = GetWorld();
+    UKismetSystemLibrary::QuitGame(World, World ? World->GetFirstPlayerController() : nullptr, EQuitPreference::Quit, false);
 }
 
 void UMarburgumConnectionScreen::HandleCancelClicked()
