@@ -8,6 +8,7 @@ use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::io::AsRawFd;
+use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -25,6 +26,9 @@ const MANDATORY_ROOTS: [&str; 10] = [
     "Content/ThirdPartyLicensed", "PrivateAssets",
 ];
 const SKIPPED_DIRS: [&str; 5] = ["Binaries", "Intermediate", "Saved", "DerivedDataCache", ".git"];
+/// A packaged archive is the build itself: its Binaries are the executables the seal exists to pin. Only the
+/// game's own run-time output (Saved) is left out, so playing does not invalidate the seal.
+const ARCHIVE_SKIPPED_DIRS: [&str; 1] = ["Saved"];
 
 /// Why a playtest step refused to proceed.
 #[derive(Debug)]
@@ -153,7 +157,7 @@ impl Guard {
             let mut files = Map::new();
             let mut cooked = false;
             let mut executable = false;
-            for path in walk(&directory)? {
+            for path in walk_skipping(&directory, &ARCHIVE_SKIPPED_DIRS)? {
                 let relative = path.strip_prefix(&directory).unwrap_or(&path).to_string_lossy().to_string();
                 let meta = fs::metadata(&path).map_err(|e| Blocked(e.to_string()))?;
                 cooked |= [".pak", ".utoc", ".ucas", ".uasset"].iter().any(|ext| relative.ends_with(ext));
@@ -322,8 +326,11 @@ impl Guard {
                 let log = run_dir.join("logs").join(format!("runtime-{index:02}-{kind}.log"));
                 fs::create_dir_all(log.parent().unwrap()).map_err(|e| Blocked(e.to_string()))?;
                 let stream = File::create(&log).map_err(|e| Blocked(e.to_string()))?;
+                // Each role runs in its own process group: UE's launcher .sh starts the real binary without
+                // exec, so stopping only the script's pid would leave the server running on its port.
                 let child = Command::new(&executable).args(&args[1..]).current_dir(executable.parent().unwrap())
                     .stdout(stream.try_clone().map_err(|e| Blocked(e.to_string()))?).stderr(stream).stdin(Stdio::null())
+                    .process_group(0)
                     .spawn().map_err(|e| Blocked(format!("Cannot start {kind}: {e}")))?;
                 children.push(child);
                 if index == 0 {
@@ -441,6 +448,11 @@ fn file_entry(path: &Path, size: u64) -> Outcome<Value> {
 
 /// Files under an asset root, sorted; links anywhere are refused, generated trees skipped.
 pub fn walk(root: &Path) -> Outcome<Vec<PathBuf>> {
+    walk_skipping(root, &SKIPPED_DIRS)
+}
+
+/// Files under a root, sorted; links anywhere are refused and directories named in `skipped` are left out.
+fn walk_skipping(root: &Path, skipped: &[&str]) -> Outcome<Vec<PathBuf>> {
     if root.is_symlink() {
         return blocked(format!("Linked asset root is not allowed: {}", root.display()));
     }
@@ -461,7 +473,7 @@ pub fn walk(root: &Path) -> Outcome<Vec<PathBuf>> {
                 return blocked(format!("Linked asset {}: {}", if path.is_dir() { "directory" } else { "file" }, path.display()));
             }
             if path.is_dir() {
-                if !SKIPPED_DIRS.contains(&name.as_str()) {
+                if !skipped.contains(&name.as_str()) {
                     pending.push(path);
                 }
             } else if path.is_file() {
@@ -554,23 +566,47 @@ pub fn profile_read(path: &Path) -> Outcome<Value> {
     Ok(profile)
 }
 
+/// Stops every role's whole process group (the launcher script and the binary it started), newest first.
 fn stop_all(children: &mut [Child]) {
     for child in children.iter_mut().rev() {
-        if matches!(child.try_wait(), Ok(None)) {
-            // SAFETY: plain kill(2) on a child this process started and has not yet reaped.
-            unsafe { libc::kill(child.id() as libc::pid_t, libc::SIGTERM) };
-        }
+        signal_group(child.id(), libc::SIGTERM);
     }
     for child in children.iter_mut() {
         let deadline = Instant::now() + Duration::from_secs(8);
-        while matches!(child.try_wait(), Ok(None)) && Instant::now() < deadline {
+        while group_alive(child.id()) && Instant::now() < deadline {
+            let _ = child.try_wait();
             std::thread::sleep(Duration::from_millis(100));
         }
-        if matches!(child.try_wait(), Ok(None)) {
-            let _ = child.kill();
-            let _ = child.wait();
+        if group_alive(child.id()) {
+            signal_group(child.id(), libc::SIGKILL);
         }
+        let _ = child.wait();
     }
+}
+
+/// Signals the process group led by `pid`. process_group(0) made each launched role's pid its group id; the group
+/// outlives a reaped launcher script, so the binary it started is still reached.
+fn signal_group(pid: u32, signal: libc::c_int) {
+    // SAFETY: kill(2) on a process group this process created; a group that no longer exists yields ESRCH.
+    unsafe { libc::kill(-(pid as libc::pid_t), signal) };
+}
+
+/// Whether a live (not zombie) process is left in the group led by `pid`. kill(-pid, 0) is not enough: an orphan
+/// that has exited stays in its group as a zombie until its new parent reaps it, which a subreaper may do late.
+fn group_alive(pid: u32) -> bool {
+    let Ok(entries) = fs::read_dir("/proc") else {
+        // SAFETY: as in signal_group; signal 0 has no effect on the target.
+        return unsafe { libc::kill(-(pid as libc::pid_t), 0) == 0 };
+    };
+    entries.flatten().filter(|e| e.file_name().to_string_lossy().bytes().all(|b| b.is_ascii_digit())).any(|e| {
+        // /proc/<n>/stat: "pid (comm) state ppid pgrp ..."; comm may hold spaces and parentheses.
+        let Ok(stat) = fs::read_to_string(e.path().join("stat")) else { return false };
+        let Some(rest) = stat.rfind(')').map(|at| &stat[at + 1..]) else { return false };
+        let mut fields = rest.split_whitespace();
+        let state = fields.next().unwrap_or("Z");
+        let group = fields.nth(1).and_then(|g| g.parse::<u32>().ok());
+        group == Some(pid) && state != "Z" && state != "X"
+    })
 }
 
 static INTERRUPTED: AtomicBool = AtomicBool::new(false);
@@ -739,6 +775,42 @@ mod tests {
         f.put("Saved/Playtests/run/client/Content.pak", b"stale tampering");
         let after = f.guard.archive_snapshot(&run_profile(), &run_values(&run), &run).unwrap();
         assert_ne!(before, after);
+    }
+
+    #[test]
+    fn swapped_executable_invalidates_seal() {
+        let f = Fixture::new();
+        let run = f.root.join("Saved/Playtests/run");
+        for role in ["client", "server"] {
+            f.executable(&format!("Saved/Playtests/run/{role}/Game.sh"));
+            f.put(&format!("Saved/Playtests/run/{role}/Game/Content/Paks/Game.pak"), b"cooked v1");
+            f.put(&format!("Saved/Playtests/run/{role}/Game/Binaries/Linux/Game"), b"build v1");
+        }
+        let before = f.guard.archive_snapshot(&run_profile(), &run_values(&run), &run).unwrap();
+        f.put("Saved/Playtests/run/server/Game/Binaries/Linux/Game", b"an older build");
+        assert_ne!(before, f.guard.archive_snapshot(&run_profile(), &run_values(&run), &run).unwrap());
+        // The game's own logs and saves do not invalidate the seal.
+        f.put("Saved/Playtests/run/server/Game/Binaries/Linux/Game", b"build v1");
+        f.put("Saved/Playtests/run/client/Game/Saved/Logs/Game.log", b"played");
+        assert_eq!(before, f.guard.archive_snapshot(&run_profile(), &run_values(&run), &run).unwrap());
+    }
+
+    #[test]
+    fn stopping_a_launcher_script_stops_the_binary_it_started() {
+        let f = Fixture::new();
+        let pid_file = f.root.join("binary.pid");
+        // Like UE's MarburgumIIServer.sh: the script starts the binary and waits for it, without exec.
+        let launcher = Command::new("sh").arg("-c").arg("sleep 60 & echo $! > \"$0\"; wait").arg(&pid_file)
+            .process_group(0).spawn().unwrap();
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while fs::read_to_string(&pid_file).map(|s| s.trim().is_empty()).unwrap_or(true) && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        let binary: u32 = fs::read_to_string(&pid_file).unwrap().trim().parse().unwrap();
+        let group = launcher.id();
+        let mut children = vec![launcher];
+        stop_all(&mut children);
+        assert!(!group_alive(group), "the launched binary {binary} outlived its launcher");
     }
 
     #[test]
