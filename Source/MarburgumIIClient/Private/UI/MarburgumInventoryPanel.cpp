@@ -118,9 +118,18 @@ void UMarburgumInventoryPanel::Rebuild()
     const UGameInstance* GameInstance = GetGameInstance();
     const UMarburgumSessionSubsystem* Session = GameInstance ? GameInstance->GetSubsystem<UMarburgumSessionSubsystem>() : nullptr;
     const FString Key = Session ? Session->GetCharacterKey() : FString();
-    CharacterLabel->SetText(Key.IsEmpty()
-        ? LOCTEXT("NoKey", "No development character on this connection")
-        : FText::Format(LOCTEXT("Key", "Development character {0}  ·  a test identity, not an account"), FText::FromString(Key)));
+    if (State && State->HasIdentity())
+    {
+        // A signed-in character (ADR-055): its own name, never the connection's development key.
+        CharacterLabel->SetText(FText::Format(LOCTEXT("FullName", "{0} {1}"), FText::FromString(State->GetFirstName()),
+            FText::FromString(State->GetLastName())));
+    }
+    else
+    {
+        CharacterLabel->SetText(Key.IsEmpty()
+            ? LOCTEXT("NoKey", "No development character on this connection")
+            : FText::Format(LOCTEXT("Key", "Development character {0}  ·  a test identity, not an account"), FText::FromString(Key)));
+    }
 
     if (!State || !State->IsInventoryKnown())
     {

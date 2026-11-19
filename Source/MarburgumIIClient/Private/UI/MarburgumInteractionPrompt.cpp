@@ -7,6 +7,7 @@
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
+#include "Framework/Application/SlateApplication.h"
 #include "MarburgumCharacter.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumMissionLogic.h"
@@ -103,8 +104,11 @@ void UMarburgumInteractionPrompt::Place()
     {
         return;
     }
+    // Widget units are pixels over the DPI scale and the -MB2UIScale application scale; the projection below
+    // only takes the DPI scale out.
+    const float AppScale = FSlateApplication::IsInitialized() ? FMath::Max(FSlateApplication::Get().GetApplicationScale(), KINDA_SMALL_NUMBER) : 1.f;
     const float Scale = UWidgetLayoutLibrary::GetViewportScale(this);
-    const FVector2D Viewport = UWidgetLayoutLibrary::GetViewportSize(this) / FMath::Max(Scale, KINDA_SMALL_NUMBER);
+    const FVector2D Viewport = UWidgetLayoutLibrary::GetViewportSize(this) / FMath::Max(Scale * AppScale, KINDA_SMALL_NUMBER);
     const FVector2D Size(CardWidth, Card->GetDesiredSize().Y);
 
     FVector Origin;
@@ -113,6 +117,7 @@ void UMarburgumInteractionPrompt::Place()
     FVector2D Top;
     const bool bProjected = UWidgetLayoutLibrary::ProjectWorldLocationToWidgetPosition(
         Controller, Origin + FVector(0.f, 0.f, Extent.Z), Top, true);
+    Top /= AppScale;
 
     FVector2D Position;
     if (bProjected && Top.Y - GapAboveTarget - Size.Y >= EdgeMargin && Top.Y <= Viewport.Y)
