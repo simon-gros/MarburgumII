@@ -159,19 +159,24 @@ protected:
     UFUNCTION(Server, Reliable)
     void ServerRequestInteraction(FGuid OperationId, AMarburgumInteractable* Target);
 
-    /** The client names the decision; the server checks it is due, affordable and in reach. */
+    /**
+     * The client names the decision; the server checks it is due, affordable and in reach. Ids travel as text, not
+     * FName: the engine turns every FName a client sends into a permanent name-table entry (QA 2026-11-19, S5).
+     */
     UFUNCTION(Server, Reliable)
-    void ServerRequestMissionChoice(FGuid OperationId, AMarburgumInteractable* Target, FName MissionId, FName ChoiceId);
+    void ServerRequestMissionChoice(FGuid OperationId, AMarburgumInteractable* Target, const FString& MissionId, const FString& ChoiceId);
 
     /** The client names the goods and how many; the server prices them, checks the hours, shelf, purse and reach. */
     UFUNCTION(Server, Reliable)
-    void ServerRequestTrade(FGuid OperationId, AMarburgumInteractable* Target, EMarburgumTradeAction Action, FName ItemId, int32 Quantity);
+    void ServerRequestTrade(FGuid OperationId, AMarburgumInteractable* Target, EMarburgumTradeAction Action, const FString& ItemId,
+        int32 Quantity);
 
     UFUNCTION(Client, Reliable)
     void ClientReceiveInteractionReceipt(const FMarburgumInteractionReceipt& Receipt);
 
+    /** SeatId empty asks for the driver's seat. Text, like the mission and trade ids above. */
     UFUNCTION(Server, Reliable)
-    void ServerEnterVehicle(AMarburgumVehicle* Vehicle, FName SeatId);
+    void ServerEnterVehicle(AMarburgumVehicle* Vehicle, const FString& SeatId);
 
     UFUNCTION(Server, Reliable)
     void ServerExitVehicle();

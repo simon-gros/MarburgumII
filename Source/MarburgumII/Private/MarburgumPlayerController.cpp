@@ -33,6 +33,41 @@ namespace
     {
         return MarburgumII::Gameplay::ToString(Outcome);
     }
+
+    // Catalogue ids cross from client to server as text and become names only once the catalogue knows them. The
+    // engine makes a name of every string a client sends in an FName parameter, and names are never freed, so FName
+    // RPC parameters let any client grow the server's name table for as long as it stays connected (QA 2026-11-19,
+    // S5). Unknown text becomes NAME_None, which no mission, choice or item uses, so the authority refuses it as before.
+    FString IdText(FName Id)
+    {
+        return Id.IsNone() ? FString() : Id.ToString();
+    }
+
+    FName KnownMission(const FString& Id)
+    {
+        return MarburgumII::Gameplay::FindMission(Id) ? FName(*Id) : NAME_None;
+    }
+
+    FName KnownChoice(const FString& MissionId, const FString& ChoiceId)
+    {
+        using namespace MarburgumII::Gameplay;
+        if (const FMissionDefinition* Mission = FindMission(MissionId))
+        {
+            for (int32 Index = 0; Index < Mission->StageCount; ++Index)
+            {
+                if (FindChoice(Mission->Stages[Index], ChoiceId))
+                {
+                    return FName(*ChoiceId);
+                }
+            }
+        }
+        return NAME_None;
+    }
+
+    FName KnownItem(const FString& Id)
+    {
+        return MarburgumII::Gameplay::FindItem(Id) ? FName(*Id) : NAME_None;
+    }
 }
 
 void AMarburgumPlayerController::BeginPlay()
@@ -237,12 +272,14 @@ void AMarburgumPlayerController::SubmitMissionChoice(const FGuid& OperationId, A
     PendingOperationId = OperationId;
     PendingTarget = Target;
     PendingSinceSeconds = FPlatformTime::Seconds();
-    ServerRequestMissionChoice(OperationId, Target, MissionId, ChoiceId);
+    ServerRequestMissionChoice(OperationId, Target, IdText(MissionId), IdText(ChoiceId));
 }
 
 void AMarburgumPlayerController::ServerRequestMissionChoice_Implementation(FGuid OperationId, AMarburgumInteractable* Target,
-    FName MissionId, FName ChoiceId)
+    const FString& MissionText, const FString& ChoiceText)
 {
+    const FName MissionId = KnownMission(MissionText);
+    const FName ChoiceId = KnownChoice(MissionText, ChoiceText);
     UWorld* World = GetWorld();
     if (!World || !AdmitRequest(TEXT("choice")))
     {
@@ -272,12 +309,13 @@ void AMarburgumPlayerController::SubmitTrade(const FGuid& OperationId, AMarburgu
     PendingOperationId = OperationId;
     PendingTarget = Target;
     PendingSinceSeconds = FPlatformTime::Seconds();
-    ServerRequestTrade(OperationId, Target, Action, ItemId, Quantity);
+    ServerRequestTrade(OperationId, Target, Action, IdText(ItemId), Quantity);
 }
 
 void AMarburgumPlayerController::ServerRequestTrade_Implementation(FGuid OperationId, AMarburgumInteractable* Target,
-    EMarburgumTradeAction Action, FName ItemId, int32 Quantity)
+    EMarburgumTradeAction Action, const FString& ItemText, int32 Quantity)
 {
+    const FName ItemId = KnownItem(ItemText);
     UWorld* World = GetWorld();
     if (!World || !AdmitRequest(TEXT("trade")))
     {
@@ -412,7 +450,7 @@ void AMarburgumPlayerController::RequestEnterVehicle(AMarburgumVehicle* Vehicle,
     if (IsLocalController() && Vehicle)
     {
         VehicleRequestAt = FPlatformTime::Seconds();
-        ServerEnterVehicle(Vehicle, SeatId);
+        ServerEnterVehicle(Vehicle, IdText(SeatId));
     }
 }
 
@@ -425,12 +463,18 @@ void AMarburgumPlayerController::RequestExitVehicle()
     }
 }
 
-void AMarburgumPlayerController::ServerEnterVehicle_Implementation(AMarburgumVehicle* Vehicle, FName SeatId)
+void AMarburgumPlayerController::ServerEnterVehicle_Implementation(AMarburgumVehicle* Vehicle, const FString& SeatText)
 {
     if (!AdmitRequest(TEXT("vehicle")))
     {
         return;
     }
+    // Empty asks for the driver's seat. A seat this car does not have becomes one name no car uses, which
+    // TryEnterAuthority refuses as no_seat with its usual log, rather than a new name per request (see KnownMission).
+    const MarburgumII::Vehicles::FVehicleDefinition* Definition = Vehicle ? Vehicle->GetDefinition() : nullptr;
+    const FName SeatId = SeatText.IsEmpty() ? NAME_None
+        : Definition && MarburgumII::Vehicles::FindSeat(*Definition, SeatText) ? FName(*SeatText)
+        : FName(TEXT("unknown_seat"));
     AMarburgumCharacter* Body = Cast<AMarburgumCharacter>(GetPawn());
     FName Reason = TEXT("no_vehicle");
     const bool bOk = Body && Vehicle && Vehicle->TryEnterAuthority(*Body, SeatId, Reason);
