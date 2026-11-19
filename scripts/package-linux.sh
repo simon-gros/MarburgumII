@@ -22,10 +22,16 @@ fi
 
 "$repo_root/scripts/check-engine-version.sh" "$ue_root"
 
-bash "$ue_root/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
+# -WaitForUATMutex: one UAT per engine install; another session's packaging is waited for, not failed on.
+bash "$ue_root/Engine/Build/BatchFiles/RunUAT.sh" -WaitForUATMutex BuildCookRun \
     -project="$repo_root/MarburgumII.uproject" \
     -noP4 -unattended -utf8output \
     -platform=Linux -client -clientconfig="$config" \
     -server -serverplatform=Linux -serverconfig="$config" \
     -build -cook -stage -pak \
-    -map=/Game/Maps/FrontEnd+/Game/Maps/NetSmoke+/Game/Maps/Lent+/Game/World/lent
+    -map=/Game/Maps/FrontEnd+/Game/Maps/NetSmoke+/Game/Maps/Lent+/Game/World/lent \
+    -ubtargs=-WaitMutex
+
+# The build stamp: which commit the staged trees came from and the digests of the two executables, so a smoke or
+# a playtest can tell this build from a stale one (scripts/build-stamp.sh).
+"$repo_root/scripts/build-stamp.sh" write "$config"

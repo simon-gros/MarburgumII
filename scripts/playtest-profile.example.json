@@ -20,74 +20,87 @@
       "bash",
       "{engine_root}/Engine/Build/BatchFiles/RunUAT.sh",
       "BuildCookRun",
+      "-ubtargs=-WaitMutex",
       "-project={project_file}",
-      "-nop4",
+      "-noP4",
+      "-unattended",
+      "-utf8output",
+      "-platform=Linux",
+      "-client",
+      "-clientconfig=Development",
       "-build",
       "-cook",
       "-stage",
       "-pak",
       "-archive",
-      "-clean",
-      "-platform=Linux",
-      "-clientconfig=Development",
-      "-allmaps",
-      "-archivedirectory={run_dir}/client",
-      "-unattended",
-      "-utf8output"
+      "-archivedirectory={run_dir}",
+      "-map=/Game/Maps/FrontEnd+/Game/Maps/NetSmoke+/Game/Maps/Lent+/Game/World/lent"
     ],
     [
       "bash",
       "{engine_root}/Engine/Build/BatchFiles/RunUAT.sh",
       "BuildCookRun",
+      "-ubtargs=-WaitMutex",
       "-project={project_file}",
-      "-nop4",
+      "-noP4",
+      "-unattended",
+      "-utf8output",
+      "-server",
+      "-noclient",
+      "-serverplatform=Linux",
+      "-serverconfig=Development",
       "-build",
       "-cook",
       "-stage",
       "-pak",
       "-archive",
-      "-clean",
-      "-server",
-      "-noclient",
-      "-serverplatform=Linux",
-      "-serverconfig=Development",
-      "-allmaps",
-      "-archivedirectory={run_dir}/server",
-      "-unattended",
-      "-utf8output"
+      "-archivedirectory={run_dir}",
+      "-map=/Game/Maps/FrontEnd+/Game/Maps/NetSmoke+/Game/Maps/Lent+/Game/World/lent"
     ]
   ],
   "artifact_roots": {
-    "client": "{run_dir}/client",
-    "server": "{run_dir}/server"
+    "client": "{run_dir}/LinuxClient",
+    "server": "{run_dir}/LinuxServer"
   },
   "launch_commands": [
     {
       "role": "server",
       "command": [
-        "{run_dir}/server/LinuxServer/MarburgumIIServer.sh",
+        "{run_dir}/LinuxServer/MarburgumIIServer.sh",
         "/Game/World/lent",
-        "-port=7777",
+        "-port=17777",
+        "-MB2WorldStore={run_dir}/world-store.json",
         "-log",
-        "-abslog={run_dir}/logs/ue-server.log"
+        "-unattended",
+        "-nosplash"
       ]
     },
     {
       "role": "client",
       "command": [
-        "{run_dir}/client/Linux/MarburgumIIClient.sh",
-        "127.0.0.1:7777",
+        "{run_dir}/LinuxClient/MarburgumIIClient.sh",
+        "127.0.0.1:17777?MB2Start=arrival?MB2Character=playtest-a",
+        "-windowed",
+        "-ResX=1600",
+        "-ResY=900",
         "-log",
-        "-abslog={run_dir}/logs/ue-client-a.log"
+        "-nosplash"
       ]
     },
     {
       "role": "client",
       "command": [
-        "{run_dir}/client/Linux/MarburgumIIClient.sh",
-        "127.0.0.1:7777",
+        "{run_dir}/LinuxClient/MarburgumIIClient.sh",
+        "127.0.0.1:17777?MB2Start=bridge?MB2Character=playtest-b",
+        "-RenderOffScreen",
+        "-windowed",
+        "-ForceRes",
+        "-ResX=1280",
+        "-ResY=720",
+        "-nosound",
+        "-unattended",
         "-log",
-        "-abslog={run_dir}/logs/ue-client-b.log"
+        "-nosplash"
       ]
     }
   ]

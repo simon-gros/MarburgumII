@@ -47,7 +47,7 @@ set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-staged}"
-port="${MB2_WEATHER_PORT:-7777}"
+port="${MB2_WEATHER_PORT:-27711}"
 map="/Game/World/lent"
 uproject="$repo_root/MarburgumII.uproject"
 out_dir="$repo_root/Saved/${MB2_SMOKE_DIR:-WeatherSmoke}/$(date -u +%Y%m%dT%H%M%SZ)"
@@ -291,6 +291,8 @@ fi
             "$out_dir/server-$phase.log" "$out_dir/client-$phase.log" | sed 's/^.*\(MB2WSMOKE\|MB2WEATHER\|MB2SMOKE\)/\1/'
     done
 } > "$out_dir/summary.txt"
+# Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
+[[ "$mode" == staged ]] && { "$repo_root/scripts/build-stamp.sh" check >> "$out_dir/summary.txt" 2>&1 || echo "WARNING: the staged build is not fresh; see $out_dir/summary.txt" >&2; }
 
 echo "Result: $([[ $status -eq 0 ]] && echo PASS || echo FAIL) — $out_dir/summary.txt"
 exit "$status"

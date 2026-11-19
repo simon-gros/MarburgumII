@@ -22,7 +22,7 @@ set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-staged}"
-port="${MB2_SWIM_PORT:-7777}"
+port="${MB2_SWIM_PORT:-27708}"
 map="/Game/World/lent"
 uproject="$repo_root/MarburgumII.uproject"
 out_dir="$repo_root/Saved/SwimSmoke/$(date -u +%Y%m%dT%H%M%SZ)"
@@ -207,6 +207,8 @@ echo "  store conditions after phase 2: ${store_conditions:-none} (want empty: a
         | grep -v "MB2COND role=server event=\(winded\|breath_back\)" \
         | sed 's/^.*\(MB2SWIM\|MB2COND\|MB2SMOKE\)/\1/'
 } > "$out_dir/summary.txt"
+# Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
+[[ "$mode" == staged ]] && { "$repo_root/scripts/build-stamp.sh" check >> "$out_dir/summary.txt" 2>&1 || echo "WARNING: the staged build is not fresh; see $out_dir/summary.txt" >&2; }
 
 echo "Result: $([[ $status -eq 0 ]] && echo PASS || echo FAIL) — $out_dir/summary.txt"
 exit "$status"

@@ -21,7 +21,7 @@ set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-staged}"
-port="${MB2_SHOP_PORT:-7791}"
+port="${MB2_SHOP_PORT:-27713}"
 map="/Game/World/lent"
 uproject="$repo_root/MarburgumII.uproject"
 out_dir="$repo_root/Saved/ShopSmoke/$(date -u +%Y%m%dT%H%M%SZ)"
@@ -191,6 +191,8 @@ echo "  server phase 2: store_loaded(schema 5, revision 4)=$loaded_2 (want 1); s
     grep -ah "MB2SHOP\|MB2INTERACT role=server event=\(interaction\|store_loaded\)" "$out_dir"/*.log \
         | sed 's/^.*\(MB2SHOP\|MB2INTERACT\)/\1/'
 } > "$out_dir/summary.txt"
+# Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
+[[ "$mode" == staged ]] && { "$repo_root/scripts/build-stamp.sh" check >> "$out_dir/summary.txt" 2>&1 || echo "WARNING: the staged build is not fresh; see $out_dir/summary.txt" >&2; }
 
 echo "Result: $([[ $status -eq 0 ]] && echo PASS || echo FAIL) — $out_dir/summary.txt"
 exit "$status"

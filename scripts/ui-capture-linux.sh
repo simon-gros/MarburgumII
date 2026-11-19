@@ -16,8 +16,8 @@ set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-staged}"
-port="${MB2_CAPTURE_PORT:-7777}"
-dead_port="${MB2_CAPTURE_DEAD_PORT:-7790}"
+port="${MB2_CAPTURE_PORT:-27703}"
+dead_port="${MB2_CAPTURE_DEAD_PORT:-27704}"
 map="/Game/Maps/NetSmoke"
 uproject="$repo_root/MarburgumII.uproject"
 out_dir="$repo_root/Saved/UICapture/$(date -u +%Y%m%dT%H%M%SZ)"

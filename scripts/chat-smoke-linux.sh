@@ -15,7 +15,7 @@ set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-staged}"
-port="${MB2_CHAT_PORT:-7777}"
+port="${MB2_CHAT_PORT:-27702}"
 map="/Game/Maps/NetSmoke"
 uproject="$repo_root/MarburgumII.uproject"
 out_dir="$repo_root/Saved/ChatSmoke/$(date -u +%Y%m%dT%H%M%SZ)"
@@ -163,6 +163,8 @@ fi
     grep -ah "MB2CHAT\|MB2SMOKE role=server event=\(ready\|login\|logout\)\|Marburgum chat accepted" "$out_dir"/*.log \
         | sed 's/^.*\(MB2CHAT\|MB2SMOKE\|Marburgum chat accepted\)/\1/'
 } > "$out_dir/summary.txt"
+# Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
+[[ "$mode" == staged ]] && { "$repo_root/scripts/build-stamp.sh" check >> "$out_dir/summary.txt" 2>&1 || echo "WARNING: the staged build is not fresh; see $out_dir/summary.txt" >&2; }
 
 echo "Result: $([[ $status -eq 0 ]] && echo PASS || echo FAIL) — $out_dir/summary.txt"
 exit "$status"
