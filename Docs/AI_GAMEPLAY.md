@@ -59,6 +59,14 @@ There is no behavior tree, no perception component, no navigation mesh, and no W
 Editor automation on 2026-11-19, after the modules were rebuilt (binaries 21:51, run 21:53, log `Saved/AIRules/rules.log`, exit 0; repeated at 21:54, log `Saved/Automation/adr070-rules-rebuilt.log`, exit 0): `Marburgum.Gameplay.CombatRules` Success, `Marburgum.Gameplay.StreetRules` Success. That covers the blocked-chase give-up, a clear blow still landing, and reverse-once / hold. It is not a rendered street or combat smoke, not a packaged two-client run, and not an owner playtest. A visit that used the whole 30 s without arriving did not log `visit_given_up`, and a second think before the street step could log `went_in` again. Both are fixed in source and still need a rendered places smoke.
 
 
+## Runtime check, 20 November 2026, `fix/grok-quality-2026-11-19`
+
+Editor server and one offscreen client, port 27851, `/Game/World/lent`, `scripts/bridge-cross-linux.sh`. A server-owned pedestrian walked a 5-node route on the loaded graph, from (100.9, -3.4, 13.3) m to (128.9, -2.9, 13.5) m, in 26.7 s. The result was `arrived`, not wet, not lost. The client saw the same body move 14.4 m and wrote `Saved/BridgeCross/20261119T232455Z/bridge-bridge.png`. That is one bridge span plus the pavement just beyond it, not a walk of the whole Stari most.
+
+Two null-RHI clients on port 27852 at 00:26 Marburgum time, both read as `residential_blocks`. One player alone wanted 2. With both connected the budget stayed 2, split 1 and 1, and two people were in the world (`Saved/StreetMulti/20261119Ttwo/server.log`). They did not each bring a street. Night density only. Not a commercial-versus-residential pair, not a separation, not opposite banks, not a disconnect.
+
+During the crossing the district lookup ran 156 times, 155 from the 5 m / 3 m hold, and the one search took 0.09 ms. One player. No `-MB2NetRate` sample. No package.
+
 ## Next verified delivery
 
 **P0: execute and integrate existing fixes before adding behavior.** Run the previously unexecuted `Marburgum.Gameplay.CombatRules` and `Marburgum.Gameplay.StreetRules` cases on a clean UE 5.8.3 checkout, then render blocked-pavement, blocked-chase, crowd-pass-lane and river-boundary probes. Recheck ADR-068 zone mixing and ADR-069 place visiting at day/night/Sunday plus body/run-over answers. On genuinely freshly cooked Linux Client/Server binaries, test two independent clients on the same crowd, one other client in a different zone, transitions, disconnection and resumption; capture source and cooked asset hashes, server-owned state, screenshots, logs, CPU/replication metrics and failures. Escalate reproducible defects to small fixes with negative controls; record outstanding route-search, traffic/perception and author-NPC behavior separately. Mark a row owner-accepted only after an actual owner playtest. See [19 November review](DEVELOPMENT_REVIEW_2026-11-19.md) and [roadmap](ROADMAP.md).

@@ -1,5 +1,6 @@
 #include "MarburgumStreetSubsystem.h"
 
+#include "Algo/Reverse.h"
 #include "Components/BoxComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -108,6 +109,7 @@ void UMarburgumStreetSubsystem::OnWorldBeginPlay(UWorld& InWorld)
     int32 Seed = 1990;
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetSeed="), Seed);
     bProbe = FParse::Param(FCommandLine::Get(), TEXT("MB2StreetProbe"));
+    bBridgeCross = FParse::Param(FCommandLine::Get(), TEXT("MB2BridgeCross"));
     int32 Places = 1;
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetPlaces="), Places);
     bPlaces = Places != 0;
@@ -167,6 +169,141 @@ void UMarburgumStreetSubsystem::Tick(float DeltaTime)
     }
 }
 
+void UMarburgumStreetSubsystem::StepBridgeCross(double Time)
+{
+    if (!bBridgeCross || bBridgeCrossDone)
+    {
+        return;
+    }
+    auto Finish = [&](const TCHAR* Result, const AMarburgumPedestrian* Person)
+    {
+        bBridgeCrossDone = true;
+        const FVector At = Person ? Person->GetActorLocation() : FVector::ZeroVector;
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=bridge_cross result=%s seconds=%.1f at=%.0f,%.0f,%.0f zone_lookups=%d zone_hits=%d zone_lookup_ms=%.2f"),
+            StreetLogPrefix, Result, Time - BridgeCrossStart, At.X, At.Y, At.Z, ZoneLookups, ZoneCacheHits, ZoneLookupSeconds * 1000.0);
+    };
+    if (!BridgeCross.IsValid())
+    {
+        const int32 Largest = Graph.LargestComponent();
+        int32 BestEdge = INDEX_NONE;
+        double BestSpan = 0.0;
+        for (int32 Edge = 0; Edge < Graph.GetEdges().Num(); ++Edge)
+        {
+            const FMarburgumWalkGraph::FEdge& Span = Graph.GetEdges()[Edge];
+            const FMarburgumWalkGraph::FNode& A = Graph.GetNodes()[Span.A];
+            const FMarburgumWalkGraph::FNode& B = Graph.GetNodes()[Span.B];
+            if (A.Component != Largest || B.Component != Largest)
+            {
+                continue;
+            }
+            if (Span.Kind != 4 && !(A.bBridge && B.bBridge))
+            {
+                continue;
+            }
+            const double Delta = FMath::Abs(A.Location.X - B.Location.X);
+            if (Delta >= 800.0 && Delta > BestSpan)
+            {
+                BestSpan = Delta;
+                BestEdge = Edge;
+            }
+        }
+        if (BestEdge == INDEX_NONE)
+        {
+            BridgeCrossStart = Time;
+            Finish(TEXT("no_bridge"), nullptr);
+            return;
+        }
+        const FMarburgumWalkGraph::FEdge& Span = Graph.GetEdges()[BestEdge];
+        const int32 Near = Graph.GetNodes()[Span.A].Location.X <= Graph.GetNodes()[Span.B].Location.X ? Span.A : Span.B;
+        const int32 Far = Graph.Other(BestEdge, Near);
+        const double Direction = FMath::Sign(Graph.GetNodes()[Far].Location.X - Graph.GetNodes()[Near].Location.X);
+        TArray<int32> Previous;
+        Previous.Init(INDEX_NONE, Graph.GetNodes().Num());
+        TArray<int32> Queue;
+        Queue.Add(Near);
+        Previous[Near] = Near;
+        int32 Goal = INDEX_NONE;
+        for (int32 Head = 0; Head < Queue.Num() && Head < 4000 && Goal == INDEX_NONE; ++Head)
+        {
+            const int32 Node = Queue[Head];
+            const FMarburgumWalkGraph::FNode& Here = Graph.GetNodes()[Node];
+            if (Node != Near && !Here.bBridge && (Here.Location.X - Graph.GetNodes()[Far].Location.X) * Direction >= 1500.0)
+            {
+                Goal = Node;
+                break;
+            }
+            for (const int32 Edge : Graph.Touching(Node))
+            {
+                const int32 Next = Graph.Other(Edge, Node);
+                if (Previous[Next] == INDEX_NONE && Graph.GetNodes()[Next].Component == Largest)
+                {
+                    Previous[Next] = Node;
+                    Queue.Add(Next);
+                }
+            }
+        }
+        if (Goal == INDEX_NONE)
+        {
+            BridgeCrossStart = Time;
+            Finish(TEXT("no_route"), nullptr);
+            return;
+        }
+        TArray<int32> Route;
+        for (int32 Node = Goal; Node != Near; Node = Previous[Node])
+        {
+            Route.Add(Node);
+        }
+        Route.Add(Near);
+        Algo::Reverse(Route);
+        AMarburgumPedestrian* Person = SpawnAt(Near, nullptr, TEXT("bridge_cross"), 0.0);
+        if (!Person)
+        {
+            BridgeCrossStart = Time;
+            Finish(TEXT("no_spawn"), nullptr);
+            return;
+        }
+        Person->NpcId = TEXT("bridge_cross");
+        Person->SetScriptedRoute(Route);
+        BridgeCross = Person;
+        BridgeCrossStart = Time;
+        BridgeCrossLog = Time;
+        const FVector From = Graph.GetNodes()[Route[0]].Location;
+        const FVector To = Graph.GetNodes()[Route.Last()].Location;
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=bridge_cross result=started nodes=%d from=%.0f,%.0f,%.0f to=%.0f,%.0f,%.0f"),
+            StreetLogPrefix, Route.Num(), From.X, From.Y, From.Z, To.X, To.Y, To.Z);
+        return;
+    }
+    AMarburgumPedestrian* Person = BridgeCross.Get();
+    const UMarburgumWaterSubsystem* Water = GetWorld()->GetSubsystem<UMarburgumWaterSubsystem>();
+    if (Water && Water->IsWet(Person->GetActorLocation()))
+    {
+        Finish(TEXT("wet"), Person);
+        return;
+    }
+    if (Person->IsLost())
+    {
+        Finish(TEXT("lost"), Person);
+        return;
+    }
+    if (Person->IsScriptedDone())
+    {
+        Finish(TEXT("arrived"), Person);
+        return;
+    }
+    if (Time - BridgeCrossStart > 240.0)
+    {
+        Finish(TEXT("timeout"), Person);
+        return;
+    }
+    if (Time - BridgeCrossLog >= 2.0)
+    {
+        BridgeCrossLog = Time;
+        const FVector At = Person->GetActorLocation();
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=bridge_cross result=walking seconds=%.1f at=%.0f,%.0f,%.0f edge=%d node=%d"),
+            StreetLogPrefix, Time - BridgeCrossStart, At.X, At.Y, At.Z, Person->GetWalkEdge(), Person->GetWalkNode());
+    }
+}
+
 void UMarburgumStreetSubsystem::Step(double Time)
 {
     People.RemoveAll([](const TWeakObjectPtr<AMarburgumPedestrian>& Person) { return !Person.IsValid(); });
@@ -187,6 +324,7 @@ void UMarburgumStreetSubsystem::Step(double Time)
     SpawnPeople(Time, MarburgumStreetPopulation::StepSeconds);
     StepProbe();
     StepWaterProbe(Time);
+    StepBridgeCross(Time);
 
     if (Time - LastSummarySeconds >= MarburgumStreetPopulation::SummarySeconds)
     {
@@ -375,6 +513,10 @@ void UMarburgumStreetSubsystem::MarkSeenAndCull(double Time)
         }
         const bool bUnseen = Time - Person->LastSeenSeconds > UnseenSeconds;
         if (Person == WaterProbe.Get() && Time < WaterProbeUntil)
+        {
+            continue;
+        }
+        if (Person == BridgeCross.Get())
         {
             continue;
         }
@@ -569,12 +711,16 @@ int32 UMarburgumStreetSubsystem::ZoneNodeFor(const FMarburgumStreetViewer& Viewe
     }
     const double Moved = Hold->Node == INDEX_NONE ? TNumericLimits<double>::Max() : FVector::Dist2D(Hold->Location, Viewer.Location);
     const double MovedUp = Hold->Node == INDEX_NONE ? TNumericLimits<double>::Max() : FMath::Abs(Hold->Location.Z - Viewer.Location.Z);
+    ++ZoneLookups;
     if (HeldZoneNode(Hold->Node, Moved, INDEX_NONE, ZoneHoldCm, MovedUp) == Hold->Node && Hold->Node != INDEX_NONE
         && Graph.GetNodes().IsValidIndex(Hold->Node))
     {
+        ++ZoneCacheHits;
         return Hold->Node;
     }
+    const double Started = FPlatformTime::Seconds();
     Hold->Node = Graph.NearestNode(Viewer.Location, MarburgumStreetPopulation::ViewerZoneSearchCm, MarburgumStreetPopulation::ViewerZoneSearchCm);
+    ZoneLookupSeconds += FPlatformTime::Seconds() - Started;
     Hold->Location = Viewer.Location;
     return Hold->Node;
 }
@@ -656,7 +802,7 @@ void UMarburgumStreetSubsystem::SendSomeoneHome(double Time)
         {
             AMarburgumPedestrian* Person = Weak.Get();
             // Only someone walking about whom nobody has seen lately: not a body, not anyone fleeing, watching or fighting.
-            if (!Person || Person == WaterProbe.Get() || Person->IsDown() || Person->GetMood() != EMarburgumStreetMood::Walk
+            if (!Person || Person == WaterProbe.Get() || Person == BridgeCross.Get() || Person->IsDown() || Person->GetMood() != EMarburgumStreetMood::Walk
                 || Time - Person->LastSeenSeconds <= UnseenSeconds)
             {
                 continue;

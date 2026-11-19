@@ -135,6 +135,8 @@ private:
      */
     void StepProbe();
     void StepProbeFinder();
+    /** -MB2BridgeCross: one person walks an existing bridge route from one bank to the other. */
+    void StepBridgeCross(double Now);
     /**
      * -MB2StreetProbe, ADR-046: once a player is about, a person on the pavement nearest the river is scared
      * from the land side, so running straight away would be into the Drava, and is watched for a while.
@@ -202,5 +204,13 @@ private:
     TWeakObjectPtr<AMarburgumPedestrian> WaterProbe;
     double WaterProbeUntil = 0.0;
     bool bWaterProbeSwam = false;
+    bool bBridgeCross = false;
+    bool bBridgeCrossDone = false;
+    TWeakObjectPtr<AMarburgumPedestrian> BridgeCross;
+    double BridgeCrossStart = 0.0;
+    double BridgeCrossLog = 0.0;
+    int32 ZoneLookups = 0;
+    int32 ZoneCacheHits = 0;
+    double ZoneLookupSeconds = 0.0;
     FVector WaterProbeStart = FVector::ZeroVector;
 };
