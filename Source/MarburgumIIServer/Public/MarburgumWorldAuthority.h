@@ -117,6 +117,8 @@ private:
     FTimerHandle ShopTimer;
     TMap<TWeakObjectPtr<AMarburgumPlayerController>, FCast> Casts;
     TMap<TWeakObjectPtr<AMarburgumPlayerController>, double> LastCastAt;
+    /** The operation id of each player's latest cast, so a resent cast is answered Duplicate (QA 2026-11-19). */
+    TMap<TWeakObjectPtr<AMarburgumPlayerController>, FGuid> LastCastOperation;
     /** Each player's place resolvers (MarburgumPlaces.h): they remember what was shown, so one set per player. */
     TMap<TWeakObjectPtr<const AController>, MarburgumII::Places::FPlaceTracker> PlaceTrackers;
     FRandomStream Rolls;

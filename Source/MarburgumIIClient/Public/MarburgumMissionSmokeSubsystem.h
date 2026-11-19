@@ -77,6 +77,7 @@ private:
     TArray<FString> Problems;
 
     FGuid Op;
+    bool bCastReplayed = false;
     int32 FishBefore = 0;
     int32 AttemptBefore = 0;
     TMap<FGuid, FMarburgumInteractionReceipt> Receipts;

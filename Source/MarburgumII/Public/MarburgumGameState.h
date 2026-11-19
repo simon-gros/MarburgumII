@@ -179,4 +179,6 @@ private:
 
     /** Server-side idempotency ledger; process lifetime only until persistence exists. */
     TSet<FGuid> CommittedOperationIds;
+    TArray<FGuid> CommittedOperationOrder;
+    static constexpr int32 MaxRememberedOperations = 4096;
 };
