@@ -128,6 +128,13 @@ bool FMarburgumVehicleDynamicsTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Buoyancy capped"), Dynamics::Buoyancy(Car, 10.0), Car.Mass * Dynamics::Gravity * Dynamics::WaterMaxDepth, 1e-6);
     TestTrue(TEXT("Crash threshold"), Dynamics::IsImpact(2.0) && !Dynamics::IsImpact(1.0) && !Dynamics::IsImpact(std::numeric_limits<double>::quiet_NaN()));
 
+    // A lapsed intent (QA 2026-11-19): held keys that stop arriving brake; a released wheel coasts; no driver brakes.
+    TestEqual(TEXT("Dropped while throttling brakes"), Dynamics::BrakeAfterLapsedIntent(true, 1.f, 0.f, 0.f, false), 1.f);
+    TestEqual(TEXT("Dropped while steering brakes"), Dynamics::BrakeAfterLapsedIntent(true, 0.f, 0.f, -0.5f, false), 1.f);
+    TestEqual(TEXT("Dropped on the handbrake brakes"), Dynamics::BrakeAfterLapsedIntent(true, 0.f, 0.f, 0.f, true), 1.f);
+    TestEqual(TEXT("Released everything coasts"), Dynamics::BrakeAfterLapsedIntent(true, 0.f, 0.f, 0.f, false), 0.f);
+    TestEqual(TEXT("Nobody at the wheel brakes"), Dynamics::BrakeAfterLapsedIntent(false, 0.f, 0.f, 0.f, false), 1.f);
+
     // Surfaces: unknown stays neutral, wet asphalt loses grip, water barely drives.
     TestEqual(TEXT("Unknown surface neutral"), Dynamics::SurfaceGrip(TEXT("unknown"), 1.0), 1.0);
     TestTrue(TEXT("Wet asphalt slips"), Dynamics::SurfaceGrip(TEXT("asphalt"), 1.0) < Dynamics::SurfaceGrip(TEXT("asphalt"), 0.0));

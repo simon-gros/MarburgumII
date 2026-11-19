@@ -240,15 +240,16 @@ void AMarburgumVehicle::StepPhysicsAuthority(float DeltaSeconds)
         return;
     }
 
-    // Held intent lapses: a driver who stopped sending coasts; a car with nobody at the wheel rests on its brake.
+    // Held intent lapses: a driver whose held keys stopped arriving leaves a braking car (ADR-039), one who let go
+    // of everything coasts, and a car with nobody at the wheel rests on its brake.
     const double Now = GetWorld()->GetTimeSeconds();
     if (bInputLive && Now - InputAt > InputExpirySeconds)
     {
         bInputLive = false;
+        Brake = BrakeAfterLapsedIntent(GetOccupant(GetDriverSeatId()) != nullptr, Throttle, Brake, Steer, bHandbrake);
         Throttle = 0.f;
         Steer = 0.f;
         bHandbrake = false;
-        Brake = GetOccupant(GetDriverSeatId()) ? 0.f : 1.f;
     }
 
     const FTransform Transform = Body->GetComponentTransform();
