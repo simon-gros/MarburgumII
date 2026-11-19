@@ -186,6 +186,8 @@ void FMarburgumMoveResponseDataContainer::ServerFillResponseData(const UCharacte
     bWinded = Movement.bWinded;
     bDown = Movement.bDown;
     SwingCooldown = Movement.SwingCooldown;
+    SwingRemaining = Movement.SwingRemaining;
+    StaggerRemaining = Movement.StaggerRemaining;
     SwingsHandled = Movement.SwingsHandled;
 }
 
@@ -202,6 +204,8 @@ bool FMarburgumMoveResponseDataContainer::Serialize(UCharacterMovementComponent&
         Ar.SerializeBits(&bWinded, 1);
         Ar.SerializeBits(&bDown, 1);
         Ar << SwingCooldown;
+        Ar << SwingRemaining;
+        Ar << StaggerRemaining;
         Ar << SwingsHandled;
     }
     return !Ar.IsError();
@@ -887,6 +891,8 @@ void UMarburgumCharacterMovement::ClientHandleMoveResponse(const FCharacterMoveR
             bWinded = Response.bWinded;
             bDown = Response.bDown;
             SwingCooldown = Response.SwingCooldown;
+            SwingRemaining = Response.SwingRemaining;
+            StaggerRemaining = Response.StaggerRemaining;
             SwingsHandled = Response.SwingsHandled;
             Vitality = bDown ? 0.f : FMath::Max(Vitality, 1.f);
         }

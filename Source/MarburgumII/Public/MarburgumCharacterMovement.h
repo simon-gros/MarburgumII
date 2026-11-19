@@ -32,8 +32,10 @@ private:
 };
 
 /**
- * Server -> client move response: a correction also carries the server's stamina, winded and down state, and
- * how long until its next swing.
+ * Server -> client move response: a correction also carries the server's stamina, winded and down state, how
+ * long until its next swing, how much of a swing is still being thrown and how long the body stays staggered.
+ * Without the last two a swing the server refused played on at the client, and a stagger (decided only on the
+ * server, by a blow) let the client predict swings the server would refuse (QA 2026-11-19, G6).
  */
 struct FMarburgumMoveResponseDataContainer : public FCharacterMoveResponseDataContainer
 {
@@ -41,6 +43,8 @@ struct FMarburgumMoveResponseDataContainer : public FCharacterMoveResponseDataCo
     bool bWinded = false;
     bool bDown = false;
     float SwingCooldown = 0.f;
+    float SwingRemaining = 0.f;
+    float StaggerRemaining = 0.f;
     uint8 SwingsHandled = 0;
 
     virtual void ServerFillResponseData(const UCharacterMovementComponent& CharacterMovement, const FClientAdjustment& PendingAdjustment) override;
