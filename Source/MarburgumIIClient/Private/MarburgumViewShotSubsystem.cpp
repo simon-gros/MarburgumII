@@ -43,10 +43,15 @@ using namespace MarburgumViewShot;
 
 bool UMarburgumViewShotSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
+#if UE_BUILD_SHIPPING
+    static_cast<void>(Outer);
+    return false; // Test harnesses and capture tools never run in a player build.
+#else
     const UGameInstance* GameInstance = Cast<UGameInstance>(Outer);
     FString Ignored;
     return GameInstance && !GameInstance->IsDedicatedServerInstance()
         && FParse::Value(FCommandLine::Get(), TEXT("MB2ViewShots="), Ignored);
+#endif
 }
 
 void UMarburgumViewShotSubsystem::Initialize(FSubsystemCollectionBase& Collection)
