@@ -1,23 +1,21 @@
 <div align="center">
-
-# MAGNA RAEDARUM
-# MARBURGUM II
-
-**A living city. A shared world. A new beginning.**
-
-*A persistent urban role-playing world in a fictionalized 1990s Maribor, Slovenia.*
-
-![Status: pre-alpha](https://img.shields.io/badge/STATUS-PRE--ALPHA-c18a46?style=flat-square)
-![Engine: UE 5.8.3](https://img.shields.io/badge/UNREAL%20ENGINE-5.8.3-29364e?style=flat-square)
-![Platform: Linux development](https://img.shields.io/badge/DEVELOPMENT-LINUX-43596a?style=flat-square)
-![Architecture: authoritative server](https://img.shields.io/badge/NETWORK-SERVER%20AUTHORITATIVE-436857?style=flat-square)
-
-[**Explore the world**](#the-world) · [**See development progress**](#development-progress) · [**Build the game**](#building-from-source) · [**Read the roadmap**](Docs/ROADMAP.md)
-
-<img src="Docs/Captures/stage1-street-places/day-mixed.jpg" width="920" alt="In-engine editor-mode capture of pedestrians and destinations in the developing Maribor world">
-
-<sub>In-engine development capture · Lent street-places verification, 19 November 2026 · Work in progress, not final release art.</sub>
-
+  <h1>MAGNA RAEDARUM<br>MARBURGUM II</h1>
+  <p><strong>A living city. A shared world. A new beginning.</strong></p>
+  <p><em>A persistent urban role-playing world in a fictionalized 1990s Maribor, Slovenia.</em></p>
+  <p>
+    <img alt="Status: pre-alpha" src="https://img.shields.io/badge/STATUS-PRE--ALPHA-c18a46?style=flat-square">
+    <img alt="Engine: Unreal Engine 5.8.3" src="https://img.shields.io/badge/UNREAL%20ENGINE-5.8.3-29364e?style=flat-square">
+    <img alt="Linux development" src="https://img.shields.io/badge/DEVELOPMENT-LINUX-43596a?style=flat-square">
+    <img alt="Server authoritative network" src="https://img.shields.io/badge/NETWORK-SERVER%20AUTHORITATIVE-436857?style=flat-square">
+  </p>
+  <p>
+    <a href="#the-world"><strong>Explore the world</strong></a> ·
+    <a href="#development-progress"><strong>Development progress</strong></a> ·
+    <a href="#building-from-source"><strong>Build the game</strong></a> ·
+    <a href="Docs/ROADMAP.md"><strong>Roadmap</strong></a>
+  </p>
+  <img src="Docs/Captures/stage1-street-places/day-mixed.jpg" width="920" alt="In-engine editor-mode capture of pedestrians and destinations in the developing Maribor world">
+  <p><sub>In-engine development capture · Lent street-places verification, 19 November 2026 · Work in progress, not final release art.</sub></p>
 </div>
 
 ---
