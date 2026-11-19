@@ -17,6 +17,10 @@ pub const SESSION_TTL_S: i64 = 12 * 3600;
 pub const ADMISSION_TTL_S: i64 = 60;
 pub const LOGIN_FAILURES: usize = 5;
 pub const LOGIN_WINDOW_S: i64 = 15 * 60;
+/// Outstanding admission tickets per account; a newer one replaces the oldest.
+pub const ADMISSIONS_PER_ACCOUNT: usize = 3;
+/// How often expired sign-in failure records are dropped.
+const FAILURE_SWEEP_S: i64 = 60;
 
 /// A refused request: the HTTP status and a stable code the client turns into a message.
 #[derive(Debug, PartialEq, Eq)]
@@ -72,7 +76,41 @@ pub struct Admitted {
 
 struct Admission {
     account: String,
+    issued_at: i64,
     expires_at: i64,
+}
+
+/// A sign-in between its two locked steps. The password is checked in between, without the service's lock, so a
+/// burst of sign-ins cannot hold up every other request, the game server's redeem included.
+pub struct LoginCheck {
+    username: Option<String>,
+    account: Option<String>,
+    phc: Option<String>,
+}
+
+impl std::fmt::Debug for LoginCheck {
+    /// Without the stored hash.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LoginCheck").field("username", &self.username).field("account", &self.account).finish_non_exhaustive()
+    }
+}
+
+impl LoginCheck {
+    /// The stored hash to check the password against; none means burn the same work and refuse.
+    pub fn phc(&self) -> Option<&str> {
+        self.phc.as_deref()
+    }
+}
+
+/// The password check between `login_begin` and `login_finish`: the real one, or the same work for nobody.
+pub fn check_password(password: &str, phc: Option<&str>) -> bool {
+    match phc {
+        Some(phc) => secrets::verify_password(password, phc),
+        None => {
+            secrets::burn_password_check(password);
+            false
+        }
+    }
 }
 
 pub struct Service {
@@ -83,6 +121,7 @@ pub struct Service {
     server_key: String,
     admissions: HashMap<String, Admission>,
     failures: HashMap<String, Vec<i64>>,
+    failures_swept_at: i64,
 }
 
 fn view(account: &Account) -> AccountView {
@@ -108,7 +147,9 @@ impl Service {
             return Err("the server key must be at least 32 characters".into());
         }
         let store = Store::load(&path)?;
-        Ok(Service { store, path, mailer, models, server_key, admissions: HashMap::new(), failures: HashMap::new() })
+        Ok(Service {
+            store, path, mailer, models, server_key, admissions: HashMap::new(), failures: HashMap::new(), failures_swept_at: 0,
+        })
     }
 
     pub fn store(&self) -> &Store {
@@ -238,24 +279,55 @@ impl Service {
         Ok(answer)
     }
 
-    /// Sign-in. Five wrong passwords in fifteen minutes lock the username for the rest of the window.
+    /// Sign-in, in one call: `login_begin`, the password check and `login_finish`. The HTTP route runs the three
+    /// separately so the check happens outside the lock.
+    #[cfg(test)]
     pub fn login(&mut self, raw_username: &str, password: &str, now: i64) -> Outcome<SignedIn> {
-        let username = raw_username.trim().to_lowercase();
+        let check = self.login_begin(raw_username, now)?;
+        let accepted = check_password(password, check.phc());
+        self.login_finish(check, accepted, now)
+    }
+
+    /// Drops sign-in failure records older than the window, at most once a minute.
+    fn sweep_failures(&mut self, now: i64) {
+        if now - self.failures_swept_at < FAILURE_SWEEP_S {
+            return;
+        }
+        self.failures_swept_at = now;
+        self.failures.retain(|_, times| {
+            times.retain(|t| now - t < LOGIN_WINDOW_S);
+            !times.is_empty()
+        });
+    }
+
+    /// Sign-in, first step. Five failed sign-ins in fifteen minutes lock the username for the rest of the window.
+    /// A name no account could have is not recorded at all, so made-up names cannot grow the service's memory.
+    /// The attempt counts as a failure until `login_finish` proves the password, so concurrent guesses cannot
+    /// slip past the limit while their checks run.
+    pub fn login_begin(&mut self, raw_username: &str, now: i64) -> Outcome<LoginCheck> {
+        let Ok(username) = policy::username(raw_username) else {
+            return Ok(LoginCheck { username: None, account: None, phc: None });
+        };
+        self.sweep_failures(now);
         let failures = self.failures.entry(username.clone()).or_default();
         failures.retain(|t| now - t < LOGIN_WINDOW_S);
         if failures.len() >= LOGIN_FAILURES {
             return refuse(429, "too_many_attempts");
         }
-        let account_id = self.store.usernames.get(&username).cloned();
-        let accepted = match account_id.as_ref().and_then(|id| self.store.accounts.get(id)) {
-            Some(account) => secrets::verify_password(password, &account.password),
-            None => {
-                secrets::burn_password_check(password);
-                false
-            }
+        failures.push(now);
+        let account = self.store.usernames.get(&username).cloned();
+        let phc = account.as_ref().and_then(|id| self.store.accounts.get(id)).map(|a| a.password.clone());
+        Ok(LoginCheck { username: Some(username), account, phc })
+    }
+
+    /// Sign-in, last step: a proven password opens a session and clears the username's failures.
+    pub fn login_finish(&mut self, check: LoginCheck, accepted: bool, now: i64) -> Outcome<SignedIn> {
+        let Some(username) = check.username else {
+            return refuse(401, "credentials_invalid");
         };
-        let Some(account_id) = account_id.filter(|_| accepted) else {
-            self.failures.entry(username).or_default().push(now);
+        // A reset between the steps changes the hash; only the hash that was checked counts.
+        let current = check.account.as_ref().and_then(|id| self.store.accounts.get(id)).map(|a| &a.password);
+        let Some(account_id) = check.account.filter(|_| accepted && current.is_some() && current == check.phc.as_ref()) else {
             return refuse(401, "credentials_invalid");
         };
         self.failures.remove(&username);
@@ -318,8 +390,18 @@ impl Service {
             return refuse(409, "no_character");
         }
         self.admissions.retain(|_, a| a.expires_at > now);
+        // A few outstanding tickets per account at most: a newer one replaces the oldest.
+        let mut outstanding: Vec<(String, i64)> =
+            self.admissions.iter().filter(|(_, a)| a.account == account_id).map(|(v, a)| (v.clone(), a.issued_at)).collect();
+        if outstanding.len() >= ADMISSIONS_PER_ACCOUNT {
+            outstanding.sort_by_key(|(_, issued)| *issued);
+            for (verifier, _) in &outstanding[..=outstanding.len() - ADMISSIONS_PER_ACCOUNT] {
+                self.admissions.remove(verifier);
+            }
+        }
         let ticket = secrets::token();
-        self.admissions.insert(secrets::verifier("admission", &ticket), Admission { account: account_id, expires_at: now + ADMISSION_TTL_S });
+        self.admissions.insert(secrets::verifier("admission", &ticket),
+            Admission { account: account_id, issued_at: now, expires_at: now + ADMISSION_TTL_S });
         Ok(Ticket { ticket, expires_in: ADMISSION_TTL_S })
     }
 
@@ -564,6 +646,70 @@ pub mod tests {
         }
         assert_eq!(code_of(service.login("ana_k", "drava-bridge-1990", 200)), "too_many_attempts");
         assert!(service.login("ana_k", "drava-bridge-1990", 100 + LOGIN_WINDOW_S).is_ok());
+    }
+
+    #[test]
+    fn made_up_names_cannot_grow_the_failure_records() {
+        let dir = tempfile::tempdir().unwrap();
+        let (mut service, _) = service(dir.path());
+        // Names no account could have are refused without a record, however long or many.
+        let long = "x".repeat(1 << 20);
+        for name in [long.as_str(), "a b", "ab", "_x", "admin"] {
+            assert!(service.login_begin(name, 100).unwrap().phc().is_none());
+        }
+        for i in 0..10_000 {
+            service.login_begin(&format!("no such name {i}"), 100).unwrap();
+        }
+        assert!(service.failures.is_empty());
+        // Names an account could have are recorded, and the records go once the window is over.
+        for i in 0..100 {
+            service.login_begin(&format!("nobody{i}"), 100).unwrap();
+        }
+        assert_eq!(service.failures.len(), 100);
+        service.login_begin("nobody0", 100 + LOGIN_WINDOW_S).unwrap();
+        assert_eq!(service.failures.len(), 1, "only the new attempt is left");
+    }
+
+    #[test]
+    fn concurrent_guesses_count_before_their_check_finishes() {
+        let dir = tempfile::tempdir().unwrap();
+        let (mut service, inbox) = service(dir.path());
+        signed_in(&mut service, &inbox);
+        // Five sign-ins begun at once, none finished yet: the sixth is refused.
+        let checks: Vec<LoginCheck> = (0..LOGIN_FAILURES).map(|_| service.login_begin("ana_k", 100).unwrap()).collect();
+        assert_eq!(code_of(service.login_begin("ana_k", 100)), "too_many_attempts");
+        for check in checks {
+            assert_eq!(code_of(service.login_finish(check, false, 101)), "credentials_invalid");
+        }
+        assert_eq!(code_of(service.login("ana_k", "drava-bridge-1990", 102)), "too_many_attempts");
+    }
+
+    #[test]
+    fn a_reset_between_the_steps_refuses_the_old_password() {
+        let dir = tempfile::tempdir().unwrap();
+        let (mut service, inbox) = service(dir.path());
+        signed_in(&mut service, &inbox);
+        let check = service.login_begin("ana_k", 100).unwrap();
+        let accepted = check_password("drava-bridge-1990", check.phc());
+        assert!(accepted);
+        service.forgot("ana@example.si", 101).unwrap();
+        service.reset("ana@example.si", &inbox.last_code(), "pohorje-snow-1991", 102).unwrap();
+        assert_eq!(code_of(service.login_finish(check, accepted, 103)), "credentials_invalid");
+        assert!(service.login("ana_k", "pohorje-snow-1991", 104).is_ok());
+    }
+
+    #[test]
+    fn outstanding_admissions_per_account_are_capped() {
+        let dir = tempfile::tempdir().unwrap();
+        let (mut service, inbox) = service(dir.path());
+        let session = signed_in(&mut service, &inbox);
+        service.create_character(&session, "r1", "Ana", "Kos", "quinn", 40).unwrap();
+        let tickets: Vec<String> = (0..5).map(|i| service.admission(&session, 50 + i).unwrap().ticket).collect();
+        assert_eq!(service.admissions.len(), ADMISSIONS_PER_ACCOUNT);
+        for (i, ticket) in tickets.iter().enumerate() {
+            let redeemed = service.redeem(KEY, ticket, 56).is_ok();
+            assert_eq!(redeemed, i >= tickets.len() - ADMISSIONS_PER_ACCOUNT, "ticket {i}");
+        }
     }
 
     #[test]
