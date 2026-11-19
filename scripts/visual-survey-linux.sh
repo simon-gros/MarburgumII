@@ -99,5 +99,7 @@ shots="$(find "$out_dir" -maxdepth 1 -name '*.png' | wc -l)"
     grep -aE 'LogMarburgum[A-Za-z]*: (Warning|Error)|LogMaterial: (Warning|Error)|LogStaticMesh: (Warning|Error)|LogTexture: (Warning|Error)|LogStreaming: (Warning|Error)' \
         "$out_dir/client.log" | sed 's/^\[[^]]*\]\[[^]]*\]/  /' | sort | uniq -c | sort -rn | head -30
 } > "$out_dir/summary.txt"
+# Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
+[[ "$mode" == staged ]] && { "$repo_root/scripts/build-stamp.sh" check >> "$out_dir/summary.txt" 2>&1 || echo "WARNING: the staged build is not fresh; see $out_dir/summary.txt" >&2; }
 cat "$out_dir/summary.txt"
 [[ "$code" -eq 0 && "$shots" -eq "$expected" ]]
