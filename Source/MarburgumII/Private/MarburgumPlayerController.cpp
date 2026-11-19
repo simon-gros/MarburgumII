@@ -519,7 +519,7 @@ void AMarburgumPlayerController::UpdateDriving()
         Steer = OverrideSteer;
         bHandbrake = bOverrideHandbrake;
     }
-    else
+    else if (!bTyping)
     {
         const float Forward = (IsInputKeyDown(EKeys::W) ? 1.f : 0.f) - (IsInputKeyDown(EKeys::S) ? 1.f : 0.f);
         Steer = (IsInputKeyDown(EKeys::D) ? 1.f : 0.f) - (IsInputKeyDown(EKeys::A) ? 1.f : 0.f);

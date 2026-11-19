@@ -127,6 +127,13 @@ public:
     void SetDrivingOverride(float Throttle, float Brake, float Steer, bool bHandbrake);
     void ClearDrivingOverride();
 
+    /**
+     * Client: the player is typing in a text field (chat). Keys a text box does not take (Shift) still reach the
+     * game, so running and driving ignore the keyboard meanwhile.
+     */
+    void SetTyping(bool bInTyping) { bTyping = bInTyping; }
+    bool IsTyping() const { return bTyping; }
+
     /** Client-local notification when the server answers a vehicle request. */
     FMarburgumVehicleResultEvent OnVehicleResult;
 
@@ -200,6 +207,7 @@ private:
     void UpdateDriving();
 
     double VehicleRequestAt = -1000.0;
+    bool bTyping = false;
     bool bDrivingOverride = false;
     float OverrideThrottle = 0.f;
     float OverrideBrake = 0.f;
