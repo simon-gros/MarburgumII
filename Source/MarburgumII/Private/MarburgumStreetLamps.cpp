@@ -119,20 +119,6 @@ void AMarburgumStreetLamps::SetState(int32 Lamp, float Output, const FLinearColo
     UHierarchicalInstancedStaticMeshComponent* Kind = bMast ? Masts : Lanterns;
     const float Data[CustomDataFloats] = { Output, Colour.R, Colour.G, Colour.B };
     Kind->SetCustomData(Instance[Lamp], TArrayView<const float>(Data, CustomDataFloats), false);
-    (bMast ? bMastsDirty : bLanternsDirty) = true;
-}
-
-void AMarburgumStreetLamps::FlushStates()
-{
-    if (bMastsDirty)
-    {
-        Masts->MarkRenderStateDirty();
-    }
-    if (bLanternsDirty)
-    {
-        Lanterns->MarkRenderStateDirty();
-    }
-    bMastsDirty = bLanternsDirty = false;
 }
 
 bool UMarburgumStreetLampsSubsystem::ShouldCreateSubsystem(UObject* Outer) const

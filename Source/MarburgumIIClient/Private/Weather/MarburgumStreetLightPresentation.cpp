@@ -148,7 +148,6 @@ void UMarburgumStreetLightPresentation::UpdateLamps(AMarburgumStreetLamps& Lamps
             WrittenKelvin = Out.Kelvin;
         }
     }
-    Lamps.FlushStates();
 }
 
 bool UMarburgumStreetLightPresentation::Eye(FVector& OutEye) const

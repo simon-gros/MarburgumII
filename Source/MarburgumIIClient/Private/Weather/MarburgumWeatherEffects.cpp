@@ -71,6 +71,16 @@ namespace MarburgumWeatherEffects
     {
         return !FMath::IsNearlyEqual(A, B, 1.0e-4f * FMath::Max(1.0f, FMath::Abs(B)));
     }
+
+    /**
+     * Turning a shadow-casting directional light drops its virtual-shadow-map cache, and the next frame renders
+     * uncached. The sun moves about 0.25 degrees a minute, so a 0.01 degree tolerance turned it every 2.4 s all day;
+     * at 0.1 degrees it turns every 25 s or so, and a 10 m wall's shadow edge moves under 2 cm per step (QA 2026-11-19).
+     */
+    constexpr float LightTurnDegrees = 0.1f;
+    /** The sun's cloud-shadow strength has no setter, so a change recreates the light's render state; a rain ramp
+     *  stepping it by 0.001 recreated it hundreds of times. A 0.01 step cannot be seen. */
+    constexpr float CloudShadeStep = 0.01f;
 }
 
 using namespace MarburgumWeatherEffects;
@@ -485,7 +495,7 @@ void AMarburgumWeatherEffects::Apply(float Flash)
         if (bHasDaylight)
         {
             const FRotator Wanted(Day.SunPitch, Day.SunYaw, 0.0f);
-            if (!Sun->GetComponentRotation().Equals(Wanted, 0.01f))
+            if (!Sun->GetComponentRotation().Equals(Wanted, LightTurnDegrees))
             {
                 Sun->SetWorldRotation(Wanted);
             }
@@ -497,7 +507,7 @@ void AMarburgumWeatherEffects::Apply(float Flash)
         }
         const bool bCloudShadows = bCloudsShade || Baseline.bSunCastsCloudShadows;
         const float Shade = bCloudsShade ? Now.CloudShade : Baseline.SunCloudShade;
-        if ((Sun->bCastCloudShadows != 0) != bCloudShadows || Differs(Sun->CloudShadowOnSurfaceStrength, Shade))
+        if ((Sun->bCastCloudShadows != 0) != bCloudShadows || !FMath::IsNearlyEqual(Sun->CloudShadowOnSurfaceStrength, Shade, CloudShadeStep))
         {
             Sun->bCastCloudShadows = bCloudShadows;
             Sun->CloudShadowOnSurfaceStrength = Shade;
@@ -520,7 +530,7 @@ void AMarburgumWeatherEffects::Apply(float Flash)
                 NightLight->SetIntensity(Lux);
             }
             const FRotator Wanted(Day.NightPitch, Day.NightYaw, 0.0f);
-            if (!NightLight->GetComponentRotation().Equals(Wanted, 0.01f))
+            if (!NightLight->GetComponentRotation().Equals(Wanted, LightTurnDegrees))
             {
                 NightLight->SetWorldRotation(Wanted);
             }
