@@ -19,6 +19,9 @@ pub const LOGIN_FAILURES: usize = 5;
 pub const LOGIN_WINDOW_S: i64 = 15 * 60;
 /// Outstanding admission tickets per account; a newer one replaces the oldest.
 pub const ADMISSIONS_PER_ACCOUNT: usize = 3;
+/// Live sessions per account; a new sign-in ends the oldest. Unbounded, one account signing in again and again grew
+/// the store, which every commit rewrites under the lock, until redeems timed out (QA 2026-11-19, AR3).
+pub const SESSIONS_PER_ACCOUNT: usize = 5;
 /// How often expired sign-in failure records are dropped.
 const FAILURE_SWEEP_S: i64 = 60;
 
@@ -86,6 +89,13 @@ pub struct LoginCheck {
     username: Option<String>,
     account: Option<String>,
     phc: Option<String>,
+}
+
+/// A reset whose code was right, waiting for its new password's hash (see `reset_begin`).
+pub struct ResetCheck {
+    account: String,
+    username: String,
+    verifier: String,
 }
 
 impl std::fmt::Debug for LoginCheck {
@@ -251,7 +261,15 @@ impl Service {
     }
 
     /// Step 3: the verified address chooses a username and a password. Only now does the account exist.
+    #[cfg(test)]
     pub fn setup(&mut self, ticket: &str, raw_username: &str, password: &str, now: i64) -> Outcome<AccountView> {
+        self.setup_check(ticket, raw_username, password, now)?;
+        self.setup_commit(ticket, raw_username, password, secrets::hash_password(password), now)
+    }
+
+    /// Step 3, first part: everything `setup_commit` would refuse, without hashing. The HTTP route hashes between
+    /// the two, outside the lock (QA 2026-11-19, AR8).
+    pub fn setup_check(&self, ticket: &str, raw_username: &str, password: &str, now: i64) -> Outcome<(String, Setup, String)> {
         let setup_verifier = secrets::verifier("setup", ticket);
         let Some(setup) = self.store.setups.get(&setup_verifier).filter(|s| s.expires_at > now).cloned() else {
             return refuse(400, "setup_expired");
@@ -264,7 +282,12 @@ impl Service {
         if self.store.emails.contains_key(&setup.email) {
             return refuse(400, "setup_expired");
         }
-        let phc = secrets::hash_password(password);
+        Ok((setup_verifier, setup, username))
+    }
+
+    /// Step 3, last part: the checks again, since the lock was let go while hashing, then the account.
+    pub fn setup_commit(&mut self, ticket: &str, raw_username: &str, password: &str, phc: String, now: i64) -> Outcome<AccountView> {
+        let (setup_verifier, setup, username) = self.setup_check(ticket, raw_username, password, now)?;
         let id = secrets::id("a_");
         let account = Account { email: setup.email.clone(), username: username.clone(), password: phc, created_at: now, character: None };
         let answer = view(&account);
@@ -334,6 +357,15 @@ impl Service {
         let token = secrets::token();
         let session_verifier = secrets::verifier("session", &token);
         self.commit(now, |store| {
+            // At most SESSIONS_PER_ACCOUNT: the oldest go, in the same commit as the new one.
+            let mut own: Vec<(String, i64)> =
+                store.sessions.iter().filter(|(_, s)| s.account == account_id).map(|(v, s)| (v.clone(), s.expires_at)).collect();
+            if own.len() >= SESSIONS_PER_ACCOUNT {
+                own.sort_by_key(|(_, expires)| *expires);
+                for (verifier, _) in &own[..=own.len() - SESSIONS_PER_ACCOUNT] {
+                    store.sessions.remove(verifier);
+                }
+            }
             store.sessions.insert(session_verifier, Session { account: account_id.clone(), expires_at: now + SESSION_TTL_S });
             Ok(())
         })?;
@@ -345,15 +377,18 @@ impl Service {
         self.session_account(token, now).map(|(_, account)| view(account))
     }
 
+    /// Signing out also spends the account's outstanding admission tickets (QA 2026-11-19, AR10).
     pub fn logout(&mut self, token: &str, now: i64) -> Outcome<()> {
         let session_verifier = secrets::verifier("session", token);
-        if !self.store.sessions.contains_key(&session_verifier) {
+        let Some(account_id) = self.store.sessions.get(&session_verifier).map(|s| s.account.clone()) else {
             return Ok(());
-        }
+        };
         self.commit(now, |store| {
             store.sessions.remove(&session_verifier);
             Ok(())
-        })
+        })?;
+        self.admissions.retain(|_, a| a.account != account_id);
+        Ok(())
     }
 
     /// The first and only character (one per account for now). The same request id answers the same character
@@ -455,7 +490,15 @@ impl Service {
     }
 
     /// A right reset code sets the new password and signs every session out.
+    #[cfg(test)]
     pub fn reset(&mut self, raw_email: &str, raw_code: &str, password: &str, now: i64) -> Outcome<()> {
+        let check = self.reset_begin(raw_email, raw_code, password, now)?;
+        self.reset_finish(check, secrets::hash_password(password), now)
+    }
+
+    /// Reset, first part: the code and the new password's rules, a wrong code counted. The HTTP route hashes
+    /// between this and `reset_finish`, outside the lock (QA 2026-11-19, AR8).
+    pub fn reset_begin(&mut self, raw_email: &str, raw_code: &str, password: &str, now: i64) -> Outcome<ResetCheck> {
         let email = policy::email(raw_email).or_else(|_| refuse(400, "code_invalid"))?;
         let code = secrets::normalise_code(raw_code);
         let Some(account_id) = self.store.emails.get(&email).cloned() else {
@@ -473,15 +516,28 @@ impl Service {
             })?;
             return refuse(400, "code_invalid");
         }
+        let verifier = challenge.verifier.clone();
         let username = self.store.accounts[&account_id].username.clone();
         policy::password(password, &username, &email).or_else(|code| refuse(400, code))?;
-        let phc = secrets::hash_password(password);
+        Ok(ResetCheck { account: account_id, username, verifier })
+    }
+
+    /// Reset, last part: the same code must still be outstanding (another reset may have spent it while the lock
+    /// was let go). Sessions and outstanding admission tickets end with the old password (AR10).
+    pub fn reset_finish(&mut self, check: ResetCheck, phc: String, now: i64) -> Outcome<()> {
+        let ResetCheck { account: account_id, username, verifier } = check;
+        let live = self.store.resets.get(&account_id)
+            .is_some_and(|c| c.expires_at > now && c.attempts < CODE_ATTEMPTS && secrets::same(&c.verifier, &verifier));
+        if !live || !self.store.accounts.contains_key(&account_id) {
+            return refuse(400, "code_invalid");
+        }
         self.commit(now, |store| {
             store.resets.remove(&account_id);
             store.sessions.retain(|_, s| s.account != account_id);
             store.accounts.get_mut(&account_id).expect("account").password = phc;
             Ok(())
         })?;
+        self.admissions.retain(|_, a| a.account != account_id);
         self.failures.remove(&username);
         Ok(())
     }
@@ -710,6 +766,66 @@ pub mod tests {
             let redeemed = service.redeem(KEY, ticket, 56).is_ok();
             assert_eq!(redeemed, i >= tickets.len() - ADMISSIONS_PER_ACCOUNT, "ticket {i}");
         }
+    }
+
+    /// QA 2026-11-19, AR3: one account signing in again and again keeps at most SESSIONS_PER_ACCOUNT, newest first.
+    #[test]
+    fn sessions_per_account_are_capped() {
+        let dir = tempfile::tempdir().unwrap();
+        let (mut service, inbox) = service(dir.path());
+        let first = signed_in(&mut service, &inbox);
+        let later: Vec<String> = (0..SESSIONS_PER_ACCOUNT + 1)
+            .map(|i| service.login("ana_k", "drava-bridge-1990", 40 + i as i64).unwrap().session)
+            .collect();
+        assert_eq!(service.store().sessions.len(), SESSIONS_PER_ACCOUNT);
+        assert_eq!(code_of(service.me(&first, 60)), "session_invalid", "the oldest went first");
+        assert_eq!(code_of(service.me(&later[0], 60)), "session_invalid");
+        for session in &later[1..] {
+            assert!(service.me(session, 60).is_ok());
+        }
+    }
+
+    /// QA 2026-11-19, AR10: signing out or resetting the password spends the outstanding admission tickets.
+    #[test]
+    fn logout_and_reset_spend_outstanding_tickets() {
+        let dir = tempfile::tempdir().unwrap();
+        let (mut service, inbox) = service(dir.path());
+        let session = signed_in(&mut service, &inbox);
+        service.create_character(&session, "r1", "Ana", "Kos", "quinn", 40).unwrap();
+        let ticket = service.admission(&session, 41).unwrap().ticket;
+        service.logout(&session, 42).unwrap();
+        assert_eq!(code_of(service.redeem(KEY, &ticket, 43)), "ticket_invalid", "after logout");
+        let session = service.login("ana_k", "drava-bridge-1990", 44).unwrap().session;
+        let ticket = service.admission(&session, 45).unwrap().ticket;
+        service.forgot("ana@example.si", 46).unwrap();
+        service.reset("ana@example.si", &inbox.last_code(), "pohorje-snow-1991", 47).unwrap();
+        assert_eq!(code_of(service.redeem(KEY, &ticket, 48)), "ticket_invalid", "after a reset");
+    }
+
+    /// QA 2026-11-19, AR8: setup and reset hash outside the lock, so their last step checks again what may have
+    /// changed in between.
+    #[test]
+    fn the_hash_outside_the_lock_is_checked_again() {
+        let dir = tempfile::tempdir().unwrap();
+        let (mut service, inbox) = service(dir.path());
+        // Two setups race for one username: the second commit finds it taken.
+        service.register("ana@example.si", 0).unwrap();
+        let ana = service.verify("ana@example.si", &inbox.last_code(), 1).unwrap().ticket;
+        service.register("bor@example.si", 2).unwrap();
+        let bor = service.verify("bor@example.si", &inbox.last_code(), 3).unwrap().ticket;
+        service.setup_check(&ana, "kos", "drava-bridge-1990", 4).unwrap();
+        service.setup_check(&bor, "kos", "pohorje-snow-1991", 4).unwrap();
+        service.setup_commit(&ana, "kos", "drava-bridge-1990", secrets::hash_password("drava-bridge-1990"), 5).unwrap();
+        let late = service.setup_commit(&bor, "kos", "pohorje-snow-1991", secrets::hash_password("pohorje-snow-1991"), 6);
+        assert_eq!(code_of(late), "username_taken");
+        // Two resets with one code: the second finds it spent.
+        service.forgot("ana@example.si", 10).unwrap();
+        let code = inbox.last_code();
+        let first = service.reset_begin("ana@example.si", &code, "pohorje-snow-1991", 11).unwrap();
+        let second = service.reset_begin("ana@example.si", &code, "pohorje-snow-1992", 11).unwrap();
+        service.reset_finish(first, secrets::hash_password("pohorje-snow-1991"), 12).unwrap();
+        assert_eq!(code_of(service.reset_finish(second, secrets::hash_password("pohorje-snow-1992"), 13)), "code_invalid");
+        assert!(service.login("kos", "pohorje-snow-1991", 14).is_ok(), "the first reset's password");
     }
 
     #[test]
