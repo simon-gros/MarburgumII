@@ -307,6 +307,8 @@ done
         grep -ah "MB2SSMOKE role=client event=\(counted\|pass\|fail\)" "$out_dir/$phase-client.log" 2>/dev/null | sed 's/^.*MB2SSMOKE/MB2SSMOKE/'
     done
 } > "$out_dir/summary.txt"
+# Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
+[[ "$mode" == staged ]] && { "$repo_root/scripts/build-stamp.sh" check >> "$out_dir/summary.txt" 2>&1 || echo "WARNING: the staged build is not fresh; see $out_dir/summary.txt" >&2; }
 
 echo "Result: $([[ $status -eq 0 ]] && echo PASS || echo FAIL) — $out_dir/summary.txt"
 exit "$status"
