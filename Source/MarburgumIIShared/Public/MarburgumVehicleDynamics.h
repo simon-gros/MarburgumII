@@ -210,6 +210,17 @@ namespace MarburgumII::Vehicles::Dynamics
         }
     }
 
+    /**
+     * The brake once the driver's held intent has lapsed (0.4 s without a word, ADR-039). A driver who let go of
+     * everything sent that idle intent and coasts, as they chose; one whose held keys stopped arriving (a dropped
+     * or frozen connection) leaves a braking car, and so does an empty driver's seat.
+     */
+    inline float BrakeAfterLapsedIntent(bool bDriverSeated, float Throttle, float Brake, float Steer, bool bHandbrake)
+    {
+        const bool bWasHeld = Throttle != 0.f || Brake != 0.f || Steer != 0.f || bHandbrake;
+        return bDriverSeated && !bWasHeld ? 0.f : 1.f;
+    }
+
     // ---- Surface response (original src/shared/surface_response.cpp) ----
     //
     // Physical surfaces scale tyre grip and drive/brake traction; wetness (0..1, server-owned world state)
