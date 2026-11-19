@@ -57,6 +57,7 @@ void UMarburgumInteractionPrompt::NativeOnInitialized()
     FBuilder::Inline(VerbLine, FixturePill, 0.f);
     FBuilder::Stack(Text, VerbLine, T.Space.XXS);
     SubjectLabel = B.Text(FText::GetEmpty(), ETypeRole::Heading);
+    SubjectLabel->SetAutoWrapText(true);
     FBuilder::Stack(Text, SubjectLabel, T.Space.XXS);
     DetailLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption);
     DetailLabel->SetAutoWrapText(true);

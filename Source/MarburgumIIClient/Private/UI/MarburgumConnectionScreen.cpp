@@ -198,6 +198,7 @@ UWidget* UMarburgumConnectionScreen::BuildConnectCard()
     // Signed in (ADR-055): who enters the world, and the way back out.
     UHorizontalBox* Account = B.Row();
     AccountLabel = B.Text(FText::GetEmpty(), ETypeRole::BodyStrong);
+    AccountLabel->SetAutoWrapText(true);
     FBuilder::Inline(Account, AccountLabel, T.Space.M, true);
     SignOutButton = B.Button(LOCTEXT("SignOut", "Sign out"), EButtonKind::Quiet);
     SignOutButton->OnClicked.AddDynamic(this, &UMarburgumConnectionScreen::HandleSignOutClicked);
@@ -478,7 +479,7 @@ void UMarburgumConnectionScreen::ApplyAccount(const FMarburgumAccountView& View)
     AccountRow->SetVisibility(bSignedIn ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
     if (bSignedIn)
     {
-        AccountLabel->SetText(FText::Format(LOCTEXT("SignedInAs", "{0} {1}  ·  signed in as {2}"),
+        AccountLabel->SetText(FText::Format(LOCTEXT("SignedInAs", "{0} {1}\nsigned in as {2}"),
             FText::FromString(View.FirstName), FText::FromString(View.LastName), FText::FromString(View.Username)));
     }
 }

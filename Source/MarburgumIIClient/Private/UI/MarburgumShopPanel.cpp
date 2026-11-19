@@ -41,6 +41,7 @@ void UMarburgumShopPanel::NativeOnInitialized()
     UVerticalBox* Titles = B.Column();
     FBuilder::Stack(Titles, B.Text(LOCTEXT("Overline", "COUNTER"), ETypeRole::Overline, T.Color.Accent), T.Space.XXS);
     ShopLabel = B.Text(FText::GetEmpty(), ETypeRole::Title);
+    ShopLabel->SetAutoWrapText(true);
     FBuilder::Stack(Titles, ShopLabel, T.Space.XXS);
     HoursLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextMuted);
     FBuilder::Stack(Titles, HoursLabel, 0.f);
