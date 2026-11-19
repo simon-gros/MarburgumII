@@ -14,7 +14,7 @@ The foundational world is **Marburgum**, a fictionalized interpretation of **Mar
 
 **Vocabulary decisions inherited by the restart:** use **mission**, **job**, **favor**, **investigation**, **activity**, and **encounter** where appropriate; avoid treating all urban situations as fantasy “quests.” **Skills** are the progression framework. The old generated **talent** framework is not part of MarburgumII.
 
-**First-launch identity companion (10 November 2026):** [FIRST_LAUNCH_ONTOLOGY.md](FIRST_LAUNCH_ONTOLOGY.md) and [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json) define the external Account → verified credentials → authenticated session → player-owned persistent Character boundary. This is a planned **pre-world** identity layer: a registered account is not the in-world PlayerCharacter, and an existing development character key is not an account credential. See [ADR-022](DECISIONS.md).
+**First-launch identity companion (10 November 2026):** [FIRST_LAUNCH_ONTOLOGY.md](FIRST_LAUNCH_ONTOLOGY.md) and [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json) define the external Account → verified credentials → authenticated session → player-owned persistent Character boundary. This **pre-world** identity layer has a development implementation under ADR-055/057, with hosted email delivery, packaged tests and owner acceptance still open: a registered account is not the in-world PlayerCharacter, and a development character key is not an account credential. See [ADR-022](DECISIONS.md).
 
 ## 2. What constitutes an entity
 

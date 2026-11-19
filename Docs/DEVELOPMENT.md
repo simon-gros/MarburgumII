@@ -250,6 +250,12 @@ cargo build --release --manifest-path native/marburgum-sim-core/Cargo.toml
 
 The C# program checks repository manifest contracts, but does not inspect the local Unreal installation. `scripts/mb2.sh` builds and runs the Rust repository tool (`tools/mb2`); it also provides the engine-version check, operation ids and world-store checks the smoke scripts use, and the playtest freshness guard. The Rust simulation library is an unlinked and independently testable experimental component.
 
+### 19 November integration checkpoint (ADR-068–070)
+
+[The current 24-hour review](DEVELOPMENT_REVIEW_2026-11-19.md) identifies six commits: zoned pedestrian populations, original-game destination visits (239 mapped attractors), a clean-checkout unity compilation repair and blocked path/chase hardening. ADR-068 and ADR-069 have **one-client editor-mode recorded evidence**; ADR-070's new `Marburgum.Gameplay.CombatRules` and `Marburgum.Gameplay.StreetRules` assertions were **not executed** in its change and must be run on the present SHA. No new test is claimed by this documentation update. Prior packaged evidence does not cover the latest map/AI code.
+
+Recommended order: verify a clean checkout and engine pin; run `./scripts/mb2.sh validate all` and the native Unreal `Marburgum.*` automation suite with the new rule cases; run street district, places, street, combat, hours and weather editor smokes; inspect blocked chase/pavement visually; fresh-build/cook both Linux targets including the latest zoned/attractor walk graph; repeat packaged two-client, then three-client crowd/incident/mission and admission regressions; record frame time, spawn/cull counts, replication, logs, cooked hashes and explicit owner results. Do not treat editor tests as packaged acceptance.
+
 ### Reproducing the newest editor-level checks
 
 ```bash
@@ -266,7 +272,7 @@ The C# program checks repository manifest contracts, but does not inspect the lo
 ./scripts/street-places-smoke-linux.sh editor # people at bus stops and sights, going in and out of doors, shut shops; a capture per stop (ADR-069)
 ```
 
-These are **commands for reproducing earlier recorded results**, not tests executed as part of the documentation review. Before owner acceptance, rebuild/cook all current level/model/data assets for staged clients, repeat a >150 m vehicle drive with passenger after ADR-056, execute two/three-client street/account/mission integration, measure performance and record source SHA, cooked asset digest, screenshots, logs and the owner's explicit decision. See [the 12 November state review](DEVELOPMENT_REVIEW_2026-11-12.md).
+These are **commands for reproducing earlier recorded results**, not tests executed as part of the documentation review. Before owner acceptance, rebuild/cook all current level/model/data assets for staged clients, repeat a >150 m vehicle drive with passenger after ADR-056, execute two/three-client street/account/mission integration, measure performance and record source SHA, cooked asset digest, screenshots, logs and the owner's explicit decision. See the [19 November change review](DEVELOPMENT_REVIEW_2026-11-19.md) and the historical [12 November state review](DEVELOPMENT_REVIEW_2026-11-12.md).
 
 ## Required acceptance evidence
 

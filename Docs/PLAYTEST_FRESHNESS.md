@@ -36,3 +36,10 @@ Include generated **post-IK swim/tread, car enter/exit and fight animation asset
 ## Asset source and license boundary
 
 Commercial city geometry, proprietary reference images, locally generated 3D models, candidate PBR textures and model weights must remain in approved local private directories unless licensing explicitly permits public publication. The UI and server must accurately reflect current approved assets. Never republish licensed commercial maps to public GitHub merely to simplify test packaging.
+
+
+## 19 November street/content freshness expansion (ADR-068–070)
+
+The asset seal must now include the exact committed zoned `Content/Marburgum/Street/lent_walk_graph.json` (each node's district and activity, and the 239 pinned place entries), `Data/Gameplay/street.v0.1.json` (hour/zone/population/place behavior and visit chances), related shared C++ contracts, and the original road-graph/OSM/cadastre sources **when used to regenerate them**. Re-run the `tools/lent-ground` `street-zones` and `attractors` steps in the documented dependency order when changing those sources. An older cooked graph silently omits the new district and destination AI even when the executable is current.
+
+Before the next owner build, execute ADR-070's previously unrun CombatRules/StreetRules automation and visually investigate an unreachable hostile and a repeatedly blocked pavement; then require packaged two-client district/places/incident regressions, manifest/hash comparisons and owner acceptance. Review: [19 November](DEVELOPMENT_REVIEW_2026-11-19.md).

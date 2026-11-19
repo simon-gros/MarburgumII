@@ -1,6 +1,6 @@
 # UI/HUD development roadmap — MarburgumII
 
-**Revision:** 0.4.0 — 12 November 2026, updated through ADR-059 ([current development review](DEVELOPMENT_REVIEW_2026-11-12.md)); earlier UI-00–UI-07 design gates remain normative.
+**Revision:** 0.4.1 — status checked 19 November 2026 through ADR-070 ([current development review](DEVELOPMENT_REVIEW_2026-11-19.md)); no new UI implementation was established in the 24-hour window. Earlier UI-00–UI-07 design gates remain normative.
 **Scope:** P0-to-production user interface program for the new **Unreal Engine 5.8.3** client.  
 **Normative concepts:** [UI/HUD ontology](UI_HUD_ONTOLOGY.md) and [machine-readable module registry](../Data/Ontology/ui_hud.v0.1.json).  
 **Visual contract:** [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md).  
@@ -69,6 +69,8 @@ Preserve Marburgum's recognizable experience: transient district names; concise 
 | UI-05 | Vehicle/seat/driver, combat receipts, pedestrian incidents, and editor-tested fishing/mission choices | Polished bite/strike/catch UX, mission decision focus/receipt, integrated combat/vehicle/social presentation and multi-client proof |
 | UI-06 | Profile architecture only | Noneditable presets after accepted default, editor later |
 | UI-07 | Selected authentic Linux captures | Current SHA/asset seal, device/scale/accessibility/owner approval |
+
+**19 November cross-system dependency:** District-specific pedestrian groups, visits, street hours and blocked chase outcomes (ADR-067–070) must not be represented by new fabricated HUD attributes; the UI should show only warranted in-world prompts/incident or combat outcomes, and never claim a finished city-life system. Regression focus: state and modal/input focus during conversations, missions, combat and driving near crowds. These new AI capabilities do **not** close Settings, screen-scale, localization or packaged UI gates.
 
 **UI-P0A — Current-build integrated visual test.** Repackage the actual default `/Game/World/lent` with the latest façade/roof, protagonist, swim animations, vehicle content and dedicated server. Check display sizes 1280×720, 1366×768, 1920×1080, 2560×1440, 3440×1440, 3840×2160 and UI scales 80/100/125/150/200%. Distinguish gallery SAMPLE DATA from live server-backed captures, record SHA, cooked content hashes and frame-time impact.
 
