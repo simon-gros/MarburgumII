@@ -8,7 +8,10 @@
 #include "Engine/World.h"
 #include "MarburgumStreetContract.h"
 #include "MarburgumWater.h"
+#include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Parse.h"
+#include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
@@ -140,6 +143,9 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
     const TArray<TSharedPtr<FJsonValue>>& JsonNodes = Root->GetArrayField(TEXT("nodes"));
     TArray<int32> Index;
     Index.Init(INDEX_NONE, JsonNodes.Num());
+    // 0 unset, 1 kept, 2 no ground, 3 no room, 4 wet, 5 short row.
+    TArray<uint8> NodeFate;
+    NodeFate.Init(0, JsonNodes.Num());
     TArray<FNode> Kept;
     int32 NoGround = 0;
     int32 NoRoom = 0;
@@ -149,6 +155,10 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         const TArray<TSharedPtr<FJsonValue>>& Row = JsonNodes[Source]->AsArray();
         if (Row.Num() < 4)
         {
+            if (NodeFate.IsValidIndex(Source))
+            {
+                NodeFate[Source] = 5;
+            }
             continue;
         }
         const double X = Row[0]->AsNumber();
@@ -182,6 +192,7 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         if (!Ground)
         {
             ++NoGround;
+            NodeFate[Source] = 2;
             continue;
         }
         const FVector At = Ground->ImpactPoint;
@@ -205,11 +216,13 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         if (bNoRoom)
         {
             ++NoRoom;
+            NodeFate[Source] = 3;
             continue;
         }
         if (Water && Water->IsWet(At))
         {
             ++Wet;
+            NodeFate[Source] = 4;
             continue;
         }
         FNode Node;
@@ -222,6 +235,7 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
             Node.Activity = FMath::Clamp(static_cast<float>(Row[5]->AsNumber()), 0.f, 1.f);
             ++Zoned;
         }
+        NodeFate[Source] = 1;
         Index[Source] = Kept.Add(Node);
     }
 
@@ -237,6 +251,16 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
             }
         }
     }
+    struct FEdgeNote
+    {
+        int32 A = 0;
+        int32 B = 0;
+        uint8 Kind = 0;
+        uint8 Reason = 0;
+    };
+    TArray<FEdgeNote> Notes;
+    TArray<FString> NoteHit;
+    TMap<FString, int32> BlockCounts;
     TArray<FEdge> KeptEdges;
     int32 Blocked = 0;
     int32 Missing = 0;
@@ -258,6 +282,8 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         if (!Index.IsValidIndex(SourceA) || !Index.IsValidIndex(SourceB) || Index[SourceA] == INDEX_NONE || Index[SourceB] == INDEX_NONE)
         {
             ++Missing;
+            Notes.Add({ SourceA, SourceB, static_cast<uint8>(Row.Num() >= 3 ? static_cast<int32>(Row[2]->AsNumber()) : 0), 2 });
+            NoteHit.Add(TEXT(""));
             continue;
         }
         const FVector A = Kept[Index[SourceA]].Location;
@@ -278,14 +304,26 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
             {
                 break;
             }
-            const bool bPass = MarburgumII::Street::BridgeEdgeMayPass(bBridgeEdge, IsDeckOrGround(Hit.GetActor(), Hit.GetComponent()));
+            // A bridge edge may clip the deck, the paving and the landscape at the bridgehead. Any edge may clip
+            // the bridge mesh itself: the railing and the deck end are not a building. A hit whose face looks up is
+            // the pavement or the terrain, the same test as the ground under a node, not a wall. A building still cuts it.
+            const bool bWalkableFace = Hit.ImpactNormal.Z >= WalkableNormalZ
+                && (IsBridgeStructure(Hit.GetActor(), Hit.GetComponent())
+                    || (Hit.GetActor() && Hit.GetActor()->GetName().StartsWith(TEXT("Landscape"))));
+            // The paving chunks are the street. Their sides are the volume of the mesh, not a wall. A building id still cuts.
+            const bool bPass = (bBridgeEdge && IsDeckOrGround(Hit.GetActor(), Hit.GetComponent()))
+                || IsBridgeStructure(Hit.GetActor(), Hit.GetComponent()) || IsPaving(Hit.GetComponent()) || bWalkableFace;
             if (!bPass)
             {
                 bCut = true;
                 ++Blocked;
+                const FString Label = HitLabel(Hit);
+                BlockCounts.FindOrAdd(Label) += 1;
+                Notes.Add({ SourceA, SourceB, static_cast<uint8>(Kind), 3 });
+                NoteHit.Add(FString::Printf(TEXT("%s %.0f,%.0f,%.0f %.2f,%.2f,%.2f"), *Label, Hit.ImpactPoint.X, Hit.ImpactPoint.Y, Hit.ImpactPoint.Z, Hit.ImpactNormal.X, Hit.ImpactNormal.Y, Hit.ImpactNormal.Z));
                 if (bBridgeEdge && BridgeBlocksNoted < 4)
                 {
-                    BridgeBlocks += FString::Printf(TEXT("%s%s"), BridgeBlocksNoted ? TEXT(",") : TEXT(""), *HitLabel(Hit));
+                    BridgeBlocks += FString::Printf(TEXT("%s%s"), BridgeBlocksNoted ? TEXT(",") : TEXT(""), *Label);
                     ++BridgeBlocksNoted;
                 }
                 break;
@@ -304,6 +342,8 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         if (Water && Water->IsWetWay(A, B))
         {
             ++WetEdges;
+            Notes.Add({ SourceA, SourceB, static_cast<uint8>(Kind), 4 });
+            NoteHit.Add(TEXT(""));
             continue;
         }
         FEdge Edge;
@@ -314,6 +354,8 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         // The river runs east-west in plan, so a deck that crosses it changes Unreal X.
         BridgeSpans += bBridgeEdge && FMath::Abs(A.X - B.X) >= 800.0 ? 1 : 0;
         BridgeEdgesKept += bBridgeEdge ? 1 : 0;
+        Notes.Add({ SourceA, SourceB, static_cast<uint8>(Kind), 1 });
+        NoteHit.Add(TEXT(""));
         KeptEdges.Add(Edge);
     }
 
@@ -464,10 +506,178 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         // Stari most is the origin. A component on both banks reaches well north and south of it (Unreal X).
         CrossRiver = MinX < -2000.0 && MaxX > 2000.0 ? 1 : 0;
     }
-    OutReport = FString::Printf(TEXT("nodes=%d/%d edges=%d/%d no_ground=%d no_room=%d edges_blocked=%d edges_missing_end=%d largest_component=%d water_volumes=%d wet=%d edges_wet=%d zoned=%d zones=%s attractors=%d/%d attractor_no_node=%d attractor_no_spot=%d attractor_spots=%d attractor_spots_pulled=%d attractor_kinds=%s bridge_edges=%d/%d bridge_spans=%d cross_river=%d bridge_blocks=%s"),
+    // How the file's largest component falls apart once rejected nodes and edges are gone.
+    TArray<int32> Parent;
+    Parent.Init(INDEX_NONE, JsonNodes.Num());
+    for (int32 Node = 0; Node < JsonNodes.Num(); ++Node)
+    {
+        Parent[Node] = Node;
+    }
+    auto Find = [&Parent](int32 Node)
+    {
+        while (Parent[Node] != Node)
+        {
+            Parent[Node] = Parent[Parent[Node]];
+            Node = Parent[Node];
+        }
+        return Node;
+    };
+    auto Join = [&Find, &Parent](int32 A, int32 B)
+    {
+        A = Find(A);
+        B = Find(B);
+        if (A != B)
+        {
+            Parent[B] = A;
+        }
+    };
+    for (const FEdgeNote& Note : Notes)
+    {
+        if (Parent.IsValidIndex(Note.A) && Parent.IsValidIndex(Note.B))
+        {
+            Join(Note.A, Note.B);
+        }
+    }
+    TMap<int32, int32> SourceSize;
+    for (int32 Node = 0; Node < JsonNodes.Num(); ++Node)
+    {
+        SourceSize.FindOrAdd(Find(Node)) += 1;
+    }
+    int32 SourceLargestRoot = INDEX_NONE;
+    int32 SourceLargest = 0;
+    for (const TPair<int32, int32>& Pair : SourceSize)
+    {
+        if (Pair.Value > SourceLargest)
+        {
+            SourceLargest = Pair.Value;
+            SourceLargestRoot = Pair.Key;
+        }
+    }
+    TArray<int32> KeptParent;
+    KeptParent.Init(INDEX_NONE, JsonNodes.Num());
+    for (int32 Node = 0; Node < JsonNodes.Num(); ++Node)
+    {
+        KeptParent[Node] = Node;
+    }
+    auto FindKept = [&KeptParent](int32 Node)
+    {
+        while (KeptParent[Node] != Node)
+        {
+            KeptParent[Node] = KeptParent[KeptParent[Node]];
+            Node = KeptParent[Node];
+        }
+        return Node;
+    };
+    for (const FEdgeNote& Note : Notes)
+    {
+        if (Note.Reason == 1 && KeptParent.IsValidIndex(Note.A) && KeptParent.IsValidIndex(Note.B))
+        {
+            const int32 A = FindKept(Note.A);
+            const int32 B = FindKept(Note.B);
+            if (A != B)
+            {
+                KeptParent[B] = A;
+            }
+        }
+    }
+    TMap<int32, int32> PartSize;
+    int32 RemovedFromLargest = 0;
+    for (int32 Node = 0; Node < JsonNodes.Num(); ++Node)
+    {
+        if (Find(Node) != SourceLargestRoot)
+        {
+            continue;
+        }
+        if (NodeFate[Node] != 1)
+        {
+            ++RemovedFromLargest;
+            continue;
+        }
+        PartSize.FindOrAdd(FindKept(Node)) += 1;
+    }
+    TArray<int32> PartSizes;
+    for (const TPair<int32, int32>& Pair : PartSize)
+    {
+        PartSizes.Add(Pair.Value);
+    }
+    PartSizes.Sort([](int32 A, int32 B) { return A > B; });
+    FString Parts;
+    for (int32 IndexPart = 0; IndexPart < FMath::Min(PartSizes.Num(), 6); ++IndexPart)
+    {
+        Parts += FString::Printf(TEXT("%s%d"), IndexPart ? TEXT(",") : TEXT(""), PartSizes[IndexPart]);
+    }
+    int32 CutsMissing = 0;
+    int32 CutsBlocked = 0;
+    int32 CutsWet = 0;
+    for (int32 NoteIndex = 0; NoteIndex < Notes.Num(); ++NoteIndex)
+    {
+        const FEdgeNote& Note = Notes[NoteIndex];
+        if (Note.Reason == 1 || !Parent.IsValidIndex(Note.A) || Find(Note.A) != SourceLargestRoot || Find(Note.B) != SourceLargestRoot)
+        {
+            continue;
+        }
+        if (NodeFate[Note.A] != 1 || NodeFate[Note.B] != 1)
+        {
+            continue;
+        }
+        if (Note.Reason == 2)
+        {
+            ++CutsMissing;
+        }
+        else if (Note.Reason == 3)
+        {
+            ++CutsBlocked;
+        }
+        else if (Note.Reason == 4)
+        {
+            ++CutsWet;
+        }
+    }
+    FString BlockList;
+    {
+        TArray<TPair<int32, FString>> Ranked;
+        for (const TPair<FString, int32>& Pair : BlockCounts)
+        {
+            Ranked.Emplace(Pair.Value, Pair.Key);
+        }
+        Ranked.Sort([](const TPair<int32, FString>& A, const TPair<int32, FString>& B) { return A.Key > B.Key; });
+        for (int32 Rank = 0; Rank < FMath::Min(Ranked.Num(), 5); ++Rank)
+        {
+            BlockList += FString::Printf(TEXT("%s%s:%d"), Rank ? TEXT(",") : TEXT(""), *Ranked[Rank].Value, Ranked[Rank].Key);
+        }
+    }
+    FString AuditDir;
+    if (FParse::Value(FCommandLine::Get(), TEXT("MB2WalkGraphAudit="), AuditDir) && !AuditDir.IsEmpty())
+    {
+        IFileManager::Get().MakeDirectory(*AuditDir, true);
+        FString NodeLines = TEXT("source\tfate\n");
+        for (int32 Node = 0; Node < NodeFate.Num(); ++Node)
+        {
+            if (NodeFate[Node] != 1)
+            {
+                NodeLines += FString::Printf(TEXT("%d\t%d\n"), Node, NodeFate[Node]);
+            }
+        }
+        FString EdgeLines = TEXT("a\tb\tkind\treason\thit\n");
+        for (int32 NoteIndex = 0; NoteIndex < Notes.Num(); ++NoteIndex)
+        {
+            const FEdgeNote& Note = Notes[NoteIndex];
+            if (Note.Reason == 1)
+            {
+                continue;
+            }
+            EdgeLines += FString::Printf(TEXT("%d\t%d\t%d\t%d\t%s\n"), Note.A, Note.B, Note.Kind, Note.Reason, NoteHit.IsValidIndex(NoteIndex) ? *NoteHit[NoteIndex] : TEXT(""));
+        }
+        FFileHelper::SaveStringToFile(NodeLines, *FPaths::Combine(AuditDir, TEXT("rejected_nodes.tsv")));
+        FFileHelper::SaveStringToFile(EdgeLines, *FPaths::Combine(AuditDir, TEXT("rejected_edges.tsv")));
+        FString Summary = FString::Printf(TEXT("source_largest=%d removed_from_largest=%d kept_parts=%d top=%s cuts_missing=%d cuts_blocked=%d cuts_wet=%d\n"), SourceLargest, RemovedFromLargest, PartSizes.Num(), *Parts, CutsMissing, CutsBlocked, CutsWet);
+        FFileHelper::SaveStringToFile(Summary, *FPaths::Combine(AuditDir, TEXT("summary.txt")));
+    }
+    OutReport = FString::Printf(TEXT("nodes=%d/%d edges=%d/%d no_ground=%d no_room=%d edges_blocked=%d edges_missing_end=%d largest_component=%d water_volumes=%d wet=%d edges_wet=%d zoned=%d zones=%s attractors=%d/%d attractor_no_node=%d attractor_no_spot=%d attractor_spots=%d attractor_spots_pulled=%d attractor_kinds=%s bridge_edges=%d/%d bridge_spans=%d cross_river=%d bridge_blocks=%s source_largest=%d removed_from_largest=%d kept_parts=%s cuts_blocked=%d block_meshes=%s"),
         Nodes.Num(), Read, Edges.Num(), EdgesRead, NoGround, NoRoom, Blocked, Missing, LargestCount, Water ? Water->NumVolumes() : 0, Wet, WetEdges,
         Zoned, *Zones, Attractors.Num(), AttractorsRead, AttractorNoNode, AttractorNoSpot, Spots, SpotsPulled, *Kinds,
-        BridgeEdgesKept, BridgeEdgesRead, BridgeSpans, CrossRiver, BridgeBlocks.IsEmpty() ? TEXT("-") : *BridgeBlocks);
+        BridgeEdgesKept, BridgeEdgesRead, BridgeSpans, CrossRiver, BridgeBlocks.IsEmpty() ? TEXT("-") : *BridgeBlocks,
+        SourceLargest, RemovedFromLargest, Parts.IsEmpty() ? TEXT("-") : *Parts, CutsBlocked, BlockList.IsEmpty() ? TEXT("-") : *BlockList);
     if (Nodes.IsEmpty())
     {
         OutError = TEXT("no node of the walk graph is on walkable ground in this level");
