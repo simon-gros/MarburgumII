@@ -8,7 +8,7 @@ Statuses: **FIX NOW** (done in this pass where marked), **IMPROVE NOW**, **TO BE
 
 | Subsystem | Where | Authority | What it does |
 | --- | --- | --- | --- |
-| Street people | `AMarburgumPedestrian`, `UMarburgumStreetSubsystem`, `FMarburgumWalkGraph`, `MarburgumStreetContract.h` | Server. Mood replicates. Clients do not choose destinations. | Walk the pavement graph, keep right, dodge cars, answer fights/run-overs/bodies/bumps from the personality table, visit stops, doors and sights (ADR-044, 046, 067–069). RVO avoidance is on. Population is culled by distance and view. Cap 48. |
+| Street people | `AMarburgumPedestrian`, `UMarburgumStreetSubsystem`, `FMarburgumWalkGraph`, `MarburgumStreetContract.h` | Server. Mood replicates. Clients do not choose destinations. | Walk the pavement graph, keep right, dodge cars, answer fights/run-overs/bodies/bumps from the personality table, visit stops, doors and sights (ADR-044, 046, 067–069). Each player keeps their own district's count, held for 5 m at a border, under the cap of 48 (ADR-073). RVO avoidance is on. Population is culled by distance and view. |
 | Lent fight cast | `AMarburgumFighter`, `MarburgumCombatContract.h` | Server. Blows are `ReceiveBlowAuthority` / `ResolveSwingAuthority`. | One hostile (the drinker) fights whoever hit them, within pursuit range. Civilians step away. Jab, heavy, guard, stagger, down, get up (ADR-041). |
 | Authored mission NPCs | `AMarburgumNpc` | Server interaction. The figure does not walk or perceive. | Talk targets. Placeholder mesh. |
 | Missions | `MarburgumMissionLogic`, `MarburgumMissionRules` | Server world store. Client prompt uses the same pure plan. | Eight original missions. Start, stage, choice, one reward, restart. Fishing is an activity the mission requires, not AI. |
@@ -37,13 +37,13 @@ There is no behavior tree, no perception component, no navigation mesh, and no W
 | Conversations, groups walking together, shared reservations beyond attractor slots | **TO BE DONE** | Slots at stops and sights exist (3). No dialogue, no formation. |
 | Traffic AI and intersection behaviour | **TO BE DONE** | Cars are player-driven. People dodge and can be run over. No AI traffic. |
 | Combat perception, hit reactions, weapons, consequences of a fight | **TO BE DONE** | ADR-041 left these open. Targeting is nearest standing body in arc, server-side. No sight cones. |
-| Hostile stuck against geometry that is not a failed step (for example a moving crowd that still counts as progress) | **NEEDS VERIFICATION** | The new give-up only fires when closes are refused. A slow creep might never trip it. |
+| Hostile stuck against geometry that is not a failed step (for example a moving crowd that still counts as progress) | **FIX NOW** (ADR-073) | A slide that still moved used to clear `Stuck`. A close now counts only when 35% of a stride is toward the target. Rules test only; not a rendered chase. |
 | Multiple opponents | **REQUIRES APPROVAL** | A hostile fights the last person who hit them, one at a time. Switching policy is a design choice. |
 | Mission NPCs that walk, wait or react | **REQUIRES APPROVAL** | `AMarburgumNpc` is a stationary interactable. Moving the angler or Petra is player-facing. |
 | New mission framework | **REQUIRES APPROVAL** | The eight missions already have prerequisites, stages, choices, one reward and restart. Do not replace them. |
 | Mission sites in Melje and Tabor on real ground | **TO BE DONE** | Logic is done. The sites are temporary floors (ADR-052). |
 | Packaged two-client mission and street qualification | **TO BE DONE** | Editor smokes exist. Not a fresh packaged suite. |
-| Side pieces of the walk graph, including a bridge piece | **TO BE DONE** | Counted on `lent_walk_graph.json` 2026-11-19: 50 components, 12,335 nodes in the largest, 763 off it. Nearest gaps about 5–50 m. One 47-node piece has 18 bridge-flagged nodes, 14 m from the main graph. Not stitched by hand. |
+| Side pieces of the walk graph, including a bridge piece | **TO BE DONE** | Recounted on `lent_walk_graph.json` at `43ea8a4`: 50 components, 12,335 of 13,098 in the largest, 215 bridge nodes of which 197 are in it, and the long bridges meet both banks. The QA figure of 5,926 loaded nodes is not this file. One 47-node piece has 18 bridge flags and sits 14.0 m off the main graph. Not stitched: that would be a new link across ground the generator already refused. Not re-grounded in the level. |
 | Distance-based think rates, pooling, relevance budgets beyond cull | **TO BE DONE** | Population is capped and culled. No measurement of think cost at the cap in this pass. |
 | Owner playtest of street and combat | **REQUIRES APPROVAL** | ADR-008. This pass did not play the game. |
 
