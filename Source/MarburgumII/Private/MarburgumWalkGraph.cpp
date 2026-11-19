@@ -66,10 +66,12 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
 
     // The original's zones (ADR-068), by name, so a file written in another order still reads right.
     TArray<uint8> ZoneOf;
-    const TArray<TSharedPtr<FJsonValue>>* ZoneNames = nullptr;
-    if (Root->TryGetArrayField(TEXT("zones"), ZoneNames))
+    // Not ZoneNames: in a unity build MarburgumStreetSubsystem.cpp's file-scope using-directive makes
+    // MarburgumII::Street::ZoneNames visible here, and -Wshadow is an error.
+    const TArray<TSharedPtr<FJsonValue>>* ZoneNameValues = nullptr;
+    if (Root->TryGetArrayField(TEXT("zones"), ZoneNameValues))
     {
-        for (const TSharedPtr<FJsonValue>& Name : *ZoneNames)
+        for (const TSharedPtr<FJsonValue>& Name : *ZoneNameValues)
         {
             ZoneOf.Add(static_cast<uint8>(MarburgumII::Street::ZoneNamed(Name.IsValid() ? Name->AsString() : FString())));
         }
