@@ -239,7 +239,7 @@ General and private text chat source resides in `AMarburgumPlayerController`; cl
 
 ```bash
 dotnet run --project tools/MarburgumII.Tools -- verify   # .NET 10: modules, targets, side boundaries
-scripts/mb2.sh validate all                            # Rust: UI ontology, chat, gameplay, accounts contract, no Python
+scripts/mb2.sh validate all                            # Rust: UI ontology, chat, gameplay, accounts contract, no Python, scripts executable and stamping staged runs
 cargo test --manifest-path tools/mb2/Cargo.toml
 cargo test --manifest-path native/marburgum-sim-core/Cargo.toml
 cargo build --release --manifest-path native/marburgum-sim-core/Cargo.toml
