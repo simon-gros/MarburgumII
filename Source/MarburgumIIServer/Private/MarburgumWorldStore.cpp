@@ -10,6 +10,12 @@
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
 
+#if PLATFORM_UNIX
+#include <fcntl.h>
+#include <sys/file.h>
+#include <unistd.h>
+#endif
+
 namespace
 {
     template <typename ValueType>
@@ -489,9 +495,76 @@ bool FMarburgumWorldStore::ConsumeInjectedFault() const
     return true;
 }
 
+FMarburgumWorldStore::~FMarburgumWorldStore()
+{
+    ReleaseLock();
+}
+
+bool FMarburgumWorldStore::AcquireLock(FString& OutError)
+{
+    const FString LockPath = Path + TEXT(".lock");
+    const FString Directory = FPaths::GetPath(Path);
+    IPlatformFile& Files = FPlatformFileManager::Get().GetPlatformFile();
+    if (!Directory.IsEmpty() && !Files.CreateDirectoryTree(*Directory))
+    {
+        OutError = TEXT("could not create the store directory");
+        return false;
+    }
+#if PLATFORM_UNIX
+    if (LockDescriptor >= 0)
+    {
+        return true;
+    }
+    // flock(2): advisory, released by the kernel when this process ends however it ends, so a crash leaves no stale lock.
+    LockDescriptor = open(TCHAR_TO_UTF8(*LockPath), O_RDWR | O_CREAT | O_CLOEXEC, 0644);
+    if (LockDescriptor < 0)
+    {
+        OutError = FString::Printf(TEXT("could not open the store lock %s"), *LockPath);
+        return false;
+    }
+    if (flock(LockDescriptor, LOCK_EX | LOCK_NB) != 0)
+    {
+        close(LockDescriptor);
+        LockDescriptor = -1;
+        OutError = FString::Printf(TEXT("another server holds this store (%s)"), *LockPath);
+        return false;
+    }
+#else
+    if (LockHandle)
+    {
+        return true;
+    }
+    // A file open for writing is not shared with another writer on Windows; it closes with the process.
+    LockHandle.Reset(Files.OpenWrite(*LockPath, false, false));
+    if (!LockHandle)
+    {
+        OutError = FString::Printf(TEXT("another server holds this store (%s)"), *LockPath);
+        return false;
+    }
+#endif
+    return true;
+}
+
+void FMarburgumWorldStore::ReleaseLock()
+{
+#if PLATFORM_UNIX
+    if (LockDescriptor >= 0)
+    {
+        close(LockDescriptor);
+        LockDescriptor = -1;
+    }
+#else
+    LockHandle.Reset();
+#endif
+}
+
 bool FMarburgumWorldStore::Load(FString& OutError)
 {
     IPlatformFile& Files = FPlatformFileManager::Get().GetPlatformFile();
+    if (!AcquireLock(OutError))
+    {
+        return false;
+    }
     if (!Files.FileExists(*Path))
     {
         Record = FMarburgumWorldRecord();
@@ -547,6 +620,15 @@ bool FMarburgumWorldStore::Commit(const FMarburgumWorldRecord& Next, FString& Ou
         OutError = TEXT("could not replace the store file");
         return false;
     }
+#if PLATFORM_UNIX
+    // The rename lives in the directory: until the directory is on disk too, a power loss can bring back the
+    // previous document, and with it undo a commit the players were already told about.
+    if (const int DirectoryDescriptor = open(TCHAR_TO_UTF8(*FPaths::GetPath(Path)), O_RDONLY | O_DIRECTORY | O_CLOEXEC); DirectoryDescriptor >= 0)
+    {
+        fsync(DirectoryDescriptor);
+        close(DirectoryDescriptor);
+    }
+#endif
     Record = Next;
     return true;
 }
