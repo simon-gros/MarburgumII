@@ -21,8 +21,8 @@ set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-editor}"
-port="${MB2_ACCOUNT_PORT:-7791}"
-service_port="${MB2_ACCOUNT_SERVICE_PORT:-7792}"
+port="${MB2_ACCOUNT_PORT:-27714}"
+service_port="${MB2_ACCOUNT_SERVICE_PORT:-27715}"
 map="/Game/World/lent"
 uproject="$repo_root/MarburgumII.uproject"
 out_dir="$repo_root/Saved/AccountSmoke/$(date -u +%Y%m%dT%H%M%SZ)"

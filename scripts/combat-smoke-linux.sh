@@ -19,7 +19,7 @@ set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-staged}"
-port="${MB2_COMBAT_PORT:-7777}"
+port="${MB2_COMBAT_PORT:-27710}"
 map="/Game/World/lent"
 uproject="$repo_root/MarburgumII.uproject"
 out_dir="$repo_root/Saved/CombatSmoke/$(date -u +%Y%m%dT%H%M%SZ)"
@@ -180,6 +180,8 @@ expect_log "$out_dir/client-A.log" "impact_floor_sound" ">=1" "MB2COMBAT role=cl
     grep -ah "MB2CSMOKE\|MB2COMBAT\|MB2COND role=server event=\(beaten\|recovery_point\)\|MB2SMOKE role=server event=\(ready\|login\|logout\)" "$out_dir"/*.log \
         | sed 's/^.*\(MB2CSMOKE\|MB2COMBAT\|MB2COND\|MB2SMOKE\)/\1/'
 } > "$out_dir/summary.txt"
+# Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
+[[ "$mode" == staged ]] && { "$repo_root/scripts/build-stamp.sh" check >> "$out_dir/summary.txt" 2>&1 || echo "WARNING: the staged build is not fresh; see $out_dir/summary.txt" >&2; }
 
 echo "Result: $([[ $status -eq 0 ]] && echo PASS || echo FAIL) — $out_dir/summary.txt"
 exit "$status"

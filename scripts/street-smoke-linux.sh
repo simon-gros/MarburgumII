@@ -179,6 +179,8 @@ expect_log "$log" "water_probe_dry" 1 "MB2_STREET role=server event=water_probe_
     grep -ah "MB2SSMOKE\|MB2_STREET role=server event=\(street_ready\|street_summary\|incident\|react\|run_over\|dodge\|probe\|gathered\|despawn\|water_edge\|water_probe\|water_probe_done\|water_probe_skipped\)\|MB2SMOKE role=server event=\(ready\|login\|logout\)" \
         "$out_dir"/*.log | sed 's/^.*\(MB2SSMOKE\|MB2_STREET\|MB2SMOKE\)/\1/'
 } > "$out_dir/summary.txt"
+# Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
+[[ "$mode" == staged ]] && { "$repo_root/scripts/build-stamp.sh" check >> "$out_dir/summary.txt" 2>&1 || echo "WARNING: the staged build is not fresh; see $out_dir/summary.txt" >&2; }
 
 echo "Result: $([[ $status -eq 0 ]] && echo PASS || echo FAIL) — $out_dir/summary.txt"
 exit "$status"

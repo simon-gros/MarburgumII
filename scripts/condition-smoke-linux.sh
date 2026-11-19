@@ -25,7 +25,7 @@ set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-staged}"
-port="${MB2_CONDITION_PORT:-7777}"
+port="${MB2_CONDITION_PORT:-27707}"
 map="/Game/Maps/Lent"
 uproject="$repo_root/MarburgumII.uproject"
 out_dir="$repo_root/Saved/ConditionSmoke/$(date -u +%Y%m%dT%H%M%SZ)"
@@ -239,6 +239,8 @@ store_hash="$(sha256sum "$store" 2>/dev/null | cut -d' ' -f1 || true)"
     grep -ah "MB2COND\|MB2SMOKE role=server event=\(ready\|login\|logout\)\|MB2INTERACT role=server event=store_loaded" "$out_dir"/*.log \
         | sed 's/^.*\(MB2COND\|MB2SMOKE\|MB2INTERACT\)/\1/'
 } > "$out_dir/summary.txt"
+# Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
+[[ "$mode" == staged ]] && { "$repo_root/scripts/build-stamp.sh" check >> "$out_dir/summary.txt" 2>&1 || echo "WARNING: the staged build is not fresh; see $out_dir/summary.txt" >&2; }
 
 echo "Result: $([[ $status -eq 0 ]] && echo PASS || echo FAIL) — $out_dir/summary.txt"
 exit "$status"

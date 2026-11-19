@@ -22,7 +22,7 @@ set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-staged}"
-port="${MB2_MISSION_PORT:-7781}"
+port="${MB2_MISSION_PORT:-27716}"
 map="/Game/World/lent"
 uproject="$repo_root/MarburgumII.uproject"
 out_dir="$repo_root/Saved/MissionSmoke/$(date -u +%Y%m%dT%H%M%SZ)"
