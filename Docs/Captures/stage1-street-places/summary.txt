@@ -1,0 +1,92 @@
+MarburgumII street places smoke
+result: PASS
+date_utc: 2026-11-19T14:29:09Z
+git_sha: 55f8236c61b218a0bd619fd72b1c430931670d6c (dirty)
+mode: editor
+map: /Game/World/lent
+phases: day late sunday
+host: Linux 6.18.60-2-cachyos-lts x86_64
+
+== day (stop kind visits arrived went_in came_out found_waiting given_up), rows with anything
+venues cafe 24 0 23 3 0 0
+venues restaurant 2 0 2 2 0 0
+venues bar 1 0 1 0 0 0
+venues fast_food 2 0 2 0 0 0
+venues shop 2 0 0 0 0 0
+sights cafe 18 0 17 1 0 0
+sights restaurant 3 0 3 1 0 0
+sights sight 7 7 0 0 0 0
+shops shop 3 0 2 0 0 0
+bus_stops bus_stop 3 3 0 0 2 0
+mixed cafe 2 0 2 0 0 0
+mixed shop 2 0 2 0 0 0
+mixed sight 3 3 0 0 0 0
+-- open
+bus_stop 0.80 cafe 1.00 restaurant 0.80 bar 0.20 fast_food 0.80 shop 1.00 sight 1.00 
+-- targets (stop target)
+venues 20
+sights 20
+shops 8
+bus_stops 8
+mixed 18
+-- seen within 70 m over each stop's second half (move mean most_at_a_place)
+1 20.0 3
+2 20.0 6
+3 8.0 1
+4 8.0 2
+5 18.0 2
+MB2SSMOKE role=client event=counted samples=320 fewest=7 most=18 mean=12.8
+MB2SSMOKE role=client event=pass
+
+== late (stop kind visits arrived went_in came_out found_waiting given_up), rows with anything
+venues restaurant 0 0 0 1 0 0
+venues bar 8 0 8 0 0 0
+venues fast_food 8 0 8 0 0 0
+sights cafe 2 0 2 0 0 0
+bus_stops bus_stop 1 1 0 0 0 0
+mixed cafe 1 0 1 0 0 0
+mixed fast_food 1 0 1 0 0 0
+-- open
+bus_stop 0.40 cafe 0.20 restaurant 0.30 bar 1.00 fast_food 0.80 shop 0.00 sight 0.30 
+-- targets (stop target)
+venues 9
+sights 9
+shops 3
+bus_stops 3
+mixed 5
+-- seen within 70 m over each stop's second half (move mean most_at_a_place)
+1 9.0 3
+2 9.0 1
+3 3.0 0
+4 3.0 1
+5 5.0 1
+MB2SSMOKE role=client event=counted samples=317 fewest=3 most=5 mean=4.0
+MB2SSMOKE role=client event=pass
+
+== sunday (stop kind visits arrived went_in came_out found_waiting given_up), rows with anything
+venues cafe 13 0 12 3 0 0
+venues restaurant 0 0 0 4 0 0
+venues bar 2 0 2 0 0 0
+venues fast_food 1 0 1 0 0 0
+sights cafe 15 0 15 5 0 0
+sights restaurant 0 0 0 5 0 0
+sights sight 1 1 0 0 0 0
+bus_stops bus_stop 6 6 0 0 1 0
+mixed cafe 2 0 2 0 0 0
+mixed sight 2 2 0 0 0 0
+-- open
+bus_stop 0.80 cafe 1.00 restaurant 0.80 bar 0.20 fast_food 0.80 shop 0.00 sight 1.00 
+-- targets (stop target)
+venues 20
+sights 20
+shops 8
+bus_stops 8
+mixed 18
+-- seen within 70 m over each stop's second half (move mean most_at_a_place)
+1 20.0 4
+2 20.0 3
+3 8.0 0
+4 8.0 4
+5 18.0 2
+MB2SSMOKE role=client event=counted samples=317 fewest=6 most=18 mean=12.8
+MB2SSMOKE role=client event=pass
