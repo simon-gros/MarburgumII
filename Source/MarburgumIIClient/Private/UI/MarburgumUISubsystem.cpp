@@ -50,8 +50,11 @@ void UMarburgumUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
     const TCHAR* CommandLine = FCommandLine::Get();
+#if !UE_BUILD_SHIPPING
+    // Development switches: the component gallery and developer detail never open in a Shipping client.
     bGalleryMode = FParse::Param(CommandLine, TEXT("MB2UIGallery"));
-    bDiagnostics = FParse::Param(CommandLine, TEXT("MB2UIDiagnostics"));
+    bDiagnostics = MarburgumUI::ShowsDiagnostics();
+#endif
     float Scale = 1.f;
     if (FParse::Value(CommandLine, TEXT("MB2UIScale="), Scale))
     {
@@ -1011,10 +1014,12 @@ void UMarburgumUISubsystem::HandleSessionChanged(const FMarburgumSessionView& Vi
     if (View.Phase == EPhase::Ready && PreviousPhase != EPhase::Ready && Feed)
     {
         // One toast per admission; the dedupe key collapses repeated reports of the same event.
-        const FText Message = FText::Format(
-            bRecoveredFromLoss ? LOCTEXT("Reconnected", "Reconnected to {0}  ·  network contract v{1}")
-                               : LOCTEXT("Connected", "Connected to {0}  ·  network contract v{1}"),
-            FText::FromString(View.Address), FText::AsNumber(MarburgumII::Network::ContractVersion));
+        const FText Message = !MarburgumUI::ShowsDiagnostics()
+            ? (bRecoveredFromLoss ? LOCTEXT("BackInWorld", "Back in Maribor.") : LOCTEXT("InWorld", "You are in Maribor."))
+            : FText::Format(
+                bRecoveredFromLoss ? LOCTEXT("Reconnected", "Reconnected to {0}  ·  network contract v{1}")
+                                   : LOCTEXT("Connected", "Connected to {0}  ·  network contract v{1}"),
+                FText::FromString(View.Address), FText::AsNumber(MarburgumII::Network::ContractVersion));
         Feed->Push(TEXT("session.admitted"), LOCTEXT("ConnectionKind", "CONNECTION"), Message, MarburgumUI::ETone::Success);
         bRecoveredFromLoss = false;
     }

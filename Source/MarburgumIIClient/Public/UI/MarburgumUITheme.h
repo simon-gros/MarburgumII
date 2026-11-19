@@ -122,4 +122,10 @@ namespace MarburgumUI
      */
     inline FText Caps(const FString& Text) { return FText::FromString(Text).ToUpper(); }
     inline FText Caps(const FText& Text) { return Text.ToUpper(); }
+
+    /**
+     * Developer detail on player-facing screens (build and contract versions, server addresses, raw error text):
+     * only with -MB2UIDiagnostics, and never in Shipping. The log always has it.
+     */
+    MARBURGUMIICLIENT_API bool ShowsDiagnostics();
 }
