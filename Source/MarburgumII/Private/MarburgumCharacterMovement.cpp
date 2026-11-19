@@ -780,6 +780,61 @@ void UMarburgumCharacterMovement::UpdateCharacterStateAfterMovement(float DeltaS
     }
 }
 
+void UMarburgumCharacterMovement::SettleForSeat()
+{
+    bRunning = false;
+    bGuarding = false;
+    bSubmerged = false;
+    SwingsHandled = SwingRequest;
+    if (CharacterOwner && CharacterOwner->HasAuthority())
+    {
+        if (AMarburgumPlayerState* State = GetMarburgumPlayerState(); State && bConditionSynced)
+        {
+            State->UpdateConditionAuthority(MakeCondition(*State));
+        }
+    }
+}
+
+void UMarburgumCharacterMovement::TickSeated(float DeltaSeconds)
+{
+    if (!CharacterOwner || !bConditionSynced)
+    {
+        return;
+    }
+    AMarburgumPlayerState* State = GetMarburgumPlayerState();
+    if (!CharacterOwner->HasAuthority())
+    {
+        if (CharacterOwner->IsLocallyControlled() && State && State->IsConditionKnown() && !bDown)
+        {
+            // No moves, so no corrections: the seat's breath is the server's.
+            Stamina = State->GetCondition().Stamina;
+            bWinded = State->GetCondition().bWinded;
+        }
+        return;
+    }
+    if (bDown)
+    {
+        return;
+    }
+    const bool bWasWinded = bWinded;
+    Stamina = FMath::Min(DefaultStamina, Stamina + StaminaRecoveryPerSecond * DeltaSeconds);
+    if (bWinded && Stamina >= RunResumeStamina)
+    {
+        bWinded = false;
+    }
+    SwingCooldown = FMath::Max(0.f, SwingCooldown - DeltaSeconds);
+    SwingRemaining = FMath::Max(0.f, SwingRemaining - DeltaSeconds);
+    StaggerRemaining = FMath::Max(0.f, StaggerRemaining - DeltaSeconds);
+    if (bWinded != bWasWinded)
+    {
+        LogTransition(TEXT("breath_back"));
+    }
+    if (State)
+    {
+        State->UpdateConditionAuthority(MakeCondition(*State));
+    }
+}
+
 FMarburgumCondition UMarburgumCharacterMovement::MakeCondition(const AMarburgumPlayerState& State) const
 {
     FMarburgumCondition Condition = State.GetCondition();
