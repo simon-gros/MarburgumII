@@ -97,10 +97,11 @@ namespace
     {
         constexpr int32 MaxChars = 120;
         FString Short = Detail;
-        int32 SentenceEnd = INDEX_NONE;
-        if (Short.FindChar(TEXT('.'), SentenceEnd) && SentenceEnd > 0)
+        // Up to the second sentence end: a full stop followed by a space, so "192.168.1.5" is never cut.
+        const int32 First = Short.Find(TEXT(". "), ESearchCase::CaseSensitive);
+        if (First != INDEX_NONE)
         {
-            const int32 Second = Short.Find(TEXT("."), ESearchCase::CaseSensitive, ESearchDir::FromStart, SentenceEnd + 1);
+            const int32 Second = Short.Find(TEXT(". "), ESearchCase::CaseSensitive, ESearchDir::FromStart, First + 2);
             Short.LeftInline(Second != INDEX_NONE ? Second + 1 : Short.Len());
         }
         if (Short.Len() > MaxChars)
@@ -281,6 +282,11 @@ UWidget* UMarburgumConnectionScreen::BuildFooter()
     const FString Version = GetDefault<UGeneralProjectSettings>()->ProjectVersion;
     const UGameInstance* GameInstance = GetGameInstance();
     const UMarburgumAccountSubsystem* Accounts = GameInstance ? GameInstance->GetSubsystem<UMarburgumAccountSubsystem>() : nullptr;
+    if (!ShowsDiagnostics())
+    {
+        return B.Text(FText::Format(LOCTEXT("PlayerFooter", "Marburgum II  ·  {0}"), FText::FromString(Version)), ETypeRole::Caption,
+            T.Color.TextMuted);
+    }
     const FText AccountNote = Accounts && Accounts->IsEnabled() ? LOCTEXT("AccountsOn", "signed-in entry") : LOCTEXT("AccountsOff", "development key, no account service");
     const FText FooterText = FText::Format(
         LOCTEXT("Footer", "Development preview  ·  client {0}  ·  network contract v{1}  ·  UI tokens v{2}  ·  {3}"),
@@ -336,7 +342,7 @@ void UMarburgumConnectionScreen::ApplyView(const FMarburgumSessionView& View)
         break;
     case EPhase::Error:
         HeadlineText = FaultHeadline(View.Fault);
-        DetailText = View.Detail.IsEmpty()
+        DetailText = View.Detail.IsEmpty() || !ShowsDiagnostics()
             ? FaultGuidance(View.Fault)
             : FText::Format(LOCTEXT("DetailError", "{0}\nDetail: {1}"), FaultGuidance(View.Fault), FText::FromString(ShortDetail(View.Detail)));
         break;

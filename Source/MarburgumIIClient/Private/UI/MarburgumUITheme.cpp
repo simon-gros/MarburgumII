@@ -1,5 +1,7 @@
 #include "UI/MarburgumUITheme.h"
 
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "Styling/CoreStyle.h"
 
 namespace MarburgumUI
@@ -84,6 +86,16 @@ namespace MarburgumUI
             break;
         }
         return Info;
+    }
+
+    bool ShowsDiagnostics()
+    {
+#if UE_BUILD_SHIPPING
+        return false;
+#else
+        static const bool bShows = FParse::Param(FCommandLine::Get(), TEXT("MB2UIDiagnostics"));
+        return bShows;
+#endif
     }
 
     FLinearColor ToneColor(ETone Tone)
