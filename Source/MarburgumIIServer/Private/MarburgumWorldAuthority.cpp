@@ -1,5 +1,7 @@
 #include "MarburgumWorldAuthority.h"
 
+#include "Engine/NetConnection.h"
+#include "Engine/NetDriver.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/Character.h"
@@ -7,6 +9,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerStart.h"
+#include "HAL/IConsoleManager.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumArea.h"
 #include "MarburgumCharacter.h"
@@ -23,6 +26,7 @@
 #include "MarburgumPlaces.h"
 #include "MarburgumClockAuthority.h"
 #include "MarburgumWorldClock.h"
+#include "MarburgumPedestrian.h"
 #include "MarburgumPlayerState.h"
 #include "MarburgumRetail.h"
 #include "MarburgumRetailRules.h"
@@ -222,6 +226,16 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
     SpawnAuthoredContent(InWorld);
     InWorld.GetTimerManager().SetTimer(ShopTimer, FTimerDelegate::CreateUObject(this, &UMarburgumWorldAuthority::ApplyShops),
         ShopHoursCheckSeconds, true);
+    if (FParse::Param(FCommandLine::Get(), TEXT("MB2NetRate")))
+    {
+        // The engine only measures its rates with net stats on.
+        if (IConsoleVariable* NetStats = IConsoleManager::Get().FindConsoleVariable(TEXT("net.EnableNetStats")))
+        {
+            NetStats->Set(1, ECVF_SetByCommandline);
+        }
+        InWorld.GetTimerManager().SetTimer(NetRateTimer, FTimerDelegate::CreateUObject(this, &UMarburgumWorldAuthority::LogNetRate),
+            5.0f, true);
+    }
 
     FString Path;
     if (!FParse::Value(FCommandLine::Get(), TEXT("MB2WorldStore="), Path) || Path.IsEmpty())
@@ -281,6 +295,28 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
     }
 }
 
+void UMarburgumWorldAuthority::LogNetRate()
+{
+    const UWorld* World = GetWorld();
+    const UNetDriver* Driver = World ? World->GetNetDriver() : nullptr;
+    if (!Driver)
+    {
+        return;
+    }
+    int32 MaxConnectionOut = 0;
+    for (const UNetConnection* Connection : Driver->ClientConnections)
+    {
+        MaxConnectionOut = Connection ? FMath::Max(MaxConnectionOut, Connection->OutBytesPerSecond) : MaxConnectionOut;
+    }
+    int32 People = 0;
+    for (TActorIterator<AMarburgumPedestrian> It(World); It; ++It)
+    {
+        ++People;
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("MB2NET role=server event=net_rate out_bytes_s=%u in_bytes_s=%u max_connection_out_bytes_s=%d connections=%d street_people=%d"),
+        Driver->OutBytesPerSecond, Driver->InBytesPerSecond, MaxConnectionOut, Driver->ClientConnections.Num(), People);
+}
+
 void UMarburgumWorldAuthority::Deinitialize()
 {
     if (UWorld* World = GetWorld())
@@ -288,6 +324,7 @@ void UMarburgumWorldAuthority::Deinitialize()
         World->GetTimerManager().ClearTimer(LocationTimer);
         World->GetTimerManager().ClearTimer(FishingTimer);
         World->GetTimerManager().ClearTimer(ShopTimer);
+        World->GetTimerManager().ClearTimer(NetRateTimer);
     }
     Casts.Reset();
     FGameModeEvents::GameModePostLoginEvent.Remove(PostLoginHandle);

@@ -115,6 +115,9 @@ private:
     FTimerHandle LocationTimer;
     FTimerHandle FishingTimer;
     FTimerHandle ShopTimer;
+    /** -MB2NetRate: the measured send and receive rates every 5 s, for bandwidth baselines. */
+    FTimerHandle NetRateTimer;
+    void LogNetRate();
     TMap<TWeakObjectPtr<AMarburgumPlayerController>, FCast> Casts;
     TMap<TWeakObjectPtr<AMarburgumPlayerController>, double> LastCastAt;
     /** The operation id of each player's latest cast, so a resent cast is answered Duplicate (QA 2026-11-19). */
