@@ -115,6 +115,22 @@ bool FMarburgumVehicleDynamicsTest::RunTest(const FString& Parameters)
         -(0.035 / Step + CrossFall) * Share, 1e-9);
     TestEqual(TEXT("Hold is limited"), Dynamics::HoldForce(0.0, 9.81, Share, Step, 100.0), -100.0);
     TestEqual(TEXT("No hold without grip"), Dynamics::HoldForce(0.0, CrossFall, Share, Step, 0.0), 0.0);
+
+    // QA 2026-11-19, G7: forces sized "within this step" use the step the scene integrates, not the frame. On a
+    // 100 ms hitch the scene integrates 1/30 s; a hold sized for the frame left two thirds of the creep.
+    const double Limit = 1.0 / 30.0;
+    TestEqual(TEXT("Short frame integrates whole"), Dynamics::IntegratedSeconds(Step, Limit), Step);
+    TestEqual(TEXT("Long frame integrates the limit"), Dynamics::IntegratedSeconds(0.1, Limit), Limit);
+    TestEqual(TEXT("No limit"), Dynamics::IntegratedSeconds(0.1, 0.0), 0.1);
+    TestEqual(TEXT("No frame"), Dynamics::IntegratedSeconds(0.0, Limit), 0.0);
+    const double Creep = 0.5;
+    const double Held = Dynamics::HoldForce(Creep, 0.0, Share, Dynamics::IntegratedSeconds(0.1, Limit), 1.0e6);
+    TestEqual(TEXT("A hitch's hold stops the creep in the integrated step"), Creep + Held / Share * Limit, 0.0, 1e-9);
+    const double FrameSized = Dynamics::HoldForce(Creep, 0.0, Share, 0.1, 1.0e6);
+    TestTrue(TEXT("A hold sized for the frame would not"), Creep + FrameSized / Share * Limit > 0.3);
+    // 0.1 m/s is within what the front brake can stop in one step (5200 N over four wheels).
+    const double Braked = Dynamics::LongitudinalForce(Car, 0, 0.1, 0.1, 0.0, 1.0, false, 1.0, Dynamics::IntegratedSeconds(0.1, Limit));
+    TestEqual(TEXT("A hitch's brake still stops a slow wheel in the step"), 0.1 + Braked / Share * Limit, 0.0, 1e-9);
     TestEqual(TEXT("Brake limit at the front"), Dynamics::BrakeLimit(Car, 0, 1.0, true, 1.0), Car.BrakeForce / WheelCount, 1e-9);
     TestEqual(TEXT("Handbrake adds at the rear"), Dynamics::BrakeLimit(Car, 2, 1.0, true, 1.0),
         (Car.BrakeForce + Car.HandbrakeForce) / WheelCount, 1e-9);

@@ -160,6 +160,23 @@ namespace MarburgumII::Vehicles::Dynamics
     }
 
     /**
+     * The seconds the physics scene integrates this frame's forces over: the frame, cut to the scene's step limit
+     * (FChaosScene::SetUpForFrame in UE 5.8.3; MaxStepSeconds is MaxPhysicsDeltaTime, or MaxSubsteps x
+     * MaxSubstepDeltaTime when substepping). A force sized to stop a speed "within this step" must use this, not
+     * the frame: on a frame longer than the limit the scene integrates only the limit, and a force sized for the
+     * whole frame fell short by their ratio. On a 100 ms hitch with the 1/30 s default the held brake and the
+     * brake's stop-not-reverse ceiling gave a third of their grip (QA 2026-11-19, G7).
+     */
+    inline double IntegratedSeconds(double FrameSeconds, double MaxStepSeconds)
+    {
+        if (!FMath::IsFinite(FrameSeconds) || FrameSeconds <= 0.0)
+        {
+            return 0.0;
+        }
+        return FMath::IsFinite(MaxStepSeconds) && MaxStepSeconds > 0.0 ? FMath::Min(FrameSeconds, MaxStepSeconds) : FrameSeconds;
+    }
+
+    /**
      * A held wheel grips like static friction, newtons along one direction: the force that stops its share
      * of the car within this step, the slope's pull included, up to Limit (what the brake gives along the
      * wheel, or the tyre across it). SlopeAccel is gravity along that direction, m/s^2.

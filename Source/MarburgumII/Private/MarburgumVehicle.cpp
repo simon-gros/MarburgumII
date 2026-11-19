@@ -20,6 +20,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Net/UnrealNetwork.h"
+#include "PhysicsEngine/PhysicsSettings.h"
 
 using namespace MarburgumII::Vehicles;
 
@@ -275,6 +276,11 @@ void AMarburgumVehicle::StepPhysicsAuthority(float DeltaSeconds)
 
     const double ForwardSpeed = FVector::DotProduct(Velocity, Forward) / Cm;
     const double SteerAngle = StepSteerAngle(*Definition, Motion.SteerAngle, Steer, ForwardSpeed, DeltaSeconds);
+    // Forces sized to stop a wheel "this step" use the time the scene integrates them over, which a long frame
+    // exceeds (IntegratedSeconds, QA 2026-11-19 G7). The steering wheel turns with the frame.
+    const UPhysicsSettings* PhysicsSettings = UPhysicsSettings::Get();
+    const double PhysicsStep = IntegratedSeconds(DeltaSeconds, PhysicsSettings->bSubstepping
+        ? PhysicsSettings->MaxSubsteps * PhysicsSettings->MaxSubstepDeltaTime : PhysicsSettings->MaxPhysicsDeltaTime);
     const double AppliedBrake = HeldBrake(Throttle, Brake, ForwardSpeed);
     // Stopped on the brake, the wheels hold the car on a slope rather than letting it creep (HoldForce).
     const bool bHeld = IsHeld(Throttle, AppliedBrake, ForwardSpeed);
@@ -339,16 +345,16 @@ void AMarburgumVehicle::StepPhysicsAuthority(float DeltaSeconds)
         const double Grip = SurfaceGrip(Kind, Wetness);
         const double Traction = SurfaceTraction(Kind, Wetness);
         const double Lateral = bHeld
-            ? HoldForce(Sideways, FVector::DotProduct(Pull, WheelRight), Share, DeltaSeconds, LateralFrictionLimit * Grip * Load)
+            ? HoldForce(Sideways, FVector::DotProduct(Pull, WheelRight), Share, PhysicsStep, LateralFrictionLimit * Grip * Load)
             : LateralForce(*Definition, Wheel, Sideways, Load, bHandbrake, Grip);
         if (Lateral != 0.0)
         {
             Body->AddForceAtLocation(WheelRight * Lateral * NewtonsToUnreal, GripPoint);
         }
         const double Longitudinal = bHeld
-            ? HoldForce(Rolling, FVector::DotProduct(Pull, WheelForward), Share, DeltaSeconds,
+            ? HoldForce(Rolling, FVector::DotProduct(Pull, WheelForward), Share, PhysicsStep,
                 BrakeLimit(*Definition, Wheel, AppliedBrake, bHandbrake, Traction))
-            : LongitudinalForce(*Definition, Wheel, ForwardSpeed, Rolling, Throttle, AppliedBrake, bHandbrake, Traction, DeltaSeconds);
+            : LongitudinalForce(*Definition, Wheel, ForwardSpeed, Rolling, Throttle, AppliedBrake, bHandbrake, Traction, PhysicsStep);
         if (Longitudinal != 0.0)
         {
             Body->AddForceAtLocation(WheelForward * Longitudinal * NewtonsToUnreal, DrivePoint);
