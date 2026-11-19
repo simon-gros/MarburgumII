@@ -14,6 +14,7 @@
 #include "Engine/World.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
+#include "TimerManager.h"
 #include "UI/MarburgumUIBuilder.h"
 
 using namespace MarburgumUI;
@@ -173,6 +174,33 @@ void UMarburgumChatWidget::HandleTextCommitted(const FText& Text, ETextCommit::T
         SubmitComposer();
         ReturnFocusToWorld();
     }
+    else if (Method == ETextCommit::OnCleared)
+    {
+        ReturnFocusToWorld();
+    }
+    else if (Method == ETextCommit::OnUserMovedFocus && GetWorld())
+    {
+        // Clicking back into the world keeps the draft but gives the mouse and keys back to the game. Focus has not
+        // settled yet; a click on Send stays inside the panel and keeps typing mode.
+        GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]()
+        {
+            if (ChatController && ChatController->IsTyping() && !HasFocusedDescendants())
+            {
+                ReturnFocusToWorld();
+            }
+        }));
+    }
+}
+
+FReply UMarburgumChatWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+{
+    if (InKeyEvent.GetKey() == EKeys::Escape && Composer && Composer->HasKeyboardFocus())
+    {
+        Composer->SetText(FText::GetEmpty());
+        ReturnFocusToWorld();
+        return FReply::Handled();
+    }
+    return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
 }
 
 void UMarburgumChatWidget::HandleSendButton()
@@ -234,6 +262,7 @@ void UMarburgumChatWidget::FocusComposer()
     Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
     ChatController->SetInputMode(Mode);
     ChatController->bShowMouseCursor = true;
+    ChatController->SetTyping(true);
     Composer->SetKeyboardFocus();
 }
 
@@ -241,6 +270,7 @@ void UMarburgumChatWidget::ReturnFocusToWorld()
 {
     if (ChatController)
     {
+        ChatController->SetTyping(false);
         ChatController->SetInputMode(FInputModeGameOnly());
         ChatController->bShowMouseCursor = false;
     }

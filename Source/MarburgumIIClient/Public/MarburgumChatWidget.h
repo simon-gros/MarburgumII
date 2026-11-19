@@ -25,6 +25,8 @@ public:
     virtual void NativeOnInitialized() override;
     virtual void NativeConstruct() override;
     virtual void NativeDestruct() override;
+    /** Escape while typing leaves the composer (the text box itself does not take Escape). */
+    virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
     void FocusComposer();
 

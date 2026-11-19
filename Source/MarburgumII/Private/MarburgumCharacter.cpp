@@ -618,6 +618,11 @@ FName AMarburgumCharacter::GetPlayingFightClip() const
 
 void AMarburgumCharacter::StartRunning()
 {
+    // Shift while typing in chat is a capital letter, not a run.
+    if (const AMarburgumPlayerController* Player = Cast<AMarburgumPlayerController>(GetController()); Player && Player->IsTyping())
+    {
+        return;
+    }
     if (UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(GetCharacterMovement()))
     {
         Movement->SetWantsToRun(true);
