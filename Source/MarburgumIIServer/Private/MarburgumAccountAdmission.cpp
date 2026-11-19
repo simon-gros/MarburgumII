@@ -32,19 +32,26 @@ void UMarburgumAccountAdmission::Initialize(FSubsystemCollectionBase& Collection
         FFileHelper::LoadFileToString(ServerKey, *KeyFile);
         ServerKey.TrimStartAndEndInline();
     }
-    if (!ServiceUrl.IsEmpty() && GetWorld() && GetWorld()->GetNetMode() == NM_DedicatedServer)
+    if (ServiceRequested() && GetWorld() && GetWorld()->GetNetMode() == NM_DedicatedServer)
     {
-        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=accounts_required service=%s key=%s"), AdmissionLogPrefix, *ServiceUrl,
-            ServerKey.Len() >= 32 ? TEXT("loaded") : TEXT("missing"));
+        if (ServiceUrl.IsEmpty())
+        {
+            // Still signed-in players only (RequiresAccounts): a wrong address refuses everyone, it opens nothing.
+            UE_LOG(LogMarburgumNet, Error, TEXT("%s role=server event=accounts_misconfigured reason=\"-MB2Accounts must be an https:// address\""),
+                AdmissionLogPrefix);
+        }
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=accounts_required service=%s key=%s"), AdmissionLogPrefix,
+            ServiceUrl.IsEmpty() ? TEXT("invalid") : *ServiceUrl, ServerKey.Len() >= 32 ? TEXT("loaded") : TEXT("missing"));
     }
 }
 
 bool UMarburgumAccountAdmission::RequiresAccounts() const
 {
-#if UE_BUILD_SHIPPING
+    // Shipping and Test builds never fall back to the development key (ADR-014).
+#if UE_BUILD_SHIPPING || UE_BUILD_TEST
     return true;
 #else
-    return !ServiceUrl.IsEmpty();
+    return ServiceRequested();
 #endif
 }
 
@@ -79,10 +86,20 @@ void UMarburgumAccountAdmission::Redeem(const FString& Ticket, FMarburgumTicketR
             FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Response->GetContentAsString()), Json);
             if (Status != 200 || !Json.IsValid())
             {
-                const FString Code = Json.IsValid() ? Json->GetStringField(TEXT("error")) : FString();
-                Done.ExecuteIfBound({}, Code == TEXT("ticket_invalid")
-                    ? TEXT("Your sign-in for this world has expired. Sign in again.")
-                    : FString::Printf(TEXT("The account service refused this server (%d %s)."), Status, *Code));
+                FString Code;
+                if (Json.IsValid())
+                {
+                    Json->TryGetStringField(TEXT("error"), Code);
+                }
+                if (Code == TEXT("ticket_invalid"))
+                {
+                    Done.ExecuteIfBound({}, TEXT("Your sign-in for this world has expired. Sign in again."));
+                    return;
+                }
+                // The operator's problem (a wrong key, a proxy error): the details go to the log, not to the player.
+                UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=redeem_failed status=%d code=%s"), AdmissionLogPrefix, Status,
+                    Code.IsEmpty() ? TEXT("none") : *Code);
+                Done.ExecuteIfBound({}, TEXT("This world cannot check sign-ins right now. Try again shortly."));
                 return;
             }
             const TSharedPtr<FJsonObject>* Character = nullptr;
