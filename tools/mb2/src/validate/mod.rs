@@ -26,7 +26,7 @@ const CHECKS: [(&str, &str, Check); 10] = [
     ("street", "Street contract", street::check),
     ("lights", "Street lamps", lights::check),
     ("python-free", "Python-free tooling", python_free::check),
-    ("scripts", "Script modes", scripts::check),
+    ("scripts", "Scripts", scripts::check),
     ("accounts", "Account contract", accounts::check),
 ];
 
