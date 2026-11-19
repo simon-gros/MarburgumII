@@ -57,15 +57,32 @@ namespace MarburgumII::Accounts
         return nullptr;
     }
 
-    /** The service address from the command line, without a trailing slash; empty when accounts are off. */
+    /** True when -MB2Accounts= is on the command line at all, usable or not: a server then admits signed-in players only. */
+    inline bool ServiceRequested()
+    {
+        FString Url;
+        return FParse::Value(FCommandLine::Get(), ServiceSwitch, Url);
+    }
+
+    /**
+     * The service address from the command line, without a trailing slash; empty when accounts are off or the address
+     * is not https://, so neither a password nor the server key ever travels in the clear.
+     */
     inline FString ServiceUrl()
     {
         FString Url;
-        if (FParse::Value(FCommandLine::Get(), ServiceSwitch, Url))
+        if (!FParse::Value(FCommandLine::Get(), ServiceSwitch, Url) || !Url.StartsWith(TEXT("https://"), ESearchCase::IgnoreCase))
         {
-            Url.RemoveFromEnd(TEXT("/"));
+            return FString();
         }
+        Url.RemoveFromEnd(TEXT("/"));
         return Url;
+    }
+
+    /** The account service names characters "c_" + 24 hex digits; the development key (ADR-014) must never take one. */
+    inline bool IsAccountCharacterKey(const FString& Key)
+    {
+        return Key.StartsWith(TEXT("c_"), ESearchCase::CaseSensitive);
     }
 
     /** A ticket is opaque; this only keeps junk out of the request to the service. */

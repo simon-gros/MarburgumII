@@ -52,6 +52,11 @@ FString AMarburgumGameMode::CheckCharacterKey(const FString& Key) const
     {
         return TEXT("Invalid character key: use 3-40 characters a-z, 0-9, '-' or '_'.");
     }
+    // An account character's key is its world-store id; typing it must not take over its inventory.
+    if (MarburgumII::Accounts::IsAccountCharacterKey(Key))
+    {
+        return TEXT("This character belongs to a signed-in account.");
+    }
     if (FindPlayerByCharacterKey(Key))
     {
         return TEXT("This character is already connected to the server.");
@@ -61,7 +66,7 @@ FString AMarburgumGameMode::CheckCharacterKey(const FString& Key) const
 
 bool AMarburgumGameMode::AccountsRequired() const
 {
-#if UE_BUILD_SHIPPING
+#if UE_BUILD_SHIPPING || UE_BUILD_TEST
     return true;
 #else
     const UMarburgumAdmissionService* Service = UMarburgumAdmissionService::Get(GetWorld());
@@ -96,6 +101,17 @@ void AMarburgumGameMode::PreLoginAsync(const FString& Options, const FString& Ad
         Refuse(TEXT("development_key"), TEXT("This server only admits signed-in players."));
         return;
     }
+    // A connection can pass PreLogin and never join (it drops while loading the map): forget its admission after
+    // two minutes, well past the one-minute ticket.
+    const double Now = FPlatformTime::Seconds();
+    for (auto It = AdmittedAtSeconds.CreateIterator(); It; ++It)
+    {
+        if (Now - It.Value() > 120.0)
+        {
+            Admitted.Remove(It.Key());
+            It.RemoveCurrent();
+        }
+    }
     const FString Ticket = UGameplayStatics::ParseOption(Options, TicketOption);
     UMarburgumAdmissionService* Service = UMarburgumAdmissionService::Get(GetWorld());
     if (!Service || !IsWellFormedTicket(Ticket))
@@ -120,6 +136,7 @@ void AMarburgumGameMode::PreLoginAsync(const FString& Options, const FString& Ad
                 return;
             }
             Admitted.Add(Ticket, Who);
+            AdmittedAtSeconds.Add(Ticket, FPlatformTime::Seconds());
             UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=ticket_redeemed character=%s model=%s"), AdmissionLogPrefix,
                 *Who.CharacterId, *Who.Model.ToString());
             OnComplete.ExecuteIfBound(FString());
@@ -130,7 +147,9 @@ FString AMarburgumGameMode::InitAccountPlayer(APlayerController* NewPlayerContro
 {
     using namespace MarburgumII::Accounts;
     FMarburgumAdmittedCharacter Who;
-    if (!Admitted.RemoveAndCopyValue(UGameplayStatics::ParseOption(Options, TicketOption), Who))
+    const FString Ticket = UGameplayStatics::ParseOption(Options, TicketOption);
+    AdmittedAtSeconds.Remove(Ticket);
+    if (!Admitted.RemoveAndCopyValue(Ticket, Who))
     {
         UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=admission_refused stage=init reason=not_redeemed"), AdmissionLogPrefix);
         return TEXT("Sign in to enter the world.");
@@ -183,9 +202,11 @@ void AMarburgumGameMode::PreLogin(const FString& Options, const FString& Address
 
 FString AMarburgumGameMode::InitNewPlayer(APlayerController* NewPlayerController, const FUniqueNetIdRepl& UniqueId, const FString& Options, const FString& Portal)
 {
-    // The base class picks the start spot, so the requested tag must be known before it runs.
+    // The base class picks the start spot, so the requested tag must be known before it runs. ?MB2Start= is a
+    // development choice: a signed-in player (and every Shipping or Test server) starts where the server decides,
+    // never at a mission or fight start of the client's choosing.
     const FString StartTag = UGameplayStatics::ParseOption(Options, MarburgumII::Gameplay::StartOption);
-    if (NewPlayerController && !StartTag.IsEmpty() && StartTag.Len() <= 40)
+    if (NewPlayerController && !StartTag.IsEmpty() && StartTag.Len() <= 40 && !AccountsRequired())
     {
         RequestedStarts.Add(NewPlayerController, FName(*StartTag));
     }

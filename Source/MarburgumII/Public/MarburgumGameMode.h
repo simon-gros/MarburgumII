@@ -55,6 +55,8 @@ private:
 
     /** Characters whose ticket was spent in PreLoginAsync, by ticket, until InitNewPlayer takes them. */
     TMap<FString, FMarburgumAdmittedCharacter> Admitted;
+    /** When each Admitted entry was added (FPlatformTime seconds), so one that never joins is dropped. */
+    TMap<FString, double> AdmittedAtSeconds;
 
     /** ?MB2Start= of players still being admitted; read by ChoosePlayerStart. */
     TMap<TObjectKey<AController>, FName> RequestedStarts;
