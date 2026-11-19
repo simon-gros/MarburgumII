@@ -33,9 +33,11 @@ public:
     /** Whether both meshes were found (scripts/create-weather-content.sh lamps); a kind without its mesh is not put up. */
     bool HasMeshes() const { return bHasMeshes; }
 
-    /** Writes a lamp's state into its instance; call FlushStates once after a batch. */
+    /**
+     * Writes a lamp's state into its instance. The instance-data manager sends only the changed instances to the GPU
+     * scene; marking the meshes' render state dirty would rebuild both whole scene proxies (QA 2026-11-19).
+     */
     void SetState(int32 Lamp, float Output, const FLinearColor& Colour);
-    void FlushStates();
 
 private:
     UPROPERTY(VisibleAnywhere)
@@ -51,8 +53,6 @@ private:
     /** Each lamp's instance in its kind's component. */
     TArray<int32> Instance;
     bool bHasMeshes = false;
-    bool bMastsDirty = false;
-    bool bLanternsDirty = false;
 };
 
 /**
