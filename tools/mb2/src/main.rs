@@ -18,7 +18,7 @@ use std::process::ExitCode;
 const USAGE: &str = "\
 Usage: mb2 <command>
 
-  validate <ui-ontology|chat|gameplay|vehicles|combat|street|lights|python-free|all>
+  validate <ui-ontology|chat|gameplay|vehicles|combat|street|lights|python-free|scripts|accounts|all>
                          Source-only contract checks (no Unreal build).
   generate gameplay      Write MarburgumGameplayCatalogue.h from Data/Gameplay/gameplay.v0.1.json.
   generate wet-footsteps Write the wet-street footsteps (SourceArt/Audio/Footsteps/Generated) from the dry ones.
