@@ -63,6 +63,12 @@ AMarburgumPedestrian::AMarburgumPedestrian()
     Movement->bUseRVOAvoidance = true;
     Movement->AvoidanceConsiderationRadius = MarburgumStreetPerson::AvoidanceRadiusCm;
     SetNetCullDistanceSquared(FMath::Square(MarburgumStreetPerson::NetCullCm));
+    // A pawn replicates up to 100 times a second by default. Street people walk at 1-2 m/s and clients smooth
+    // simulated movement between updates, so ten a second is enough, two while nothing changes, and a change of
+    // mood goes out at once (SetMood). Players' own bodies come first when a connection is saturated.
+    SetNetUpdateFrequency(10.f);
+    SetMinNetUpdateFrequency(2.f);
+    NetPriority = 2.f;
 }
 
 void AMarburgumPedestrian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -515,6 +521,7 @@ void AMarburgumPedestrian::SetMood(EMarburgumStreetMood NewMood, double Until)
     }
     const EMarburgumStreetMood Old = Mood;
     Mood = NewMood;
+    ForceNetUpdate();
     EMarburgumFighterIntent FighterIntent = EMarburgumFighterIntent::Wander;
     switch (NewMood)
     {
