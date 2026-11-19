@@ -5,18 +5,21 @@
 //!
 //! HTTPS only. Emails are written to the outbox folder, one file each, until a real sender is chosen.
 
+mod conn;
 mod http;
 mod policy;
 mod secrets;
 mod service;
 mod store;
 
+use hyper_util::rt::TokioTimer;
 use std::fs;
 use std::io::Write;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::process::ExitCode;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 /// The development sender: each email is a file in a folder only the service's user can read.
 struct Outbox(PathBuf);
@@ -117,8 +120,14 @@ async fn main() -> ExitCode {
         stopping.graceful_shutdown(Some(std::time::Duration::from_secs(5)));
     });
     println!("mb2-accounts event=listening bind={} store_revision={revision}", args.bind);
+    // A place among conn::MAX_CONNECTIONS and the idle deadline, under TLS (AR4); HTTP/1 headers must then arrive
+    // within ten seconds, and HTTP/2 connections that stop answering pings are closed.
+    let limited = conn::Limited::new(conn::MAX_CONNECTIONS, Duration::from_secs(conn::IDLE_SECONDS));
+    let mut server = axum_server::bind(args.bind).acceptor(axum_server::tls_rustls::RustlsAcceptor::new(tls).acceptor(limited)).handle(handle);
+    server.http_builder().http1().timer(TokioTimer::new()).header_read_timeout(Duration::from_secs(10));
+    server.http_builder().http2().timer(TokioTimer::new()).keep_alive_interval(Duration::from_secs(20)).keep_alive_timeout(Duration::from_secs(10));
     // The peer address feeds the per-address limit on the public routes.
-    match axum_server::bind_rustls(args.bind, tls).handle(handle).serve(app.into_make_service_with_connect_info::<SocketAddr>()).await {
+    match server.serve(app.into_make_service_with_connect_info::<SocketAddr>()).await {
         Ok(()) => {
             println!("mb2-accounts event=stopped");
             ExitCode::SUCCESS
