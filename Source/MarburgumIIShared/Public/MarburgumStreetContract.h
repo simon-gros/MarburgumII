@@ -87,6 +87,21 @@ namespace MarburgumII::Street
     inline constexpr float HeadingDriftDegreesPerSecond = 6.f;
     // Under this share of a tick's stride for this long, a walker turns back.
     inline constexpr float StuckSeconds = 2.f;
+    // Extra right-of-line lanes so people on one edge are not one body. Still inside NodeArriveCm of the node.
+    inline constexpr float PassLaneCm = 18.f;
+    static_assert(KeepRightCm + PassLaneCm < NodeArriveCm, "a pass lane must still reach the node");
+
+    /** A blocked edge (a fight, the river): reverse once, then hold. Reversing every tick only shuffles in place. */
+    enum class EBlockedWalk : uint8 { Go, Reverse, Hold };
+
+    inline EBlockedWalk BlockedWalk(bool bBlocked, bool bAlreadyReversed)
+    {
+        if (!bBlocked)
+        {
+            return EBlockedWalk::Go;
+        }
+        return bAlreadyReversed ? EBlockedWalk::Hold : EBlockedWalk::Reverse;
+    }
 
     // ---- Noticing (the original's own distances unless marked) ----
 

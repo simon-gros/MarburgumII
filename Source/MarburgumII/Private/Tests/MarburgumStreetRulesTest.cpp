@@ -343,6 +343,11 @@ bool FMarburgumStreetRulesTest::RunTest(const FString& Parameters)
         Water.Under(FVector(500.0, 200.0, -400.0), 5000.0, Under);
         TestEqual(TEXT("under the bed"), Under.Num(), 0);
     }
+
+    // A blocked pavement reverses once, then holds. Reversing every tick only shuffles.
+    TestTrue(TEXT("a clear way is walked"), BlockedWalk(false, true) == EBlockedWalk::Go);
+    TestTrue(TEXT("a new block turns back"), BlockedWalk(true, false) == EBlockedWalk::Reverse);
+    TestTrue(TEXT("the same block holds"), BlockedWalk(true, true) == EBlockedWalk::Hold);
     return true;
 }
 

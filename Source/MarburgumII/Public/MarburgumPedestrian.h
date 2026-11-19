@@ -188,6 +188,8 @@ private:
     bool bNeverDodges = false;
     double LastProgressSeconds = 0.0;
     int32 TurnBacks = 0;
+    /** The edge already reversed for a fight or the river. A second block holds instead of shuffling. */
+    int32 ReversedEdge = INDEX_NONE;
     bool bGatherArrived = false;
     /** Fleeing with no graph under them: straight away from the threat. */
     bool bFleeOffGraph = false;

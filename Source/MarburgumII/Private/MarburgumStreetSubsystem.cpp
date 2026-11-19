@@ -944,6 +944,13 @@ void UMarburgumStreetSubsystem::SpawnPeople(double Time, float DeltaSeconds)
 
 void UMarburgumStreetSubsystem::RunPeopleOver(float DeltaSeconds)
 {
+    for (auto It = LastCarCentres.CreateIterator(); It; ++It)
+    {
+        if (!It.Key().IsValid())
+        {
+            It.RemoveCurrent();
+        }
+    }
     TArray<AMarburgumVehicle*> Cars;
     AMarburgumVehicle::GetAll(GetWorld(), Cars);
     for (AMarburgumVehicle* Car : Cars)

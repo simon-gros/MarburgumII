@@ -202,6 +202,7 @@ void AMarburgumPedestrian::Think()
             return;
         }
         GiveUp();
+        return;
     }
 
     if (Mood != EMarburgumStreetMood::Walk && Now >= MoodUntil)
@@ -347,6 +348,16 @@ bool AMarburgumPedestrian::SenseIncidents(double Now)
             bBestSpread = bSpread;
         }
     };
+    if (Rolled.Num() > 32)
+    {
+        TSet<int32> Live;
+        Live.Reserve(S->GetIncidents().Num());
+        for (const FMarburgumStreetIncident& Incident : S->GetIncidents())
+        {
+            Live.Add(Incident.Id);
+        }
+        Rolled = Rolled.Intersect(Live);
+    }
     for (const FMarburgumStreetIncident& Incident : S->GetIncidents())
     {
         const double Distance = FVector::Dist2D(Here, Incident.Location);
@@ -582,6 +593,7 @@ void AMarburgumPedestrian::EndMood()
     AnsweredEvent = EEvent::Count;
     bUnbothered = false;
     bFleeOffGraph = false;
+    ReversedEdge = INDEX_NONE;
     SetMood(EMarburgumStreetMood::Walk, 0.0);
     Rejoin();
 }
@@ -611,9 +623,20 @@ void AMarburgumPedestrian::StepFlee(double Now)
     const FMarburgumWalkGraph& Graph = Street()->GetGraph();
     if (bWaterAhead)
     {
-        // The graph keeps clear of the river; whatever pushed them toward it, back the other way.
-        ToNode = Graph.Other(Edge, ToNode);
-        LogEvent(TEXT("water_edge"), TEXT("turned=back"));
+        // The graph keeps clear of the river. Reverse this edge once; reversing every tick only shuffles.
+        switch (BlockedWalk(true, ReversedEdge == Edge))
+        {
+        case EBlockedWalk::Reverse:
+            ReversedEdge = Edge;
+            ToNode = Graph.Other(Edge, ToNode);
+            LogEvent(TEXT("water_edge"), TEXT("turned=back"));
+            break;
+        case EBlockedWalk::Hold:
+            Stop();
+            return;
+        default:
+            break;
+        }
     }
     if (FVector::Dist2D(Here, Graph.GetNodes()[ToNode].Location) < NodeArriveCm)
     {
@@ -676,8 +699,9 @@ FVector AMarburgumPedestrian::EdgeGoal() const
     }
     const FVector From = Graph.GetNodes()[Graph.Other(Edge, ToNode)].Location;
     const FVector Along = (To - From).GetSafeNormal2D();
-    // Keep to the right, so people coming the other way pass.
-    return To + FVector(-Along.Y, Along.X, 0.0) * KeepRightCm;
+    // Keep to the right, in one of three lanes, so people on this edge are not one body.
+    const float Lane = static_cast<float>((Serial % 3) - 1) * PassLaneCm;
+    return To + FVector(-Along.Y, Along.X, 0.0) * (KeepRightCm + Lane);
 }
 
 bool AMarburgumPedestrian::InFight(const FVector& Point) const
@@ -723,6 +747,7 @@ bool AMarburgumPedestrian::Rejoin()
     Edge = INDEX_NONE;
     ToNode = Node;
     bRejoining = true;
+    ReversedEdge = INDEX_NONE;
     LastProgressSeconds = Street()->Now();
     LastProgressLocation = GetActorLocation();
     return true;
@@ -787,6 +812,7 @@ void AMarburgumPedestrian::TakeNextEdge(int32 Node, bool bFleeing)
     Edge = Touching[Pick];
     ToNode = Graph.Other(Edge, Node);
     bRejoining = false;
+    ReversedEdge = INDEX_NONE;
     // Their way bends toward the street they took.
     const double EdgeYaw = (Graph.GetNodes()[ToNode].Location - At).Rotation().Yaw;
     HeadingYaw = FRotator::NormalizeAxis(HeadingYaw + MarburgumStreetPerson::AngleBetween(HeadingYaw, EdgeYaw) * 0.5);
@@ -812,23 +838,37 @@ void AMarburgumPedestrian::StepWalk(double Now, double DeltaSeconds)
         }
         TakeNextEdge(ToNode, false);
     }
-    // Nobody walks into a fight, whatever they made of it, or into the river: turn back short of it.
-    const FVector Goal = EdgeGoal();
+    // Nobody walks into a fight, whatever they made of it, or into the river: turn back once, then hold.
+    FVector Goal = EdgeGoal();
     const FVector Ahead = Here + (Goal - Here).GetSafeNormal2D() * FightClearanceCm;
-    if (Edge != INDEX_NONE && (InFight(Goal) || InFight(Ahead) || bWaterAhead))
+    const bool bBlocked = Edge != INDEX_NONE && (InFight(Goal) || InFight(Ahead) || bWaterAhead);
+    bool bHold = false;
+    switch (BlockedWalk(bBlocked, ReversedEdge == Edge))
     {
+    case EBlockedWalk::Go:
+        ReversedEdge = INDEX_NONE;
+        if (Edge == INDEX_NONE && bWaterAhead && !Rejoin())
+        {
+            Stop();
+            bLost = true;
+            return;
+        }
+        break;
+    case EBlockedWalk::Reverse:
+        ReversedEdge = Edge;
         ToNode = Graph.Other(Edge, ToNode);
+        Goal = EdgeGoal();
         if (bWaterAhead)
         {
             LogEvent(TEXT("water_edge"), TEXT("turned=back"));
         }
-    }
-    else if (Edge == INDEX_NONE && bWaterAhead && !Rejoin())
-    {
+        break;
+    case EBlockedWalk::Hold:
+        bHold = true;
         Stop();
-        bLost = true;
-        return;
+        break;
     }
+    const int32 ToBeforeStuck = ToNode;
 
     // Stuck against something the graph check missed (a parked car, a crowd): turn back, and after a few
     // turn-backs in a row give up as lost.
@@ -848,12 +888,17 @@ void AMarburgumPedestrian::StepWalk(double Now, double DeltaSeconds)
         if (Edge != INDEX_NONE)
         {
             ToNode = Graph.Other(Edge, ToNode);
+            ReversedEdge = Edge;
         }
         else
         {
             Rejoin();
         }
         LogEvent(TEXT("stuck"), FString::Printf(TEXT("turn_backs=%d"), TurnBacks));
+    }
+    if (bHold && ToNode == ToBeforeStuck)
+    {
+        return;
     }
     WalkTo(EdgeGoal());
 }

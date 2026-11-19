@@ -451,6 +451,7 @@ void AMarburgumFighter::ThinkHostile(AMarburgumCharacter& Person)
     View.bStaggered = TickCount < StaggerUntilTick;
     View.DistanceCm = FVector::Dist2D(Here, There);
     View.bWalled = View.DistanceCm > 5.0 && IsWalled(Person);
+    View.bPathBlocked = Stuck >= UnreachableCloseTicks;
     View.ReachCm = ReachCm;
     View.Now = static_cast<double>(TickCount);
     View.SwingUntil = static_cast<double>(SwingUntilTick);
@@ -479,10 +480,11 @@ void AMarburgumFighter::ThinkHostile(AMarburgumCharacter& Person)
             return;
         }
         SetStateAndIntent(EMarburgumFighterState::Hostile, EMarburgumFighterIntent::Close);
-        if (bLastStepFailed && Toward.SizeSquared() > 1.0)
+        const bool bHeldRefusal = !bLastStepFailed && !bWalking && Stuck > 0;
+        if ((bLastStepFailed || bHeldRefusal) && Toward.SizeSquared() > 1.0)
         {
-            // The straight line refused: try the side, and the other side every few refused steps; never a side
-            // in the water.
+            // The straight line refused, or the sidestep was not dry and they are still standing there.
+            // A held refusal used to clear Stuck on the next tick, so a wall was never given up.
             ++Stuck;
             const FVector Ahead = Toward.GetSafeNormal();
             FVector Side(-Ahead.Y, Ahead.X, 0.0);

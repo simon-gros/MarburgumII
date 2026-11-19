@@ -140,6 +140,8 @@ namespace MarburgumII::Combat
     inline constexpr float BackOffReachShare = 0.42f;
     // A hostile that cannot get closer tries the side, swapping sides every few refused steps.
     inline constexpr int32 SideStepSwapSteps = 3;
+    // Refused closes in a row (a wall, a crowd) before the fight is given up. Not used while waiting at the river.
+    inline constexpr int32 UnreachableCloseTicks = 20;
 
     // An NPC definition's defaults (world_simulation.h Npc): what a hostile hits for, how far it reaches,
     // how often it swings and how far from home it follows somebody.
@@ -413,6 +415,8 @@ namespace MarburgumII::Combat
         bool bStaggered = false;
         double DistanceCm = 0.0;
         bool bWalled = false;
+        /** Out of reach, and the last UnreachableCloseTicks closes were refused. */
+        bool bPathBlocked = false;
         double ReachCm = DefaultNpcReachCm;
         double Now = 0.0;
         double SwingUntil = 0.0;
@@ -431,6 +435,12 @@ namespace MarburgumII::Combat
         }
         if (View.DistanceCm > View.ReachCm || View.bWalled)
         {
+            // A wall, or still short of reach, after the closes were refused: the fight is over.
+            // In reach with a clear line is not this branch, so a blocked count does not cancel a blow.
+            if (View.bPathBlocked)
+            {
+                return EHostileStep::GiveUp;
+            }
             return EHostileStep::Close;
         }
         if (View.DistanceCm < View.ReachCm * BackOffReachShare)

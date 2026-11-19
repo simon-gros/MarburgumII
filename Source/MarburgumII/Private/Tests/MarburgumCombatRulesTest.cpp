@@ -126,6 +126,17 @@ bool FMarburgumCombatRulesTest::RunTest(const FString& Parameters)
         Far = View;
         Far.DistanceCm = Far.ReachCm * BackOffReachShare - 1.0;
         TestTrue(TEXT("back off"), DecideHostile(Far) == EHostileStep::BackOff);
+        Far = View;
+        Far.DistanceCm = Far.ReachCm + 1.0;
+        Far.bPathBlocked = true;
+        TestTrue(TEXT("a wall that will not move ends the chase"), DecideHostile(Far) == EHostileStep::GiveUp);
+        Far = View;
+        Far.bWalled = true;
+        Far.bPathBlocked = true;
+        TestTrue(TEXT("walled in and still refused"), DecideHostile(Far) == EHostileStep::GiveUp);
+        Far = View;
+        Far.bPathBlocked = true;
+        TestTrue(TEXT("in reach, a blocked count does not cancel the blow"), DecideHostile(Far) == EHostileStep::Strike);
     }
     {
         FHostileView Busy = View;
