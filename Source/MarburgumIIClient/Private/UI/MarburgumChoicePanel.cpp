@@ -36,6 +36,8 @@ void UMarburgumChoicePanel::NativeOnInitialized()
     UVerticalBox* Titles = B.Column();
     FBuilder::Stack(Titles, B.Text(LOCTEXT("Overline", "DECISION"), ETypeRole::Overline, T.Color.Accent), T.Space.XXS);
     MissionLabel = B.Text(FText::GetEmpty(), ETypeRole::Title);
+    // Long names wrap inside the card instead of running under "[E] Not now" and past its edge.
+    MissionLabel->SetAutoWrapText(true);
     FBuilder::Stack(Titles, MissionLabel, 0.f);
     FBuilder::Inline(Header, Titles, T.Space.M, true);
     FBuilder::Inline(Header, B.Text(LOCTEXT("Close", "[E] Not now"), ETypeRole::Caption, T.Color.TextMuted), 0.f, false, false);

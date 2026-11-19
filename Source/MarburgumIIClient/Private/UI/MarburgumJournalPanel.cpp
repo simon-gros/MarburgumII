@@ -177,7 +177,9 @@ void UMarburgumJournalPanel::Rebuild()
             FBuilder::Inline(Header, B.Pill(LOCTEXT("Pinned", "PINNED"), ETone::Accent), 0.f);
         }
         FBuilder::Stack(Card, Header, T.Space.S);
-        FBuilder::Stack(Card, B.Text(Mission ? FText::FromString(Mission->Name) : FText::FromName(Progress.MissionId), ETypeRole::Heading), T.Space.XS);
+        UTextBlock* MissionName = B.Text(Mission ? FText::FromString(Mission->Name) : FText::FromName(Progress.MissionId), ETypeRole::Heading);
+        MissionName->SetAutoWrapText(true);
+        FBuilder::Stack(Card, MissionName, T.Space.XS);
         if (Mission && !Progress.bCompleted)
         {
             UTextBlock* Summary = B.Text(FText::FromString(Mission->Summary), ETypeRole::Caption);
