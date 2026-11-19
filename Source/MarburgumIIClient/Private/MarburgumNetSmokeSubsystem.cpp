@@ -38,7 +38,12 @@ namespace
 
 bool UMarburgumNetSmokeSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
+#if UE_BUILD_SHIPPING
+    static_cast<void>(Outer);
+    return false; // Test harnesses and capture tools never run in a player build.
+#else
     return FParse::Param(FCommandLine::Get(), TEXT("MB2NetSmoke"));
+#endif
 }
 
 void UMarburgumNetSmokeSubsystem::Initialize(FSubsystemCollectionBase& Collection)

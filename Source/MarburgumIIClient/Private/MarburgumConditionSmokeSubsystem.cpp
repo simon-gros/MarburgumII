@@ -51,9 +51,14 @@ using namespace MarburgumConditionSmoke;
 
 bool UMarburgumConditionSmokeSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
+#if UE_BUILD_SHIPPING
+    static_cast<void>(Outer);
+    return false; // Test harnesses and capture tools never run in a player build.
+#else
     const UGameInstance* GameInstance = Cast<UGameInstance>(Outer);
     return GameInstance && !GameInstance->IsDedicatedServerInstance()
         && FParse::Param(FCommandLine::Get(), TEXT("MB2ConditionSmoke"));
+#endif
 }
 
 void UMarburgumConditionSmokeSubsystem::Initialize(FSubsystemCollectionBase& Collection)
