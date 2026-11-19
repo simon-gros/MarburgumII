@@ -91,9 +91,21 @@ FText UMarburgumAccountSubsystem::DescribeError(const FString& Code)
         { TEXT("store_unavailable"), LOCTEXT("StoreUnavailable", "The account service could not save. Nothing changed; try again.") },
         { TEXT("mail_unavailable"), LOCTEXT("MailUnavailable", "The email could not be sent. Try again in a minute.") },
         { TEXT("unreachable"), LOCTEXT("Unreachable", "The account service cannot be reached. Check your connection and try again.") },
+        // QA 2026-11-19, AR12: the service's own limits, and requests it does not know.
+        { TEXT("too_many_requests"), LOCTEXT("TooManyRequests", "Too many requests from this connection. Wait a minute and try again.") },
+        { TEXT("service_busy"), LOCTEXT("ServiceBusy", "The account service is busy. Try again in a moment.") },
+        { TEXT("request_invalid"), LOCTEXT("RequestInvalid", "The account service did not understand the request. Update the game and try again.") },
+        { TEXT("not_found"), LOCTEXT("NotFound", "The account service did not understand the request. Update the game and try again.") },
+        { TEXT("method_not_allowed"), LOCTEXT("MethodNotAllowed", "The account service did not understand the request. Update the game and try again.") },
     };
-    const FText* Found = Messages.Find(Code);
-    return Found ? *Found : FText::Format(LOCTEXT("Unknown", "The account service refused the request ({0})."), FText::FromString(Code));
+    if (const FText* Found = Messages.Find(Code))
+    {
+        return *Found;
+    }
+    // Anything else (a proxy's 502, a code this build does not know) is named in the log, not to the player (U15).
+    return Code.StartsWith(TEXT("http_5"))
+        ? LOCTEXT("ServerTrouble", "The account service is having trouble. Try again in a minute.")
+        : LOCTEXT("Unknown", "The account service could not do that. Try again in a minute.");
 }
 
 void UMarburgumAccountSubsystem::Publish()
