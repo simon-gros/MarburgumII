@@ -6,6 +6,7 @@
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/SafeZone.h"
+#include "Components/ScrollBox.h"
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
@@ -40,7 +41,8 @@ void UMarburgumSkillsPanel::NativeOnInitialized()
     FBuilder::Stack(Column, B.Rule(T.Color.Border, 1.f), T.Space.M);
 
     Rows = B.Column();
-    FBuilder::Stack(Column, Rows, T.Space.M);
+    Scroller = B.Scroll(Rows);
+    FBuilder::Stack(Column, Scroller, T.Space.M, true);
 
     MoneyLabel = B.Text(FText::GetEmpty(), ETypeRole::Body, T.Color.TextPrimary);
     FBuilder::Stack(Column, MoneyLabel, T.Space.XS);
@@ -81,12 +83,21 @@ void UMarburgumSkillsPanel::Toggle()
     if (IsOpen())
     {
         Rebuild();
+        if (Scroller)
+        {
+            Scroller->ScrollToStart();
+        }
     }
 }
 
 bool UMarburgumSkillsPanel::IsOpen() const
 {
     return GetVisibility() != ESlateVisibility::Collapsed;
+}
+
+void UMarburgumSkillsPanel::Scroll(float Lines)
+{
+    FBuilder::ScrollBy(Scroller, Lines);
 }
 
 FText UMarburgumSkillsPanel::GetShownLine(FName SkillId) const

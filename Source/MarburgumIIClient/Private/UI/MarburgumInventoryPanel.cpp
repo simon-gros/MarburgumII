@@ -5,6 +5,7 @@
 #include "Components/HorizontalBox.h"
 #include "Components/Image.h"
 #include "Components/SafeZone.h"
+#include "Components/ScrollBox.h"
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
@@ -46,7 +47,8 @@ void UMarburgumInventoryPanel::NativeOnInitialized()
     FBuilder::Stack(Column, B.Rule(T.Color.Border, 1.f), T.Space.M);
 
     Rows = B.Column();
-    FBuilder::Stack(Column, Rows, T.Space.M);
+    Scroller = B.Scroll(Rows);
+    FBuilder::Stack(Column, Scroller, T.Space.M, true);
 
     SummaryLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextMuted);
     SummaryLabel->SetAutoWrapText(true);
@@ -86,12 +88,21 @@ void UMarburgumInventoryPanel::Toggle()
     if (IsOpen())
     {
         Rebuild();
+        if (Scroller)
+        {
+            Scroller->ScrollToStart();
+        }
     }
 }
 
 bool UMarburgumInventoryPanel::IsOpen() const
 {
     return GetVisibility() != ESlateVisibility::Collapsed;
+}
+
+void UMarburgumInventoryPanel::Scroll(float Lines)
+{
+    FBuilder::ScrollBy(Scroller, Lines);
 }
 
 void UMarburgumInventoryPanel::HandleInventoryChanged(AMarburgumPlayerState* State)

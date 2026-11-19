@@ -61,6 +61,9 @@ public:
     bool ToggleCharacter();
     bool IsCharacterOpen() const;
 
+    /** Scroll the open management screen (inventory, journal, character or skills) by Lines; false if none is open. */
+    bool ScrollOpenScreen(float Lines);
+
     /** Show or hide the skills_panel (K key, ADR-047). */
     bool ToggleSkills();
     bool IsSkillsOpen() const;

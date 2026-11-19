@@ -13,6 +13,8 @@ DECLARE_MULTICAST_DELEGATE_ThreeParams(FMarburgumChoiceUiEvent, APlayerControlle
 DECLARE_MULTICAST_DELEGATE_TwoParams(FMarburgumShopUiEvent, APlayerController*, AMarburgumInteractable* /*Target*/);
 /** A number key (1-9) pressed in play: picks an option in an open choice panel, or a line at an open counter. */
 DECLARE_MULTICAST_DELEGATE_TwoParams(FMarburgumNumberKeyUiEvent, APlayerController*, int32 /*Number*/);
+/** Mouse wheel or Page Up/Down in play: scrolls the open management screen by Lines (negative is up). */
+DECLARE_MULTICAST_DELEGATE_TwoParams(FMarburgumScrollUiEvent, APlayerController*, float /*Lines*/);
 
 class MARBURGUMII_API FMarburgumClientUiHooks
 {
@@ -26,4 +28,5 @@ public:
     static FMarburgumChoiceUiEvent& OnMissionChoiceRequested();
     static FMarburgumShopUiEvent& OnShopToggleRequested();
     static FMarburgumNumberKeyUiEvent& OnNumberKeyPressed();
+    static FMarburgumScrollUiEvent& OnScrollRequested();
 };

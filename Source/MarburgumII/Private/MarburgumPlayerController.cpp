@@ -57,6 +57,21 @@ void AMarburgumPlayerController::SetupInputComponent()
         InputComponent->BindKey(EKeys::K, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleSkills);
         // B opens the counter of the shopkeeper in reach (ADR-060); E still talks to them.
         InputComponent->BindKey(EKeys::B, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleShop);
+        // The wheel and Page Up/Down scroll an open management screen taller than the screen (QA 2026-11-19).
+        const TPair<FKey, float> ScrollKeys[] = {
+            { EKeys::MouseScrollUp, -3.f }, { EKeys::MouseScrollDown, 3.f }, { EKeys::PageUp, -12.f }, { EKeys::PageDown, 12.f } };
+        for (const TPair<FKey, float>& Scroll : ScrollKeys)
+        {
+            FInputKeyBinding Binding(FInputChord(Scroll.Key), IE_Pressed);
+            Binding.KeyDelegate.GetDelegateForManualSet().BindWeakLambda(this, [this, Lines = Scroll.Value]()
+            {
+                if (IsLocalController())
+                {
+                    FMarburgumClientUiHooks::OnScrollRequested().Broadcast(this, Lines);
+                }
+            });
+            InputComponent->KeyBindings.Add(Binding);
+        }
         // Number keys pick an option in an open choice panel (ADR-049).
         const FKey Numbers[] = { EKeys::One, EKeys::Two, EKeys::Three, EKeys::Four, EKeys::Five, EKeys::Six };
         for (int32 Index = 0; Index < UE_ARRAY_COUNT(Numbers); ++Index)

@@ -456,6 +456,32 @@ bool UMarburgumUISubsystem::IsCharacterOpen() const
     return CharacterPanel && CharacterPanel->IsOpen();
 }
 
+bool UMarburgumUISubsystem::ScrollOpenScreen(float Lines)
+{
+    // One management screen is open at a time (CloseScreensExcept).
+    if (IsInventoryOpen())
+    {
+        Inventory->Scroll(Lines);
+    }
+    else if (IsJournalOpen())
+    {
+        Journal->Scroll(Lines);
+    }
+    else if (IsCharacterOpen())
+    {
+        CharacterPanel->Scroll(Lines);
+    }
+    else if (IsSkillsOpen())
+    {
+        SkillsPanel->Scroll(Lines);
+    }
+    else
+    {
+        return false;
+    }
+    return true;
+}
+
 void UMarburgumUISubsystem::CloseScreensExcept(const UObject* Keep)
 {
     // One management screen at a time.

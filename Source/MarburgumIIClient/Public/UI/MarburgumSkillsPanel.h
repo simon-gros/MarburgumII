@@ -6,6 +6,7 @@
 
 class AMarburgumPlayerState;
 class UTextBlock;
+class UScrollBox;
 class UVerticalBox;
 
 /**
@@ -22,6 +23,8 @@ class MARBURGUMIICLIENT_API UMarburgumSkillsPanel : public UUserWidget
 public:
     void Toggle();
     bool IsOpen() const;
+    /** Scrolls the content by Lines lines (mouse wheel, Page Up/Down while open); taller than the screen, it scrolls. */
+    void Scroll(float Lines);
 
     /** "Fishing 1 · 24 / 20 XP"-style line for one skill as shown (evidence capture); empty while closed. */
     FText GetShownLine(FName SkillId) const;
@@ -36,6 +39,7 @@ private:
     void Rebuild();
 
     UPROPERTY(Transient) TObjectPtr<UVerticalBox> Rows;
+    UPROPERTY(Transient) TObjectPtr<UScrollBox> Scroller;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> MoneyLabel;
 
     TMap<FName, FText> ShownLines;

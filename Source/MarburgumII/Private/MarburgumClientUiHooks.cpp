@@ -53,3 +53,9 @@ FMarburgumNumberKeyUiEvent& FMarburgumClientUiHooks::OnNumberKeyPressed()
     static FMarburgumNumberKeyUiEvent Event;
     return Event;
 }
+
+FMarburgumScrollUiEvent& FMarburgumClientUiHooks::OnScrollRequested()
+{
+    static FMarburgumScrollUiEvent Event;
+    return Event;
+}
