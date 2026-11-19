@@ -196,6 +196,7 @@ private:
     void RequestChatFocus();
     void RequestToggleInventory();
     void RequestToggleJournal();
+    void RequestBack();
     void RequestToggleCharacter();
     void RequestToggleSkills();
     void RequestToggleShop();

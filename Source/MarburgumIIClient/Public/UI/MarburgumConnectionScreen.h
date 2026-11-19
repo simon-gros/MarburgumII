@@ -46,6 +46,8 @@ private:
     UFUNCTION()
     void HandleSignOutClicked();
     UFUNCTION()
+    void HandleQuitClicked();
+    UFUNCTION()
     void HandleAddressCommitted(const FText& Text, ETextCommit::Type CommitMethod);
 
     UMarburgumSessionSubsystem* GetSession() const;
