@@ -195,6 +195,27 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
         TestFalse(TEXT("future schema refused"), Store.Load(Error));
     }
 
+    // One server per store: a second one on the same path is refused until the first lets go (QA 2026-11-19).
+    const FString Shared = FPaths::Combine(Directory, TEXT("shared.json"));
+    {
+        FMarburgumWorldStore First(Shared);
+        TestTrue(TEXT("first server takes the store"), First.Load(Error));
+        {
+            FMarburgumWorldStore Second(Shared);
+            FString SecondError;
+            TestFalse(TEXT("second server on the same store is refused"), Second.Load(SecondError));
+            TestTrue(TEXT("the refusal names the other server"), SecondError.Contains(TEXT("another server")));
+        }
+        FMarburgumWorldRecord Next;
+        Next.Revision = 1;
+        TestTrue(TEXT("the first still commits"), First.Commit(Next, Error));
+    }
+    {
+        FMarburgumWorldStore Later(Shared);
+        TestTrue(TEXT("the store is free once the first is gone"), Later.Load(Error));
+        TestEqual(TEXT("and holds the first's commit"), Later.Get().Revision, static_cast<int64>(1));
+    }
+
     IFileManager::Get().DeleteDirectory(*Directory, false, true);
     return true;
 }

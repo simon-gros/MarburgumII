@@ -94,8 +94,13 @@ class FMarburgumWorldStore
 {
 public:
     explicit FMarburgumWorldStore(const FString& InPath) : Path(InPath) {}
+    ~FMarburgumWorldStore();
+    FMarburgumWorldStore(const FMarburgumWorldStore&) = delete;
+    FMarburgumWorldStore& operator=(const FMarburgumWorldStore&) = delete;
 
     /**
+     * Takes the store for this process first: <store>.lock, held until the store is destroyed. A second server on
+     * the same path is refused (an error), instead of each silently overwriting the other's saves.
      * A missing file is an empty world. A present but unreadable file is an error, never overwritten.
      * Older documents load as-is (schema 1 has no missions, schema 2 no conditions, schema 3 no skills, money
      * or mission outcomes, schema 4 no shelves or first purchases) and the next commit rewrites them at the current schema.
@@ -119,6 +124,8 @@ public:
 
 private:
     bool ConsumeInjectedFault() const;
+    bool AcquireLock(FString& OutError);
+    void ReleaseLock();
 
     static FString Serialize(const FMarburgumWorldRecord& Source);
     static bool Deserialize(const FString& Text, FMarburgumWorldRecord& Out, int32& OutSchema, FString& OutError);
@@ -127,4 +134,9 @@ private:
     FMarburgumWorldRecord Record;
     int32 LoadedSchema = 0;
     bool bFaultInjection = false;
+#if PLATFORM_UNIX
+    int LockDescriptor = -1;
+#else
+    TUniquePtr<class IFileHandle> LockHandle;
+#endif
 };
