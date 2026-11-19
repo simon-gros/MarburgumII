@@ -149,10 +149,20 @@ void UMarburgumCharacterPanel::Rebuild()
     const UGameInstance* GameInstance = GetGameInstance();
     const UMarburgumSessionSubsystem* Session = GameInstance ? GameInstance->GetSubsystem<UMarburgumSessionSubsystem>() : nullptr;
     const FString Key = Session ? Session->GetCharacterKey() : FString();
-    NameLabel->SetText(Key.IsEmpty() ? LOCTEXT("Nameless", "No character") : FText::FromString(Key));
-    IdentityLabel->SetText(Key.IsEmpty()
-        ? LOCTEXT("NoKey", "No development character on this connection")
-        : LOCTEXT("Key", "Development character  ·  a test identity, not an account. Portraits and names arrive with character creation."));
+    if (State && State->HasIdentity())
+    {
+        // A signed-in character (ADR-055): its own name, never the connection's development key.
+        NameLabel->SetText(FText::Format(LOCTEXT("FullName", "{0} {1}"), FText::FromString(State->GetFirstName()),
+            FText::FromString(State->GetLastName())));
+        IdentityLabel->SetText(LOCTEXT("SignedIn", "Your character  ·  kept with your account"));
+    }
+    else
+    {
+        NameLabel->SetText(Key.IsEmpty() ? LOCTEXT("Nameless", "No character") : FText::FromString(Key));
+        IdentityLabel->SetText(Key.IsEmpty()
+            ? LOCTEXT("NoKey", "No development character on this connection")
+            : LOCTEXT("Key", "Development character  ·  a test identity, not an account."));
+    }
 
     // Condition: the body as the server simulates it.
     UVerticalBox* Body = Section(B, Sections, LOCTEXT("ConditionTitle", "CONDITION"));
@@ -175,7 +185,7 @@ void UMarburgumCharacterPanel::Rebuild()
             : LOCTEXT("Rested", "Rested");
         FBuilder::Stack(Body, B.Field(LOCTEXT("Breath", "Breath"), Breath), T.Space.S);
         UTextBlock* Note = B.Text(LOCTEXT("ConditionNote",
-            "Saved by the server when you leave. Nothing in this build injures you yet, so vitality stays full."),
+            "Saved by the server when you leave. Vitality comes back in full when you get up after going down."),
             ETypeRole::Caption, T.Color.TextMuted);
         Note->SetAutoWrapText(true);
         FBuilder::Stack(Body, Note, 0.f);
