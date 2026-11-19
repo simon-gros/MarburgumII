@@ -99,6 +99,13 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode lamps
 ./scripts/create-weather-content.sh windows
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildFacades -unattended -nop4 -nosplash -nullrhi
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumCreateMaps -LentArea -unattended -nop4 -nosplash -nullrhi
+# The visual audit's corrections (ADR-072): the Slovene sign font, shop signs onto their façades, placed people on their
+# feet, player starts 1 m above their surface. Idempotent; run after -FictionLent and after every façade or ground rebuild.
+"$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumVisualFixes -unattended -nop4 -nosplash -nullrhi
+# Read-only world and asset audit into Saved/VisualAudit/<name>; -Probe="X,Y;..." lists every surface under a point
+"$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumWorldAudit -Out="$PWD/Saved/VisualAudit/<name>" -unattended -nop4 -nosplash -nullrhi
+# Rendered survey of all nine windows (42 views, per-view frame stats in stats.tsv); MB2_SURVEY_VIEWS for close-ups
+MB2_SURVEY_PORT=27891 ./scripts/visual-survey-linux.sh editor <name>
 # Fixed-camera screenshots of a level for before/after evidence (centimetres; name@eye@target@fov;...)
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor" "$PWD/MarburgumII.uproject" /Game/World/lent -game -RenderOffScreen -windowed -ForceRes -ResX=1920 -ResY=1080 \
     "-MB2ViewShots=overview@-6000,-6000,11000@17000,-6000,2000@60" -MB2ViewShotDir=/abs/dir
