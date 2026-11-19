@@ -13,7 +13,7 @@
 #     a real ticket is admitted (ADMITTED, held in the world), the same ticket again is refused (single use),
 #     and a second ticket for the same character is refused while the first is in the world.
 #   The service restarts and the returning player still signs in (durable store).
-#   Secrets: no password, code, session or ticket appears in the account store; no password or session in any
+#   Secrets: no password, code, session or ticket appears in the account store; no password, session or verification code in any
 #   game log.
 #
 # Usage: scripts/account-smoke-linux.sh [editor|staged]. Evidence: Saved/AccountSmoke/<UTC timestamp>/.
@@ -47,6 +47,9 @@ case "$mode" in
         exit 2
         ;;
 esac
+# A client stuck before its in-engine timeout starts (map load, a crash handler) must not hang the script: each one
+# runs under timeout, which stops its whole process group (the staged .sh does not exec the binary).
+client_cmd=(timeout --kill-after=15 "${MB2_CLIENT_WALL_SECONDS:-3600}" "${client_cmd[@]}")
 
 # ---------------------------------------------------------------- the account service
 secrets="$out_dir/secrets"
@@ -254,15 +257,18 @@ stop_server
 
 echo "Secrets"
 leaks=0
-for secret in drava-bridge-1990 pohorje-snow-1991 "$session" "$ticket_1" "$ticket_2"; do
+# Every verification code the service mailed (the outbox), as the header promises.
+mapfile -t codes < <(grep -hE '^\s+[A-Z2-9]{8}\s*$' "$out_dir"/outbox/*.txt | tr -d ' ' | sort -u)
+echo "  verification codes checked: ${#codes[@]}"
+for secret in drava-bridge-1990 pohorje-snow-1991 "$session" "$ticket_1" "$ticket_2" "${codes[@]}"; do
     if grep -q -- "$secret" "$out_dir/accounts.json"; then
         echo "  account store holds a secret in the clear: ${secret:0:6}…"
         leaks=1
     fi
 done
-for secret in drava-bridge-1990 pohorje-snow-1991 "$session"; do
+for secret in drava-bridge-1990 pohorje-snow-1991 "$session" "${codes[@]}"; do
     if grep -aq -- "$secret" "$out_dir"/server.log "$out_dir"/client-*.log "$out_dir"/service-*.log; then
-        echo "  a log holds a password or a session: ${secret:0:6}…"
+        echo "  a log holds a password, a session or a verification code: ${secret:0:6}…"
         leaks=1
     fi
 done

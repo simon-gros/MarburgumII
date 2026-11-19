@@ -54,6 +54,9 @@ for executable in "${server_cmd[0]}" "${client_cmd[0]}"; do
         exit 1
     fi
 done
+# A client stuck before its in-engine timeout starts (map load, a crash handler) must not hang the script: each one
+# runs under timeout, which stops its whole process group (the staged .sh does not exec the binary).
+client_cmd=(timeout --kill-after=15 "${MB2_CLIENT_WALL_SECONDS:-3600}" "${client_cmd[@]}")
 
 mkdir -p "$out_dir"
 store="$out_dir/world-store.json"
