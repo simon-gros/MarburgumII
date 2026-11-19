@@ -6,6 +6,7 @@
 
 class AMarburgumPlayerState;
 class UTextBlock;
+class UScrollBox;
 class UVerticalBox;
 
 /**
@@ -23,6 +24,8 @@ class MARBURGUMIICLIENT_API UMarburgumJournalPanel : public UUserWidget
 public:
     void Toggle();
     bool IsOpen() const;
+    /** Scrolls the content by Lines lines (mouse wheel, Page Up/Down while open); taller than the screen, it scrolls. */
+    void Scroll(float Lines);
 
 protected:
     virtual void NativeOnInitialized() override;
@@ -34,6 +37,7 @@ private:
     void Rebuild();
 
     UPROPERTY(Transient) TObjectPtr<UVerticalBox> Rows;
+    UPROPERTY(Transient) TObjectPtr<UScrollBox> Scroller;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> SummaryLabel;
 
     FDelegateHandle MissionsHandle;

@@ -33,6 +33,8 @@ public:
             this, &FMarburgumIIClientModule::HandleNumber);
         ShopHandle = FMarburgumClientUiHooks::OnShopToggleRequested().AddRaw(
             this, &FMarburgumIIClientModule::HandleShop);
+        ScrollHandle = FMarburgumClientUiHooks::OnScrollRequested().AddRaw(
+            this, &FMarburgumIIClientModule::HandleScroll);
     }
 
     virtual void ShutdownModule() override
@@ -46,6 +48,7 @@ public:
         FMarburgumClientUiHooks::OnMissionChoiceRequested().Remove(ChoiceHandle);
         FMarburgumClientUiHooks::OnNumberKeyPressed().Remove(NumberHandle);
         FMarburgumClientUiHooks::OnShopToggleRequested().Remove(ShopHandle);
+        FMarburgumClientUiHooks::OnScrollRequested().Remove(ScrollHandle);
     }
 
 private:
@@ -58,6 +61,7 @@ private:
     FDelegateHandle ChoiceHandle;
     FDelegateHandle NumberHandle;
     FDelegateHandle ShopHandle;
+    FDelegateHandle ScrollHandle;
 
     void HandleSkills(APlayerController* Player)
     {
@@ -122,6 +126,14 @@ private:
         if (UMarburgumUISubsystem* UI = GetUI(Player))
         {
             UI->FocusChat();
+        }
+    }
+
+    void HandleScroll(APlayerController* Player, float Lines)
+    {
+        if (UMarburgumUISubsystem* UI = GetUI(Player))
+        {
+            UI->ScrollOpenScreen(Lines);
         }
     }
 

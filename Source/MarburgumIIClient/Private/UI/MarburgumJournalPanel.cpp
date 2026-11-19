@@ -5,6 +5,7 @@
 #include "Components/HorizontalBox.h"
 #include "Components/Image.h"
 #include "Components/SafeZone.h"
+#include "Components/ScrollBox.h"
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
@@ -43,7 +44,8 @@ void UMarburgumJournalPanel::NativeOnInitialized()
     FBuilder::Stack(Column, B.Rule(T.Color.Border, 1.f), T.Space.M);
 
     Rows = B.Column();
-    FBuilder::Stack(Column, Rows, T.Space.M);
+    Scroller = B.Scroll(Rows);
+    FBuilder::Stack(Column, Scroller, T.Space.M, true);
 
     SummaryLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextMuted);
     SummaryLabel->SetWrapTextAt(PanelWidth - 2.f * T.Space.XL);
@@ -83,12 +85,21 @@ void UMarburgumJournalPanel::Toggle()
     if (IsOpen())
     {
         Rebuild();
+        if (Scroller)
+        {
+            Scroller->ScrollToStart();
+        }
     }
 }
 
 bool UMarburgumJournalPanel::IsOpen() const
 {
     return GetVisibility() != ESlateVisibility::Collapsed;
+}
+
+void UMarburgumJournalPanel::Scroll(float Lines)
+{
+    FBuilder::ScrollBy(Scroller, Lines);
 }
 
 void UMarburgumJournalPanel::HandleMissionsChanged(AMarburgumPlayerState* State)

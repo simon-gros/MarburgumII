@@ -10,6 +10,7 @@ class UHorizontalBox;
 class UImage;
 class UPanelWidget;
 class UProgressBar;
+class UScrollBox;
 class USizeBox;
 class UTextBlock;
 class UVerticalBox;
@@ -43,6 +44,12 @@ namespace MarburgumUI
 
         UVerticalBox* Column() const;
         UHorizontalBox* Row() const;
+
+        /** Vertical scroll region around Content. Stacked with bFill, it shrinks to the screen and scrolls when the
+         *  content is taller than the screen, and keeps its natural height otherwise. */
+        UScrollBox* Scroll(UWidget* Content) const;
+        /** Scrolls Box by Lines lines of body text (negative is up), clamped to the content. */
+        static void ScrollBy(UScrollBox* Box, float Lines);
 
         /** Adds a child to a vertical box with a bottom gap from the spacing scale. */
         static void Stack(UVerticalBox* Box, UWidget* Child, float GapAfter, bool bFill = false);

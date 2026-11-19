@@ -6,6 +6,7 @@
 
 class AMarburgumPlayerState;
 class UTextBlock;
+class UScrollBox;
 class UVerticalBox;
 
 /**
@@ -24,6 +25,8 @@ class MARBURGUMIICLIENT_API UMarburgumCharacterPanel : public UUserWidget
 public:
     void Toggle();
     bool IsOpen() const;
+    /** Scrolls the content by Lines lines (mouse wheel, Page Up/Down while open); taller than the screen, it scrolls. */
+    void Scroll(float Lines);
 
     /** The stamina line as shown (for evidence capture); empty while closed or waiting. */
     FText GetShownStaminaText() const;
@@ -40,6 +43,7 @@ private:
     UPROPERTY(Transient) TObjectPtr<UTextBlock> NameLabel;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> IdentityLabel;
     UPROPERTY(Transient) TObjectPtr<UVerticalBox> Sections;
+    UPROPERTY(Transient) TObjectPtr<UScrollBox> Scroller;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> StaminaValue;
 
     TArray<FDelegateHandle> Handles;

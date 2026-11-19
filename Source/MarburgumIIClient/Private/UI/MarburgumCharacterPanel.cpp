@@ -5,6 +5,7 @@
 #include "Components/HorizontalBox.h"
 #include "Components/Image.h"
 #include "Components/SafeZone.h"
+#include "Components/ScrollBox.h"
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
@@ -65,7 +66,8 @@ void UMarburgumCharacterPanel::NativeOnInitialized()
     FBuilder::Stack(Column, B.Rule(T.Color.Border, 1.f), T.Space.L);
 
     Sections = B.Column();
-    FBuilder::Stack(Column, Sections, 0.f);
+    Scroller = B.Scroll(Sections);
+    FBuilder::Stack(Column, Scroller, 0.f, true);
 
     UBorder* Panel = B.Surface(ESurfaceKind::Panel, Pad(T.Space.XL), Column);
     USizeBox* Width = WidgetTree->ConstructWidget<USizeBox>();
@@ -110,12 +112,21 @@ void UMarburgumCharacterPanel::Toggle()
     if (IsOpen())
     {
         Rebuild();
+        if (Scroller)
+        {
+            Scroller->ScrollToStart();
+        }
     }
 }
 
 bool UMarburgumCharacterPanel::IsOpen() const
 {
     return GetVisibility() != ESlateVisibility::Collapsed;
+}
+
+void UMarburgumCharacterPanel::Scroll(float Lines)
+{
+    FBuilder::ScrollBy(Scroller, Lines);
 }
 
 FText UMarburgumCharacterPanel::GetShownStaminaText() const

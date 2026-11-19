@@ -10,6 +10,7 @@
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
+#include "Components/ScrollBox.h"
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
@@ -66,6 +67,30 @@ namespace MarburgumUI
     UHorizontalBox* FBuilder::Row() const
     {
         return Tree.ConstructWidget<UHorizontalBox>();
+    }
+
+    UScrollBox* FBuilder::Scroll(UWidget* Content) const
+    {
+        UScrollBox* Box = Tree.ConstructWidget<UScrollBox>();
+        Box->SetOrientation(Orient_Vertical);
+        Box->SetScrollBarVisibility(ESlateVisibility::Visible);
+        Box->SetAlwaysShowScrollbar(false);
+        Box->SetConsumeMouseWheel(EConsumeMouseWheel::WhenScrollingPossible);
+        if (Content)
+        {
+            Box->AddChild(Content);
+        }
+        return Box;
+    }
+
+    void FBuilder::ScrollBy(UScrollBox* Box, float Lines)
+    {
+        if (!Box)
+        {
+            return;
+        }
+        const float Line = Font(ETypeRole::Body).Size * 1.5f;
+        Box->SetScrollOffset(FMath::Clamp(Box->GetScrollOffset() + Lines * Line, 0.f, Box->GetScrollOffsetOfEnd()));
     }
 
     void FBuilder::Stack(UVerticalBox* Box, UWidget* Child, float GapAfter, bool bFill)
