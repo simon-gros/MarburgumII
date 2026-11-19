@@ -47,6 +47,8 @@ a5e5b2c09f72b3f7953d48305e2bddcde5b857707e8f4c32d3e0d8a3242f60eb  protagonist_tr
 eaa0810cd01172c81c0a9f25ebaac8f703e226e7947c63c5f813abd2bf82b172  SKM_Protagonist.fbx
 ```
 
+**Current tool policy (ADR-071, 19 November 2026):** the existing TRELLIS vertex-colour/Blender-Cycles protagonist workflow is the precedent for the newly selected [Microsoft TRELLIS generation standard](ASSET_GENERATION_TRELLIS.md). Hunyuan3D-2.1 is superseded. This character's recorded provenance does not establish blanket clearance for future TRELLIS textured export dependencies or a general asset-generation pipeline.
+
 ## Provenance and rights
 
 - **Concept image:** supplied by the owner, who states it was generated from a text prompt with no reference images (2026-11-10). The generator and prompt were not recorded.

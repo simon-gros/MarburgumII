@@ -105,7 +105,7 @@ No original generated base-city import is a default prerequisite. The original's
 
 ## 8. Optional supporting image-to-3D production
 
-The owner's locally installed Hunyuan3D-2.1 can be evaluated as a source of **distinctive props, period details, vegetation/fish geometry and PBR material candidates**, not a wholesale replacement for the planned licensed Maribor city source. The [asset-production workflow](ASSET_GENERATION_HUNYUAN3D.md) and rights check apply independently to both the generator's license and each input photograph. **The published generator community license excludes EU territory**, so generated assets cannot enter the production map until applicable use rights are resolved. Never infer accurate dimensions, GIS coordinates, period identity, botanical species or Unreal-ready collision from an image-generated shape. Review native mesh quality, lighting, PBR materials, LODs, scale, sources, streaming, and owner playtests.
+**Microsoft TRELLIS is the selected supporting image-to-3D generator (ADR-071), replacing the prior Hunyuan3D-2.1 proposal.** Use it for rights-cleared candidate period props, decorative details and individual vegetation/fish visuals; never for wholesale replacement of surveyed city geometry, bridges, terrain or rivers. The [TRELLIS workflow](ASSET_GENERATION_TRELLIS.md) requires per-image and model/export/baking rights review, especially any restricted rasterizers, followed by manual geometry/UV/PBR/scale/collision/performance/historical checks and personal owner acceptance. Generated shapes cannot establish GIS dimensions, period identity or species classification.
 
 ## 9. References
 

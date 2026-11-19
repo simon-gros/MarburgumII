@@ -55,7 +55,7 @@ The primary **planned** map source is [TurboSquid Maribor city model 1639711](WO
 
 ## Optional local image-to-3D authoring
 
-The project owner reports a local **Hunyuan3D-2.1** installation for image-conditioned 3D mesh and PBR material creation. This is an **offline development tool**, not a UE runtime subsystem, server dependency, or city geometry replacement. Its official community license excludes EU territory; production use remains **blocked pending applicable rights review**. The workflow and legal gate are recorded in [ASSET_GENERATION_HUNYUAN3D.md](ASSET_GENERATION_HUNYUAN3D.md). Approved outputs must be retopologized, textured/material-verified, optimized, imported and owner-tested before use.
+**Microsoft TRELLIS (`microsoft/TRELLIS`) is the selected offline image-to-3D development pipeline from ADR-071 (19 November 2026); Hunyuan3D-2.1 is superseded and not an approved fallback.** The already-produced protagonist uses TRELLIS vertex-colour geometry and independent Blender/Cycles baking. TRELLIS is neither a runtime/server dependency nor a replacement for the surveyed city, map identities or licensed candidate map. Clear per-input/image/weight/export/baking rights, including the documented restrictions on some TRELLIS rasterizers, before producing content; optimize and owner-test all promoted assets. See [ASSET_GENERATION_TRELLIS.md](ASSET_GENERATION_TRELLIS.md).
 
 ## Future runtime principles
 

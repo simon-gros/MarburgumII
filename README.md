@@ -150,6 +150,10 @@ These commands are **instructions, not tests run by this documentation update**.
 
 The server owns meaningful gameplay mutations, NPC destinations, combat resolution, durable transactions and admission. The client presents confirmed outcomes. There is currently no Unreal Behavior Tree, StateTree, EQS, MassEntity or NavMesh-based pedestrian system; the street uses the project's own walk graph and shared rules. For boundaries and evidence, see [Architecture](Docs/ARCHITECTURE.md), [Network](Docs/NETWORK_ARCHITECTURE.md) and [Gameplay AI](Docs/AI_GAMEPLAY.md).
 
+## 3D asset production
+
+**Microsoft TRELLIS is the project-standard image-to-3D generator (ADR-071).** New image-conditioned props, accessories, selected character and ecological visuals should follow the [TRELLIS workflow](Docs/ASSET_GENERATION_TRELLIS.md), with rights/provenance, retopology, material, period and owner acceptance checks. Hunyuan3D-2.1 has been superseded; generative tools do not replace surveyed city geometry.
+
 ## What's next
 
 **Priority 0:** run the new ADR-070 regression assertions; qualify the **complete current street/district/venues/combat/mission slice** in a freshly cooked two-client dedicated-server build; reproduce blocked-path cases, third-client separation and prior vehicle issues; record performance and negative cases.
@@ -166,7 +170,7 @@ Then close first-launch packaging and UI/Settings/focus/localization gates, secu
 | **Roadmaps and status** | [Milestones](Docs/ROADMAP.md) · [UI/HUD](Docs/UI_HUD_ROADMAP.md) · [19 November review](Docs/DEVELOPMENT_REVIEW_2026-11-19.md) · [AI backlog](Docs/AI_GAMEPLAY.md) |
 | **Engineering** | [Development](Docs/DEVELOPMENT.md) · [Architecture](Docs/ARCHITECTURE.md) · [Networking](Docs/NETWORK_ARCHITECTURE.md) · [Decision log](Docs/DECISIONS.md) · [Fresh owner playtests](Docs/PLAYTEST_FRESHNESS.md) |
 | **Player experience** | [First launch](Docs/FIRST_LAUNCH_ONTOLOGY.md) · [UI/HUD design](Docs/UI_HUD_DESIGN.md) · [UI ontology](Docs/UI_HUD_ONTOLOGY.md) · [Chat](Docs/CHAT.md) |
-| **Art and world** | [Map and licensing strategy](Docs/WORLD_MAP_ADOPTION.md) · [Character](Docs/CHARACTER_PROTAGONIST.md) · [Local asset production](Docs/ASSET_GENERATION_HUNYUAN3D.md) · [Rendering](Docs/RENDERING_NVIDIA.md) |
+| **Art and world** | [Map and licensing strategy](Docs/WORLD_MAP_ADOPTION.md) · [Character](Docs/CHARACTER_PROTAGONIST.md) · [Microsoft TRELLIS image-to-3D workflow](Docs/ASSET_GENERATION_TRELLIS.md) · [Rendering](Docs/RENDERING_NVIDIA.md) |
 | **Test evidence** | [Districts](Docs/STAGE1_STREET_DISTRICTS_EVIDENCE.md) · [Destinations](Docs/STAGE1_STREET_PLACES_EVIDENCE.md) · [Street incidents](Docs/STAGE1_STREET_EVIDENCE.md) · [Mission play](Docs/STAGE1_LENT_EVIDENCE.md) · [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) |
 
 Gameplay and ontology data live under `Data/`. Native game code is in `Source/`, tooling in `tools/` and `native/`, and scripts in `scripts/`. Rust/.NET CI **does not substitute for an Unreal package or a visual gameplay test**.
@@ -175,6 +179,6 @@ Gameplay and ontology data live under `Data/`. Native game code is in `Source/`,
 
 **There is no project-wide source-code license yet.** A public GitHub repository is not, by itself, a grant of redistribution or commercial reuse rights.
 
-The planned third-party city model is **not purchased or imported**; its commercial files and derivatives must not be added to public Git or public build artifacts without separate rights approval. Unreal mannequin materials and other Epic content remain subject to their own agreements. Hunyuan3D-2.1 has an EU territorial licensing restriction that must be resolved before production use. Optional proprietary NVIDIA components are local and are not shipped here.
+**3D-generation policy (ADR-071): Microsoft TRELLIS is the selected image-to-3D workflow for all new Marburgum II assets; Hunyuan3D-2.1 is superseded and is not a fallback.** The protagonist already uses TRELLIS. Third-party rasterizer/export dependencies, checkpoint licenses, input images and generated content still require independent rights review. The planned third-party city model is **not purchased or imported**; its commercial source and derivatives cannot enter public Git or public build artifacts without rights approval. Epic mannequin content follows its own terms. Optional proprietary NVIDIA components are installed locally and are not redistributed.
 
-All imported/generated assets require source provenance, rights clearance and technical/owner review. See [map adoption](Docs/WORLD_MAP_ADOPTION.md), [asset generation](Docs/ASSET_GENERATION_HUNYUAN3D.md) and [rendering compatibility](Docs/RENDERING_NVIDIA.md).
+All imported/generated assets require provenance, rights clearance, technical review and owner approval. See [map adoption](Docs/WORLD_MAP_ADOPTION.md), [Microsoft TRELLIS asset generation](Docs/ASSET_GENERATION_TRELLIS.md) and [rendering compatibility](Docs/RENDERING_NVIDIA.md).

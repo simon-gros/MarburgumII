@@ -50,7 +50,7 @@ The original HUD's *interaction, place, condition, objective, notification, skil
 
 ## Image-generated visual supplements (conditionally permitted)
 
-The original plant and fish **species IDs and ecological semantics remain authoritative** even when their presentation meshes are newly authored. A local Hunyuan3D-2.1 image-to-geometry/PBR pipeline may be considered for individual visual variants after resolving its explicit EU license restriction, checking each input image's rights, retopology, material/import checks, accurate species identification and mandatory owner playtest. This workflow is distinct from transferring the original catalogues and is never a replacement for approved environmental data. See [ASSET_GENERATION_HUNYUAN3D.md](ASSET_GENERATION_HUNYUAN3D.md).
+The original plant and fish **species IDs and ecological semantics remain authoritative** even when presentation meshes are newly authored. **Microsoft TRELLIS is the selected generator (ADR-071); Hunyuan3D-2.1 is superseded.** Candidate fish/vegetation visuals require input-image/weight/export/baking rights review, manual retopology/material work, verified species identity and mandatory owner playtest. No generator can replace original ecology data. See [ASSET_GENERATION_TRELLIS.md](ASSET_GENERATION_TRELLIS.md).
 
 ## New implementation parity added 11 November (ADR-040–045)
 

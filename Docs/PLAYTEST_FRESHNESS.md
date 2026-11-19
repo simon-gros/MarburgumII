@@ -33,6 +33,10 @@ Include generated **post-IK swim/tread, car enter/exit and fight animation asset
 
 **Current evidence distinction:** the nine-window ray/capsule verification and street/combat/vehicle/swim regression are recorded in **editor mode** at ADR-045; the ambient street smoke is one-client editor-only; the combat packaged two-client smoke predates later animation changes. A complete new packaged build with full nine-window two/three-client scenarios, load/memory and owner approval is **not yet documented as qualified**. Attach run-mode, source/cook/asset checksums, exact map, server/client logs and personal owner outcome to the acceptance package.
 
+## Microsoft TRELLIS asset freshness (ADR-071)
+
+**For new generated content, Microsoft TRELLIS is the selected workflow; Hunyuan3D-2.1 is superseded.** Inventory the exact source images, installed TRELLIS code/checkpoint/weights, exporter and bake dependencies/licenses, intermediate vertex-colour meshes, Blender/Cycles materials and retopology/UV exports, UE import settings and all final cooked assets. Include ignored `PrivateAssets/TRELLIS/`, `AssetGeneration/TRELLIS/` and `Saved/AssetGeneration/TRELLIS/` roots in the private profile when used, so every dependency of a generated asset contributes to its freshness seal. See [TRELLIS pipeline](ASSET_GENERATION_TRELLIS.md).
+
 ## Asset source and license boundary
 
 Commercial city geometry, proprietary reference images, locally generated 3D models, candidate PBR textures and model weights must remain in approved local private directories unless licensing explicitly permits public publication. The UI and server must accurately reflect current approved assets. Never republish licensed commercial maps to public GitHub merely to simplify test packaging.

@@ -212,7 +212,7 @@ See [RENDERING_NVIDIA.md](RENDERING_NVIDIA.md) for the rules, the platform table
 
 ## Local asset production (conditional)
 
-The project owner reports **Hunyuan3D-2.1** installed locally. The [local generator specification](ASSET_GENERATION_HUNYUAN3D.md) records the intended image → 3D shape → PBR texture → retopology → Unreal 5.8.3 import path. Installation location and execution have **not** been verified here. Its published community license excludes EU territory; production use remains blocked until an applicable license/permission is established. The model is not a dependency of the runtime or normal server build.
+**Microsoft TRELLIS is now the selected image-to-3D workflow (ADR-071), superseding Hunyuan3D-2.1 for all new game assets.** Follow the [TRELLIS authoring specification](ASSET_GENERATION_TRELLIS.md): inventory actual locally installed code/checkpoint/export dependencies and their licenses, image rights, use an approved vertex-colour plus independent Blender/Cycles baking chain where relevant, then retopologize, optimize, import into UE 5.8.3 and seek owner approval. The original protagonist establishes one limited TRELLIS workflow, not a universally verified generator CLI or general production pipeline. TRELLIS is not an Unreal runtime or dedicated-server dependency.
 
 ## Fresh owner playtests
 
