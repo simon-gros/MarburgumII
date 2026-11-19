@@ -8,6 +8,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "Engine/Font.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/ExponentialHeightFog.h"
 #include "Engine/PointLight.h"
@@ -878,6 +879,11 @@ namespace MarburgumMaps
             Render->SetVerticalAlignment(EVRTA_TextCenter);
             Render->SetWorldSize(42.0f);
             Render->SetTextRenderColor(FColor(48, 32, 20));
+            // The engine's text font has ASCII only; MarburgumVisualFixes builds one with Slovene letters (ADR-072).
+            if (UFont* SignFont = LoadObject<UFont>(nullptr, TEXT("/Game/Marburgum/Fonts/F_SignRoboto.F_SignRoboto")))
+            {
+                Render->SetFont(SignFont);
+            }
         };
         PlaceSign(TEXT("MB2Sign_street"), TEXT("Obre\u0161ka pot"), Arrival + FVector(0.0, 0.0, 140.0));
 
