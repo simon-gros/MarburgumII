@@ -43,7 +43,7 @@ There is no behavior tree, no perception component, no navigation mesh, and no W
 | New mission framework | **REQUIRES APPROVAL** | The eight missions already have prerequisites, stages, choices, one reward and restart. Do not replace them. |
 | Mission sites in Melje and Tabor on real ground | **TO BE DONE** | Logic is done. The sites are temporary floors (ADR-052). |
 | Packaged two-client mission and street qualification | **TO BE DONE** | Editor smokes exist. Not a fresh packaged suite. |
-| Side pieces of the walk graph, including a bridge piece | **TO BE DONE** | Recounted on `lent_walk_graph.json` at `43ea8a4`: 50 components, 12,335 of 13,098 in the largest, 215 bridge nodes of which 197 are in it, and the long bridges meet both banks. The QA figure of 5,926 loaded nodes is not this file. One 47-node piece has 18 bridge flags and sits 14.0 m off the main graph. Not stitched: that would be a new link across ground the generator already refused. Not re-grounded in the level. |
+| Side pieces of the walk graph, including a bridge piece | **PARTLY FIXED** (ADR-074) | The file's largest piece is 12,335 of 13,098. Loading used to leave 5,926, because the sweep at a bridgehead hit the paving and the landscape. It now leaves 9,145 of 12,946 and the largest piece reaches both banks (`cross_river=1`, bridge edges 185/185, no new wet edges). The 14 m piece was not given a new edge. |
 | Distance-based think rates, pooling, relevance budgets beyond cull | **TO BE DONE** | Population is capped and culled. No measurement of think cost at the cap in this pass. |
 | Owner playtest of street and combat | **REQUIRES APPROVAL** | ADR-008. This pass did not play the game. |
 
