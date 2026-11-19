@@ -179,7 +179,7 @@ void UMarburgumJournalPanel::Rebuild()
             // What the mission left behind: the journal entry it unlocked and the decision taken.
             if (Mission && *Mission->JournalEntryId)
             {
-                FBuilder::Stack(Card, B.Text(FText::FromString(FString(Mission->JournalEntryTitle).ToUpper()), ETypeRole::Overline, T.Color.Accent),
+                FBuilder::Stack(Card, B.Text(MarburgumUI::Caps(FString(Mission->JournalEntryTitle)), ETypeRole::Overline, T.Color.Accent),
                     T.Space.XS);
                 UTextBlock* Entry = B.Text(FText::FromString(Mission->JournalEntryText), ETypeRole::Body, T.Color.TextPrimary);
                 Entry->SetWrapTextAt(CardTextWidth(T));

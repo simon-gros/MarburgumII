@@ -45,6 +45,7 @@ namespace MarburgumII::Gameplay
         case EMarburgumInteractionReason::NotOnCounter: return TEXT("not_on_counter");
         case EMarburgumInteractionReason::ItemNotAccepted: return TEXT("item_not_accepted");
         case EMarburgumInteractionReason::InsufficientItems: return TEXT("insufficient_items");
+        case EMarburgumInteractionReason::Incapacitated: return TEXT("incapacitated");
         }
         return TEXT("unknown");
     }

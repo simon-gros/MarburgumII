@@ -419,6 +419,7 @@ void UMarburgumCharacterMovement::GoDown(const TCHAR* Why)
     {
         bAtRecoveryPoint = false;
         RecoveryRemaining = RecoverySeconds;
+        bDownBeaten = FCString::Strcmp(Why, TEXT("beaten")) == 0;
         LogTransition(Why);
     }
 }
@@ -456,6 +457,7 @@ void UMarburgumCharacterMovement::TickRecoveryAuthority(float DeltaTime)
         if (RecoveryRemaining <= 0.f)
         {
             bDown = false;
+            bDownBeaten = false;
             bAtRecoveryPoint = false;
             Vitality = DefaultVitality;
             Stamina = DefaultStamina;
@@ -789,6 +791,7 @@ FMarburgumCondition UMarburgumCharacterMovement::MakeCondition(const AMarburgumP
     Condition.bSubmerged = bSubmerged;
     Condition.Vitality = static_cast<uint8>(FMath::Clamp(FMath::CeilToInt(Vitality), 0, 255));
     Condition.RecoverySeconds = bDown ? static_cast<uint8>(FMath::Clamp(FMath::CeilToInt(RecoveryRemaining), 1, 255)) : 0;
+    Condition.bKnockedDown = bDown && bDownBeaten;
     return Condition;
 }
 

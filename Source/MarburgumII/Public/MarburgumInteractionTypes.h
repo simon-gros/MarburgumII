@@ -33,7 +33,8 @@ enum class EMarburgumInteractionReason : uint8
     InvalidQuantity,      // Not a quantity the counter deals in (none, or more than its limit per purchase).
     NotOnCounter,         // The counter does not sell that.
     ItemNotAccepted,      // The counter does not buy that back.
-    InsufficientItems     // Selling more copies than the character holds.
+    InsufficientItems,    // Selling more copies than the character holds.
+    Incapacitated         // Seated in a car or down: the body cannot talk, choose or trade (QA 2026-11-19).
 };
 
 /** What a committed interaction did. Replays (Duplicate) report the original effect. */
@@ -197,13 +198,18 @@ struct FMarburgumCondition
     UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Condition")
     uint8 RecoverySeconds = 0;
 
+    /** Down to blows in a fight rather than to the water (ADR-041), so the HUD names the right state. Not stored. */
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Condition")
+    bool bKnockedDown = false;
+
     bool IsDown() const { return Vitality == 0; }
 
     bool operator==(const FMarburgumCondition& Other) const
     {
         return Vitality == Other.Vitality && MaxVitality == Other.MaxVitality && Stamina == Other.Stamina
             && MaxStamina == Other.MaxStamina && bWinded == Other.bWinded && bRunning == Other.bRunning
-            && bSwimming == Other.bSwimming && bSubmerged == Other.bSubmerged && RecoverySeconds == Other.RecoverySeconds;
+            && bSwimming == Other.bSwimming && bSubmerged == Other.bSubmerged && RecoverySeconds == Other.RecoverySeconds
+            && bKnockedDown == Other.bKnockedDown;
     }
 };
 

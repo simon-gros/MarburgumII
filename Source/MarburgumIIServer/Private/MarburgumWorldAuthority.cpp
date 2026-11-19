@@ -231,10 +231,13 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
     }
     Path = FPaths::ConvertRelativePathToFull(Path);
     Store = MakeShared<FMarburgumWorldStore>(Path);
+#if !UE_BUILD_SHIPPING
+    // Test-only: a Shipping server never fails its own commits on request.
     if (FParse::Param(FCommandLine::Get(), TEXT("MB2StoreFaultInjection")))
     {
         Store->EnableFaultInjection();
     }
+#endif
 
     FString Error;
     bStoreAvailable = Store->Load(Error);
@@ -590,6 +593,14 @@ bool UMarburgumWorldAuthority::Admit(FMarburgumInteractionReceipt& Receipt, AMar
     if (!Body || FVector::DistSquared(Body->GetActorLocation(), Target->GetActorLocation()) > FMath::Square(Reach))
     {
         return Refuse(EMarburgumInteractionReason::OutOfRange);
+    }
+    // A body in a car seat or down on the ground takes no part in the world's exchanges (ADR-032, ADR-039): no
+    // talk, choice or trade through a car window or from the ground. Fishing answers with its own reason.
+    const AMarburgumCharacter* Rider = Cast<AMarburgumCharacter>(Body);
+    if ((State->GetCondition().IsDown() || (Rider && Rider->GetSeatedVehicle()))
+        && !FindFishingSpot(Target->InteractableId.ToString()))
+    {
+        return Refuse(EMarburgumInteractionReason::Incapacitated);
     }
     OutState = State;
     return true;
