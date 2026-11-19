@@ -207,6 +207,9 @@ private:
     bool bBridgeCross = false;
     bool bBridgeCrossDone = false;
     TWeakObjectPtr<AMarburgumPedestrian> BridgeCross;
+    TArray<int32> BridgeRoute;
+    int32 BridgeLeg = 0;
+    double BridgeWaitUntil = -1.0;
     double BridgeCrossStart = 0.0;
     double BridgeCrossLog = 0.0;
     int32 ZoneLookups = 0;

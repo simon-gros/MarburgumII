@@ -265,21 +265,35 @@ void UMarburgumStreetSmokeSubsystem::WatchBridge(double Now)
         BridgeWatchLog = Now;
         MB2_STREET_SMOKE_LOG("event=bridge_watch result=walking at=%.0f,%.0f,%.0f moved_m=%.1f", At.X, At.Y, At.Z, FVector::Dist2D(At, BridgeFirstAt) / 100.0);
     }
-    if (!bBridgeShot && FVector::Dist2D(At, BridgeFirstAt) > 1500.0)
+    const double Moved = FVector::Dist2D(At, BridgeFirstAt);
+    auto Look = [&](const TCHAR* Label)
     {
-        bBridgeShot = true;
         if (APlayerController* Viewer = World->GetFirstPlayerController())
         {
             if (ACameraActor* Camera = World->SpawnActor<ACameraActor>())
             {
-                const FVector Eye = At + FVector(-800.0, -600.0, 350.0);
+                const FVector Eye = At + FVector(-900.0, -700.0, 420.0);
                 Camera->SetActorLocationAndRotation(Eye, (At - Eye).Rotation());
                 Viewer->SetViewTarget(Camera);
             }
         }
-        Shot(TEXT("bridge"));
-        MB2_STREET_SMOKE_LOG("event=bridge_watch result=shot at=%.0f,%.0f,%.0f", At.X, At.Y, At.Z);
-        PassAt = Now + 3.0;
+        Shot(Label);
+        MB2_STREET_SMOKE_LOG("event=bridge_watch result=shot label=%s at=%.0f,%.0f,%.0f moved_m=%.1f", Label, At.X, At.Y, At.Z, Moved / 100.0);
+    };
+    if (!bBridgeShot && Moved > 2000.0)
+    {
+        bBridgeShot = true;
+        Look(TEXT("start"));
+    }
+    if (bBridgeShot && Moved > 8000.0 && BridgeShots < 2)
+    {
+        BridgeShots = 2;
+        Look(TEXT("deck"));
+    }
+    if (BridgeShots >= 2 && Moved > 18000.0 && BridgeShots < 3)
+    {
+        BridgeShots = 3;
+        Look(TEXT("far"));
     }
 }
 

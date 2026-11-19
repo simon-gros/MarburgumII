@@ -61,7 +61,9 @@ Editor automation on 2026-11-19, after the modules were rebuilt (binaries 21:51,
 
 ## Runtime check, 20 November 2026, `fix/grok-quality-2026-11-19`
 
-Editor server and one offscreen client, port 27851, `/Game/World/lent`, `scripts/bridge-cross-linux.sh`. A server-owned pedestrian walked a 5-node route on the loaded graph, from (100.9, -3.4, 13.3) m to (128.9, -2.9, 13.5) m, in 26.7 s. The result was `arrived`, not wet, not lost. The client saw the same body move 14.4 m and wrote `Saved/BridgeCross/20261119T232455Z/bridge-bridge.png`. That is one bridge span plus the pavement just beyond it, not a walk of the whole Stari most.
+An earlier editor run (`Saved/BridgeCross/20261119T232455Z`) only walked one 28 m span (5 nodes, 26.7 s). That is not a full crossing.
+
+The fixture now requires the Stari most deck near the origin, at least 180 m, from pavement past one end to pavement past the other, then the same route back. Editor server and one offscreen client, port 27851, `/Game/World/lent`, `scripts/bridge-cross-linux.sh`, evidence `Saved/BridgeCross/20261119T233511Z`. South to north: 38 nodes, 283 m, from (−139.2, −12.4, 16.2) m to (141.3, −2.0, 13.2) m, **273.3 s**, `arrived`. North to south: the same 38 nodes reversed, **272.5 s**, back to (−138.6, −12.3, 17.1) m, `arrived_both`. Neither leg was wet or lost. Height stayed on the deck. The client logged the same motion and wrote `bridge-start.png` (20 m along), `bridge-deck.png` (80 m) and `bridge-far.png` (180 m). It did not stay up for the return; the server did. The client process was stopped after `arrived_both` (exit 143) so the harness would not wait out its own timeout. The script still required both arrivals and a client walking log, and it exited 0.
 
 Two null-RHI clients on port 27852 at 00:26 Marburgum time, both read as `residential_blocks`. One player alone wanted 2. With both connected the budget stayed 2, split 1 and 1, and two people were in the world (`Saved/StreetMulti/20261119Ttwo/server.log`). They did not each bring a street. Night density only. Not a commercial-versus-residential pair, not a separation, not opposite banks, not a disconnect.
 

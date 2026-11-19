@@ -184,78 +184,151 @@ void UMarburgumStreetSubsystem::StepBridgeCross(double Time)
     };
     if (!BridgeCross.IsValid())
     {
+        if (Viewers.IsEmpty())
+        {
+            if (BridgeWaitUntil < 0.0)
+            {
+                BridgeWaitUntil = Time + 90.0;
+            }
+            if (Time < BridgeWaitUntil)
+            {
+                return;
+            }
+        }
         const int32 Largest = Graph.LargestComponent();
-        int32 BestEdge = INDEX_NONE;
-        double BestSpan = 0.0;
-        for (int32 Edge = 0; Edge < Graph.GetEdges().Num(); ++Edge)
+        int32 Seed = INDEX_NONE;
+        double SeedScore = TNumericLimits<double>::Max();
+        for (int32 Node = 0; Node < Graph.GetNodes().Num(); ++Node)
         {
-            const FMarburgumWalkGraph::FEdge& Span = Graph.GetEdges()[Edge];
-            const FMarburgumWalkGraph::FNode& A = Graph.GetNodes()[Span.A];
-            const FMarburgumWalkGraph::FNode& B = Graph.GetNodes()[Span.B];
-            if (A.Component != Largest || B.Component != Largest)
-            {
-                continue;
-            }
-            if (Span.Kind != 4 && !(A.bBridge && B.bBridge))
-            {
-                continue;
-            }
-            const double Delta = FMath::Abs(A.Location.X - B.Location.X);
-            if (Delta >= 800.0 && Delta > BestSpan)
-            {
-                BestSpan = Delta;
-                BestEdge = Edge;
-            }
-        }
-        if (BestEdge == INDEX_NONE)
-        {
-            BridgeCrossStart = Time;
-            Finish(TEXT("no_bridge"), nullptr);
-            return;
-        }
-        const FMarburgumWalkGraph::FEdge& Span = Graph.GetEdges()[BestEdge];
-        const int32 Near = Graph.GetNodes()[Span.A].Location.X <= Graph.GetNodes()[Span.B].Location.X ? Span.A : Span.B;
-        const int32 Far = Graph.Other(BestEdge, Near);
-        const double Direction = FMath::Sign(Graph.GetNodes()[Far].Location.X - Graph.GetNodes()[Near].Location.X);
-        TArray<int32> Previous;
-        Previous.Init(INDEX_NONE, Graph.GetNodes().Num());
-        TArray<int32> Queue;
-        Queue.Add(Near);
-        Previous[Near] = Near;
-        int32 Goal = INDEX_NONE;
-        for (int32 Head = 0; Head < Queue.Num() && Head < 4000 && Goal == INDEX_NONE; ++Head)
-        {
-            const int32 Node = Queue[Head];
             const FMarburgumWalkGraph::FNode& Here = Graph.GetNodes()[Node];
-            if (Node != Near && !Here.bBridge && (Here.Location.X - Graph.GetNodes()[Far].Location.X) * Direction >= 1500.0)
+            if (!Here.bBridge || Here.Component != Largest || FMath::Abs(Here.Location.Y) > 2500.0 || FMath::Abs(Here.Location.X) > 20000.0)
             {
-                Goal = Node;
-                break;
+                continue;
             }
-            for (const int32 Edge : Graph.Touching(Node))
+            const double Score = FMath::Abs(Here.Location.Y);
+            if (Score < SeedScore)
             {
-                const int32 Next = Graph.Other(Edge, Node);
-                if (Previous[Next] == INDEX_NONE && Graph.GetNodes()[Next].Component == Largest)
+                SeedScore = Score;
+                Seed = Node;
+            }
+        }
+        TArray<uint8> OnDeck;
+        OnDeck.Init(0, Graph.GetNodes().Num());
+        double MinX = 0.0;
+        double MaxX = 0.0;
+        if (Seed != INDEX_NONE)
+        {
+            TArray<int32> Queue;
+            Queue.Add(Seed);
+            OnDeck[Seed] = 1;
+            MinX = MaxX = Graph.GetNodes()[Seed].Location.X;
+            for (int32 Head = 0; Head < Queue.Num(); ++Head)
+            {
+                const int32 Node = Queue[Head];
+                MinX = FMath::Min(MinX, Graph.GetNodes()[Node].Location.X);
+                MaxX = FMath::Max(MaxX, Graph.GetNodes()[Node].Location.X);
+                for (const int32 Edge : Graph.Touching(Node))
                 {
-                    Previous[Next] = Node;
+                    const int32 Next = Graph.Other(Edge, Node);
+                    const FMarburgumWalkGraph::FNode& There = Graph.GetNodes()[Next];
+                    if (OnDeck[Next] || !There.bBridge || FMath::Abs(There.Location.Y) > 4000.0)
+                    {
+                        continue;
+                    }
+                    OnDeck[Next] = 1;
                     Queue.Add(Next);
                 }
             }
         }
-        if (Goal == INDEX_NONE)
+        auto Bank = [&](bool bLow) -> int32
+        {
+            const double Limit = bLow ? MinX : MaxX;
+            TArray<int32> Previous;
+            Previous.Init(INDEX_NONE, Graph.GetNodes().Num());
+            TArray<int32> Queue;
+            for (int32 Node = 0; Node < OnDeck.Num(); ++Node)
+            {
+                if (!OnDeck[Node])
+                {
+                    continue;
+                }
+                const double X = Graph.GetNodes()[Node].Location.X;
+                if (FMath::Abs(X - Limit) > 1500.0)
+                {
+                    continue;
+                }
+                Previous[Node] = Node;
+                Queue.Add(Node);
+            }
+            for (int32 Head = 0; Head < Queue.Num() && Head < 4000; ++Head)
+            {
+                const int32 Node = Queue[Head];
+                const FMarburgumWalkGraph::FNode& Here = Graph.GetNodes()[Node];
+                const bool bBeyond = bLow ? Here.Location.X < MinX - 800.0 : Here.Location.X > MaxX + 800.0;
+                if (!Here.bBridge && bBeyond)
+                {
+                    return Node;
+                }
+                for (const int32 Edge : Graph.Touching(Node))
+                {
+                    const int32 Next = Graph.Other(Edge, Node);
+                    if (Previous[Next] == INDEX_NONE && Graph.GetNodes()[Next].Component == Largest)
+                    {
+                        Previous[Next] = Node;
+                        Queue.Add(Next);
+                    }
+                }
+            }
+            return INDEX_NONE;
+        };
+        const int32 LowBank = Seed != INDEX_NONE && MaxX - MinX >= 15000.0 ? Bank(true) : INDEX_NONE;
+        const int32 HighBank = LowBank != INDEX_NONE ? Bank(false) : INDEX_NONE;
+        TArray<int32> Previous;
+        Previous.Init(INDEX_NONE, Graph.GetNodes().Num());
+        if (LowBank != INDEX_NONE && HighBank != INDEX_NONE)
+        {
+            TArray<int32> Queue;
+            Queue.Add(LowBank);
+            Previous[LowBank] = LowBank;
+            for (int32 Head = 0; Head < Queue.Num() && Head < 8000 && Previous[HighBank] == INDEX_NONE; ++Head)
+            {
+                const int32 Node = Queue[Head];
+                for (const int32 Edge : Graph.Touching(Node))
+                {
+                    const int32 Next = Graph.Other(Edge, Node);
+                    if (Previous[Next] == INDEX_NONE && Graph.GetNodes()[Next].Component == Largest)
+                    {
+                        Previous[Next] = Node;
+                        Queue.Add(Next);
+                    }
+                }
+            }
+        }
+        if (HighBank == INDEX_NONE || Previous.IsValidIndex(HighBank) == false || Previous[HighBank] == INDEX_NONE)
         {
             BridgeCrossStart = Time;
-            Finish(TEXT("no_route"), nullptr);
+            Finish(TEXT("no_stari_route"), nullptr);
             return;
         }
-        TArray<int32> Route;
-        for (int32 Node = Goal; Node != Near; Node = Previous[Node])
+        BridgeRoute.Reset();
+        for (int32 Node = HighBank; Node != LowBank; Node = Previous[Node])
         {
-            Route.Add(Node);
+            BridgeRoute.Add(Node);
         }
-        Route.Add(Near);
-        Algo::Reverse(Route);
-        AMarburgumPedestrian* Person = SpawnAt(Near, nullptr, TEXT("bridge_cross"), 0.0);
+        BridgeRoute.Add(LowBank);
+        Algo::Reverse(BridgeRoute);
+        double Metres = 0.0;
+        for (int32 Index = 1; Index < BridgeRoute.Num(); ++Index)
+        {
+            Metres += FVector::Dist(Graph.GetNodes()[BridgeRoute[Index - 1]].Location, Graph.GetNodes()[BridgeRoute[Index]].Location);
+        }
+        if (Metres < 18000.0)
+        {
+            BridgeCrossStart = Time;
+            Finish(TEXT("route_too_short"), nullptr);
+            return;
+        }
+        AMarburgumPedestrian* Person = SpawnAt(LowBank, nullptr, TEXT("bridge_cross"), 0.0);
         if (!Person)
         {
             BridgeCrossStart = Time;
@@ -263,14 +336,15 @@ void UMarburgumStreetSubsystem::StepBridgeCross(double Time)
             return;
         }
         Person->NpcId = TEXT("bridge_cross");
-        Person->SetScriptedRoute(Route);
+        Person->SetScriptedRoute(BridgeRoute);
         BridgeCross = Person;
+        BridgeLeg = 0;
         BridgeCrossStart = Time;
         BridgeCrossLog = Time;
-        const FVector From = Graph.GetNodes()[Route[0]].Location;
-        const FVector To = Graph.GetNodes()[Route.Last()].Location;
-        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=bridge_cross result=started nodes=%d from=%.0f,%.0f,%.0f to=%.0f,%.0f,%.0f"),
-            StreetLogPrefix, Route.Num(), From.X, From.Y, From.Z, To.X, To.Y, To.Z);
+        const FVector From = Graph.GetNodes()[BridgeRoute[0]].Location;
+        const FVector To = Graph.GetNodes()[BridgeRoute.Last()].Location;
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=bridge_cross result=started leg=south_to_north nodes=%d metres=%.0f from=%.0f,%.0f,%.0f to=%.0f,%.0f,%.0f"),
+            StreetLogPrefix, BridgeRoute.Num(), Metres / 100.0, From.X, From.Y, From.Z, To.X, To.Y, To.Z);
         return;
     }
     AMarburgumPedestrian* Person = BridgeCross.Get();
@@ -287,20 +361,36 @@ void UMarburgumStreetSubsystem::StepBridgeCross(double Time)
     }
     if (Person->IsScriptedDone())
     {
-        Finish(TEXT("arrived"), Person);
+        const TCHAR* Direction = BridgeLeg == 0 ? TEXT("south_to_north") : TEXT("north_to_south");
+        const FVector At = Person->GetActorLocation();
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=bridge_cross result=arrived leg=%s seconds=%.1f at=%.0f,%.0f,%.0f"),
+            StreetLogPrefix, Direction, Time - BridgeCrossStart, At.X, At.Y, At.Z);
+        if (BridgeLeg == 0)
+        {
+            Algo::Reverse(BridgeRoute);
+            Person->SetScriptedRoute(BridgeRoute);
+            BridgeLeg = 1;
+            BridgeCrossStart = Time;
+            BridgeCrossLog = Time;
+            const FVector To = Graph.GetNodes()[BridgeRoute.Last()].Location;
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=bridge_cross result=started leg=north_to_south nodes=%d from=%.0f,%.0f,%.0f to=%.0f,%.0f,%.0f"),
+                StreetLogPrefix, BridgeRoute.Num(), At.X, At.Y, At.Z, To.X, To.Y, To.Z);
+            return;
+        }
+        Finish(TEXT("arrived_both"), Person);
         return;
     }
-    if (Time - BridgeCrossStart > 240.0)
+    if (Time - BridgeCrossStart > 360.0)
     {
         Finish(TEXT("timeout"), Person);
         return;
     }
-    if (Time - BridgeCrossLog >= 2.0)
+    if (Time - BridgeCrossLog >= 5.0)
     {
         BridgeCrossLog = Time;
         const FVector At = Person->GetActorLocation();
-        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=bridge_cross result=walking seconds=%.1f at=%.0f,%.0f,%.0f edge=%d node=%d"),
-            StreetLogPrefix, Time - BridgeCrossStart, At.X, At.Y, At.Z, Person->GetWalkEdge(), Person->GetWalkNode());
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=bridge_cross result=walking leg=%d seconds=%.1f at=%.0f,%.0f,%.0f edge=%d node=%d"),
+            StreetLogPrefix, BridgeLeg, Time - BridgeCrossStart, At.X, At.Y, At.Z, Person->GetWalkEdge(), Person->GetWalkNode());
     }
 }
 

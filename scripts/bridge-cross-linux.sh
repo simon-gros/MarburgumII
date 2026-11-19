@@ -56,13 +56,13 @@ if ! grep -aq 'event=street_ready' "$server_log"; then
     exit 1
 fi
 
-timeout --kill-after=15 260 "$editor" "$uproject" "127.0.0.1:$port?MB2Character=mb2bridge$RANDOM" \
-    -game -MB2BridgeWatch -MB2StreetShot="$out_dir/bridge" -MB2StreetTimeout=240 \
-    -RenderOffScreen -windowed -ForceRes -ResX=1920 -ResY=1080 "${common[@]}" > "$client_log" 2>&1 || true
+client_code=0
+timeout --kill-after=15 820 "$editor" "$uproject" "127.0.0.1:$port?MB2Character=mb2bridge$RANDOM" \
+    -game -MB2BridgeWatch -MB2StreetShot="$out_dir/bridge" -MB2StreetTimeout=760 \
+    -RenderOffScreen -windowed -ForceRes -ResX=1920 -ResY=1080 "${common[@]}" > "$client_log" 2>&1 || client_code=$?
 
-# The crossing can still be in progress when the client has its shot. Wait for the server result.
-for _ in $(seq 1 120); do
-    if grep -aq 'event=bridge_cross result=\(arrived\|wet\|lost\|timeout\|no_bridge\|no_route\|no_spawn\)' "$server_log"; then
+for _ in $(seq 1 30); do
+    if grep -aq 'event=bridge_cross result=arrived_both\|event=bridge_cross result=timeout\|event=bridge_cross result=wet\|event=bridge_cross result=lost\|event=bridge_cross result=no_stari_route\|event=bridge_cross result=route_too_short' "$server_log"; then
         break
     fi
     if ! kill -0 "$server_pid" 2>/dev/null; then
@@ -71,10 +71,13 @@ for _ in $(seq 1 120); do
     sleep 1
 done
 
-grep -a 'event=bridge_cross ' "$server_log" | tail -20 || true
-grep -a 'event=bridge_watch ' "$client_log" | tail -20 || true
-if grep -aq 'event=bridge_cross result=arrived' "$server_log"; then
-    echo "BRIDGE_CROSS arrived"
+grep -a 'event=bridge_cross result=started\|event=bridge_cross result=arrived' "$server_log" || true
+grep -a 'event=bridge_watch result=shot' "$client_log" || true
+echo "client_exit=$client_code"
+if grep -aq 'event=bridge_cross result=arrived leg=south_to_north' "$server_log" \
+    && grep -aq 'event=bridge_cross result=arrived_both' "$server_log" \
+    && grep -aq 'event=bridge_watch result=walking' "$client_log"; then
+    echo "BRIDGE_CROSS arrived_both"
     exit 0
 fi
 echo "BRIDGE_CROSS failed" >&2

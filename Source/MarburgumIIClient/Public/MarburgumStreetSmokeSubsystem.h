@@ -99,6 +99,7 @@ private:
     bool bBridgeWatch = false;
     bool bBridgeSeen = false;
     bool bBridgeShot = false;
+    int32 BridgeShots = 0;
     FVector BridgeFirstAt = FVector::ZeroVector;
     double BridgeWatchLog = 0.0;
     TArray<FString> Problems;
