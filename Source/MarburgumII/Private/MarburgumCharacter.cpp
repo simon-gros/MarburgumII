@@ -152,6 +152,13 @@ void AMarburgumCharacter::Tick(float DeltaSeconds)
     {
         FightPose = GetFightPose();
     }
+    if (Seating.Vehicle)
+    {
+        if (UMarburgumCharacterMovement* Movement = Cast<UMarburgumCharacterMovement>(GetCharacterMovement()))
+        {
+            Movement->TickSeated(DeltaSeconds);
+        }
+    }
     if (GetNetMode() != NM_DedicatedServer)
     {
         UpdateSwimPresentation();
@@ -288,6 +295,10 @@ void AMarburgumCharacter::ApplySeating(const FMarburgumSeating& Previous)
     // got in, and the server rejects them as expired.
     if (Previous.Vehicle != Vehicle)
     {
+        if (UMarburgumCharacterMovement* Marburgum = Cast<UMarburgumCharacterMovement>(Movement))
+        {
+            Marburgum->SettleForSeat();
+        }
         if (GetLocalRole() == ROLE_AutonomousProxy)
         {
             Movement->ResetPredictionData_Client();

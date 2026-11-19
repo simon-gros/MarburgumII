@@ -105,6 +105,17 @@ public:
     /** No vitality: drowned or beaten. The body does not move until it recovers. */
     bool IsDown() const { return bDown; }
 
+    /**
+     * Getting into or out of a seat: the walking simulation stops there, so nothing held on the street carries
+     * into the ride (running, a raised guard, a held breath) and an unthrown swing is dropped. Every machine.
+     */
+    void SettleForSeat();
+    /**
+     * Seated, where no move runs. Server: breath comes back as it does whenever the body is not running (ADR-020)
+     * and the timers run down, mirrored to the player state. Owning client: follows the player state.
+     */
+    void TickSeated(float DeltaSeconds);
+
     // ---- Fighting (ADR-041) ----
 
     /** Owning client: hold to keep a guard up (sent as a move flag). */
