@@ -26,6 +26,8 @@ public:
         FVector Location = FVector::ZeroVector;
         /** Over the carriageway (a crossing). */
         bool bRoad = false;
+        /** On a bridge deck (the file's bridge flag). The deck's own mesh must not cut the walk. */
+        bool bBridge = false;
         int32 Component = INDEX_NONE;
         /** What kind of street it is on (ADR-068): MarburgumStreetContract.h EZone, the old town in a graph without zones. */
         uint8 Zone = 0;
@@ -68,6 +70,8 @@ public:
     int32 Other(int32 Edge, int32 Node) const { return Edges[Edge].A == Node ? Edges[Edge].B : Edges[Edge].A; }
     /** The nodes of the largest component. */
     int32 LargestComponent() const { return Largest; }
+    /** How many nodes share this node's component. 0 when the node is not in the graph. */
+    int32 ComponentSize(int32 Node) const;
 
     /** The nearest node within RadiusCm (horizontal, and within HeightCm of Z), or INDEX_NONE. */
     int32 NearestNode(const FVector& At, double RadiusCm, double HeightCm = 400.0) const;
@@ -90,6 +94,7 @@ private:
     TArray<FEdge> Edges;
     TArray<TArray<int32>> NodeEdges;
     TMap<FIntPoint, TArray<int32>> Cells;
+    TArray<int32> ComponentSizes;
     int32 Largest = INDEX_NONE;
     TArray<FAttractor> Attractors;
     TArray<TArray<int32>> NodeAttractors;

@@ -199,6 +199,39 @@ bool FMarburgumStreetRulesTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("a border holds the street already read"), HeldZoneNode(3, ZoneHoldCm - 1.0, 7), 3);
         TestEqual(TEXT("five metres reads the street again"), HeldZoneNode(3, ZoneHoldCm, 7), 7);
         TestEqual(TEXT("the first reading is whatever is nearest"), HeldZoneNode(INDEX_NONE, 0.0, 7), 7);
+        TestEqual(TEXT("a deck above the street is read again"), HeldZoneNode(3, 0.0, 9, ZoneHoldCm, ZoneHoldUpCm), 9);
+        TestEqual(TEXT("a kerb is not a new street"), HeldZoneNode(3, 0.0, 9, ZoneHoldCm, ZoneHoldUpCm - 1.0), 3);
+
+        const FVector2D FarApart[] = { FVector2D(0.0, 0.0), FVector2D(100000.0, 0.0) };
+        const float FarShares[] = { 1.f, 0.4f };
+        int32 FarWants[2] = {};
+        CrowdBudgetsShared(FarApart, FarShares, 2, FarWants);
+        TestEqual(TEXT("players a kilometre apart keep their own streets"), FarWants[0], 20);
+        TestEqual(TEXT("and the quiet street stays quiet"), FarWants[1], 8);
+        const FVector2D Together[] = { FVector2D(0.0, 0.0), FVector2D(100.0, 0.0) };
+        const float BothBusy[] = { 1.f, 1.f };
+        int32 TogetherWants[2] = {};
+        CrowdBudgetsShared(Together, BothBusy, 2, TogetherWants);
+        TestEqual(TEXT("two players on the same pavement share twenty"), TogetherWants[0] + TogetherWants[1], 20);
+        TestTrue(TEXT("and neither is left with none"), TogetherWants[0] >= 1 && TogetherWants[1] >= 1);
+        const FVector2D Reversed[] = { FVector2D(100000.0, 0.0), FVector2D(0.0, 0.0) };
+        const float ReversedShares[] = { 0.4f, 1.f };
+        int32 ReversedWants[2] = {};
+        CrowdBudgetsShared(Reversed, ReversedShares, 2, ReversedWants);
+        TestEqual(TEXT("the same streets in the other order"), ReversedWants[0], FarWants[1]);
+        TestEqual(TEXT("stay with the player, not the slot"), ReversedWants[1], FarWants[0]);
+        const FVector2D Four[] = { FVector2D(0.0, 0.0), FVector2D(100.0, 0.0), FVector2D(0.0, 100000.0), FVector2D(100000.0, 100000.0) };
+        const float FourShares[] = { 1.f, 1.f, 1.f, 1.f };
+        int32 FourWants[4] = {};
+        CrowdBudgetsShared(Four, FourShares, 4, FourWants);
+        const int32 FourTotal = FourWants[0] + FourWants[1] + FourWants[2] + FourWants[3];
+        TestEqual(TEXT("a shared pair plus two distant streets fit the cap"), FourTotal, MaxPeople);
+        TestEqual(TEXT("the pair shares one street, not two"), FourWants[0] + FourWants[1], 16);
+        TestTrue(TEXT("a scrap yields to a real component"), !SpawnComponentOk(6, true));
+        TestTrue(TEXT("a scrap is kept when it is the only pavement"), SpawnComponentOk(6, false));
+        TestTrue(TEXT("paving at a bridgehead does not cut a bridge edge"), BridgeEdgeMayPass(true, true));
+        TestFalse(TEXT("a building still cuts a bridge edge"), BridgeEdgeMayPass(true, false));
+        TestFalse(TEXT("paving does not excuse an ordinary edge"), BridgeEdgeMayPass(false, true));
     }
 
     // Run over: the swept body.

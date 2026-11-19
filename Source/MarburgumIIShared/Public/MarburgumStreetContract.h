@@ -612,13 +612,171 @@ namespace MarburgumII::Street
         return Best;
     }
 
+    /**
+     * Players this close share one crowd (KeepCm): two people on the same pavement do not each bring a full street.
+     * Farther apart, each keeps their own. The cap is applied to those shared totals, fullest first.
+     */
+    inline constexpr double CrowdShareCm = 3500.0;
+
+    inline void CrowdBudgetsShared(const FVector2D* At, const float* Shares, int32 Count, int32* OutWants, double ShareCm = CrowdShareCm)
+    {
+        if (Count <= 0)
+        {
+            return;
+        }
+        TArray<int32> Raw;
+        Raw.SetNum(Count);
+        TArray<int32> Parent;
+        Parent.SetNum(Count);
+        for (int32 Index = 0; Index < Count; ++Index)
+        {
+            Raw[Index] = PeopleFor(1, Shares[Index]);
+            Parent[Index] = Index;
+            OutWants[Index] = 0;
+        }
+        TArray<int32> Order;
+        Order.SetNum(Count);
+        for (int32 Index = 0; Index < Count; ++Index)
+        {
+            Order[Index] = Index;
+        }
+        Order.Sort([At](int32 A, int32 B)
+        {
+            if (At[A].X != At[B].X)
+            {
+                return At[A].X < At[B].X;
+            }
+            if (At[A].Y != At[B].Y)
+            {
+                return At[A].Y < At[B].Y;
+            }
+            return A < B;
+        });
+        auto Find = [&Parent](int32 Index)
+        {
+            while (Parent[Index] != Index)
+            {
+                Parent[Index] = Parent[Parent[Index]];
+                Index = Parent[Index];
+            }
+            return Index;
+        };
+        const double ShareSq = ShareCm * ShareCm;
+        for (int32 Left = 0; Left < Count; ++Left)
+        {
+            for (int32 Right = Left + 1; Right < Count; ++Right)
+            {
+                const int32 A = Order[Left];
+                const int32 B = Order[Right];
+                if (FVector2D::DistSquared(At[A], At[B]) <= ShareSq)
+                {
+                    const int32 RootA = Find(A);
+                    const int32 RootB = Find(B);
+                    if (RootA != RootB)
+                    {
+                        Parent[RootB] = RootA;
+                    }
+                }
+            }
+        }
+        TArray<int32> Pool;
+        Pool.Init(0, Count);
+        TArray<int32> Members;
+        Members.Init(0, Count);
+        for (int32 Index = 0; Index < Count; ++Index)
+        {
+            const int32 Root = Find(Index);
+            Pool[Root] = FMath::Max(Pool[Root], Raw[Index]);
+            ++Members[Root];
+        }
+        int32 Total = 0;
+        for (int32 Index = 0; Index < Count; ++Index)
+        {
+            if (Parent[Index] == Index)
+            {
+                Total += Pool[Index];
+            }
+        }
+        while (Total > MaxPeople)
+        {
+            int32 Largest = INDEX_NONE;
+            for (int32 Index = 0; Index < Count; ++Index)
+            {
+                if (Parent[Index] != Index || Pool[Index] <= 0)
+                {
+                    continue;
+                }
+                if (Largest == INDEX_NONE || Pool[Index] > Pool[Largest])
+                {
+                    Largest = Index;
+                }
+            }
+            if (Largest == INDEX_NONE)
+            {
+                break;
+            }
+            --Pool[Largest];
+            --Total;
+        }
+        for (int32 Root = 0; Root < Count; ++Root)
+        {
+            if (Parent[Root] != Root || Members[Root] <= 0)
+            {
+                continue;
+            }
+            TArray<int32> Group;
+            for (int32 Index = 0; Index < Count; ++Index)
+            {
+                if (Find(Index) == Root)
+                {
+                    Group.Add(Index);
+                }
+            }
+            Group.Sort([At, &Raw](int32 A, int32 B)
+            {
+                if (Raw[A] != Raw[B])
+                {
+                    return Raw[A] > Raw[B];
+                }
+                if (At[A].X != At[B].X)
+                {
+                    return At[A].X < At[B].X;
+                }
+                return At[A].Y < At[B].Y;
+            });
+            const int32 Each = Pool[Root] / Group.Num();
+            int32 Extra = Pool[Root] % Group.Num();
+            for (const int32 Index : Group)
+            {
+                OutWants[Index] = Each + (Extra > 0 ? 1 : 0);
+                Extra = FMath::Max(0, Extra - 1);
+            }
+        }
+    }
+
+    /** A scrap of pavement does not get a crowd while a real component is in reach. */
+    inline constexpr int32 MinSpawnComponent = 12;
+
+    inline bool SpawnComponentOk(int32 ComponentNodes, bool bLargerComponentNearby)
+    {
+        return ComponentNodes >= MinSpawnComponent || !bLargerComponentNearby;
+    }
+
+    /** A bridge edge may pass through the deck and the paving at its ends. A building still cuts it. */
+    inline bool BridgeEdgeMayPass(bool bBridgeEdge, bool bHitIsDeckOrPaving)
+    {
+        return bBridgeEdge && bHitIsDeckOrPaving;
+    }
+
     /** A player's street is not read again until they have walked this far, so a border does not flicker. */
     inline constexpr double ZoneHoldCm = 500.0;
+    /** A deck above the street is not the same reading. A kerb is not this tall. */
+    inline constexpr double ZoneHoldUpCm = 300.0;
 
-    /** Keep PreviousNode until the player has moved HoldCm from the last reading. No previous node takes NewNode. */
-    inline int32 HeldZoneNode(int32 PreviousNode, double MovedSinceReadingCm, int32 NewNode, double HoldCm = ZoneHoldCm)
+    /** Keep PreviousNode until the player has moved HoldCm, or HoldUpCm vertically. No previous node takes NewNode. */
+    inline int32 HeldZoneNode(int32 PreviousNode, double MovedSinceReadingCm, int32 NewNode, double HoldCm = ZoneHoldCm, double MovedUpCm = 0.0, double HoldUpCm = ZoneHoldUpCm)
     {
-        if (PreviousNode == INDEX_NONE || MovedSinceReadingCm >= HoldCm)
+        if (PreviousNode == INDEX_NONE || MovedSinceReadingCm >= HoldCm || MovedUpCm >= HoldUpCm)
         {
             return NewNode;
         }

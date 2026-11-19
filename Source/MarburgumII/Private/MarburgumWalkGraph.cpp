@@ -1,6 +1,9 @@
 #include "MarburgumWalkGraph.h"
 
 #include "CollisionQueryParams.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/OverlapResult.h"
+#include "Engine/StaticMesh.h"
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
 #include "MarburgumStreetContract.h"
@@ -22,6 +25,51 @@ namespace MarburgumWalkGraphCheck
     constexpr double BridgeBottomCm = -300.0;
     // Walkable ground faces up at least this much.
     constexpr double WalkableNormalZ = 0.7;
+
+    bool IsBridgeStructure(const AActor* Actor, const UPrimitiveComponent* Component)
+    {
+        if (Actor && (Actor->GetName().StartsWith(TEXT("Bridge_")) || Actor->GetFolderPath().ToString().Contains(TEXT("Bridge"))))
+        {
+            return true;
+        }
+        const UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(Component);
+        const UStaticMesh* Mesh = MeshComponent ? MeshComponent->GetStaticMesh() : nullptr;
+        return Mesh && Mesh->GetPathName().Contains(TEXT("/World/Bridges/"));
+    }
+
+    bool IsPaving(const UPrimitiveComponent* Component)
+    {
+        const UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(Component);
+        const UStaticMesh* Mesh = MeshComponent ? MeshComponent->GetStaticMesh() : nullptr;
+        if (!Mesh)
+        {
+            return false;
+        }
+        const FString Path = Mesh->GetPathName();
+        return Path.Contains(TEXT("LentPaved")) || Path.Contains(TEXT("/Ground/"));
+    }
+
+    // The deck, the paving at its ends, and the landscape the abutment sits on. Not a building.
+    bool IsDeckOrGround(const AActor* Actor, const UPrimitiveComponent* Component)
+    {
+        if (IsBridgeStructure(Actor, Component) || IsPaving(Component) || (Actor && Actor->GetName().StartsWith(TEXT("Landscape"))))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    FString HitLabel(const FHitResult& Hit)
+    {
+        const UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(Hit.GetComponent());
+        const UStaticMesh* Mesh = MeshComponent ? MeshComponent->GetStaticMesh() : nullptr;
+        if (Mesh)
+        {
+            return Mesh->GetName();
+        }
+        const AActor* Actor = Hit.GetActor();
+        return Actor ? Actor->GetName() : TEXT("none");
+    }
     // An edge is swept at knee height and above, so kerbs and steps do not block it.
     constexpr float SweepRadiusCm = 26.f;
     constexpr float SweepHalfHeightCm = 45.f;
@@ -138,7 +186,23 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         }
         const FVector At = Ground->ImpactPoint;
         // Standing a hand's breadth clear of the ground, so a kerb or the slope under the feet does not count.
-        if (World.OverlapAnyTestByObjectType(At + FVector(0.0, 0.0, BodyHalfHeightCm + 8.0), FQuat::Identity, Static, Body, Params))
+        // A bridge railing is not a wall: a body on the deck may touch it. A building still is.
+        bool bNoRoom = false;
+        TArray<FOverlapResult> Overlaps;
+        if (World.OverlapMultiByObjectType(Overlaps, At + FVector(0.0, 0.0, BodyHalfHeightCm + 8.0), FQuat::Identity, Static, Body, Params))
+        {
+            for (const FOverlapResult& Overlap : Overlaps)
+            {
+                // The thick paving collision at a bridgehead is not a wall. The landscape still is: a body inside it is not standing.
+                const bool bDeckOrPaving = IsBridgeStructure(Overlap.GetActor(), Overlap.GetComponent()) || IsPaving(Overlap.GetComponent());
+                if (!(bBridge && bDeckOrPaving))
+                {
+                    bNoRoom = true;
+                    break;
+                }
+            }
+        }
+        if (bNoRoom)
         {
             ++NoRoom;
             continue;
@@ -151,6 +215,7 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         FNode Node;
         Node.Location = At;
         Node.bRoad = (NodeFlags & RoadFlag) != 0;
+        Node.bBridge = bBridge;
         if (Row.Num() >= 6 && ZoneOf.IsValidIndex(static_cast<int32>(Row[4]->AsNumber())))
         {
             Node.Zone = ZoneOf[static_cast<int32>(Row[4]->AsNumber())];
@@ -160,10 +225,27 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         Index[Source] = Kept.Add(Node);
     }
 
+    int32 BridgeKind = 4;
+    const TArray<TSharedPtr<FJsonValue>>* KindNames = nullptr;
+    if (Root->TryGetArrayField(TEXT("kinds"), KindNames))
+    {
+        for (int32 Kind = 0; Kind < KindNames->Num(); ++Kind)
+        {
+            if ((*KindNames)[Kind].IsValid() && (*KindNames)[Kind]->AsString() == TEXT("bridge"))
+            {
+                BridgeKind = Kind;
+            }
+        }
+    }
     TArray<FEdge> KeptEdges;
     int32 Blocked = 0;
     int32 Missing = 0;
     int32 WetEdges = 0;
+    int32 BridgeEdgesRead = 0;
+    int32 BridgeEdgesKept = 0;
+    int32 BridgeSpans = 0;
+    FString BridgeBlocks;
+    int32 BridgeBlocksNoted = 0;
     for (const TSharedPtr<FJsonValue>& Value : Root->GetArrayField(TEXT("edges")))
     {
         const TArray<TSharedPtr<FJsonValue>>& Row = Value->AsArray();
@@ -180,11 +262,43 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         }
         const FVector A = Kept[Index[SourceA]].Location;
         const FVector B = Kept[Index[SourceB]].Location;
+        const int32 Kind = static_cast<int32>(Row[2]->AsNumber());
+        const bool bBridgeEdge = Kind == BridgeKind || (Kept[Index[SourceA]].bBridge && Kept[Index[SourceB]].bBridge);
+        BridgeEdgesRead += bBridgeEdge ? 1 : 0;
         const FVector Lift(0.0, 0.0, SweepLiftCm);
-        FHitResult Hit;
-        if (World.SweepSingleByObjectType(Hit, A + Lift, B + Lift, FQuat::Identity, Static, Sweep, Params))
+        FVector SweepFrom = A + Lift;
+        const FVector SweepTo = B + Lift;
+        bool bCut = false;
+        // The paving at a bridgehead is the ground, not a wall. Step past the deck and the paving and keep
+        // looking, so a building behind them still cuts the edge. An ordinary edge stops at the first hit.
+        for (int32 Attempt = 0; Attempt < 6 && !bCut; ++Attempt)
         {
-            ++Blocked;
+            FHitResult Hit;
+            if (!World.SweepSingleByObjectType(Hit, SweepFrom, SweepTo, FQuat::Identity, Static, Sweep, Params))
+            {
+                break;
+            }
+            const bool bPass = MarburgumII::Street::BridgeEdgeMayPass(bBridgeEdge, IsDeckOrGround(Hit.GetActor(), Hit.GetComponent()));
+            if (!bPass)
+            {
+                bCut = true;
+                ++Blocked;
+                if (bBridgeEdge && BridgeBlocksNoted < 4)
+                {
+                    BridgeBlocks += FString::Printf(TEXT("%s%s"), BridgeBlocksNoted ? TEXT(",") : TEXT(""), *HitLabel(Hit));
+                    ++BridgeBlocksNoted;
+                }
+                break;
+            }
+            const FVector Step = (SweepTo - SweepFrom).GetSafeNormal() * 40.0;
+            SweepFrom = Hit.Location + Step;
+            if (FVector::DistSquared(SweepFrom, SweepTo) <= FMath::Square(40.0) || FVector::DotProduct(SweepTo - SweepFrom, Step) <= 0.0)
+            {
+                break;
+            }
+        }
+        if (bCut)
+        {
             continue;
         }
         if (Water && Water->IsWetWay(A, B))
@@ -196,7 +310,10 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         Edge.A = Index[SourceA];
         Edge.B = Index[SourceB];
         Edge.LengthCm = FVector::Dist(A, B);
-        Edge.Kind = static_cast<uint8>(Row[2]->AsNumber());
+        Edge.Kind = static_cast<uint8>(Kind);
+        // The river runs east-west in plan, so a deck that crosses it changes Unreal X.
+        BridgeSpans += bBridgeEdge && FMath::Abs(A.X - B.X) >= 800.0 ? 1 : 0;
+        BridgeEdgesKept += bBridgeEdge ? 1 : 0;
         KeptEdges.Add(Edge);
     }
 
@@ -211,10 +328,10 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
     {
         using namespace MarburgumII::Street;
         TArray<EAttractor> KindOf;
-        const TArray<TSharedPtr<FJsonValue>>* KindNames = nullptr;
-        if ((*AttractorObject)->TryGetArrayField(TEXT("kinds"), KindNames))
+        const TArray<TSharedPtr<FJsonValue>>* AttractorKindNames = nullptr;
+        if ((*AttractorObject)->TryGetArrayField(TEXT("kinds"), AttractorKindNames))
         {
-            for (const TSharedPtr<FJsonValue>& Name : *KindNames)
+            for (const TSharedPtr<FJsonValue>& Name : *AttractorKindNames)
             {
                 KindOf.Add(AttractorNamed(Name.IsValid() ? Name->AsString() : FString()));
             }
@@ -330,9 +447,27 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
     {
         Kinds += FString::Printf(TEXT("%s%s:%d"), Kind ? TEXT(",") : TEXT(""), MarburgumII::Street::AttractorNames[Kind], ByKind[Kind]);
     }
-    OutReport = FString::Printf(TEXT("nodes=%d/%d edges=%d/%d no_ground=%d no_room=%d edges_blocked=%d edges_missing_end=%d largest_component=%d water_volumes=%d wet=%d edges_wet=%d zoned=%d zones=%s attractors=%d/%d attractor_no_node=%d attractor_no_spot=%d attractor_spots=%d attractor_spots_pulled=%d attractor_kinds=%s"),
+    int32 CrossRiver = 0;
+    if (Largest != INDEX_NONE)
+    {
+        double MinX = TNumericLimits<double>::Max();
+        double MaxX = TNumericLimits<double>::Lowest();
+        for (const FNode& Node : Nodes)
+        {
+            if (Node.Component != Largest)
+            {
+                continue;
+            }
+            MinX = FMath::Min(MinX, Node.Location.X);
+            MaxX = FMath::Max(MaxX, Node.Location.X);
+        }
+        // Stari most is the origin. A component on both banks reaches well north and south of it (Unreal X).
+        CrossRiver = MinX < -2000.0 && MaxX > 2000.0 ? 1 : 0;
+    }
+    OutReport = FString::Printf(TEXT("nodes=%d/%d edges=%d/%d no_ground=%d no_room=%d edges_blocked=%d edges_missing_end=%d largest_component=%d water_volumes=%d wet=%d edges_wet=%d zoned=%d zones=%s attractors=%d/%d attractor_no_node=%d attractor_no_spot=%d attractor_spots=%d attractor_spots_pulled=%d attractor_kinds=%s bridge_edges=%d/%d bridge_spans=%d cross_river=%d bridge_blocks=%s"),
         Nodes.Num(), Read, Edges.Num(), EdgesRead, NoGround, NoRoom, Blocked, Missing, LargestCount, Water ? Water->NumVolumes() : 0, Wet, WetEdges,
-        Zoned, *Zones, Attractors.Num(), AttractorsRead, AttractorNoNode, AttractorNoSpot, Spots, SpotsPulled, *Kinds);
+        Zoned, *Zones, Attractors.Num(), AttractorsRead, AttractorNoNode, AttractorNoSpot, Spots, SpotsPulled, *Kinds,
+        BridgeEdgesKept, BridgeEdgesRead, BridgeSpans, CrossRiver, BridgeBlocks.IsEmpty() ? TEXT("-") : *BridgeBlocks);
     if (Nodes.IsEmpty())
     {
         OutError = TEXT("no node of the walk graph is on walkable ground in this level");
@@ -382,6 +517,16 @@ void FMarburgumWalkGraph::Build(TArray<FNode> InNodes, TArray<FEdge> InEdges, TA
         }
     }
     Index();
+}
+
+int32 FMarburgumWalkGraph::ComponentSize(int32 Node) const
+{
+    if (!Nodes.IsValidIndex(Node))
+    {
+        return 0;
+    }
+    const int32 Label = Nodes[Node].Component;
+    return ComponentSizes.IsValidIndex(Label) ? ComponentSizes[Label] : 0;
 }
 
 void FMarburgumWalkGraph::Index()
@@ -438,6 +583,7 @@ void FMarburgumWalkGraph::Index()
             Largest = Label;
         }
     }
+    ComponentSizes = MoveTemp(Sizes);
     // A place draws people at its own node and at the nodes joined to it within reach, so passers-by on either side
     // of it are drawn in (the original's WalkAttractors).
     NodeAttractors.Reset();

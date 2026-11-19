@@ -484,7 +484,13 @@ void UMarburgumStreetSubsystem::UpdateHour(double Time)
     else
     {
         ViewerWants.SetNum(Viewers.Num());
-        CrowdBudgets(Shares.GetData(), Viewers.Num(), ViewerWants.GetData());
+        TArray<FVector2D> BudgetAt;
+        BudgetAt.Reserve(Viewers.Num());
+        for (const FMarburgumStreetViewer& Viewer : Viewers)
+        {
+            BudgetAt.Add(FVector2D(Viewer.Location));
+        }
+        CrowdBudgetsShared(BudgetAt.GetData(), Shares.GetData(), Viewers.Num(), ViewerWants.GetData());
         TargetPeople = 0;
         for (const int32 Want : ViewerWants)
         {
@@ -562,7 +568,9 @@ int32 UMarburgumStreetSubsystem::ZoneNodeFor(const FMarburgumStreetViewer& Viewe
         Hold = &ZoneHolds.Last();
     }
     const double Moved = Hold->Node == INDEX_NONE ? TNumericLimits<double>::Max() : FVector::Dist2D(Hold->Location, Viewer.Location);
-    if (HeldZoneNode(Hold->Node, Moved, INDEX_NONE) == Hold->Node && Hold->Node != INDEX_NONE)
+    const double MovedUp = Hold->Node == INDEX_NONE ? TNumericLimits<double>::Max() : FMath::Abs(Hold->Location.Z - Viewer.Location.Z);
+    if (HeldZoneNode(Hold->Node, Moved, INDEX_NONE, ZoneHoldCm, MovedUp) == Hold->Node && Hold->Node != INDEX_NONE
+        && Graph.GetNodes().IsValidIndex(Hold->Node))
     {
         return Hold->Node;
     }
@@ -750,6 +758,24 @@ bool UMarburgumStreetSubsystem::TrySpawnFor(const FMarburgumStreetViewer& Viewer
         const FVector Point = SpawnProbe(Viewer, bInView);
         const int32 Node = Graph.NearestNode(Point, ProbeNodeCm, ProbeHeightCm);
         if (Node == INDEX_NONE || Graph.GetNodes()[Node].bRoad)
+        {
+            continue;
+        }
+        bool bLargerComponent = false;
+        if (Graph.ComponentSize(Node) < MinSpawnComponent)
+        {
+            TArray<int32> Near;
+            Graph.NodesWithin(Point, ProbeNodeCm, Near);
+            for (const int32 Other : Near)
+            {
+                if (Graph.ComponentSize(Other) >= MinSpawnComponent)
+                {
+                    bLargerComponent = true;
+                    break;
+                }
+            }
+        }
+        if (!SpawnComponentOk(Graph.ComponentSize(Node), bLargerComponent))
         {
             continue;
         }
