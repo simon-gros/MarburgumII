@@ -55,7 +55,7 @@ There is no behavior tree, no perception component, no navigation mesh, and no W
 
 ## Verification
 
-The new assertions live in `Marburgum.Gameplay.CombatRules` and `Marburgum.Gameplay.StreetRules`. They were not executed in this pass: a street-places smoke was already using the engine on this host, and rebuilding the editor during that run is not allowed. A rendered street or combat smoke was not re-run either.
+Editor automation on 2026-11-19, after the modules were rebuilt (binaries 21:51, run 21:53, log `Saved/AIRules/rules.log`, exit 0): `Marburgum.Gameplay.CombatRules` Success, `Marburgum.Gameplay.StreetRules` Success. That covers the blocked-chase give-up, a clear blow still landing, and reverse-once / hold. It is not a rendered street or combat smoke, not a packaged two-client run, and not an owner playtest.
 
 
 ## Next verified delivery

@@ -1018,4 +1018,4 @@ The account smoke also asked for both admission tickets before four client start
 - Three lanes, 18 cm apart, still inside the 70 cm that counts as reaching the node. RVO stays the overlap solver.
 - A pedestrian who has rolled more than 32 incidents forgets the ones that have ended. Destroyed cars leave the run-over sweep.
 
-**Not covered.** No editor automation run and no street or combat smoke in this change: another session was already smoking the street on this host. No owner playtest. Detours, traffic, perception, weapons and walking mission NPCs stay on the backlog.
+**Evidence.** Editor automation on the rebuilt modules, 2026-11-19 21:53 (`Saved/AIRules/rules.log`, exit 0): `Marburgum.Gameplay.CombatRules` and `Marburgum.Gameplay.StreetRules` both Success. A rendered street or combat smoke was not re-run, and there is no owner playtest. Detours, traffic, perception, weapons and walking mission NPCs stay on the backlog.
