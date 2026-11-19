@@ -139,6 +139,14 @@ bool FMarburgumCombatRulesTest::RunTest(const FString& Parameters)
         TestTrue(TEXT("in reach, a blocked count does not cancel the blow"), DecideHostile(Far) == EHostileStep::Strike);
     }
     {
+        const double Stride = 22.0;
+        TestTrue(TEXT("a stride toward them is a close"), CloseCountsAsProgress(Stride, Stride));
+        TestFalse(TEXT("sliding along a wall is not a close"), CloseCountsAsProgress(0.0, Stride));
+        TestFalse(TEXT("creeping under the share is not a close"), CloseCountsAsProgress(Stride * CloseProgressShare - 0.01, Stride));
+        TestTrue(TEXT("the share of a stride is a close"), CloseCountsAsProgress(Stride * CloseProgressShare, Stride));
+        TestFalse(TEXT("backing away is not a close"), CloseCountsAsProgress(-Stride, Stride));
+    }
+    {
         FHostileView Busy = View;
         Busy.SwingUntil = 11.0;
         Busy.NextAttackAt = 20.0;

@@ -540,6 +540,91 @@ namespace MarburgumII::Street
         return Players <= 0 ? 0 : FMath::Clamp(FMath::RoundToInt(PeoplePerPlayer * Players * FMath::Max(0.f, Share)), 0, MaxPeople);
     }
 
+    /**
+     * Each player's own street, fitted under MaxPeople (the pooled PeopleFor average handed the same bodies out
+     * round-robin, so a quiet district filled with the busy one's crowd). Shares are density times weather.
+     * One player matches PeopleFor(1, share). Over the cap, the fullest streets give a person back one at a time.
+     */
+    inline void CrowdBudgets(const float* Shares, int32 Count, int32* OutWants)
+    {
+        int32 Total = 0;
+        for (int32 Index = 0; Index < Count; ++Index)
+        {
+            OutWants[Index] = PeopleFor(1, Shares[Index]);
+            Total += OutWants[Index];
+        }
+        while (Total > MaxPeople)
+        {
+            int32 Largest = 0;
+            for (int32 Index = 1; Index < Count; ++Index)
+            {
+                if (OutWants[Index] > OutWants[Largest])
+                {
+                    Largest = Index;
+                }
+            }
+            if (OutWants[Largest] <= 0)
+            {
+                break;
+            }
+            --OutWants[Largest];
+            --Total;
+        }
+    }
+
+    /** The player furthest under their budget. An equal gap keeps Cursor's turn. INDEX_NONE when nobody is short. */
+    inline int32 ViewerShortfall(const int32* Wants, const int32* Haves, int32 Count, int32 Cursor)
+    {
+        if (Count <= 0)
+        {
+            return INDEX_NONE;
+        }
+        int32 Best = INDEX_NONE;
+        int32 BestGap = 0;
+        const int32 Start = (Cursor % Count + Count) % Count;
+        for (int32 Step = 0; Step < Count; ++Step)
+        {
+            const int32 Index = (Start + Step) % Count;
+            const int32 Gap = Wants[Index] - Haves[Index];
+            if (Gap > BestGap)
+            {
+                BestGap = Gap;
+                Best = Index;
+            }
+        }
+        return Best;
+    }
+
+    /** The player a person is standing nearer. A tie stays with the earlier one. */
+    inline int32 NearestViewerIndex(const FVector2D& At, const FVector2D* Viewers, int32 Count)
+    {
+        int32 Best = INDEX_NONE;
+        double BestDistance = TNumericLimits<double>::Max();
+        for (int32 Index = 0; Index < Count; ++Index)
+        {
+            const double Distance = FVector2D::DistSquared(At, Viewers[Index]);
+            if (Distance < BestDistance)
+            {
+                BestDistance = Distance;
+                Best = Index;
+            }
+        }
+        return Best;
+    }
+
+    /** A player's street is not read again until they have walked this far, so a border does not flicker. */
+    inline constexpr double ZoneHoldCm = 500.0;
+
+    /** Keep PreviousNode until the player has moved HoldCm from the last reading. No previous node takes NewNode. */
+    inline int32 HeldZoneNode(int32 PreviousNode, double MovedSinceReadingCm, int32 NewNode, double HoldCm = ZoneHoldCm)
+    {
+        if (PreviousNode == INDEX_NONE || MovedSinceReadingCm >= HoldCm)
+        {
+            return NewNode;
+        }
+        return PreviousNode;
+    }
+
     inline int32 PickWeighted(const int32* Weights, int32 Count, double Roll)
     {
         int32 Total = 0;

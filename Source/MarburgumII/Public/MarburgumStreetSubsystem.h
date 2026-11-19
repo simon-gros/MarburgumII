@@ -52,8 +52,10 @@ struct FMarburgumStreetViewer
  * How many are out, and who, follows the world clock and the weather (ADR-067, StreetHourAt): busy by day, thin in
  * the small hours, night owls in the late evening, an hour later on Friday and Saturday nights. It also follows the
  * street (ADR-068): each player brings the number their own district keeps at that hour, and each newcomer is one of
- * those who walk the district they appear in, on its busier streets first. With more out than the hour wants, people
- * nobody is looking at go home.
+ * those who walk the district they appear in, on its busier streets first. Those numbers are kept apart (CrowdBudgets):
+ * a quiet street is not filled with the busy one's share, and the cap of 48 is taken from the fullest streets first.
+ * A player's district is held until they have walked ZoneHoldCm, so standing on a border does not retarget the crowd.
+ * With more out than a street wants, people nobody is looking at go home, from the street that is over first.
  *
  * Bus stops, cafés, restaurants, bars, fast food, shops and sights draw people in (ADR-069, the walk graph's attractors),
  * by their hours: passers-by wait at a stop, look at a sight or go in at a door, and a share of the newcomers come out of
@@ -113,7 +115,9 @@ private:
     void MarkSeenAndCull(double Now);
     /** The hour on the world clock and what falls from the sky, worked into who is out and how many (ADR-067). */
     void UpdateHour(double Now);
-    /** Over the hour's number: the furthest person nobody has seen lately goes home, one every HomeEverySeconds. */
+    /** The walk-graph node whose zone this player brings, held until they have walked ZoneHoldCm. */
+    int32 ZoneNodeFor(const FMarburgumStreetViewer& Viewer);
+    /** Over a street's number: the furthest unseen person on an over-full street goes home, one every HomeEverySeconds. */
     void SendSomeoneHome(double Now);
     void SpawnPeople(double Now, float DeltaSeconds);
     bool TrySpawnFor(const FMarburgumStreetViewer& Viewer, bool bInView);
@@ -168,6 +172,17 @@ private:
     double ClockHour = 12.0;
     float Weather = 1.f;
     int32 TargetPeople = 0;
+    /** Per player, after CrowdBudgets, and how many of the living crowd stand nearer that player. */
+    TArray<int32> ViewerWants;
+    TArray<int32> ViewerHaves;
+    /** Last zone reading per player, so a border is not sampled again inside ZoneHoldCm. */
+    struct FZoneHold
+    {
+        TWeakObjectPtr<AMarburgumCharacter> Character;
+        FVector Location = FVector::ZeroVector;
+        int32 Node = INDEX_NONE;
+    };
+    TArray<FZoneHold> ZoneHolds;
     /** Whether the world clock was known at the last update, and the hour's key last logged. */
     bool bClockKnown = false;
     FString LoggedHour;

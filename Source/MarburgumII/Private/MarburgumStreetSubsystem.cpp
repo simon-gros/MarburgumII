@@ -442,13 +442,32 @@ void UMarburgumStreetSubsystem::UpdateHour(double Time)
     Weather = WeatherShare(Falling);
 
     // Each player brings the street they stand on (ADR-068): a shopping street at noon fills to twenty, a lane of
-    // houses at three in the morning keeps one. The first player's is the hour the logs and GetHour() report.
-    float Share = 0.f;
+    // houses at three in the morning keeps one. The numbers stay with that player (CrowdBudgets). The first player's
+    // hour is the one the logs and GetHour() report. The district is not read again inside ZoneHoldCm.
+    ZoneHolds.RemoveAll([this](const FZoneHold& Hold)
+    {
+        if (!Hold.Character.IsValid())
+        {
+            return true;
+        }
+        for (const FMarburgumStreetViewer& Viewer : Viewers)
+        {
+            if (Viewer.Character.Get() == Hold.Character.Get())
+            {
+                return false;
+            }
+        }
+        return true;
+    });
     FString ZoneList;
+    TArray<float> Shares;
+    Shares.SetNum(Viewers.Num());
     for (int32 Index = 0; Index < Viewers.Num(); ++Index)
     {
-        const FStreetHour ViewerHour = StreetHourAt(ClockWeekday, ClockHour, ZoneAt(Viewers[Index].Location));
-        Share += ViewerHour.Density;
+        const int32 Node = ZoneNodeFor(Viewers[Index]);
+        const EZone Zone = Node == INDEX_NONE ? EZone::Rural : static_cast<EZone>(Graph.GetNodes()[Node].Zone);
+        const FStreetHour ViewerHour = StreetHourAt(ClockWeekday, ClockHour, Zone);
+        Shares[Index] = ViewerHour.Density * Weather;
         ZoneList += FString::Printf(TEXT("%s%s"), Index ? TEXT(",") : TEXT(""), ZoneNames[static_cast<int32>(ViewerHour.Zone)]);
         if (Index == 0)
         {
@@ -458,8 +477,39 @@ void UMarburgumStreetSubsystem::UpdateHour(double Time)
     if (Viewers.IsEmpty())
     {
         Hour = StreetHourAt(ClockWeekday, ClockHour);
+        ViewerWants.Reset();
+        ViewerHaves.Reset();
+        TargetPeople = 0;
     }
-    TargetPeople = Viewers.IsEmpty() ? 0 : PeopleFor(Viewers.Num(), Share / Viewers.Num() * Weather);
+    else
+    {
+        ViewerWants.SetNum(Viewers.Num());
+        CrowdBudgets(Shares.GetData(), Viewers.Num(), ViewerWants.GetData());
+        TargetPeople = 0;
+        for (const int32 Want : ViewerWants)
+        {
+            TargetPeople += Want;
+        }
+        ViewerHaves.Init(0, Viewers.Num());
+        TArray<FVector2D> Spots;
+        Spots.Reserve(Viewers.Num());
+        for (const FMarburgumStreetViewer& Viewer : Viewers)
+        {
+            Spots.Add(FVector2D(Viewer.Location));
+        }
+        for (const TWeakObjectPtr<AMarburgumPedestrian>& Person : People)
+        {
+            if (!Person.IsValid())
+            {
+                continue;
+            }
+            const int32 Owner = NearestViewerIndex(FVector2D(Person->GetActorLocation()), Spots.GetData(), Spots.Num());
+            if (ViewerHaves.IsValidIndex(Owner))
+            {
+                ++ViewerHaves[Owner];
+            }
+        }
+    }
 
     // Logged when the period, the day, a player's street or the number changes, not every step.
     const FString Key = FString::Printf(TEXT("%d/%d/%d/%d/%s"), static_cast<int32>(Hour.Period), Hour.Weekday, TargetPeople, bClockKnown ? 1 : 0, *ZoneList);
@@ -482,6 +532,43 @@ void UMarburgumStreetSubsystem::UpdateHour(double Time)
         StreetLogPrefix, bClockKnown ? 1 : 0, bClockKnown ? *MarburgumII::Clock::DateLabel(Local) : TEXT("-"), bClockKnown ? *MarburgumII::Clock::TimeLabel(Local) : TEXT("-"),
         bClockKnown ? Local.Weekday : -1, PeriodNames[static_cast<int32>(Hour.Period)], Hour.Weekday, ZoneList.IsEmpty() ? TEXT("-") : *ZoneList,
         ZoneNames[static_cast<int32>(Hour.Zone)], Hour.Density, Falling, Weather, Viewers.Num(), TargetPeople, *Mix, *Open);
+    FString WantList;
+    FString HaveList;
+    for (int32 Index = 0; Index < ViewerWants.Num(); ++Index)
+    {
+        WantList += FString::Printf(TEXT("%s%d"), Index ? TEXT(",") : TEXT(""), ViewerWants[Index]);
+        HaveList += FString::Printf(TEXT("%s%d"), Index ? TEXT(",") : TEXT(""), ViewerHaves.IsValidIndex(Index) ? ViewerHaves[Index] : 0);
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_budget players=%d target=%d wants=%s haves=%s"),
+        StreetLogPrefix, Viewers.Num(), TargetPeople, WantList.IsEmpty() ? TEXT("-") : *WantList, HaveList.IsEmpty() ? TEXT("-") : *HaveList);
+}
+
+int32 UMarburgumStreetSubsystem::ZoneNodeFor(const FMarburgumStreetViewer& Viewer)
+{
+    FZoneHold* Hold = nullptr;
+    for (FZoneHold& Existing : ZoneHolds)
+    {
+        if (Existing.Character.Get() == Viewer.Character.Get())
+        {
+            Hold = &Existing;
+            break;
+        }
+    }
+    if (!Hold)
+    {
+        FZoneHold Added;
+        Added.Character = Viewer.Character;
+        ZoneHolds.Add(Added);
+        Hold = &ZoneHolds.Last();
+    }
+    const double Moved = Hold->Node == INDEX_NONE ? TNumericLimits<double>::Max() : FVector::Dist2D(Hold->Location, Viewer.Location);
+    if (HeldZoneNode(Hold->Node, Moved, INDEX_NONE) == Hold->Node && Hold->Node != INDEX_NONE)
+    {
+        return Hold->Node;
+    }
+    Hold->Node = Graph.NearestNode(Viewer.Location, MarburgumStreetPopulation::ViewerZoneSearchCm, MarburgumStreetPopulation::ViewerZoneSearchCm);
+    Hold->Location = Viewer.Location;
+    return Hold->Node;
 }
 
 float UMarburgumStreetSubsystem::AttractorOpenNow(EAttractor Kind) const
@@ -521,31 +608,68 @@ EZone UMarburgumStreetSubsystem::ZoneAt(const FVector& At) const
 
 void UMarburgumStreetSubsystem::SendSomeoneHome(double Time)
 {
-    if (Viewers.IsEmpty() || CountPeople() <= TargetPeople || Time - LastHomeSeconds < HomeEverySeconds)
+    if (Viewers.IsEmpty() || Time - LastHomeSeconds < HomeEverySeconds)
     {
         return;
     }
+    bool bDistrictOver = false;
+    for (int32 Index = 0; Index < ViewerWants.Num() && Index < ViewerHaves.Num(); ++Index)
+    {
+        bDistrictOver |= ViewerHaves[Index] > ViewerWants[Index];
+    }
+    const bool bGlobalOver = CountPeople() > TargetPeople;
+    if (!bDistrictOver && !bGlobalOver)
+    {
+        return;
+    }
+    TArray<FVector2D> Spots;
+    Spots.Reserve(Viewers.Num());
+    for (const FMarburgumStreetViewer& Viewer : Viewers)
+    {
+        Spots.Add(FVector2D(Viewer.Location));
+    }
     AMarburgumPedestrian* Furthest = nullptr;
     double FurthestCm = -1.0;
-    for (const TWeakObjectPtr<AMarburgumPedestrian>& Weak : People)
+    int32 Owner = INDEX_NONE;
+    for (int32 Pass = 0; Pass < 2 && !Furthest; ++Pass)
     {
-        AMarburgumPedestrian* Person = Weak.Get();
-        // Only someone walking about whom nobody has seen lately: not a body, not anyone fleeing, watching or fighting.
-        if (!Person || Person == WaterProbe.Get() || Person->IsDown() || Person->GetMood() != EMarburgumStreetMood::Walk
-            || Time - Person->LastSeenSeconds <= UnseenSeconds)
+        // The street that is over its own number gives someone back first. Only a crowd over the cap, with nobody
+        // spare on an over-full street, falls back to the furthest unseen person anywhere.
+        const bool bOnlyOverBudget = Pass == 0;
+        if (bOnlyOverBudget && !bDistrictOver)
         {
             continue;
         }
-        double Nearest = TNumericLimits<double>::Max();
-        for (const FMarburgumStreetViewer& Viewer : Viewers)
+        if (!bOnlyOverBudget && !bGlobalOver)
         {
-            Nearest = FMath::Min(Nearest, FVector::Dist2D(Viewer.Location, Person->GetActorLocation()));
+            break;
         }
-        // Nobody goes home closer to a player than anybody appears: someone just behind them does not vanish.
-        if (Nearest >= SpawnOutOfViewMinCm && Nearest > FurthestCm)
+        for (const TWeakObjectPtr<AMarburgumPedestrian>& Weak : People)
         {
-            FurthestCm = Nearest;
-            Furthest = Person;
+            AMarburgumPedestrian* Person = Weak.Get();
+            // Only someone walking about whom nobody has seen lately: not a body, not anyone fleeing, watching or fighting.
+            if (!Person || Person == WaterProbe.Get() || Person->IsDown() || Person->GetMood() != EMarburgumStreetMood::Walk
+                || Time - Person->LastSeenSeconds <= UnseenSeconds)
+            {
+                continue;
+            }
+            const int32 Theirs = NearestViewerIndex(FVector2D(Person->GetActorLocation()), Spots.GetData(), Spots.Num());
+            if (bOnlyOverBudget && !(ViewerHaves.IsValidIndex(Theirs) && ViewerWants.IsValidIndex(Theirs) && ViewerHaves[Theirs] > ViewerWants[Theirs]))
+            {
+                continue;
+            }
+            double Nearest = TNumericLimits<double>::Max();
+            for (const FMarburgumStreetViewer& Viewer : Viewers)
+            {
+                Nearest = FMath::Min(Nearest, FVector::Dist2D(Viewer.Location, Person->GetActorLocation()));
+            }
+            // Nobody goes home closer to a player than anybody appears: someone just behind them does not vanish.
+            if (Nearest >= SpawnOutOfViewMinCm && Nearest > FurthestCm)
+            {
+                FurthestCm = Nearest;
+                Furthest = Person;
+                Owner = Theirs;
+            }
         }
     }
     if (!Furthest)
@@ -557,6 +681,10 @@ void UMarburgumStreetSubsystem::SendSomeoneHome(double Time)
         StreetLogPrefix, *Furthest->GetNpcId().ToString(), Groups[FMath::Clamp(Furthest->GetGroupIndex(), 0, GroupCount - 1)].Id, FurthestCm / 100.0,
         CountPeople(), TargetPeople, PeriodNames[static_cast<int32>(Hour.Period)]);
     Furthest->Destroy();
+    if (ViewerHaves.IsValidIndex(Owner) && ViewerHaves[Owner] > 0)
+    {
+        --ViewerHaves[Owner];
+    }
     People.RemoveAll([](const TWeakObjectPtr<AMarburgumPedestrian>& Person) { return !Person.IsValid(); });
 }
 
@@ -930,14 +1058,21 @@ void UMarburgumStreetSubsystem::SpawnPeople(double Time, float DeltaSeconds)
         return;
     }
     SpawnBudget = FMath::Min(SpawnBudget + SpawnsPerSecond * DeltaSeconds, 6.0);
-    while (CountPeople() < TargetPeople && SpawnBudget >= 1.0)
+    while (CountPeople() < TargetPeople && SpawnBudget >= 1.0 && ViewerWants.Num() == Viewers.Num() && ViewerHaves.Num() == Viewers.Num())
     {
-        SpawnBudget -= 1.0;
-        const FMarburgumStreetViewer& Viewer = Viewers[ViewerCursor++ % Viewers.Num()];
-        const bool bInView = Random.FRand() < InViewSpawnShare;
-        if (!TrySpawnFor(Viewer, bInView))
+        const int32 ViewerIndex = ViewerShortfall(ViewerWants.GetData(), ViewerHaves.GetData(), Viewers.Num(), ViewerCursor);
+        if (ViewerIndex == INDEX_NONE)
         {
-            TrySpawnFor(Viewer, !bInView);
+            break;
+        }
+        SpawnBudget -= 1.0;
+        ViewerCursor = ViewerIndex + 1;
+        const FMarburgumStreetViewer& Viewer = Viewers[ViewerIndex];
+        const bool bInView = Random.FRand() < InViewSpawnShare;
+        const bool bSpawned = TrySpawnFor(Viewer, bInView) || TrySpawnFor(Viewer, !bInView);
+        if (bSpawned)
+        {
+            ++ViewerHaves[ViewerIndex];
         }
     }
 }

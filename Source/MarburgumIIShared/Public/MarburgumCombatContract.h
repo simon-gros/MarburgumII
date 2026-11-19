@@ -142,6 +142,14 @@ namespace MarburgumII::Combat
     inline constexpr int32 SideStepSwapSteps = 3;
     // Refused closes in a row (a wall, a crowd) before the fight is given up. Not used while waiting at the river.
     inline constexpr int32 UnreachableCloseTicks = 20;
+    // A close counts only when this much of one walk stride is toward the target. Feet can still slide along a wall,
+    // which used to clear the refusal and let the chase creep forever.
+    inline constexpr float CloseProgressShare = 0.35f;
+
+    inline bool CloseCountsAsProgress(double MovedTowardTargetCm, double StrideCm)
+    {
+        return StrideCm > 0.0 && MovedTowardTargetCm >= static_cast<double>(CloseProgressShare) * StrideCm;
+    }
 
     // An NPC definition's defaults (world_simulation.h Npc): what a hostile hits for, how far it reaches,
     // how often it swings and how far from home it follows somebody.

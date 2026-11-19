@@ -179,6 +179,8 @@ protected:
     FVector WanderGoal = FVector::ZeroVector;
     int32 Stuck = 0;
     FVector LastThinkLocation = FVector::ZeroVector;
+    /** Planar movement since the previous think. A chase counts it only along the direction to the target. */
+    FVector LastPlanarMove = FVector::ZeroVector;
     /** The walk asked for last tick covered almost none of its stride (the original's refused step). */
     bool bLastStepFailed = false;
     bool bWalking = false;

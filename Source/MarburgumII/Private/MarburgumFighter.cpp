@@ -141,6 +141,8 @@ const TCHAR* AMarburgumFighter::IntentName(EMarburgumFighterIntent Value)
 void AMarburgumFighter::BeginPlay()
 {
     Super::BeginPlay();
+    // The first think must not treat the spawn position as a step from the origin.
+    LastThinkLocation = GetActorLocation();
     ApplyStats();
 }
 
@@ -263,7 +265,8 @@ void AMarburgumFighter::Think()
 {
     ++TickCount;
     const FVector Here = GetActorLocation();
-    const double MovedCm = FVector::Dist2D(Here, LastThinkLocation);
+    LastPlanarMove = FVector(Here.X - LastThinkLocation.X, Here.Y - LastThinkLocation.Y, 0.0);
+    const double MovedCm = LastPlanarMove.Size2D();
     const bool bWasWalking = bWalking;
     LastThinkLocation = Here;
     const double Stride = MarburgumII::Gameplay::WalkSpeedCm * TickSeconds;
@@ -480,11 +483,15 @@ void AMarburgumFighter::ThinkHostile(AMarburgumCharacter& Person)
             return;
         }
         SetStateAndIntent(EMarburgumFighterState::Hostile, EMarburgumFighterIntent::Close);
+        const double Stride = MarburgumII::Gameplay::WalkSpeedCm * TickSeconds;
+        const bool bClosedIn = Toward.SizeSquared() > 1.0
+            && CloseCountsAsProgress(FVector::DotProduct(LastPlanarMove, Toward.GetSafeNormal()), Stride);
         const bool bHeldRefusal = !bLastStepFailed && !bWalking && Stuck > 0;
-        if ((bLastStepFailed || bHeldRefusal) && Toward.SizeSquared() > 1.0)
+        if ((!bClosedIn || bHeldRefusal) && Toward.SizeSquared() > 1.0)
         {
-            // The straight line refused, or the sidestep was not dry and they are still standing there.
-            // A held refusal used to clear Stuck on the next tick, so a wall was never given up.
+            // Not actually nearer: a refused step, a slide along a wall, or a sidestep that was not taken.
+            // A held refusal used to clear Stuck on the next tick, so a wall was never given up. Waiting at the
+            // river returns above and does not count.
             ++Stuck;
             const FVector Ahead = Toward.GetSafeNormal();
             FVector Side(-Ahead.Y, Ahead.X, 0.0);

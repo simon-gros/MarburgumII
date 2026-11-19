@@ -173,6 +173,32 @@ bool FMarburgumStreetRulesTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("nobody about, nobody out"), PeopleFor(0, 1.f), 0);
         TestEqual(TEXT("a late evening in the rain"), PeopleFor(1, 0.45f * WeatherShare(0.6f)), 5);
         TestEqual(TEXT("two players, one in the old town and one among the houses, by day"), PeopleFor(2, (1.f + 0.4f) / 2.f), 28);
+
+        const float SplitShares[] = { 1.f, 0.4f };
+        int32 Split[2] = {};
+        CrowdBudgets(SplitShares, 2, Split);
+        TestEqual(TEXT("the old town keeps its own twenty"), Split[0], PeopleFor(1, 1.f));
+        TestEqual(TEXT("the houses keep their own eight"), Split[1], PeopleFor(1, 0.4f));
+        TestEqual(TEXT("apart, the two still match the pooled total"), Split[0] + Split[1], PeopleFor(2, (1.f + 0.4f) / 2.f));
+        const float BusyShares[] = { 1.f, 1.f, 1.f };
+        int32 Busy[3] = {};
+        CrowdBudgets(BusyShares, 3, Busy);
+        TestEqual(TEXT("three busy streets share the cap"), Busy[0] + Busy[1] + Busy[2], MaxPeople);
+        TestTrue(TEXT("the cap comes off the fullest streets evenly"), Busy[0] == 16 && Busy[1] == 16 && Busy[2] == 16);
+        const int32 SplitHave[] = { 14, 14 };
+        TestEqual(TEXT("the short street is filled before the full one"), ViewerShortfall(Split, SplitHave, 2, 1), 0);
+        const int32 FullHave[] = { 20, 8 };
+        TestEqual(TEXT("a full pair asks for nobody"), ViewerShortfall(Split, FullHave, 2, 0), INDEX_NONE);
+        const int32 EvenWant[] = { 5, 5 };
+        const int32 EvenHave[] = { 4, 4 };
+        TestEqual(TEXT("an equal shortfall keeps the cursor's turn"), ViewerShortfall(EvenWant, EvenHave, 2, 1), 1);
+        const FVector2D Players[] = { FVector2D(0.0, 0.0), FVector2D(10000.0, 0.0) };
+        TestEqual(TEXT("a person stands with the nearer player"), NearestViewerIndex(FVector2D(100.0, 0.0), Players, 2), 0);
+        TestEqual(TEXT("and with the other across the square"), NearestViewerIndex(FVector2D(9000.0, 0.0), Players, 2), 1);
+        TestEqual(TEXT("a tie stays with the earlier player"), NearestViewerIndex(FVector2D(5000.0, 0.0), Players, 2), 0);
+        TestEqual(TEXT("a border holds the street already read"), HeldZoneNode(3, ZoneHoldCm - 1.0, 7), 3);
+        TestEqual(TEXT("five metres reads the street again"), HeldZoneNode(3, ZoneHoldCm, 7), 7);
+        TestEqual(TEXT("the first reading is whatever is nearest"), HeldZoneNode(INDEX_NONE, 0.0, 7), 7);
     }
 
     // Run over: the swept body.
