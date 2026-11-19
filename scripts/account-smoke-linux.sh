@@ -274,6 +274,12 @@ for secret in drava-bridge-1990 pohorje-snow-1991 "$session" "${codes[@]}"; do
 done
 [[ "$leaks" -eq 0 ]] && echo "  none in the store or the logs" || status=1
 
+# Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
+if [[ "$mode" == staged ]]; then
+    echo "Build"
+    "$repo_root/scripts/build-stamp.sh" check | sed 's/^/  /' || echo "WARNING: the staged build is not fresh" >&2
+fi
+
 if [[ "$status" -eq 0 ]]; then
     echo "Result: PASS — $out_dir"
 else
