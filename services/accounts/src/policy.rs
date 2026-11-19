@@ -65,9 +65,17 @@ pub fn password(password: &str, username: &str, email: &str) -> Result<(), &'sta
 
 /// A letter a character name may use: Latin letters, including Slovene and the neighbouring languages'
 /// diacritics (č, š, ž, ć, đ, ä, ö, ü, ß ...). Other scripts wait for a moderation policy that can read them.
+/// Not the click letters U+01C0–U+01C3, which read as | ‖ ‡ !, the digraph letters U+01C4–U+01CC, ŉ or ſ.
 fn latin_letter(c: char) -> bool {
     c.is_ascii_alphabetic()
-        || (('\u{00C0}'..='\u{024F}').contains(&c) && c != '\u{00D7}' && c != '\u{00F7}' && c.is_alphabetic())
+        || (('\u{00C0}'..='\u{024F}').contains(&c)
+            && !matches!(c, '\u{00D7}' | '\u{00F7}' | '\u{0149}' | '\u{017F}' | '\u{01C0}'..='\u{01CC}')
+            && c.is_alphabetic())
+}
+
+/// A name without its accents, lower-cased, for the reserved-word check (Ádmin is admin).
+fn folded(name: &str) -> String {
+    name.nfd().filter(|c| !('\u{0300}'..='\u{036F}').contains(c)).collect::<String>().to_lowercase()
 }
 
 /// A first or last name for the world, not the player's legal name. NFC-normalised; 2–24 characters; letters
@@ -91,7 +99,7 @@ pub fn character_name(raw: &str) -> Result<String, &'static str> {
     if previous_separator {
         return Err("name_characters");
     }
-    if RESERVED.contains(&name.to_lowercase().as_str()) {
+    if RESERVED.contains(&folded(&name).as_str()) {
         return Err("name_reserved");
     }
     Ok(name)
@@ -142,9 +150,13 @@ mod tests {
     fn names_refused() {
         assert_eq!(character_name("A").unwrap_err(), "name_length");
         assert_eq!(character_name("Abcdefghijklmnopqrstuvwxy").unwrap_err(), "name_length");
-        for bad in ["Ana  Kos", "-Ana", "Ana-", "Ana--Kos", "R2D2", "Ana_Kos", "Анна", "Ana\tKos"] {
+        for bad in ["Ana  Kos", "-Ana", "Ana-", "Ana--Kos", "R2D2", "Ana_Kos", "Анна", "Ana\tKos", "Ana\u{01C3}", "\u{01C0}\u{01C0}",
+            "\u{01C4}ana", "Ka\u{017F}per", "\u{0149}ana"]
+        {
             assert_eq!(character_name(bad).unwrap_err(), "name_characters", "{bad}");
         }
         assert_eq!(character_name("Moderator").unwrap_err(), "name_reserved");
+        assert_eq!(character_name("\u{00C1}dmin").unwrap_err(), "name_reserved");
+        assert_eq!(character_name("Syst\u{00E9}m").unwrap_err(), "name_reserved");
     }
 }

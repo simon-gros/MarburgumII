@@ -117,7 +117,8 @@ async fn main() -> ExitCode {
         stopping.graceful_shutdown(Some(std::time::Duration::from_secs(5)));
     });
     println!("mb2-accounts event=listening bind={} store_revision={revision}", args.bind);
-    match axum_server::bind_rustls(args.bind, tls).handle(handle).serve(app.into_make_service()).await {
+    // The peer address feeds the per-address limit on the public routes.
+    match axum_server::bind_rustls(args.bind, tls).handle(handle).serve(app.into_make_service_with_connect_info::<SocketAddr>()).await {
         Ok(()) => {
             println!("mb2-accounts event=stopped");
             ExitCode::SUCCESS

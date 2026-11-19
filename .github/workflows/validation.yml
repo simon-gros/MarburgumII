@@ -38,4 +38,13 @@ jobs:
       - run: rustc --version && cargo --version
       - run: cargo test --manifest-path native/marburgum-sim-core/Cargo.toml
 
+  accounts:
+    name: Account service tests (ADR-055)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustc --version && cargo --version
+      # Rules, store, HTTP contract, per-address limit and the sign-in burst that must not starve a redeem.
+      - run: cargo test --manifest-path services/accounts/Cargo.toml
+
 # This workflow does not test or package Unreal Engine 5.8.3.
