@@ -63,6 +63,9 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --laz "$LAZ"
     --osm Data/World/lent_ground/osm_lent.json.gz --buildings Data/World/lent_ground/buildings.json \
     --placed Data/World/lent_ground/placed_buildings.txt --ortho "$ORTHO" --out Data/World/lent_ground \
     --walk-graph Content/Marburgum/Street/lent_walk_graph.json   # and the street people's walk graph (ADR-044)
+# Every walk node's district (ADR-068): the zone and activity of the original's nearest walk node, from its road graph.
+cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- street-zones \
+    --walk-graph Content/Marburgum/Street/lent_walk_graph.json --road-graph "$ORIGINAL/project/data/road_graph.json"
 # The ground tool records deeper wall footings for buildings whose surveyed ground falls more than 2.5 m below their base
 # (ground.json buildings.deep_footings_m, ADR-053); rebuild the façades once more so their walls reach it.
 # The distant ring round the square (ADR-054): the same survey tiles out to their edge, meeting the new landscape's edge.
@@ -108,6 +111,7 @@ MB2_VEHICLE_NET_CULL_M=9 ./scripts/vehicle-smoke-linux.sh   # The same with the 
 ./scripts/combat-smoke-linux.sh       # Fighting (ADR-041): the drinker fights back, guard, jab, heavy swing, too soon, NPC and player floored
 ./scripts/street-smoke-linux.sh editor # Street people (ADR-044): pedestrian graph/spawn/walk, fights, incident responses, car run-over/dodge
 ./scripts/street-hours-smoke-linux.sh editor # Streets by the hour (ADR-067): day, evening, late, night, Friday night, Sunday, rain, people going home at 21:00
+./scripts/street-district-smoke-linux.sh editor # The street's districts (ADR-068): six zones' stops at Tuesday 10:00, 19:00, Wednesday 03:00 and Sunday noon
 ```
 
 The smoke script starts one headless dedicated server on port 7777 (override with `MB2_SMOKE_PORT`). It runs one client through a refused mutation, an idempotent operation and a disconnect/reconnect, then two concurrent clients. Logs and `summary.txt` go to `Saved/NetSmoke/<UTC timestamp>/`. A nonzero exit means a failed expectation. Map generation is the editor-only C++ commandlet in `MarburgumIIEditorTools`; the PythonScriptPlugin and EditorScriptingUtilities plugins are disabled.
@@ -135,7 +139,7 @@ Server-side rules also have an editor automation test:
 
 The commands above describe **regeneration order**, not proof that the whole map and all scripts pass as a single packaged release. The new default `/Game/World/lent` covers **nine 512 m original windows** in one 1,536 m square. Use an explicit original-game content root `$ORIGINAL` and locally available nine LiDAR LAZ tiles/orthophoto inputs. **Do not** commit unrelated licensed originals, full paid map source, raw proprietary files or private credentials when rebuilding.
 
-`lent-ground merge-buildings` must run before `MarburgumRebuildFacades`; the placed-building manifest must exist before generating ground and pedestrian walk graph, and the façades are rebuilt once more after the ground tool so they take its deep footings (ADR-053). `lent-ground ring` runs after the ground tool, since it meets the new `heights.bin` at the square's edge, and before `MarburgumRebuildGround`, which builds and places the ring (ADR-054). Generate ground/paving, then resample **all** Drava water volumes and re-place the hatchback after the ground changes. Regenerate swim, vehicle and combat animation assets after ADR-042/043's foot IK fixes before cooking. Include `Content/Marburgum/Street/lent_walk_graph.json` and any other non-`.uasset` staged game data in the source/cook hash manifest. `-Verify -Every=1` is the full paving check; record result counts and source SHA.
+`lent-ground merge-buildings` must run before `MarburgumRebuildFacades`; the placed-building manifest must exist before generating ground and pedestrian walk graph, and the façades are rebuilt once more after the ground tool so they take its deep footings (ADR-053). `lent-ground street-zones` runs after every walk-graph build, since the ground tool writes the graph without zones (ADR-068); `mb2 validate street` fails on a node without one. `lent-ground ring` runs after the ground tool, since it meets the new `heights.bin` at the square's edge, and before `MarburgumRebuildGround`, which builds and places the ring (ADR-054). Generate ground/paving, then resample **all** Drava water volumes and re-place the hatchback after the ground changes. Regenerate swim, vehicle and combat animation assets after ADR-042/043's foot IK fixes before cooking. Include `Content/Marburgum/Street/lent_walk_graph.json` and any other non-`.uasset` staged game data in the source/cook hash manifest. `-Verify -Every=1` is the full paving check; record result counts and source SHA.
 
 **Evidence interpretation:**
 
@@ -252,6 +256,7 @@ The C# program checks repository manifest contracts, but does not inspect the lo
 ./scripts/vehicle-smoke-linux.sh editor    # own-car relevancy; ADR-056 records a reduced-cull comparison separately
 ./scripts/street-smoke-linux.sh editor     # server-led pedestrians and incident reactions
 ./scripts/street-hours-smoke-linux.sh editor # who is out by the hour, the weekday and the rain; captures of each (ADR-067)
+./scripts/street-district-smoke-linux.sh editor # who is out in each district, a capture per stop (ADR-068)
 ```
 
 These are **commands for reproducing earlier recorded results**, not tests executed as part of the documentation review. Before owner acceptance, rebuild/cook all current level/model/data assets for staged clients, repeat a >150 m vehicle drive with passenger after ADR-056, execute two/three-client street/account/mission integration, measure performance and record source SHA, cooked asset digest, screenshots, logs and the owner's explicit decision. See [the 12 November state review](DEVELOPMENT_REVIEW_2026-11-12.md).

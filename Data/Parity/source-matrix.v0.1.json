@@ -53,9 +53,9 @@
         "project/data/population_groups.json"
       ],
       "intent": "Individual NPCs and broader simulated community with neighborhoods, schedules, social roles and contextual reactions.",
-      "migration": "Original Lent angler, three fight cast NPCs and new ADR-044 ambient street people using author-owned groups, looks and decision tables plus independent spawn/cull and car collision logic. Pavement walk graph, server pedestrian replication, reactions to fights, body and run-over, panic/dodge are editor-tested with one client. ADR-067 adds the original's old-town time-of-day tables (five periods, density and group mix, the night-people group) on the world clock, with Marburgum II's own weekend and rain rules in place of the San Andreas-derived ones; editor-tested with one client. Staged multi-client, district zones, attractors and owner review are pending.",
+      "migration": "Original Lent angler, three fight cast NPCs and new ADR-044 ambient street people using author-owned groups, looks and decision tables plus independent spawn/cull and car collision logic. Pavement walk graph, server pedestrian replication, reactions to fights, body and run-over, panic/dodge are editor-tested with one client. ADR-067 adds the original's old-town time-of-day tables (five periods, density and group mix, the night-people group) on the world clock, with Marburgum II's own weekend and rain rules in place of the San Andreas-derived ones; editor-tested with one client. ADR-068 adds the original's other seven zones (every walk node's zone and activity from its road graph, each zone's weekday density and mix, the workers and out-walking groups), each player's number from their own street and busy streets filling first; editor-tested with one client along a six-district route. Staged multi-client, attractors and owner review are pending.",
       "stage": "1-3",
-      "status": "angler_three_fighters_and_server_street_pedestrians_by_the_hour_one_client_editor_verified"
+      "status": "angler_three_fighters_and_server_street_pedestrians_by_hour_and_district_one_client_editor_verified"
     },
     {
       "id": "skills",
