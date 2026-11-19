@@ -168,7 +168,9 @@ void UMarburgumPlayerCondition::Refresh()
     ETone Tone = ETone::Info;
     if (Condition.IsDown())
     {
-        Text = FText::Format(LOCTEXT("Drowned", "DROWNED · {0} s"), FText::AsNumber(Condition.RecoverySeconds));
+        Text = Condition.bKnockedDown
+            ? FText::Format(LOCTEXT("KnockedDown", "KNOCKED DOWN · {0} s"), FText::AsNumber(Condition.RecoverySeconds))
+            : FText::Format(LOCTEXT("Drowned", "DROWNED · {0} s"), FText::AsNumber(Condition.RecoverySeconds));
         Tone = ETone::Danger;
     }
     else if (bSubmerged)

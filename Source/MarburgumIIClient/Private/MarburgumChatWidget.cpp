@@ -162,7 +162,7 @@ void UMarburgumChatWidget::HandleMessage(const FMarburgumChatMessage& Message)
         return;
     }
 
-    AddEntry(FString::Printf(TEXT("%s  ·  #%d"), *Message.SenderName.ToUpper(), Message.SenderPlayerId),
+    AddEntry(FString::Printf(TEXT("%s  ·  #%d"), *MarburgumUI::Caps(Message.SenderName).ToString(), Message.SenderPlayerId),
         Message.Text, TextMuted(), TextPrimary());
 }
 

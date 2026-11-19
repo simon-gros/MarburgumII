@@ -209,6 +209,8 @@ private:
     float Vitality = 100.f;
     bool bAtRecoveryPoint = false;
     float RecoveryRemaining = 0.f;
+    // Server only, for the HUD: this body went down to blows, not to the water.
+    bool bDownBeaten = false;
 
     // Fighting (ADR-041). Simulated on every machine that runs a move, except the stagger, which only the
     // server knows (a refusal it causes reaches the client as a correction).

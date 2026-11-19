@@ -563,7 +563,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
     {
         if (Subject && !Subject->Dialogue.IsEmpty())
         {
-            Feed->Push(FName(*(Key.ToString() + TEXT(".said"))), FText::FromString(SubjectName.ToString().ToUpper()),
+            Feed->Push(FName(*(Key.ToString() + TEXT(".said"))), MarburgumUI::Caps(SubjectName),
                 FText::Format(LOCTEXT("Said", "\u201C{0}\u201D"), Subject->Dialogue), MarburgumUI::ETone::Info);
         }
     };
@@ -670,7 +670,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         }
         if (!Told.IsEmpty())
         {
-            Feed->Push(FName(*(Key.ToString() + TEXT(".told"))), FText::FromString(MissionDisplayName(Receipt.MissionId).ToString().ToUpper()),
+            Feed->Push(FName(*(Key.ToString() + TEXT(".told"))), MarburgumUI::Caps(MissionDisplayName(Receipt.MissionId)),
                 FText::FromString(Told), MarburgumUI::ETone::Info);
         }
         if (Receipt.Effect == EMarburgumInteractionEffect::MissionCompleted)
@@ -735,7 +735,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         if (Subject && !Subject->Dialogue.IsEmpty())
         {
             // Talking to someone with no business for you still gets their line.
-            Feed->Push(FName(*(Key.ToString() + TEXT(".said"))), FText::FromString(SubjectName.ToString().ToUpper()),
+            Feed->Push(FName(*(Key.ToString() + TEXT(".said"))), MarburgumUI::Caps(SubjectName),
                 FText::Format(LOCTEXT("Said", "\u201C{0}\u201D"), Subject->Dialogue), MarburgumUI::ETone::Info);
             return;
         }
@@ -804,6 +804,10 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         break;
     case EMarburgumInteractionReason::OutOfRange:
         Message = LOCTEXT("OutOfRange", "Too far away. Move closer and try again; nothing was changed.");
+        break;
+    case EMarburgumInteractionReason::Incapacitated:
+        Message = LOCTEXT("Incapacitated", "Not from here: get out of the car, or back on your feet, first. Nothing was changed.");
+        Tone = MarburgumUI::ETone::Info;
         break;
     case EMarburgumInteractionReason::NoCharacter:
         Message = LOCTEXT("NoCharacter", "This connection has no character, so it cannot hold items or take on missions. Nothing was changed.");

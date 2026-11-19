@@ -115,4 +115,11 @@ namespace MarburgumUI
     /** Padding helpers on the spacing scale. */
     inline FMargin Pad(float Uniform) { return FMargin(Uniform); }
     inline FMargin Pad(float Horizontal, float Vertical) { return FMargin(Horizontal, Vertical); }
+
+    /**
+     * Text in capitals for headings, overlines and name labels. FString::ToUpper changes ASCII letters only, so
+     * "Kočar" would read "KOčAR"; FText::ToUpper is culture-aware (Č, Š, Ž, Ć, Đ, Ä, Ö, Ü).
+     */
+    inline FText Caps(const FString& Text) { return FText::FromString(Text).ToUpper(); }
+    inline FText Caps(const FText& Text) { return Text.ToUpper(); }
 }

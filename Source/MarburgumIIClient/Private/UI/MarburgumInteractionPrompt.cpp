@@ -430,7 +430,7 @@ void UMarburgumInteractionPrompt::ApplyTo(const AActor& Target, const FText& Sub
     ETone Tone, bool bKeyActive)
 {
     const FTokens& T = Tokens();
-    VerbLabel->SetText(FText::FromString(Verb.ToString().ToUpper()));
+    VerbLabel->SetText(MarburgumUI::Caps(Verb));
     VerbLabel->SetColorAndOpacity(FSlateColor(Tone == ETone::Neutral ? T.Color.TextSecondary : ToneColor(Tone)));
     SubjectLabel->SetText(Subject);
     DetailLabel->SetText(Detail);
