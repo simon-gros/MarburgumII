@@ -69,7 +69,7 @@ bool FMarburgumStreetRulesTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("a weekday's day is full"), TuesdayDay.Density, 1.f);
         for (int32 Group = 0; Group < GroupCount; ++Group)
         {
-            TestEqual(TEXT("a weekday's day is ADR-044's mix"), TuesdayDay.Mix[Group], LentMixByPeriod[2][Group]);
+            TestEqual(TEXT("a weekday's day is ADR-044's mix"), TuesdayDay.Mix[Group], ZoneMix[0][2][Group]);
         }
         const FStreetHour TuesdayNight = Is(TEXT("Tuesday 03:00"), 1, 3.0, EPeriod::Night, 1);
         TestEqual(TEXT("the small hours are thin"), TuesdayNight.Density, 0.15f);
@@ -101,26 +101,67 @@ bool FMarburgumStreetRulesTest::RunTest(const FString& Parameters)
         Is(TEXT("Monday 00:30"), 0, 0.5, EPeriod::Night, 0);
         Is(TEXT("Monday 06:30"), 0, 6.5, EPeriod::Morning, 0);
 
-        // Every hour of every day has somebody to send out, and every group walks at some hour.
+        // Every hour of every day in every zone has somebody to send out, every group walks somewhere at some hour, and the
+        // old town still walks as ADR-067 had it.
         int32 Walks[GroupCount] = {};
-        for (int32 Weekday = 0; Weekday < 7; ++Weekday)
+        for (int32 Zone = 0; Zone < ZoneCount; ++Zone)
         {
-            for (int32 Quarter = 0; Quarter < 96; ++Quarter)
+            for (int32 Weekday = 0; Weekday < 7; ++Weekday)
             {
-                const FStreetHour Hour = StreetHourAt(Weekday, Quarter / 4.0);
-                int32 Total = 0;
-                for (int32 Group = 0; Group < GroupCount; ++Group)
+                for (int32 Quarter = 0; Quarter < 96; ++Quarter)
                 {
-                    Total += Hour.Mix[Group];
-                    Walks[Group] += Hour.Mix[Group];
+                    const FStreetHour Hour = StreetHourAt(Weekday, Quarter / 4.0, static_cast<EZone>(Zone));
+                    int32 Total = 0;
+                    for (int32 Group = 0; Group < GroupCount; ++Group)
+                    {
+                        Total += Hour.Mix[Group];
+                        Walks[Group] += Hour.Mix[Group];
+                    }
+                    TestTrue(TEXT("every hour has a mix"), Total > 0 && Hour.Density >= 0.f && Hour.Density <= 1.f);
+                    TestTrue(TEXT("the hour says its zone"), Hour.Zone == static_cast<EZone>(Zone));
+                    if (Zone == static_cast<int32>(EZone::OldTown))
+                    {
+                        TestTrue(TEXT("the old town always has somebody out"), Hour.Density > 0.f);
+                        TestTrue(TEXT("no workers or walkers out in the old town"), Hour.Mix[Workers] == 0 && Hour.Mix[Outdoor] == 0);
+                    }
                 }
-                TestTrue(TEXT("every hour has a mix"), Total > 0 && Hour.Density > 0.f && Hour.Density <= 1.f);
             }
         }
         for (int32 Group = 0; Group < GroupCount; ++Group)
         {
             TestTrue(FString::Printf(TEXT("%s walk at some hour"), Groups[Group].Id), Walks[Group] > 0);
         }
+
+        // The districts (ADR-068): the original's weekday tables, and Marburgum II's weekend over them.
+        TestTrue(TEXT("a zone name reads back"), ZoneNamed(TEXT("residential_blocks")) == EZone::ResidentialBlocks);
+        TestTrue(TEXT("an unknown zone is the old town"), ZoneNamed(TEXT("harbour")) == EZone::OldTown);
+        TestTrue(TEXT("the default is the old town"), StreetHourAt(1, 10.0).Zone == EZone::OldTown);
+        const FStreetHour HousesByDay = StreetHourAt(1, 10.0, EZone::Residential);
+        TestEqual(TEXT("a street of houses by day keeps 0.4"), HousesByDay.Density, 0.4f);
+        TestTrue(TEXT("houses by day: residents and pensioners"), HousesByDay.Mix[Residents] == 45 && HousesByDay.Mix[Pensioners] == 35 && HousesByDay.Mix[Commuters] == 0);
+        const FStreetHour HousesEvening = StreetHourAt(1, 19.0, EZone::Residential);
+        TestEqual(TEXT("an evening among the houses has people out walking"), HousesEvening.Mix[Outdoor], 20);
+        const FStreetHour WorksMorning = StreetHourAt(1, 7.0, EZone::Industrial);
+        TestEqual(TEXT("the works in the morning: workers"), WorksMorning.Mix[Workers], 80);
+        const FStreetHour WorksSaturday = StreetHourAt(5, 10.0, EZone::Industrial);
+        TestEqual(TEXT("workers keep their shifts at the weekend"), WorksSaturday.Mix[Workers], 85);
+        TestEqual(TEXT("but nobody commutes to the works"), WorksSaturday.Mix[Commuters], 0);
+        const FStreetHour ShopsDay = StreetHourAt(1, 12.0, EZone::Commercial);
+        TestTrue(TEXT("a shopping street by day"), ShopsDay.Density == 0.9f && ShopsDay.Mix[Shoppers] == 50);
+        const FStreetHour ShopsSunday = StreetHourAt(6, 12.0, EZone::Commercial);
+        TestTrue(TEXT("a shopping street on a Sunday walks as residents"), ShopsSunday.Mix[Shoppers] == 0 && ShopsSunday.Mix[Commuters] == 0
+            && ShopsSunday.Mix[Residents] == 75);
+        const FStreetHour SchoolTuesday = StreetHourAt(1, 8.0, EZone::School);
+        TestTrue(TEXT("a school morning is students"), SchoolTuesday.Density == 0.9f && SchoolTuesday.Mix[Students] == 75);
+        const FStreetHour SchoolSaturday = StreetHourAt(5, 8.0, EZone::School);
+        TestTrue(TEXT("no school on a Saturday"), SchoolSaturday.Mix[Students] == 0 && SchoolSaturday.Mix[Residents] == 100);
+        const FStreetHour SchoolSaturdayLate = StreetHourAt(5, 22.5, EZone::School);
+        TestEqual(TEXT("the students are about on a Saturday night"), SchoolSaturdayLate.Mix[Students], 50);
+        const FStreetHour ParkEvening = StreetHourAt(1, 19.0, EZone::Park);
+        TestTrue(TEXT("a park in the evening is people out walking"), ParkEvening.Mix[Outdoor] == 55 && ParkEvening.Density == 0.5f);
+        TestEqual(TEXT("nobody in the countryside at night"), StreetHourAt(1, 3.0, EZone::Rural).Density, 0.f);
+        TestTrue(TEXT("the blocks are fuller in the evening than by day"),
+            StreetHourAt(1, 19.0, EZone::ResidentialBlocks).Density > StreetHourAt(1, 12.0, EZone::ResidentialBlocks).Density);
 
         // The weather and the count.
         TestEqual(TEXT("a dry street keeps everyone"), WeatherShare(0.f), 1.f);
@@ -131,6 +172,7 @@ bool FMarburgumStreetRulesTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("three players by day hit the cap"), PeopleFor(3, 1.f), MaxPeople);
         TestEqual(TEXT("nobody about, nobody out"), PeopleFor(0, 1.f), 0);
         TestEqual(TEXT("a late evening in the rain"), PeopleFor(1, 0.45f * WeatherShare(0.6f)), 5);
+        TestEqual(TEXT("two players, one in the old town and one among the houses, by day"), PeopleFor(2, (1.f + 0.4f) / 2.f), 28);
     }
 
     // Run over: the swept body.
@@ -175,6 +217,8 @@ bool FMarburgumStreetRulesTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("the largest network is the three-node one"), Graph.GetNodes()[Graph.NearestNode(FVector::ZeroVector, 100.0)].Component,
             Graph.LargestComponent());
         TestEqual(TEXT("the middle node has two edges"), Graph.Touching(Graph.NearestNode(FVector(500.0, 0.0, 0.0), 100.0)).Num(), 2);
+        TestTrue(TEXT("a node without a zone is the old town's, fully busy"),
+            Graph.GetNodes()[0].Zone == static_cast<uint8>(EZone::OldTown) && Graph.GetNodes()[0].Activity == 1.f);
     }
 
     // The water's footprint (ADR-046): over a column, from its bottom up to a drop above its surface.

@@ -11,6 +11,8 @@ class UWorld;
  * for one walking along it, and neither may be in the river (UMarburgumWaterSubsystem, ADR-046). Whatever fails
  * is dropped, so the graph never leads anyone into a wall or the water.
  *
+ * Each node also carries the original's zone and activity (ADR-068, tools/lent-ground street-zones), when the file has them.
+ *
  * Positions are Unreal centimetres, on the walking surface. Edges are undirected.
  */
 class MARBURGUMII_API FMarburgumWalkGraph
@@ -22,6 +24,10 @@ public:
         /** Over the carriageway (a crossing). */
         bool bRoad = false;
         int32 Component = INDEX_NONE;
+        /** What kind of street it is on (ADR-068): MarburgumStreetContract.h EZone, the old town in a graph without zones. */
+        uint8 Zone = 0;
+        /** How busy that street is with people, 0..1 (the original's activity); 1 in a graph without zones. */
+        float Activity = 1.f;
     };
 
     struct FEdge

@@ -24,9 +24,11 @@ class AMarburgumVehicle;
  *
  * With -MB2StreetCount=<s> (ADR-067) it only stands there instead, looking along the street, and counts the people
  * within 70 m by group every second for that long, then captures `count` and passes: the hours smoke reads how
- * full the street is at the server's hour (scripts/street-hours-smoke-linux.sh).
+ * full the street is at the server's hour (scripts/street-hours-smoke-linux.sh). With -MB2StreetShotAfterMove=<s>
+ * (ADR-068) it also captures `stop<n>` that long after each time the server moves the player (the district smoke's
+ * route, scripts/street-district-smoke-linux.sh), and logs `event=moved` when it sees the move.
  *
- * Options: -MB2StreetShot=<path prefix> -MB2StreetTimeout=<s> -MB2StreetCount=<s>
+ * Options: -MB2StreetShot=<path prefix> -MB2StreetTimeout=<s> -MB2StreetCount=<s> -MB2StreetShotAfterMove=<s>
  */
 UCLASS()
 class MARBURGUMIICLIENT_API UMarburgumStreetSmokeSubsystem : public UGameInstanceSubsystem
@@ -61,6 +63,12 @@ private:
     FString ShotPrefix;
     double TimeoutSeconds = 300.0;
     double CountSeconds = 0.0;
+    /** -MB2StreetShotAfterMove: where the body last stood, when it was last moved and how many moves so far. */
+    double ShotAfterMoveSeconds = 0.0;
+    FVector LastBodyAt = FVector::ZeroVector;
+    bool bBodySeen = false;
+    double MovedSeconds = -1.0;
+    int32 Moves = 0;
     double LastCountSeconds = 0.0;
     int32 FewestCounted = TNumericLimits<int32>::Max();
     int32 MostCounted = 0;

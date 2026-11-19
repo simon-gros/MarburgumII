@@ -3,6 +3,7 @@
 #include "CollisionQueryParams.h"
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
+#include "MarburgumStreetContract.h"
 #include "MarburgumWater.h"
 #include "Misc/FileHelper.h"
 #include "Serialization/JsonReader.h"
@@ -62,6 +63,18 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         (*Flags)->TryGetNumberField(TEXT("road"), RoadFlag);
         (*Flags)->TryGetNumberField(TEXT("bridge"), BridgeFlag);
     }
+
+    // The original's zones (ADR-068), by name, so a file written in another order still reads right.
+    TArray<uint8> ZoneOf;
+    const TArray<TSharedPtr<FJsonValue>>* ZoneNames = nullptr;
+    if (Root->TryGetArrayField(TEXT("zones"), ZoneNames))
+    {
+        for (const TSharedPtr<FJsonValue>& Name : *ZoneNames)
+        {
+            ZoneOf.Add(static_cast<uint8>(MarburgumII::Street::ZoneNamed(Name.IsValid() ? Name->AsString() : FString())));
+        }
+    }
+    int32 Zoned = 0;
 
     FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumWalkGraph), true);
     FCollisionObjectQueryParams Static(FCollisionObjectQueryParams::AllStaticObjects);
@@ -132,6 +145,12 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
         FNode Node;
         Node.Location = At;
         Node.bRoad = (NodeFlags & RoadFlag) != 0;
+        if (Row.Num() >= 6 && ZoneOf.IsValidIndex(static_cast<int32>(Row[4]->AsNumber())))
+        {
+            Node.Zone = ZoneOf[static_cast<int32>(Row[4]->AsNumber())];
+            Node.Activity = FMath::Clamp(static_cast<float>(Row[5]->AsNumber()), 0.f, 1.f);
+            ++Zoned;
+        }
         Index[Source] = Kept.Add(Node);
     }
 
@@ -183,8 +202,19 @@ bool FMarburgumWalkGraph::Load(UWorld& World, const FString& Path, FString& OutR
     {
         LargestCount += Node.Component == Largest ? 1 : 0;
     }
-    OutReport = FString::Printf(TEXT("nodes=%d/%d edges=%d/%d no_ground=%d no_room=%d edges_blocked=%d edges_missing_end=%d largest_component=%d water_volumes=%d wet=%d edges_wet=%d"),
-        Nodes.Num(), Read, Edges.Num(), EdgesRead, NoGround, NoRoom, Blocked, Missing, LargestCount, Water ? Water->NumVolumes() : 0, Wet, WetEdges);
+    int32 ByZone[MarburgumII::Street::ZoneCount] = {};
+    for (const FNode& Node : Nodes)
+    {
+        ++ByZone[FMath::Clamp<int32>(Node.Zone, 0, MarburgumII::Street::ZoneCount - 1)];
+    }
+    FString Zones;
+    for (int32 Zone = 0; Zone < MarburgumII::Street::ZoneCount; ++Zone)
+    {
+        Zones += FString::Printf(TEXT("%s%s:%d"), Zone ? TEXT(",") : TEXT(""), MarburgumII::Street::ZoneNames[Zone], ByZone[Zone]);
+    }
+    OutReport = FString::Printf(TEXT("nodes=%d/%d edges=%d/%d no_ground=%d no_room=%d edges_blocked=%d edges_missing_end=%d largest_component=%d water_volumes=%d wet=%d edges_wet=%d zoned=%d zones=%s"),
+        Nodes.Num(), Read, Edges.Num(), EdgesRead, NoGround, NoRoom, Blocked, Missing, LargestCount, Water ? Water->NumVolumes() : 0, Wet, WetEdges,
+        Zoned, *Zones);
     if (Nodes.IsEmpty())
     {
         OutError = TEXT("no node of the walk graph is on walkable ground in this level");

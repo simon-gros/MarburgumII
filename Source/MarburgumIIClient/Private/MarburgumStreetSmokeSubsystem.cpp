@@ -41,6 +41,8 @@ namespace MarburgumStreetSmoke
     constexpr double SeatTimeoutSeconds = 8.0;
     constexpr double DriveSeconds = 7.0;
     constexpr double GatherWaitSeconds = 25.0;
+    // A step of the body this long in one tick is the server moving it (the district route), not walking.
+    constexpr double MovedCm = 5000.0;
     const FName DriverSeat(TEXT("driver"));
 }
 
@@ -58,6 +60,7 @@ void UMarburgumStreetSmokeSubsystem::Initialize(FSubsystemCollectionBase& Collec
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetShot="), ShotPrefix);
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetTimeout="), TimeoutSeconds);
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetCount="), CountSeconds);
+    FParse::Value(FCommandLine::Get(), TEXT("MB2StreetShotAfterMove="), ShotAfterMoveSeconds);
     StartSeconds = FPlatformTime::Seconds();
     TickerHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UMarburgumStreetSmokeSubsystem::Tick), 0.f);
     MB2_STREET_SMOKE_LOG("event=start shot=%d count_s=%.0f", ShotPrefix.IsEmpty() ? 0 : 1, CountSeconds);
@@ -249,6 +252,24 @@ bool UMarburgumStreetSmokeSubsystem::Tick(float DeltaTime)
 
 void UMarburgumStreetSmokeSubsystem::RunCount(double Now)
 {
+    // The server's moves are watched from the first tick, so one made while the street settles is not missed.
+    if (ShotAfterMoveSeconds > 0.0)
+    {
+        const FVector At = Body() ? Body()->GetActorLocation() : FVector::ZeroVector;
+        if (bBodySeen && FVector::Dist2D(At, LastBodyAt) > MovedCm)
+        {
+            ++Moves;
+            MovedSeconds = Now;
+            MB2_STREET_SMOKE_LOG("event=moved move=%d at=%s", Moves, *At.ToString());
+        }
+        LastBodyAt = At;
+        bBodySeen = true;
+        if (MovedSeconds >= 0.0 && Now - MovedSeconds >= ShotAfterMoveSeconds)
+        {
+            MovedSeconds = -1.0;
+            Shot(*FString::Printf(TEXT("stop%d"), Moves));
+        }
+    }
     if (Step == 0)
     {
         if (Now - StepSeconds >= SettleSeconds)

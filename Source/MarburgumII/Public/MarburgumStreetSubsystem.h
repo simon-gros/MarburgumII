@@ -50,8 +50,10 @@ struct FMarburgumStreetViewer
  * and a little ahead), street person or Lent cast alike.
  *
  * How many are out, and who, follows the world clock and the weather (ADR-067, StreetHourAt): busy by day, thin in
- * the small hours, night owls in the late evening, an hour later on Friday and Saturday nights. With more out than
- * the hour wants, people nobody is looking at go home.
+ * the small hours, night owls in the late evening, an hour later on Friday and Saturday nights. It also follows the
+ * street (ADR-068): each player brings the number their own district keeps at that hour, and each newcomer is one of
+ * those who walk the district they appear in, on its busier streets first. With more out than the hour wants, people
+ * nobody is looking at go home.
  *
  * Off with -MB2Street=0 (or MB2_STREET=0). Logs carry MB2_STREET.
  */
@@ -88,8 +90,10 @@ public:
 
     double Now() const;
     int32 CountPeople() const;
-    /** The street's hour, the weather's share and the people it keeps now (ADR-067). */
+    /** The street's hour where the first player stands, and the people it keeps now (ADR-067, ADR-068). */
     const MarburgumII::Street::FStreetHour& GetHour() const { return Hour; }
+    /** The zone of the street nearest a place (ADR-068): its nearest walk-graph node's, or the countryside. */
+    MarburgumII::Street::EZone ZoneAt(const FVector& At) const;
     int32 GetTargetPeople() const { return TargetPeople; }
 
 private:
@@ -139,6 +143,9 @@ private:
     TMap<TWeakObjectPtr<AActor>, int32> BodyIncidents;
     double LastSummarySeconds = 0.0;
     MarburgumII::Street::FStreetHour Hour;
+    /** The Marburgum clock's weekday and hour at the last update (Tuesday noon without a clock). */
+    int32 ClockWeekday = 1;
+    double ClockHour = 12.0;
     float Weather = 1.f;
     int32 TargetPeople = 0;
     /** Whether the world clock was known at the last update, and the hour's key last logged. */

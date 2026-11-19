@@ -2,17 +2,21 @@
   "format": "marburgumii.street",
   "version": "0.1.0",
   "status": "stage1_lent_street_people",
-  "description": "Street people carried forward from the original Marburgum's ambient population: who walks Lent and when, how far off they appear and go, and what each personality does about a fight, a run-over, someone on the ground, being hit or being walked into. Mirrors MarburgumIIShared/Public/MarburgumStreetContract.h; `mb2 validate street` keeps them in step. Distances in metres, speeds in metres per second, times in seconds. Decision weights are relative, per column [stranger, player].",
+  "description": "Street people carried forward from the original Marburgum's ambient population: who walks Lent and its neighbours, where and when, how far off they appear and go, and what each personality does about a fight, a run-over, someone on the ground, being hit or being walked into. Mirrors MarburgumIIShared/Public/MarburgumStreetContract.h; `mb2 validate street` keeps them in step. Distances in metres, speeds in metres per second, times in seconds. Decision weights are relative, per column [stranger, player].",
   "provenance": {
-    "source": "magna-raedarum-marburgum: UnrealMarburgum/Source/MarburgumServer/Private/MarburgumAmbientPopulation.cpp and MarburgumRunOver, docs/AMBIENT_STREETS.md, project/data/population_groups.json, project/data/npc_visual_profiles.json (population_groups.json `periods` and `zones.old_town` for the hours; branches main, feat/ambient-react-to-bodies, feat/ambient-panic-spread)",
+    "source": "magna-raedarum-marburgum: UnrealMarburgum/Source/MarburgumServer/Private/MarburgumAmbientPopulation.cpp and MarburgumRunOver, docs/AMBIENT_STREETS.md, project/data/population_groups.json, project/data/npc_visual_profiles.json (population_groups.json `periods` and `zones` for the hours and districts, project/data/road_graph.json for every walk node's zone and activity; branches main, feat/ambient-react-to-bodies, feat/ambient-panic-spread)",
     "copied_unchanged": [
       "groups (archetypes, walk speeds, personality mixes)",
       "the night people group (archetypes, walk speed, personality mix) and its looks",
+      "the workers and out-walking groups (archetypes, walk speeds, personality mixes) and their looks",
       "looks (profile colours and scale)",
-      "old_town periods, street density and group mix by period, weekdays (the day row with ADR-044's residents)",
+      "periods, and every zone's street density and group mix by period, weekdays (the old town's day row with ADR-044's residents)",
       "decisions: body, attacked, bumped",
       "fight clearance, watch standoff, crowd spread, body notice and stand-by distances",
-      "run-over strike speed, margin, damage per m/s and down time"
+      "run-over strike speed, margin, damage per m/s and down time",
+      "every walk node's zone and activity: the nearest node of the original's road graph (tools/build_road_graph.py classify)",
+      "busy streets fill first: a newcomer is put on a street with a chance of its activity, at least 0.15 (TrySpawnPedestrian)",
+      "each player's number from the zone of the walk node nearest them (Spawn, PedestrianDensityAt)"
     ],
     "marburgum_ii_own": [
       "decisions: fight (the original's row was San Andreas' shipped R_Norm/R_Tough/R_Weak values) and run_over (none in the original)",
@@ -21,10 +25,12 @@
       "fight notice radius 30 m (the original's 40 m was San Andreas')",
       "flee, watch and dodge timings",
       "colour and size variation within a look",
-      "the weekend: Friday and Saturday evenings and Saturday and Sunday mornings one hour later, after ADR-066; nobody commutes at the weekend and the shops are shut on a Sunday, so those shares walk as residents",
+      "the weekend: Friday and Saturday evenings and Saturday and Sunday mornings one hour later, after ADR-066; nobody commutes at the weekend, the shops are shut on a Sunday and there is no school at the weekend, so those shares walk as residents; workers keep their shifts",
       "rain: what falls thins the street by 0.75 x precipitation",
       "going home: one unseen person every 2 s, the furthest and never within 22 m of a player, while more are out than the hour wants",
-      "the night people's display name"
+      "the night people's display name",
+      "a walk node with no original node within 100 m is rural, activity 0.05 (the original's answer for a street with nothing near it)",
+      "the workers' and out-walking groups' display names"
     ],
     "excluded": [
       "San Andreas decision weights",
@@ -35,7 +41,9 @@
       "attractors (no bus stops, cafés or venues on the graph yet)",
       "placeholder San Andreas / GTA III bodies",
       "the original's weekend (Friday 20:00 to Sunday 20:00, with its own tables) and its rain rule, which came in from a reverse-engineering report of San Andreas' population cycle",
-      "districts other than the old town: Lent and its neighbours all walk as the old town"
+      "each zone's police share (ADR-006: the police stay out)",
+      "San Andreas' deficit fill of the group furthest below its share (a newcomer's group is a weighted roll, as ADR-044's)",
+      "the zones' car densities and car mixes (no traffic yet)"
     ]
   },
   "rules": {
@@ -382,10 +390,48 @@
         "tough": 50,
         "weak": 10
       }
+    },
+    {
+      "id": "workers",
+      "name": "Worker",
+      "archetypes": [
+        "industrial_worker",
+        "mechanic",
+        "industrial_custodian",
+        "sign_painter",
+        "mechanic_dispatcher"
+      ],
+      "walk_speed": [
+        1.2,
+        1.5
+      ],
+      "personality": {
+        "norm": 55,
+        "tough": 40,
+        "weak": 5
+      }
+    },
+    {
+      "id": "outdoor",
+      "name": "Out walking",
+      "archetypes": [
+        "evening_walker",
+        "riverside_angler",
+        "courtyard_walker"
+      ],
+      "walk_speed": [
+        1.0,
+        1.4
+      ],
+      "personality": {
+        "norm": 70,
+        "tough": 15,
+        "weak": 15
+      }
     }
   ],
   "hours": {
-    "_comment": "Who is out when (ADR-067), on the world clock: its Ljubljana hour and the mirrored 1990s date's weekday. `density` is the share of people_per_player; `mix` the relative weights over the groups. Weekdays are the original's old_town tables.",
+    "_comment": "Who is out when (ADR-067) and where (ADR-068), on the world clock: its Ljubljana hour and the mirrored 1990s date's weekday. Each zone's `density` is the share of people_per_player; its `mix` the relative weights over the groups. Weekdays are the original's zone tables; every walk-graph node carries its zone (Content/Marburgum/Street/lent_walk_graph.json, lent-ground street-zones).",
     "periods": {
       "night": [
         0,
@@ -408,46 +454,283 @@
         24
       ]
     },
-    "density": {
-      "night": 0.15,
-      "morning": 0.6,
-      "day": 1.0,
-      "evening": 0.9,
-      "late": 0.45
-    },
-    "mix": {
-      "night": {
-        "residents": 20,
-        "night_people": 80
+    "zones": {
+      "old_town": {
+        "density": {
+          "night": 0.15,
+          "morning": 0.6,
+          "day": 1.0,
+          "evening": 0.9,
+          "late": 0.45
+        },
+        "mix": {
+          "night": {
+            "residents": 20,
+            "night_people": 80
+          },
+          "morning": {
+            "commuters": 50,
+            "shoppers": 20,
+            "pensioners": 15,
+            "students": 15
+          },
+          "day": {
+            "commuters": 20,
+            "shoppers": 40,
+            "pensioners": 20,
+            "students": 20,
+            "residents": 10
+          },
+          "evening": {
+            "shoppers": 30,
+            "students": 25,
+            "residents": 25,
+            "night_people": 20
+          },
+          "late": {
+            "students": 30,
+            "residents": 10,
+            "night_people": 60
+          }
+        }
       },
-      "morning": {
-        "commuters": 50,
-        "shoppers": 20,
-        "pensioners": 15,
-        "students": 15
+      "commercial": {
+        "density": {
+          "night": 0.1,
+          "morning": 0.6,
+          "day": 0.9,
+          "evening": 0.7,
+          "late": 0.25
+        },
+        "mix": {
+          "night": {
+            "night_people": 70,
+            "workers": 30
+          },
+          "morning": {
+            "commuters": 60,
+            "shoppers": 20,
+            "workers": 20
+          },
+          "day": {
+            "commuters": 25,
+            "shoppers": 50,
+            "pensioners": 15,
+            "students": 10
+          },
+          "evening": {
+            "commuters": 25,
+            "shoppers": 45,
+            "students": 15,
+            "night_people": 15
+          },
+          "late": {
+            "commuters": 30,
+            "night_people": 70
+          }
+        }
       },
-      "day": {
-        "commuters": 20,
-        "shoppers": 40,
-        "pensioners": 20,
-        "students": 20,
-        "residents": 10
+      "residential_blocks": {
+        "density": {
+          "night": 0.1,
+          "morning": 0.7,
+          "day": 0.6,
+          "evening": 0.8,
+          "late": 0.3
+        },
+        "mix": {
+          "night": {
+            "residents": 30,
+            "night_people": 70
+          },
+          "morning": {
+            "commuters": 45,
+            "pensioners": 10,
+            "students": 25,
+            "residents": 20
+          },
+          "day": {
+            "shoppers": 20,
+            "pensioners": 30,
+            "students": 10,
+            "residents": 40
+          },
+          "evening": {
+            "commuters": 25,
+            "students": 25,
+            "residents": 50
+          },
+          "late": {
+            "residents": 50,
+            "night_people": 50
+          }
+        }
       },
-      "evening": {
-        "shoppers": 30,
-        "students": 25,
-        "residents": 25,
-        "night_people": 20
+      "residential": {
+        "density": {
+          "night": 0.05,
+          "morning": 0.45,
+          "day": 0.4,
+          "evening": 0.55,
+          "late": 0.15
+        },
+        "mix": {
+          "night": {
+            "residents": 40,
+            "night_people": 60
+          },
+          "morning": {
+            "commuters": 45,
+            "pensioners": 10,
+            "students": 20,
+            "residents": 25
+          },
+          "day": {
+            "shoppers": 20,
+            "pensioners": 35,
+            "residents": 45
+          },
+          "evening": {
+            "commuters": 20,
+            "residents": 60,
+            "outdoor": 20
+          },
+          "late": {
+            "residents": 60,
+            "night_people": 40
+          }
+        }
       },
-      "late": {
-        "students": 30,
-        "residents": 10,
-        "night_people": 60
+      "industrial": {
+        "density": {
+          "night": 0.05,
+          "morning": 0.5,
+          "day": 0.35,
+          "evening": 0.25,
+          "late": 0.05
+        },
+        "mix": {
+          "night": {
+            "night_people": 30,
+            "workers": 70
+          },
+          "morning": {
+            "commuters": 20,
+            "workers": 80
+          },
+          "day": {
+            "commuters": 15,
+            "workers": 85
+          },
+          "evening": {
+            "residents": 30,
+            "workers": 70
+          },
+          "late": {
+            "night_people": 50,
+            "workers": 50
+          }
+        }
+      },
+      "school": {
+        "density": {
+          "night": 0.03,
+          "morning": 0.9,
+          "day": 0.8,
+          "evening": 0.35,
+          "late": 0.1
+        },
+        "mix": {
+          "night": {
+            "night_people": 100
+          },
+          "morning": {
+            "commuters": 25,
+            "students": 75
+          },
+          "day": {
+            "commuters": 15,
+            "students": 70,
+            "residents": 15
+          },
+          "evening": {
+            "students": 50,
+            "residents": 50
+          },
+          "late": {
+            "students": 50,
+            "night_people": 50
+          }
+        }
+      },
+      "park": {
+        "density": {
+          "night": 0.02,
+          "morning": 0.25,
+          "day": 0.45,
+          "evening": 0.5,
+          "late": 0.08
+        },
+        "mix": {
+          "night": {
+            "night_people": 100
+          },
+          "morning": {
+            "commuters": 20,
+            "pensioners": 30,
+            "outdoor": 50
+          },
+          "day": {
+            "pensioners": 30,
+            "students": 25,
+            "outdoor": 45
+          },
+          "evening": {
+            "students": 25,
+            "residents": 20,
+            "outdoor": 55
+          },
+          "late": {
+            "night_people": 70,
+            "outdoor": 30
+          }
+        }
+      },
+      "rural": {
+        "density": {
+          "night": 0.0,
+          "morning": 0.08,
+          "day": 0.1,
+          "evening": 0.08,
+          "late": 0.0
+        },
+        "mix": {
+          "night": {
+            "outdoor": 100
+          },
+          "morning": {
+            "workers": 60,
+            "outdoor": 40
+          },
+          "day": {
+            "workers": 40,
+            "outdoor": 60
+          },
+          "evening": {
+            "residents": 30,
+            "outdoor": 70
+          },
+          "late": {
+            "outdoor": 100
+          }
+        }
       }
     },
     "weekend_later_hours": 1,
     "rain_thinning": 0.75,
-    "home_every_seconds": 2.0
+    "home_every_seconds": 2.0,
+    "min_spawn_activity": 0.15,
+    "viewer_zone_search_m": 150.0
   },
   "looks": [
     {
@@ -603,6 +886,48 @@
       "primary_color": "#5a3a3a",
       "secondary_color": "#2a2222",
       "scale": 1.04
+    },
+    {
+      "profile": "hall_three_worker",
+      "archetype": "industrial_worker",
+      "primary_color": "#4e5a63",
+      "secondary_color": "#2b3035",
+      "scale": 1.03
+    },
+    {
+      "profile": "lent_workshop_mechanic",
+      "archetype": "mechanic",
+      "primary_color": "#354b58",
+      "secondary_color": "#242b30",
+      "scale": 1.04
+    },
+    {
+      "profile": "matej_hall_three",
+      "archetype": "industrial_custodian",
+      "primary_color": "#59604c",
+      "secondary_color": "#2d3129",
+      "scale": 1.02
+    },
+    {
+      "profile": "brane_sign_painter",
+      "archetype": "sign_painter",
+      "primary_color": "#4e5962",
+      "secondary_color": "#2b3035",
+      "scale": 1.02
+    },
+    {
+      "profile": "drago_potocnik",
+      "archetype": "mechanic_dispatcher",
+      "primary_color": "#3a4a56",
+      "secondary_color": "#22282c",
+      "scale": 1.05
+    },
+    {
+      "profile": "lent_angler",
+      "archetype": "riverside_angler",
+      "primary_color": "#596455",
+      "secondary_color": "#353a34",
+      "scale": 1
     }
   ]
 }

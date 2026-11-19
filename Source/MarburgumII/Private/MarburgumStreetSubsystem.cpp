@@ -50,6 +50,11 @@ namespace MarburgumStreetPopulation
     constexpr double WaterProbeReachCm = 400.0;
     constexpr double WaterProbeThreatCm = 300.0;
     constexpr double WaterProbeSeconds = 6.0;
+    // A player's street is the zone of the walk-graph node nearest them within this (ADR-068); with none, the countryside.
+    constexpr double ViewerZoneSearchCm = 15000.0;
+    // A new person is put on a street with a chance of its activity, never under this: busy streets fill first, as the
+    // original's TrySpawnPedestrian did.
+    constexpr float MinSpawnActivity = 0.15f;
 }
 
 bool UMarburgumStreetSubsystem::ShouldCreateSubsystem(UObject* Outer) const
@@ -400,19 +405,40 @@ void UMarburgumStreetSubsystem::UpdateHour(double Time)
     if (bClockKnown)
     {
         Local = MarburgumII::Clock::MarburgumAt(Utc);
-        Hour = StreetHourAt(Local.Weekday, Local.HourOfDay());
+        ClockWeekday = Local.Weekday;
+        ClockHour = Local.HourOfDay();
     }
     else
     {
-        Hour = StreetHourAt(1, 12.0);
+        ClockWeekday = 1;
+        ClockHour = 12.0;
     }
     const FMarburgumWeather* Sky = AMarburgumGameState::WeatherOf(GetWorld());
     const float Falling = Sky && Sky->bKnown ? Sky->Precipitation : 0.f;
     Weather = WeatherShare(Falling);
-    TargetPeople = PeopleFor(Viewers.Num(), Hour.Density * Weather);
 
-    // Logged when the period, the day or the number changes, not every step.
-    const FString Key = FString::Printf(TEXT("%d/%d/%d/%d"), static_cast<int32>(Hour.Period), Hour.Weekday, TargetPeople, bClockKnown ? 1 : 0);
+    // Each player brings the street they stand on (ADR-068): a shopping street at noon fills to twenty, a lane of
+    // houses at three in the morning keeps one. The first player's is the hour the logs and GetHour() report.
+    float Share = 0.f;
+    FString ZoneList;
+    for (int32 Index = 0; Index < Viewers.Num(); ++Index)
+    {
+        const FStreetHour ViewerHour = StreetHourAt(ClockWeekday, ClockHour, ZoneAt(Viewers[Index].Location));
+        Share += ViewerHour.Density;
+        ZoneList += FString::Printf(TEXT("%s%s"), Index ? TEXT(",") : TEXT(""), ZoneNames[static_cast<int32>(ViewerHour.Zone)]);
+        if (Index == 0)
+        {
+            Hour = ViewerHour;
+        }
+    }
+    if (Viewers.IsEmpty())
+    {
+        Hour = StreetHourAt(ClockWeekday, ClockHour);
+    }
+    TargetPeople = Viewers.IsEmpty() ? 0 : PeopleFor(Viewers.Num(), Share / Viewers.Num() * Weather);
+
+    // Logged when the period, the day, a player's street or the number changes, not every step.
+    const FString Key = FString::Printf(TEXT("%d/%d/%d/%d/%s"), static_cast<int32>(Hour.Period), Hour.Weekday, TargetPeople, bClockKnown ? 1 : 0, *ZoneList);
     if (Key == LoggedHour)
     {
         return;
@@ -423,10 +449,16 @@ void UMarburgumStreetSubsystem::UpdateHour(double Time)
     {
         Mix += FString::Printf(TEXT("%s%s=%d"), Group ? TEXT(",") : TEXT(""), Groups[Group].Id, Hour.Mix[Group]);
     }
-    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_hour clock=%d marburgum=\"%s %s\" weekday=%d period=%s period_day=%d density=%.2f precipitation=%.2f weather=%.2f players=%d target=%d mix=%s"),
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_hour clock=%d marburgum=\"%s %s\" weekday=%d period=%s period_day=%d zones=%s zone=%s density=%.2f precipitation=%.2f weather=%.2f players=%d target=%d mix=%s"),
         StreetLogPrefix, bClockKnown ? 1 : 0, bClockKnown ? *MarburgumII::Clock::DateLabel(Local) : TEXT("-"), bClockKnown ? *MarburgumII::Clock::TimeLabel(Local) : TEXT("-"),
-        bClockKnown ? Local.Weekday : -1, PeriodNames[static_cast<int32>(Hour.Period)], Hour.Weekday, Hour.Density, Falling, Weather, Viewers.Num(),
-        TargetPeople, *Mix);
+        bClockKnown ? Local.Weekday : -1, PeriodNames[static_cast<int32>(Hour.Period)], Hour.Weekday, ZoneList.IsEmpty() ? TEXT("-") : *ZoneList,
+        ZoneNames[static_cast<int32>(Hour.Zone)], Hour.Density, Falling, Weather, Viewers.Num(), TargetPeople, *Mix);
+}
+
+EZone UMarburgumStreetSubsystem::ZoneAt(const FVector& At) const
+{
+    const int32 Node = Graph.NearestNode(At, MarburgumStreetPopulation::ViewerZoneSearchCm, MarburgumStreetPopulation::ViewerZoneSearchCm);
+    return Node == INDEX_NONE ? EZone::Rural : static_cast<EZone>(Graph.GetNodes()[Node].Zone);
 }
 
 void UMarburgumStreetSubsystem::SendSomeoneHome(double Time)
@@ -523,6 +555,11 @@ bool UMarburgumStreetSubsystem::TrySpawnFor(const FMarburgumStreetViewer& Viewer
         {
             continue;
         }
+        // Busy streets fill first: a quiet one takes its share of the newcomers in proportion to its activity.
+        if (Random.FRand() > FMath::Max(MinSpawnActivity, Graph.GetNodes()[Node].Activity))
+        {
+            continue;
+        }
 
         if (SpawnAt(Node, nullptr, bInView ? TEXT("in_view") : TEXT("out_of_view"), FVector::Dist2D(Viewer.Location, At)))
         {
@@ -537,7 +574,9 @@ AMarburgumPedestrian* UMarburgumStreetSubsystem::SpawnAt(int32 Node, const FVect
     using namespace MarburgumStreetPopulation;
     const FVector NodeAt = Graph.GetNodes()[Node].Location;
     const FVector At = Override ? *Override : NodeAt;
-    const int32 GroupIndex = PickWeighted(Hour.Mix, GroupCount, Random.FRand());
+    // Who comes is who walks this street at this hour (ADR-068).
+    const FStreetHour Here = StreetHourAt(ClockWeekday, ClockHour, static_cast<EZone>(Graph.GetNodes()[Node].Zone));
+    const int32 GroupIndex = PickWeighted(Here.Mix, GroupCount, Random.FRand());
     const FGroup& Group = Groups[GroupIndex];
     const int32 LookIndex = FMath::Max(0, PickLook(Group, Random.FRand()));
     const EPersonality Personality = PickPersonality(Group, Random.FRand());
@@ -563,9 +602,9 @@ AMarburgumPedestrian* UMarburgumStreetSubsystem::SpawnAt(int32 Node, const FVect
     People.Add(Person);
     // Just put where somebody may be looking: counted as seen now, so the cull gives them their grace.
     Person->LastSeenSeconds = Now();
-    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=spawn npc=%s group=%s profile=%s personality=%s pace=%.2f why=%s player_m=%.1f at=%.0f,%.0f,%.0f"),
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=spawn npc=%s group=%s profile=%s personality=%s pace=%.2f why=%s zone=%s activity=%.2f player_m=%.1f at=%.0f,%.0f,%.0f"),
         StreetLogPrefix, *Person->GetNpcId().ToString(), Group.Id, Looks[LookIndex].Profile, PersonalityNames[static_cast<int32>(Personality)], Pace,
-        Why, PlayerDistanceCm / 100.0, At.X, At.Y, At.Z);
+        Why, ZoneNames[static_cast<int32>(Here.Zone)], Graph.GetNodes()[Node].Activity, PlayerDistanceCm / 100.0, At.X, At.Y, At.Z);
     return Person;
 }
 

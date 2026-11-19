@@ -1,7 +1,7 @@
 //! Street people (ADR-044): the street data and the shared C++ contract carry the same rules, decision tables,
-//! groups and looks (the original's ambient population) and the same hours (ADR-067); every table answers
+//! groups and looks (the original's ambient population) and the same hours (ADR-067) in every zone (ADR-068); every table answers
 //! something; every group can be dressed and walks at some hour; San Andreas' crime and pursuit vocabulary stays out; and the walk graph the server reads is there,
-//! staged, and mostly one network.
+//! staged, mostly one network, and every node of it on a known zone.
 
 use regex::Regex;
 use serde_json::Value;
@@ -100,39 +100,67 @@ fn int_list(text: &str) -> Vec<f64> {
     text.split(',').filter_map(|n| n.trim().trim_end_matches('f').parse().ok()).collect()
 }
 
-/// Who is out when (ADR-067): the periods cover the day in order, and their density and mix match the contract's;
-/// every row has somebody in it and every group walks at some hour. Returns the number of periods.
-fn check_hours(data: &Value, contract: &str, data_groups: &[Value], problems: &mut Problems) -> usize {
+/// The rows of one contract table: every `{ n, n, ... }` from `start` up to the table's closing `};`.
+fn table_rows(contract: &str, start: &str) -> Vec<Vec<f64>> {
+    let Some(from) = contract.find(start) else { return Vec::new() };
+    let body = &contract[from + start.len()..];
+    let body = &body[..body.find("\n    };").unwrap_or(body.len())];
+    Regex::new(r"\{ (-?[0-9.]+f?(?:, -?[0-9.]+f?)+) \}").unwrap().captures_iter(body).map(|c| int_list(&c[1])).collect()
+}
+
+/// Who is out when (ADR-067) and where (ADR-068): the periods cover the day in order, and every zone's density and
+/// mix match the contract's, in the walk graph's order of zones; every row has somebody in it, the old town is never
+/// empty and every group walks somewhere at some hour. Returns the number of zones.
+fn check_hours(data: &Value, contract: &str, subsystem: &str, graph: &Value, data_groups: &[Value], problems: &mut Problems) -> usize {
     let hours = &data["hours"];
     let starts = Regex::new(r"PeriodStartHours\[\] = \{ ([^}]*) \}").unwrap().captures(contract).map(|c| int_list(&c[1])).unwrap_or_default();
-    let density = Regex::new(r"LentDensity\[\] = \{ ([^}]*) \}").unwrap().captures(contract).map(|c| int_list(&c[1])).unwrap_or_default();
-    let rows: Vec<Vec<f64>> = contract
-        .find("LentMixByPeriod[][GroupCount] = {")
+    let names: Vec<String> = contract
+        .find("ZoneNames[] = {")
         .map(|start| {
-            Regex::new(r"\{ (\d+(?:, \d+)+) \}").unwrap().captures_iter(&contract[start..]).take(PERIODS.len()).map(|c| int_list(&c[1])).collect()
+            let body = &contract[start..];
+            let body = &body[..body.find("};").unwrap_or(body.len())];
+            Regex::new(r#"TEXT\("(\w+)"\)"#).unwrap().captures_iter(body).map(|c| c[1].to_string()).collect()
         })
         .unwrap_or_default();
-    problems.expect(starts.len() == PERIODS.len() && density.len() == PERIODS.len() && rows.len() == PERIODS.len(),
-        format!("hours: contract has {} starts, {} densities, {} mix rows", starts.len(), density.len(), rows.len()));
+    let density = table_rows(contract, "ZoneDensity[][PeriodCount] = {");
+    let mix = table_rows(contract, "ZoneMix[][PeriodCount][GroupCount] = {");
+    let zones = hours["zones"].as_object().cloned().unwrap_or_default();
+    let data_names: Vec<&String> = zones.keys().collect();
+    problems.expect(starts.len() == PERIODS.len(), format!("hours: contract has {} period starts", starts.len()));
+    problems.expect(!names.is_empty() && density.len() == names.len() && mix.len() == names.len() * PERIODS.len(),
+        format!("hours: contract has {} zones, {} density rows, {} mix rows", names.len(), density.len(), mix.len()));
+    problems.expect(data_names.iter().map(|n| n.as_str()).eq(names.iter().map(String::as_str)), format!("hours: data zones {data_names:?} vs contract {names:?}"));
+    let graph_zones: Vec<&str> = graph["zones"].as_array().map(|a| a.iter().filter_map(Value::as_str).collect()).unwrap_or_default();
+    problems.expect(graph_zones.iter().copied().eq(names.iter().map(String::as_str)), format!("hours: walk graph zones {graph_zones:?} vs contract {names:?}"));
+
     let mut end = 0.0;
-    let mut walks = vec![0.0; data_groups.len()];
     for (i, period) in PERIODS.iter().enumerate() {
         let span: Vec<f64> = hours["periods"][period].as_array().map(|a| a.iter().filter_map(Value::as_f64).collect()).unwrap_or_default();
         problems.expect(span.len() == 2 && close(span[0], end) && span[1] > span[0], format!("hours: period {period} {span:?} does not follow {end}"));
         problems.expect(starts.get(i).is_some_and(|&s| span.first().is_some_and(|&d| close(s, d))), format!("hours: {period} starts at {span:?} in data, {:?} in the contract", starts.get(i)));
         end = span.get(1).copied().unwrap_or(f64::NAN);
-        let want = hours["density"][period].as_f64();
-        problems.expect(matches!((want, density.get(i)), (Some(w), Some(&h)) if close(w, h) && w > 0.0 && w <= 1.0),
-            format!("hours: {period} density data {want:?} vs contract {:?}", density.get(i)));
-        let want_mix: Vec<f64> = data_groups.iter().map(|g| hours["mix"][period][g["id"].as_str().unwrap_or("")].as_f64().unwrap_or(0.0)).collect();
-        let unknown: Vec<&String> = hours["mix"][period].as_object().map(|o| o.keys().filter(|k| !data_groups.iter().any(|g| g["id"].as_str() == Some(k.as_str()))).collect()).unwrap_or_default();
-        problems.expect(unknown.is_empty(), format!("hours: {period} mixes groups that do not exist: {unknown:?}"));
-        problems.expect(rows.get(i) == Some(&want_mix) && want_mix.iter().sum::<f64>() > 0.0, format!("hours: {period} mix data {want_mix:?} vs contract {:?}", rows.get(i)));
-        for (k, w) in want_mix.iter().enumerate() {
-            walks[k] += w;
-        }
     }
     problems.expect(close(end, 24.0), format!("hours: the periods end at {end}, not 24"));
+
+    let mut walks = vec![0.0; data_groups.len()];
+    for (z, name) in names.iter().enumerate() {
+        let zone = &hours["zones"][name];
+        for (i, period) in PERIODS.iter().enumerate() {
+            let want = zone["density"][period].as_f64();
+            let have = density.get(z).and_then(|r| r.get(i)).copied();
+            let floor = if z == 0 { f64::MIN_POSITIVE } else { 0.0 };
+            problems.expect(matches!((want, have), (Some(w), Some(h)) if close(w, h) && w >= floor && w <= 1.0),
+                format!("hours: {name} {period} density data {want:?} vs contract {have:?}"));
+            let want_mix: Vec<f64> = data_groups.iter().map(|g| zone["mix"][period][g["id"].as_str().unwrap_or("")].as_f64().unwrap_or(0.0)).collect();
+            let unknown: Vec<&String> = zone["mix"][period].as_object().map(|o| o.keys().filter(|k| !data_groups.iter().any(|g| g["id"].as_str() == Some(k.as_str()))).collect()).unwrap_or_default();
+            problems.expect(unknown.is_empty(), format!("hours: {name} {period} mixes groups that do not exist: {unknown:?}"));
+            let row = mix.get(z * PERIODS.len() + i);
+            problems.expect(row == Some(&want_mix) && want_mix.iter().sum::<f64>() > 0.0, format!("hours: {name} {period} mix data {want_mix:?} vs contract {row:?}"));
+            for (k, w) in want_mix.iter().enumerate() {
+                walks[k] += w;
+            }
+        }
+    }
     for (g, total) in data_groups.iter().zip(&walks) {
         problems.expect(*total > 0.0, format!("hours: group {} never walks", g["id"]));
     }
@@ -141,9 +169,32 @@ fn check_hours(data: &Value, contract: &str, data_groups: &[Value], problems: &m
         let have = constant(contract, name);
         problems.expect(matches!((want, have), (Some(w), Some(h)) if close(w, h)), format!("hours {key}: data {want:?} vs contract {name} {have:?}"));
     }
+    // The server's own two numbers (ADR-068), in its private namespace.
+    for (key, name, factor) in [("min_spawn_activity", "MinSpawnActivity", 1.0), ("viewer_zone_search_m", "ViewerZoneSearchCm", 100.0)] {
+        let want = hours[key].as_f64().map(|v| v * factor);
+        let have = Regex::new(&format!(r"constexpr (?:float|double) {name} = ([0-9.]+)f?;")).unwrap().captures(subsystem).and_then(|c| c[1].parse::<f64>().ok());
+        problems.expect(matches!((want, have), (Some(w), Some(h)) if close(w, h)), format!("hours {key}: data {want:?} vs subsystem {name} {have:?}"));
+    }
     // Rain thins the street; it never empties it.
     problems.expect(hours["rain_thinning"].as_f64().is_some_and(|r| (0.0..1.0).contains(&r)), "hours: rain would empty the street");
-    PERIODS.len()
+    names.len()
+}
+
+/// Every walk node carries a zone the contract knows and an activity in 0..1 (ADR-068). Returns the nodes per zone.
+fn check_graph_zones(graph: &Value, zone_count: usize, problems: &mut Problems) -> Vec<usize> {
+    let mut by_zone = vec![0usize; zone_count];
+    let mut bad = 0usize;
+    for node in graph["nodes"].as_array().map(Vec::as_slice).unwrap_or_default() {
+        let zone = node.get(4).and_then(Value::as_u64).map(|z| z as usize);
+        let activity = node.get(5).and_then(Value::as_f64);
+        match (zone, activity) {
+            (Some(z), Some(a)) if z < zone_count && (0.0..=1.0).contains(&a) => by_zone[z] += 1,
+            _ => bad += 1,
+        }
+    }
+    problems.expect(bad == 0, format!("walk graph: {bad} nodes without a zone and activity (lent-ground street-zones)"));
+    problems.expect(by_zone.iter().filter(|&&n| n > 0).count() >= 4, format!("walk graph: nodes by zone {by_zone:?}, fewer than four districts"));
+    by_zone
 }
 
 pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
@@ -224,7 +275,8 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
             problems.expect(looks.iter().any(|l| &l.1 == archetype), format!("group {id}: no look for archetype {archetype}"));
         }
     }
-    let periods = check_hours(&data, &contract, &data_groups, problems);
+    let zone_count = check_hours(&data, &contract, &subsystem, &graph, &data_groups, problems);
+    let by_zone = check_graph_zones(&graph, zone_count, problems);
 
     // Out of scope by decision (ADR-041, ADR-044).
     let lowered = format!("{contract}\n{pedestrian}\n{subsystem}").to_lowercase();
@@ -241,7 +293,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     problems.expect(ini.contains("+DirectoriesToAlwaysStageAsUFS=(Path=\"Marburgum/Street\")"), "the walk graph is not staged into packaged builds");
 
     vec![format!(
-        "Street contract OK: {} rules, {} decision tables, {} groups, {} looks and {periods} hours of the day match {DATA}; walk graph {} nodes ({} in the largest network), staged.",
+        "Street contract OK: {} rules, {} decision tables, {} groups, {} looks and {zone_count} zones' hours match {DATA}; walk graph {} nodes ({} in the largest network, by zone {by_zone:?}), staged.",
         RULES.len(),
         rows.len(),
         groups.len(),

@@ -254,6 +254,13 @@ namespace MarburgumII::Street
         { TEXT("lent_passerby"), TEXT("evening_walker"), 0x4e5c68, 0x2a3036, 0.99f },
         { TEXT("hall_three_night_guard"), TEXT("night_guard"), 0x313a42, 0x1f2428, 1.05f },
         { TEXT("lent_drunk"), TEXT("belligerent_drinker"), 0x5a3a3a, 0x2a2222, 1.04f },
+        // Workers and people out of doors, for the districts (ADR-068), after the rest for the same reason.
+        { TEXT("hall_three_worker"), TEXT("industrial_worker"), 0x4e5a63, 0x2b3035, 1.03f },
+        { TEXT("lent_workshop_mechanic"), TEXT("mechanic"), 0x354b58, 0x242b30, 1.04f },
+        { TEXT("matej_hall_three"), TEXT("industrial_custodian"), 0x59604c, 0x2d3129, 1.02f },
+        { TEXT("brane_sign_painter"), TEXT("sign_painter"), 0x4e5962, 0x2b3035, 1.02f },
+        { TEXT("drago_potocnik"), TEXT("mechanic_dispatcher"), 0x3a4a56, 0x22282c, 1.05f },
+        { TEXT("lent_angler"), TEXT("riverside_angler"), 0x596455, 0x353a34, 1.f },
     };
 
     /** A population group: its looks (by archetype), walking pace and how many are norm, tough or weak. */
@@ -269,8 +276,8 @@ namespace MarburgumII::Street
         int32 Personality[3];
     };
 
-    // The groups that walk the old town (the original's old_town mixes, ADR-067); workers, people outdoors and the
-    // rest wait for other districts.
+    // The original's street groups, all but the ones ADR-006 keeps out. The old town's come first (ADR-067); workers
+    // and people out of doors came with the other districts (ADR-068), after them so the indices stay.
     inline constexpr FGroup Groups[] = {
         { TEXT("commuters"), TEXT("Commuter"), { TEXT("commuter"), TEXT("office_casual"), TEXT("office_bookkeeper"), TEXT("postal_worker"), TEXT("delivery_clerk") },
             1.35f, 1.65f, { 75, 10, 15 } },
@@ -284,45 +291,140 @@ namespace MarburgumII::Street
             1.0f, 1.4f, { 70, 15, 15 } },
         { TEXT("night_people"), TEXT("Night owl"), { TEXT("night_bus_teen"), TEXT("evening_walker"), TEXT("night_guard"), TEXT("belligerent_drinker"), nullptr },
             1.0f, 1.5f, { 40, 50, 10 } },
+        { TEXT("workers"), TEXT("Worker"), { TEXT("industrial_worker"), TEXT("mechanic"), TEXT("industrial_custodian"), TEXT("sign_painter"), TEXT("mechanic_dispatcher") },
+            1.2f, 1.5f, { 55, 40, 5 } },
+        { TEXT("outdoor"), TEXT("Out walking"), { TEXT("evening_walker"), TEXT("riverside_angler"), TEXT("courtyard_walker"), nullptr, nullptr },
+            1.0f, 1.4f, { 70, 15, 15 } },
     };
     inline constexpr int32 GroupCount = UE_ARRAY_COUNT(Groups);
-    enum EGroupIndex : int32 { Commuters, Shoppers, Pensioners, Students, Residents, NightPeople };
+    enum EGroupIndex : int32 { Commuters, Shoppers, Pensioners, Students, Residents, NightPeople, Workers, Outdoor };
 
-    // ---- Who is out when (ADR-067) ----
+    // ---- Who is out when (ADR-067), and where (ADR-068) ----
     //
-    // The original's time-of-day tables for the old town (population_groups.json `periods` and `zones.old_town`),
-    // read on the world clock (ADR-064): its Ljubljana hour and the mirrored 1990s date's own weekday. ADR-044 left
-    // them out for want of a clock. The weekday tables are copied unchanged. The original's weekend (Friday 20:00 to
-    // Sunday 20:00, with its own tables) and its rain rule came in from a reverse-engineering report of San
-    // Andreas' population cycle, so they stay out; Marburgum II's own weekend and rain are below.
+    // The original's time-of-day tables (population_groups.json `periods` and `zones`), read on the world clock
+    // (ADR-064): its Ljubljana hour and the mirrored 1990s date's own weekday. ADR-044 left them out for want of a
+    // clock; ADR-067 brought in the old town's, ADR-068 every zone's, with the zone of every walk-graph node from the
+    // original's road graph (tools/lent-ground street-zones). The weekday tables are copied unchanged, all but the
+    // share of every zone's street that ADR-006 keeps out. The original's weekend (Friday 20:00 to Sunday 20:00,
+    // with its own tables per zone) and its rain rule came in from a reverse-engineering report of San Andreas'
+    // population cycle, so they stay out; Marburgum II's own weekend and rain are below. Cars wait for traffic.
 
     enum class EPeriod : uint8 { Night, Morning, Day, Evening, Late, Count };
     inline constexpr const TCHAR* PeriodNames[] = { TEXT("night"), TEXT("morning"), TEXT("day"), TEXT("evening"), TEXT("late") };
+    inline constexpr int32 PeriodCount = static_cast<int32>(EPeriod::Count);
     /** The hour each period begins on a weekday: night 0-6, morning 6-9, day 9-17, evening 17-21, late 21-24. */
     inline constexpr int32 PeriodStartHours[] = { 0, 6, 9, 17, 21 };
-    /** How full the street is in each period, of PeoplePerPlayer (old_town `pedestrians`). */
-    inline constexpr float LentDensity[] = { 0.15f, 0.6f, 1.0f, 0.9f, 0.45f };
+
     /**
-     * Who is out in each period: relative weights over Groups (old_town `pedestrian_mix`). The day row is ADR-044's,
-     * which added its residents to the original's.
+     * The original's zones (tools/build_road_graph.py ZONES), in its order, which is the walk graph's: what kind of
+     * street a node is on, from the cadastre's homes and business premises, the Center quarter's heritage listings,
+     * OpenStreetMap's industrial and school buildings and the green land-use round it.
      */
-    inline constexpr int32 LentMixByPeriod[][GroupCount] = {
-        // commuters, shoppers, pensioners, students, residents, night people
-        { 0, 0, 0, 0, 20, 80 },
-        { 50, 20, 15, 15, 0, 0 },
-        { 20, 40, 20, 20, 10, 0 },
-        { 0, 30, 0, 25, 25, 20 },
-        { 0, 0, 0, 30, 10, 60 },
+    enum class EZone : uint8 { OldTown, Commercial, ResidentialBlocks, Residential, Industrial, School, Park, Rural, Count };
+    inline constexpr const TCHAR* ZoneNames[] = { TEXT("old_town"), TEXT("commercial"), TEXT("residential_blocks"), TEXT("residential"),
+        TEXT("industrial"), TEXT("school"), TEXT("park"), TEXT("rural") };
+    inline constexpr int32 ZoneCount = static_cast<int32>(EZone::Count);
+
+    /** How full the street is in each zone and period, of PeoplePerPlayer (the zones' `pedestrians`). */
+    inline constexpr float ZoneDensity[][PeriodCount] = {
+        // night, morning, day, evening, late
+        { 0.15f, 0.6f, 1.0f, 0.9f, 0.45f }, // old_town
+        { 0.1f, 0.6f, 0.9f, 0.7f, 0.25f }, // commercial
+        { 0.1f, 0.7f, 0.6f, 0.8f, 0.3f }, // residential_blocks
+        { 0.05f, 0.45f, 0.4f, 0.55f, 0.15f }, // residential
+        { 0.05f, 0.5f, 0.35f, 0.25f, 0.05f }, // industrial
+        { 0.03f, 0.9f, 0.8f, 0.35f, 0.1f }, // school
+        { 0.02f, 0.25f, 0.45f, 0.5f, 0.08f }, // park
+        { 0.0f, 0.08f, 0.1f, 0.08f, 0.0f }, // rural
     };
-    static_assert(UE_ARRAY_COUNT(PeriodNames) == static_cast<int32>(EPeriod::Count));
-    static_assert(UE_ARRAY_COUNT(PeriodStartHours) == static_cast<int32>(EPeriod::Count));
-    static_assert(UE_ARRAY_COUNT(LentDensity) == static_cast<int32>(EPeriod::Count));
-    static_assert(UE_ARRAY_COUNT(LentMixByPeriod) == static_cast<int32>(EPeriod::Count));
+
+    /**
+     * Who is out in each zone and period: relative weights over Groups (the zones' `pedestrian_mix`). The old town's
+     * day row is ADR-044's, which added its residents to the original's.
+     */
+    inline constexpr int32 ZoneMix[][PeriodCount][GroupCount] = {
+        // commuters, shoppers, pensioners, students, residents, night people, workers, out walking
+        { // old_town
+            { 0, 0, 0, 0, 20, 80, 0, 0 },
+            { 50, 20, 15, 15, 0, 0, 0, 0 },
+            { 20, 40, 20, 20, 10, 0, 0, 0 },
+            { 0, 30, 0, 25, 25, 20, 0, 0 },
+            { 0, 0, 0, 30, 10, 60, 0, 0 },
+        },
+        { // commercial
+            { 0, 0, 0, 0, 0, 70, 30, 0 },
+            { 60, 20, 0, 0, 0, 0, 20, 0 },
+            { 25, 50, 15, 10, 0, 0, 0, 0 },
+            { 25, 45, 0, 15, 0, 15, 0, 0 },
+            { 30, 0, 0, 0, 0, 70, 0, 0 },
+        },
+        { // residential_blocks
+            { 0, 0, 0, 0, 30, 70, 0, 0 },
+            { 45, 0, 10, 25, 20, 0, 0, 0 },
+            { 0, 20, 30, 10, 40, 0, 0, 0 },
+            { 25, 0, 0, 25, 50, 0, 0, 0 },
+            { 0, 0, 0, 0, 50, 50, 0, 0 },
+        },
+        { // residential
+            { 0, 0, 0, 0, 40, 60, 0, 0 },
+            { 45, 0, 10, 20, 25, 0, 0, 0 },
+            { 0, 20, 35, 0, 45, 0, 0, 0 },
+            { 20, 0, 0, 0, 60, 0, 0, 20 },
+            { 0, 0, 0, 0, 60, 40, 0, 0 },
+        },
+        { // industrial
+            { 0, 0, 0, 0, 0, 30, 70, 0 },
+            { 20, 0, 0, 0, 0, 0, 80, 0 },
+            { 15, 0, 0, 0, 0, 0, 85, 0 },
+            { 0, 0, 0, 0, 30, 0, 70, 0 },
+            { 0, 0, 0, 0, 0, 50, 50, 0 },
+        },
+        { // school
+            { 0, 0, 0, 0, 0, 100, 0, 0 },
+            { 25, 0, 0, 75, 0, 0, 0, 0 },
+            { 15, 0, 0, 70, 15, 0, 0, 0 },
+            { 0, 0, 0, 50, 50, 0, 0, 0 },
+            { 0, 0, 0, 50, 0, 50, 0, 0 },
+        },
+        { // park
+            { 0, 0, 0, 0, 0, 100, 0, 0 },
+            { 20, 0, 30, 0, 0, 0, 0, 50 },
+            { 0, 0, 30, 25, 0, 0, 0, 45 },
+            { 0, 0, 0, 25, 20, 0, 0, 55 },
+            { 0, 0, 0, 0, 0, 70, 0, 30 },
+        },
+        { // rural
+            { 0, 0, 0, 0, 0, 0, 0, 100 },
+            { 0, 0, 0, 0, 0, 0, 60, 40 },
+            { 0, 0, 0, 0, 0, 0, 40, 60 },
+            { 0, 0, 0, 0, 30, 0, 0, 70 },
+            { 0, 0, 0, 0, 0, 0, 0, 100 },
+        },
+    };
+    static_assert(UE_ARRAY_COUNT(PeriodNames) == PeriodCount);
+    static_assert(UE_ARRAY_COUNT(PeriodStartHours) == PeriodCount);
+    static_assert(UE_ARRAY_COUNT(ZoneNames) == ZoneCount);
+    static_assert(UE_ARRAY_COUNT(ZoneDensity) == ZoneCount);
+    static_assert(UE_ARRAY_COUNT(ZoneMix) == ZoneCount);
+
+    /** The zone of a walk-graph name, or the old town for one the game does not know (ADR-067's street). */
+    inline EZone ZoneNamed(const FString& Name)
+    {
+        for (int32 Zone = 0; Zone < ZoneCount; ++Zone)
+        {
+            if (Name == ZoneNames[Zone])
+            {
+                return static_cast<EZone>(Zone);
+            }
+        }
+        return EZone::OldTown;
+    }
 
     // Marburgum II's own weekend, after the lit windows' households (ADR-066): Friday and Saturday evenings run this
     // many hours later, into the small hours of Saturday and Sunday, and Saturday and Sunday mornings start as late.
-    // Nobody commutes on a Saturday or a Sunday, and the shops are shut on a Sunday (MarburgumLitWindows.h
-    // ShopsOpen): their share of the street walks as residents instead.
+    // Nobody commutes on a Saturday or a Sunday, the shops are shut on a Sunday (MarburgumLitWindows.h ShopsOpen) and
+    // there is no school at the weekend (ADR-068): their share of the street walks as residents instead. Workers keep
+    // their shifts.
     inline constexpr int32 WeekendLaterHours = 1;
 
     // Marburgum II's own rain: whatever falls (rain, sleet or snow, MarburgumWeather.h's 0..1) keeps people in.
@@ -333,25 +435,30 @@ namespace MarburgumII::Street
     // furthest first, and never nearer a player than SpawnOutOfViewMinCm. Anyone in sight stays.
     inline constexpr float HomeEverySeconds = 2.f;
 
-    /** The street at an hour of the Marburgum clock. */
+    /** The street at an hour of the Marburgum clock, in one zone. */
     struct FStreetHour
     {
         EPeriod Period = EPeriod::Day;
         /** The day the period belongs to (0 Monday): Saturday's small hours are Friday's late evening. */
         int32 Weekday = 1;
+        EZone Zone = EZone::OldTown;
         /** Of PeoplePerPlayer, before the weather. */
         float Density = 1.f;
         int32 Mix[GroupCount] = {};
     };
 
-    /** The street at Hour (0..24, with minutes as a fraction) on Weekday (0 Monday .. 6 Sunday) of the Marburgum clock. */
-    inline FStreetHour StreetHourAt(int32 Weekday, double Hour)
+    /**
+     * The street at Hour (0..24, with minutes as a fraction) on Weekday (0 Monday .. 6 Sunday) of the Marburgum clock,
+     * in Zone (the old town unless said).
+     */
+    inline FStreetHour StreetHourAt(int32 Weekday, double Hour, EZone Zone = EZone::OldTown)
     {
         FStreetHour Out;
         Weekday = ((Weekday % 7) + 7) % 7;
         const bool bLateNight = Weekday == 4 || Weekday == 5;
         const bool bLateMorning = Weekday == 5 || Weekday == 6;
         Out.Weekday = Weekday;
+        Out.Zone = static_cast<int32>(Zone) < ZoneCount ? Zone : EZone::OldTown;
         if (bLateMorning && Hour < WeekendLaterHours)
         {
             Out.Period = EPeriod::Late;
@@ -378,22 +485,28 @@ namespace MarburgumII::Street
             Out.Period = EPeriod::Late;
         }
         const int32 Period = static_cast<int32>(Out.Period);
-        Out.Density = LentDensity[Period];
+        const int32 ZoneIndex = static_cast<int32>(Out.Zone);
+        Out.Density = ZoneDensity[ZoneIndex][Period];
         for (int32 Group = 0; Group < GroupCount; ++Group)
         {
-            Out.Mix[Group] = LentMixByPeriod[Period][Group];
+            Out.Mix[Group] = ZoneMix[ZoneIndex][Period][Group];
         }
         const bool bWeekend = Out.Weekday == 5 || Out.Weekday == 6;
-        const bool bSundayDaylight = Out.Weekday == 6 && (Out.Period == EPeriod::Morning || Out.Period == EPeriod::Day);
+        const bool bDaylight = Out.Period == EPeriod::Morning || Out.Period == EPeriod::Day;
         if (bWeekend)
         {
             Out.Mix[Residents] += Out.Mix[Commuters];
             Out.Mix[Commuters] = 0;
         }
-        if (bSundayDaylight)
+        if (Out.Weekday == 6 && bDaylight)
         {
             Out.Mix[Residents] += Out.Mix[Shoppers];
             Out.Mix[Shoppers] = 0;
+        }
+        if (bWeekend && bDaylight && Out.Zone == EZone::School)
+        {
+            Out.Mix[Residents] += Out.Mix[Students];
+            Out.Mix[Students] = 0;
         }
         return Out;
     }

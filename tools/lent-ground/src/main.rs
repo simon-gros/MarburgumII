@@ -42,6 +42,7 @@ mod proj;
 mod ring;
 mod shapes;
 mod walk;
+mod zones;
 
 use grid::Grid;
 use mesh::{PavedMesh, Surface};
@@ -835,7 +836,9 @@ const USAGE: &str = "usage:
        lent-ground surface-kinds --surface DIR/surface.png --out Content/Marburgum/Ground/lent_surface.bin [--half 768 --cell 2]
        lent-ground places --osm osm_lent.json.gz --districts ORIGINAL/project/data/districts.json
               --landmarks ORIGINAL/project/data/landmarks.json --out Content/Marburgum/Places/lent_places.json
-              [--tiers bespoke --half 768]";
+              [--tiers bespoke --half 768]
+       lent-ground street-zones --walk-graph Content/Marburgum/Street/lent_walk_graph.json
+              --road-graph ORIGINAL/project/data/road_graph.json";
 
 fn main() {
     let mut argv: Vec<String> = std::env::args().skip(1).collect();
@@ -878,6 +881,20 @@ fn main() {
             let text = read_osm_text(&osm_path)?;
             let summary = places::build(&osm_path, &text, Path::new(&get("districts")?), Path::new(&get("landmarks")?), &tiers.split(',').collect::<Vec<_>>(), half, Path::new(&get("out")?))?;
             eprintln!("places: {summary}");
+            Ok(())
+        });
+        if let Err(e) = result {
+            eprintln!("lent-ground: {e}\n{USAGE}");
+            std::process::exit(2);
+        }
+        return;
+    }
+    if argv.first().map(String::as_str) == Some("street-zones") {
+        argv.remove(0);
+        let result = read_flags(argv.into_iter()).and_then(|f| {
+            let get = |k: &str| f.get(k).cloned().ok_or(format!("missing --{k}"));
+            let summary = zones::annotate(Path::new(&get("walk-graph")?), Path::new(&get("road-graph")?))?;
+            eprintln!("street-zones: {summary}");
             Ok(())
         });
         if let Err(e) = result {
