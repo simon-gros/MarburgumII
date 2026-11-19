@@ -67,7 +67,22 @@ The fixture now requires the Stari most deck near the origin, at least 180 m, fr
 
 Two null-RHI clients on port 27852 at 00:26 Marburgum time, both read as `residential_blocks`. One player alone wanted 2. With both connected the budget stayed 2, split 1 and 1, and two people were in the world (`Saved/StreetMulti/20261119Ttwo/server.log`). They did not each bring a street. Night density only. Not a commercial-versus-residential pair, not a separation, not opposite banks, not a disconnect.
 
-During the crossing the district lookup ran 156 times, 155 from the 5 m / 3 m hold, and the one search took 0.09 ms. One player. No `-MB2NetRate` sample. No package.
+During the crossing the district lookup ran 156 times, 155 from the 5 m / 3 m hold, and the one search took 0.09 ms. One player.
+
+## Multiplayer matrix, 20 November 2026
+
+`scripts/street-multiplayer-smoke-linux.sh editor`, port 27853, null RHI, clock pinned to 10:00 on 18 June 2026, clear weather, places off. Evidence `Saved/StreetMulti/20261119T235248Z/` (`summary.json`, the script exited 0). The run was the driver on top of `1c8dcf7`, before that driver was committed.
+
+| Scenario | Result | What the server kept |
+| --- | --- | --- |
+| A day, commercial and houses | Pass | wants 18 and 8, haves 18 and 8, 26 people |
+| B day, two players 8–35 m apart on the shopping street | Pass | one crowd of 18, split 9 and 9, not 36 |
+| C apart, then back | Pass | 18+8 while apart, 18 shared again when back. One budget change each way |
+| D opposite banks | Pass for place and district | blocks and school, wants 12 and 16. After 15 s only 8 of 28 had spawned, 5 and 3 on the two banks |
+| E drop and return | Pass | one viewer left at 12; both back, 12+12 and 24 people. Same zone name, far apart, so not a shared crowd |
+| Cap, three old-town players | Pass for the budget | unconstrained 60, target clamped to 48 (16 each). 40 had spawned when the window closed. The most alive at once was 40 |
+
+`-MB2NetRate` during the three-client cap, null RHI: server out 7.2–13.3 KB/s, the busiest client 3.2–5.8 KB/s, 17–39 street people. District lookups across the teleports: 2,527 of 2,541 from the hold, 0.70 ms in `NearestNode` altogether. The night shared-budget run was not repeated on this revision. No packaged build.
 
 ## Next verified delivery
 

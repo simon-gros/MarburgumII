@@ -110,6 +110,9 @@ void UMarburgumStreetSubsystem::OnWorldBeginPlay(UWorld& InWorld)
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetSeed="), Seed);
     bProbe = FParse::Param(FCommandLine::Get(), TEXT("MB2StreetProbe"));
     bBridgeCross = FParse::Param(FCommandLine::Get(), TEXT("MB2BridgeCross"));
+#if !UE_BUILD_SHIPPING
+    bCrowdMatrix = FParse::Param(FCommandLine::Get(), TEXT("MB2CrowdMatrix"));
+#endif
     int32 Places = 1;
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetPlaces="), Places);
     bPlaces = Places != 0;
@@ -167,6 +170,305 @@ void UMarburgumStreetSubsystem::Tick(float DeltaTime)
         StepAccumulator -= MarburgumStreetPopulation::StepSeconds;
         Step(Now());
     }
+}
+
+void UMarburgumStreetSubsystem::StepCrowdMatrix(double Time)
+{
+#if UE_BUILD_SHIPPING
+    static_cast<void>(Time);
+    return;
+#else
+    if (!bCrowdMatrix || CrowdPhase == 11)
+    {
+        return;
+    }
+    CrowdMaxPeople = FMath::Max(CrowdMaxPeople, CountPeople());
+    if (CrowdLastTarget >= 0 && TargetPeople != CrowdLastTarget && CrowdPhase > 0 && CrowdPhase < 6)
+    {
+        ++CrowdBudgetChanges;
+    }
+    CrowdLastTarget = TargetPeople;
+    TArray<FMarburgumStreetViewer> Ordered = Viewers;
+    Ordered.Sort([](const FMarburgumStreetViewer& A, const FMarburgumStreetViewer& B)
+    {
+        const int32 IdA = A.Character.IsValid() && A.Character->GetPlayerState() ? A.Character->GetPlayerState()->GetPlayerId() : MAX_int32;
+        const int32 IdB = B.Character.IsValid() && B.Character->GetPlayerState() ? B.Character->GetPlayerState()->GetPlayerId() : MAX_int32;
+        return IdA < IdB;
+    });
+    auto NodeOf = [&](uint8 Zone, const TArray<FVector>& Avoid, double MinCm) -> int32
+    {
+        int32 Best = INDEX_NONE;
+        float Activity = -1.f;
+        for (int32 Index = 0; Index < Graph.GetNodes().Num(); ++Index)
+        {
+            const FMarburgumWalkGraph::FNode& Node = Graph.GetNodes()[Index];
+            if (Node.bRoad || Node.bBridge || Node.Component != Graph.LargestComponent() || Node.Zone != Zone)
+            {
+                continue;
+            }
+            bool bClose = false;
+            for (const FVector& At : Avoid)
+            {
+                bClose |= FVector::Dist2D(Node.Location, At) < MinCm;
+            }
+            if (!bClose && Node.Activity > Activity)
+            {
+                Activity = Node.Activity;
+                Best = Index;
+            }
+        }
+        return Best;
+    };
+    auto Bank = [&](bool bNorth) -> int32
+    {
+        int32 Best = INDEX_NONE;
+        double BestX = bNorth ? -TNumericLimits<double>::Max() : TNumericLimits<double>::Max();
+        for (int32 Index = 0; Index < Graph.GetNodes().Num(); ++Index)
+        {
+            const FMarburgumWalkGraph::FNode& Node = Graph.GetNodes()[Index];
+            if (Node.bRoad || Node.bBridge || Node.Component != Graph.LargestComponent() || FMath::Abs(Node.Location.Y) > 4000.0)
+            {
+                continue;
+            }
+            const bool bSide = bNorth ? Node.Location.X > 12000.0 : Node.Location.X < -12000.0;
+            if (!bSide)
+            {
+                continue;
+            }
+            if ((bNorth && Node.Location.X > BestX) || (!bNorth && Node.Location.X < BestX))
+            {
+                BestX = Node.Location.X;
+                Best = Index;
+            }
+        }
+        return Best;
+    };
+    auto Place = [&](const FMarburgumStreetViewer& Viewer, int32 Node) -> bool
+    {
+        AMarburgumCharacter* Who = Viewer.Character.Get();
+        if (!Who || Node == INDEX_NONE)
+        {
+            return false;
+        }
+        return Who->TeleportTo(Graph.GetNodes()[Node].Location + FVector(0.0, 0.0, 120.0), FRotator::ZeroRotator, false, true);
+    };
+    auto Begin = [&](uint8 Phase)
+    {
+        CrowdPhase = Phase;
+        CrowdPhaseSince = Time;
+        bCrowdPlaced = false;
+        CrowdBudgetChanges = 0;
+    };
+    const auto Snapshot = [&](const TCHAR* Name, bool bPass)
+    {
+        FString Zones, Wants, Haves, Near, At;
+        for (int32 Index = 0; Index < Ordered.Num(); ++Index)
+        {
+            const int32 Slot = Viewers.IndexOfByPredicate([&](const FMarburgumStreetViewer& Viewer)
+            {
+                return Viewer.Character.Get() == Ordered[Index].Character.Get();
+            });
+            const FVector Here = Ordered[Index].Location;
+            int32 Count = 0;
+            for (const TWeakObjectPtr<AMarburgumPedestrian>& Person : People)
+            {
+                Count += Person.IsValid() && FVector::Dist2D(Person->GetActorLocation(), Here) < 8000.0 ? 1 : 0;
+            }
+            const TCHAR* Zone = ZoneNames[FMath::Clamp<int32>(static_cast<int32>(ZoneAt(Here)), 0, ZoneCount - 1)];
+            Zones += FString::Printf(TEXT("%s%s"), Index ? TEXT(",") : TEXT(""), Zone);
+            Wants += FString::Printf(TEXT("%s%d"), Index ? TEXT(",") : TEXT(""), ViewerWants.IsValidIndex(Slot) ? ViewerWants[Slot] : -1);
+            Haves += FString::Printf(TEXT("%s%d"), Index ? TEXT(",") : TEXT(""), ViewerHaves.IsValidIndex(Slot) ? ViewerHaves[Slot] : -1);
+            Near += FString::Printf(TEXT("%s%d"), Index ? TEXT(",") : TEXT(""), Count);
+            At += FString::Printf(TEXT("%s%.0f,%.0f"), Index ? TEXT(";") : TEXT(""), Here.X, Here.Y);
+        }
+        UE_LOG(LogMarburgumNet, Log, TEXT("MB2_CROWD role=server event=scenario name=%s pass=%d players=%d zones=%s wants=%s haves=%s near=%s at=%s people=%d target=%d changes=%d max_people=%d zone_lookups=%d zone_hits=%d zone_lookup_ms=%.2f"),
+            Name, bPass ? 1 : 0, Ordered.Num(), *Zones, *Wants, *Haves, *Near, *At, CountPeople(), TargetPeople, CrowdBudgetChanges, CrowdMaxPeople,
+            ZoneLookups, ZoneCacheHits, ZoneLookupSeconds * 1000.0);
+    };
+    if (CrowdPhase == 0)
+    {
+        if (Ordered.Num() >= 2)
+        {
+            Begin(1);
+        }
+        return;
+    }
+    if (!bCrowdPlaced)
+    {
+        bool bOk = false;
+        if (CrowdPhase == 1 && Ordered.Num() >= 2)
+        {
+            const int32 Commercial = NodeOf(static_cast<uint8>(EZone::Commercial), {}, 0.0);
+            TArray<FVector> Avoid;
+            if (Commercial != INDEX_NONE)
+            {
+                Avoid.Add(Graph.GetNodes()[Commercial].Location);
+            }
+            const int32 Houses = NodeOf(static_cast<uint8>(EZone::Residential), Avoid, 20000.0);
+            bOk = Place(Ordered[0], Commercial) && Place(Ordered[1], Houses);
+        }
+        else if (CrowdPhase == 2 && Ordered.Num() >= 2)
+        {
+            const int32 First = NodeOf(static_cast<uint8>(EZone::Commercial), {}, 0.0);
+            int32 Second = INDEX_NONE;
+            double Best = CrowdShareCm;
+            if (First != INDEX_NONE)
+            {
+                const FVector From = Graph.GetNodes()[First].Location;
+                for (int32 Index = 0; Index < Graph.GetNodes().Num(); ++Index)
+                {
+                    const FMarburgumWalkGraph::FNode& Node = Graph.GetNodes()[Index];
+                    const double Distance = FVector::Dist2D(Node.Location, From);
+                    if (!Node.bRoad && !Node.bBridge && Node.Component == Graph.LargestComponent() && Node.Zone == static_cast<uint8>(EZone::Commercial)
+                        && Distance >= 800.0 && Distance < Best)
+                    {
+                        Best = Distance;
+                        Second = Index;
+                    }
+                }
+            }
+            bOk = Second != INDEX_NONE && Place(Ordered[0], First) && Place(Ordered[1], Second);
+        }
+        else if (CrowdPhase == 3 && Ordered.Num() >= 2)
+        {
+            const int32 Away = NodeOf(static_cast<uint8>(EZone::Residential), { Ordered[0].Location }, 20000.0);
+            bOk = Place(Ordered[1], Away);
+        }
+        else if (CrowdPhase == 4 && Ordered.Num() >= 2)
+        {
+            bOk = Place(Ordered[1], Graph.NearestNode(Ordered[0].Location, 5000.0, 2000.0));
+        }
+        else if (CrowdPhase == 5 && Ordered.Num() >= 2)
+        {
+            bOk = Place(Ordered[0], Bank(false)) && Place(Ordered[1], Bank(true));
+        }
+        else if (CrowdPhase == 9 && Ordered.Num() >= 3)
+        {
+            const int32 First = NodeOf(static_cast<uint8>(EZone::OldTown), {}, 0.0);
+            TArray<FVector> Avoid;
+            if (First != INDEX_NONE)
+            {
+                Avoid.Add(Graph.GetNodes()[First].Location);
+            }
+            const int32 Second = NodeOf(static_cast<uint8>(EZone::OldTown), Avoid, 15000.0);
+            if (Second != INDEX_NONE)
+            {
+                Avoid.Add(Graph.GetNodes()[Second].Location);
+            }
+            const int32 Third = NodeOf(static_cast<uint8>(EZone::OldTown), Avoid, 15000.0);
+            bOk = Place(Ordered[0], First) && Place(Ordered[1], Second) && Place(Ordered[2], Third);
+        }
+        if (CrowdPhase == 6 || CrowdPhase == 8)
+        {
+            bCrowdPlaced = true;
+            return;
+        }
+        if (CrowdPhase == 7)
+        {
+            if (Ordered.Num() >= 2)
+            {
+                bCrowdPlaced = true;
+                CrowdPhaseSince = Time;
+            }
+            return;
+        }
+        if (!bOk)
+        {
+            Snapshot(TEXT("place_failed"), false);
+            CrowdPhase = 11;
+            return;
+        }
+        bCrowdPlaced = true;
+        CrowdPhaseSince = Time;
+        return;
+    }
+    if (CrowdPhase == 6)
+    {
+        UE_LOG(LogMarburgumNet, Log, TEXT("MB2_CROWD role=server event=scenario name=E phase=please_drop players=%d"), Ordered.Num());
+        if (Ordered.Num() <= 1 && Time - CrowdPhaseSince > 2.0)
+        {
+            Snapshot(TEXT("E_dropped"), Ordered.Num() == 1);
+            Begin(7);
+        }
+        else if (Time - CrowdPhaseSince > 45.0)
+        {
+            Snapshot(TEXT("E_dropped"), false);
+            CrowdPhase = 11;
+        }
+        return;
+    }
+    if (CrowdPhase == 7)
+    {
+        if (Ordered.Num() >= 2 && bCrowdPlaced && Time - CrowdPhaseSince > 15.0)
+        {
+            Snapshot(TEXT("E"), TargetPeople <= 48);
+            Begin(8);
+            bCrowdPlaced = true;
+            UE_LOG(LogMarburgumNet, Log, TEXT("MB2_CROWD role=server event=scenario name=cap phase=please_third players=%d"), Ordered.Num());
+        }
+        return;
+    }
+    if (CrowdPhase == 8)
+    {
+        if (Ordered.Num() >= 3)
+        {
+            Begin(9);
+        }
+        return;
+    }
+    if (Time - CrowdPhaseSince < 15.0)
+    {
+        return;
+    }
+    if (CrowdPhase == 1)
+    {
+        auto WantOf = [&](const FMarburgumStreetViewer& Viewer) -> int32
+        {
+            const int32 Slot = Viewers.IndexOfByPredicate([&](const FMarburgumStreetViewer& Other)
+            {
+                return Other.Character.Get() == Viewer.Character.Get();
+            });
+            return ViewerWants.IsValidIndex(Slot) ? ViewerWants[Slot] : 0;
+        };
+        const bool bZones = Ordered.Num() >= 2 && ZoneAt(Ordered[0].Location) == EZone::Commercial && ZoneAt(Ordered[1].Location) == EZone::Residential;
+        const int32 WantA = WantOf(Ordered[0]);
+        const int32 WantB = Ordered.Num() > 1 ? WantOf(Ordered[1]) : 0;
+        Snapshot(TEXT("A"), bZones && WantA > WantB && WantA > 0 && WantB > 0 && CountPeople() <= 48);
+        Begin(2);
+    }
+    else if (CrowdPhase == 2)
+    {
+        const double Apart = Ordered.Num() >= 2 ? FVector::Dist2D(Ordered[0].Location, Ordered[1].Location) : 1.0e9;
+        const int32 Solo = PeopleFor(1, Hour.Density * Weather);
+        Snapshot(TEXT("B"), Apart < CrowdShareCm && TargetPeople <= Solo && TargetPeople > 0 && CountPeople() <= 48);
+        Begin(3);
+    }
+    else if (CrowdPhase == 3)
+    {
+        const double Apart = Ordered.Num() >= 2 ? FVector::Dist2D(Ordered[0].Location, Ordered[1].Location) : 0.0;
+        Snapshot(TEXT("C_apart"), Apart > CrowdShareCm && CrowdBudgetChanges <= 4 && CountPeople() <= 48);
+        Begin(4);
+    }
+    else if (CrowdPhase == 4)
+    {
+        const double Apart = Ordered.Num() >= 2 ? FVector::Dist2D(Ordered[0].Location, Ordered[1].Location) : 1.0e9;
+        Snapshot(TEXT("C_back"), Apart < CrowdShareCm && CrowdBudgetChanges <= 4 && CountPeople() <= 48);
+        Begin(5);
+    }
+    else if (CrowdPhase == 5)
+    {
+        const bool bBanks = Ordered.Num() >= 2 && Ordered[0].Location.X < -10000.0 && Ordered[1].Location.X > 10000.0;
+        Snapshot(TEXT("D"), bBanks && CountPeople() <= 48);
+        Begin(6);
+    }
+    else if (CrowdPhase == 9)
+    {
+        const bool bCap = CountPeople() <= 48 && CrowdMaxPeople <= 48 && TargetPeople == 48 && Ordered.Num() >= 3;
+        Snapshot(TEXT("cap"), bCap);
+        CrowdPhase = 11;
+        UE_LOG(LogMarburgumNet, Log, TEXT("MB2_CROWD role=server event=matrix_done max_people=%d"), CrowdMaxPeople);
+    }
+#endif
 }
 
 void UMarburgumStreetSubsystem::StepBridgeCross(double Time)
@@ -415,6 +717,7 @@ void UMarburgumStreetSubsystem::Step(double Time)
     StepProbe();
     StepWaterProbe(Time);
     StepBridgeCross(Time);
+    StepCrowdMatrix(Time);
 
     if (Time - LastSummarySeconds >= MarburgumStreetPopulation::SummarySeconds)
     {

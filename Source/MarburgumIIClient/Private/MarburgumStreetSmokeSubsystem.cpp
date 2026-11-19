@@ -57,7 +57,8 @@ bool UMarburgumStreetSmokeSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 #else
     const UGameInstance* GameInstance = Cast<UGameInstance>(Outer);
     return GameInstance && !GameInstance->IsDedicatedServerInstance()
-        && (FParse::Param(FCommandLine::Get(), TEXT("MB2StreetSmoke")) || FParse::Param(FCommandLine::Get(), TEXT("MB2BridgeWatch")));
+        && (FParse::Param(FCommandLine::Get(), TEXT("MB2StreetSmoke")) || FParse::Param(FCommandLine::Get(), TEXT("MB2BridgeWatch"))
+            || FParse::Param(FCommandLine::Get(), TEXT("MB2CrowdWatch")));
 #endif
 }
 
@@ -69,6 +70,7 @@ void UMarburgumStreetSmokeSubsystem::Initialize(FSubsystemCollectionBase& Collec
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetCount="), CountSeconds);
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetShotAfterMove="), ShotAfterMoveSeconds);
     bBridgeWatch = FParse::Param(FCommandLine::Get(), TEXT("MB2BridgeWatch"));
+    bCrowdWatch = FParse::Param(FCommandLine::Get(), TEXT("MB2CrowdWatch"));
     StartSeconds = FPlatformTime::Seconds();
     TickerHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UMarburgumStreetSmokeSubsystem::Tick), 0.f);
     MB2_STREET_SMOKE_LOG("event=start shot=%d count_s=%.0f", ShotPrefix.IsEmpty() ? 0 : 1, CountSeconds);
@@ -220,6 +222,31 @@ void UMarburgumStreetSmokeSubsystem::Report(const TCHAR* Event, double Now)
         MostWatching, MostDown, MostGathered, MostDodging, NearestSpawnCm == TNumericLimits<double>::Max() ? -1.0 : NearestSpawnCm / 100.0);
 }
 
+void UMarburgumStreetSmokeSubsystem::WatchCrowd(double Now)
+{
+    UWorld* World = GetWorld();
+    if (!World || Now - CrowdWatchLog < 2.0)
+    {
+        return;
+    }
+    CrowdWatchLog = Now;
+    const AMarburgumCharacter* Character = Body();
+    const FVector At = Character ? Character->GetActorLocation() : FVector::ZeroVector;
+    TArray<FString> Ids;
+    int32 Near = 0;
+    for (TActorIterator<AMarburgumPedestrian> It(World); It; ++It)
+    {
+        if (Character && FVector::Dist2D(It->GetActorLocation(), At) > 8000.0)
+        {
+            continue;
+        }
+        ++Near;
+        Ids.Add(It->GetNpcId().ToString());
+    }
+    Ids.Sort();
+    MB2_STREET_SMOKE_LOG("event=crowd_watch at=%.0f,%.0f people=%d ids=%s", At.X, At.Y, Near, *FString::Join(Ids, TEXT(",")));
+}
+
 void UMarburgumStreetSmokeSubsystem::WatchBridge(double Now)
 {
     UWorld* World = GetWorld();
@@ -301,6 +328,11 @@ bool UMarburgumStreetSmokeSubsystem::Tick(float DeltaTime)
 {
     if (bDone)
     {
+        return true;
+    }
+    if (bCrowdWatch)
+    {
+        WatchCrowd(FPlatformTime::Seconds());
         return true;
     }
     if (bBridgeWatch)

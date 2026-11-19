@@ -137,6 +137,8 @@ private:
     void StepProbeFinder();
     /** -MB2BridgeCross: one person walks an existing bridge route from one bank to the other. */
     void StepBridgeCross(double Now);
+    /** -MB2CrowdMatrix: place the connected players and record the five population scenarios. Not used in Shipping. */
+    void StepCrowdMatrix(double Now);
     /**
      * -MB2StreetProbe, ADR-046: once a player is about, a person on the pavement nearest the river is scared
      * from the land side, so running straight away would be into the Drava, and is watched for a while.
@@ -215,5 +217,12 @@ private:
     int32 ZoneLookups = 0;
     int32 ZoneCacheHits = 0;
     double ZoneLookupSeconds = 0.0;
+    bool bCrowdMatrix = false;
+    uint8 CrowdPhase = 0;
+    double CrowdPhaseSince = -1.0;
+    bool bCrowdPlaced = false;
+    int32 CrowdBudgetChanges = 0;
+    int32 CrowdLastTarget = -1;
+    int32 CrowdMaxPeople = 0;
     FVector WaterProbeStart = FVector::ZeroVector;
 };
