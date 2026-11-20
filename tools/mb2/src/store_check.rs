@@ -427,6 +427,95 @@ fn check_story(doc: &Value, key: &str) -> u8 {
     )
 }
 
+
+/// Chapter VI and Frame 37 (scripts/negative-smoke-linux.sh, ADR-083), after phase 1 on a store seeded with Chapters
+/// I-III, Then and Now and Kiosk 67 ended in `outcome` for `key`; `other` only started the chapter and dated the print.
+/// Prints "<money> <photography> <trading> <discoveries>".
+pub fn negative(store: &str, key: &str, other: &str, outcome: &str) -> u8 {
+    let doc = match load(store) {
+        Ok(doc) => doc,
+        Err(error) => return finish(Problems(vec![error]), "0 0 0 0".to_string()),
+    };
+    check_negative(&doc, key, other, outcome)
+}
+
+fn check_negative(doc: &Value, key: &str, other: &str, outcome: &str) -> u8 {
+    let mut problems = Problems::default();
+    problems.expect(is_store(doc), "not_a_current_store");
+    let item = |who: &str, id: &str| doc["inventories"][who][id].as_i64().unwrap_or(0);
+    let mission = |who: &str, id: &str| &doc["missions"][who][id];
+    let negative = mission(key, "raeda_the_negative");
+    problems.expect(
+        negative["completed"] == true
+            && negative["reward_paid"] == true
+            && negative["journal_entry"] == "blue_ledger_the_negative"
+            && negative["flags"]["kainach_after_december"] == true
+            && negative["flags"]["albin_testified"] == true,
+        format!("negative={negative}"),
+    );
+    let frame = mission(key, "nika_frame_37");
+    problems.expect(
+        frame["completed"] == true && frame["outcome"] == "scrap_in_lab" && frame["journal_entry"] == "foto_vidmar_frame_37",
+        format!("frame_37={frame}"),
+    );
+    // Every unique piece of evidence once; the original went to the lab safe and its receipt came back.
+    for id in [
+        "frame_37_print",
+        "photo_melje_date_board",
+        "photo_foto_vidmar_order_book",
+        "photo_zupan_contact_sheet",
+        "drago_wallet_print_account",
+        "chronology_frame_37",
+        "torn_strip_print",
+        "albin_testimony",
+        "contact_sheet_custody_receipt",
+        "torn_gate_photograph",
+        "faded_transport_ticket",
+    ] {
+        problems.expect(item(key, id) == 1, format!("{id}={}", item(key, id)));
+    }
+    problems.expect(item(key, "zupan_contact_sheet") == 0, "contact_sheet_not_lodged");
+    // The route's own traces: the stamp went back to Albin, the scarf is kept.
+    match outcome {
+        "object_sold" => problems.expect(item(key, "machine_hall_council_stamp") == 0, "stamp_not_returned"),
+        "left_alone" => problems.expect(item(key, "terrace_scarf") == 1, "no_scarf"),
+        _ => problems.expect(item(key, "machine_hall_council_stamp") == 0 && item(key, "terrace_scarf") == 0, "another_route_left_items"),
+    }
+    let documented: Vec<&str> = doc["discoveries"][key]
+        .as_array()
+        .map(|a| a.iter().filter_map(Value::as_str).collect())
+        .unwrap_or_default();
+    for subject in ["foto_vidmar_order_book_page", "zupan_contact_sheet_copy", "melje_date_board_view"] {
+        problems.expect(documented.contains(&subject), format!("not_documented={subject}"));
+    }
+    let money = doc["money"][key].as_i64().unwrap_or(0);
+    let photography = doc["skills"][key]["photography"].as_i64().unwrap_or(0);
+    let trading = doc["skills"][key]["trading"].as_i64().unwrap_or(0);
+    // Seeded 120 money and no XP: +60 for the chapter, -40 if the stamp was bought; Photography 10 + 20 + 25 for the three
+    // documents and 10 for the deduction.
+    let bought = outcome == "object_sold";
+    problems.expect(money == 120 + 60 - if bought { 40 } else { 0 }, format!("money={money}"));
+    problems.expect(photography == 65, format!("photography_xp={photography}"));
+    problems.expect(trading == if bought { 15 } else { 0 }, format!("trading_xp={trading}"));
+    // The other character's chapter is their own: started and one step on, nothing of the first character's.
+    let theirs = mission(other, "raeda_the_negative");
+    problems.expect(
+        theirs["completed"] != true && theirs["stage"] == "read_order_book",
+        format!("other={theirs}"),
+    );
+    problems.expect(item(other, "frame_37_print") == 0 && item(other, "albin_testimony") == 0, "other_holds_first_characters_evidence");
+    // No mission was paid twice: one completion receipt each.
+    let completions = |id: &str| {
+        doc["receipts"]
+            .as_object()
+            .map(|r| r.values().filter(|r| r["character"] == key && r["mission"] == id && r["kind"] == "mission_completed").count())
+            .unwrap_or(0)
+    };
+    problems.expect(completions("raeda_the_negative") == 1, format!("negative_completions={}", completions("raeda_the_negative")));
+    problems.expect(completions("nika_frame_37") == 1, format!("frame_completions={}", completions("nika_frame_37")));
+    finish(problems, format!("{money} {photography} {trading} {}", documented.len()))
+}
+
 /// Kiosk 67 (scripts/shop-smoke-linux.sh), after phase 1 on a seeded schema 4 store (revision 1, 50 money, a brass
 /// key): three counter commits, first a newspaper bought with its Trading XP, then sold back, then a pen.
 /// Prints "<revision> <money> <shelves paper,postcard,pen>".

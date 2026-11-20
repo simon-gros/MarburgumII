@@ -377,8 +377,14 @@ void UMarburgumMissionSmokeSubsystem::TickStep(double Now)
         return;
     case 1:
         if (!R) return;
-        Expect(R->Outcome == EMarburgumRequestOutcome::Applied && ExpectEffect == FName(ToString(R->Effect)),
+        // A step can also be expected to be refused (ADR-083): refused:<reason>, with nothing changed.
+        Expect(ExpectEffect.ToString().StartsWith(TEXT("refused:"))
+                ? R->Outcome == EMarburgumRequestOutcome::Rejected && ExpectEffect == FName(*FString::Printf(TEXT("refused:%s"), ToString(R->Reason)))
+                : R->Outcome == EMarburgumRequestOutcome::Applied && ExpectEffect == FName(ToString(R->Effect)),
             FString::Printf(TEXT("step=%s/%s/%s want=%s"), ToString(R->Outcome), ToString(R->Reason), ToString(R->Effect), *ExpectEffect.ToString()));
+        MB2_MISSION_LOG("event=step_result target=%s outcome=%s reason=%s effect=%s mission=%s stage=%s granted=%d money=%lld", *TargetId.ToString(),
+            ToString(R->Outcome), ToString(R->Reason), ToString(R->Effect), *R->MissionId.ToString(), *R->MissionStage.ToString(), R->ItemsGranted.Num(),
+            R->MoneyDelta);
         Advance(2, Now);
         return;
     case 2:
@@ -536,6 +542,21 @@ void UMarburgumMissionSmokeSubsystem::TickChoice(double Now)
             R = Pair.Value.Choice == ChoiceId ? &Pair.Value : R;
         }
         const FMarburgumMissionState* Saved = State->FindMission(MissionId);
+        // A decision part-way through a mission (stage_completed) or a deduction's wrong answer (refused:wrong_conclusion,
+        // ADR-083): the receipt says which, and nothing else has to have finished.
+        if (!ExpectEffect.IsNone())
+        {
+            if (!R) return;
+            const bool bRefusal = ExpectEffect.ToString().StartsWith(TEXT("refused:"));
+            Expect(bRefusal
+                    ? R->Outcome == EMarburgumRequestOutcome::Rejected && ExpectEffect == FName(*FString::Printf(TEXT("refused:%s"), ToString(R->Reason)))
+                    : R->Outcome == EMarburgumRequestOutcome::Applied && ExpectEffect == FName(ToString(R->Effect)),
+                FString::Printf(TEXT("choice=%s/%s/%s want=%s"), ToString(R->Outcome), ToString(R->Reason), ToString(R->Effect), *ExpectEffect.ToString()));
+            MB2_MISSION_LOG("event=choice_result choice=%s outcome=%s reason=%s effect=%s stage=%s granted=%d money=%lld", *ChoiceId.ToString(),
+                ToString(R->Outcome), ToString(R->Reason), ToString(R->Effect), *R->MissionStage.ToString(), R->ItemsGranted.Num(), R->MoneyDelta);
+            Advance(4, Now);
+            return;
+        }
         if (!R || !Saved || !Saved->bCompleted) return;
         Expect(R->Outcome == EMarburgumRequestOutcome::Applied && R->Effect == EMarburgumInteractionEffect::MissionCompleted,
             FString::Printf(TEXT("choice=%s/%s/%s"), ToString(R->Outcome), ToString(R->Reason), ToString(R->Effect)));
