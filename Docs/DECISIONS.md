@@ -1132,3 +1132,29 @@ The migration [`659e28f`](https://github.com/simon-gros/MarburgumII/commit/659e2
 ## ADR-078 — Graphics modernization remains an evidence-gated plan (proposed 2026-11-20; approval OPEN)
 
 [GRAPHICS_ROADMAP.md](GRAPHICS_ROADMAP.md) defines GFX-00–09 as a proposed sequence, beginning with actual cooked Client/Server GPU/CPU/VRAM measurement and deterministic Lent/Drava/enterable-interior shots. Subsequent period content, materials, lighting, water and LOD experiments are reversible, rights-cleared and owner-reviewed. Linux TSR must remain available; NVIDIA and unofficial DLSS 5 research is optional and cannot be a gameplay/server dependency. The failed crowd gate, staged door gate and current UI/CI issues outrank speculative renderer improvements. UE remains **5.8.3**.
+
+## ADR-079 — The opposite-bank crowd starved because both test players looked out of the world (accepted 2026-11-20)
+
+**Problem.** The strict daytime crowd matrix (scenario `D`, "opposite banks") timed out at 14/28 in the editor and 11/28 on the clean `c967c46` package; 3,364 of 4,242 staged spawn tries found no pavement node (20 November review, P0).
+
+**What the logs and the graph show.** `D` does not put its players on the banks by the river. `Bank()` takes the furthest pavement node of the largest component within 40 m of the bridge axis, so the two players stand at (−766.7, −34.5) m and (766.0, 33.5) m: the two ends of the 1,536 m window, 1.5 km apart. Scenario `A` already pairs the north-bank commercial street with the south-bank houses, and it passes. The teleport does not set a heading, so each player keeps the client's control rotation, +X. For the north player that is straight out of the window. 60% of newcomers are put in view, 40–55 m ahead. Replaying the probes on `lent_walk_graph.json`: at the north end 0% of in-view probes have a node within 15 m (the view is past the edge of the world) and 42% of behind probes do, and the band they must land in (22–27 m behind) held one node. In the failed package run every north-side spawn landed on the same node, (740.0, 34.8) m. The south player faced into the town: 94% in view.
+
+**Controls (editor, `MarburgumIIEditor` Development, `-DisableAdaptiveUnity`, null RHI, port 27861, 10:00 on Tuesday 18 June 1996, clear).**
+
+| Run | Change | `D` | Rest of the matrix |
+| --- | --- | --- | --- |
+| `Saved/StreetMulti/edge-day-1` | Newcomers anywhere along a pavement edge (the original's `TrySpawnPedestrian`), heading unchanged | Reached 28/28 at 60 s, churned, **timeout 23/28** at 90 s; 2,766 of 3,523 tries no node | All settled |
+| `edge-day-2` | Edge spots and both players facing the origin | **Settled 28/28** at 40 s | All settled, exit 0 |
+| `edge-day-control` | Node spots (as on `main`) and facing the origin | **Settled 28/28** at 20 s | All settled |
+
+Map-wide, over 600 sampled pavement viewers, edge spots did not raise the share of behind-probes that land in the band (21.3% on nodes, 18.5% along edges). They only cut the viewers with none from 1.7% to 0.5%. That is not enough to change how every newcomer is placed, so the edge-spot change was **not kept**.
+
+**Decision.**
+
+- `D` keeps its positions and its rules (|X| > 100 m on each side, different districts, the 90 s limit, settled = the target held for two 5 s samples). After the teleport the server turns each player to look at the origin (`FaceTown`: `SetControlRotation` plus `ClientSetRotation`). A player at the end of the loaded world looks back into the town; the starvation came from a heading the fixture never chose. No budget, band, spawn rate or timeout changed. No game code outside the smoke fixture changed.
+- The scenario's name stays `D`. It tests two players at opposite ends of the window, across the Drava from each other. It does not test players standing on the two banks by the river; `A` does that.
+- `scripts/street-multiplayer-smoke-linux.sh` no longer counts a killed child that has not been reaped yet (a zombie answers `kill -0`) or one still tearing down as a leftover. It gives killed processes up to 5 s, reaps them, and still fails with `still_alive` on a process that keeps running. Two otherwise passing day runs had ended with exit 3 on the 0.3 s check. `drill` gained `DRILL_STUBBORN=1`, a child that ignores SIGTERM.
+
+**Measured limit, kept honest.** A player at the very end of the window who faces out of it still gets fewer people than the street's budget, because there is no pavement in view and only a 5 m-wide ring behind them. That is the edge of the loaded world, not a pavement shortage in the town, and no rule was bent to hide it.
+
+**Evidence.** On the final code, rebased on `23901a5`: day `Saved/StreetMulti/face-town-day` (all 10 scenarios accepted, `D` 28/28 at 20 s, exit 3 from the old cleanup check before the script fix) and `face-town-day2` with the fixed script (all 10 accepted, `D` 28/28 at 40 s, cap 48/48, cleanup `clear pids=5`, **exit 0**); night `face-town-night` (settled at 2, exit 0). `Marburgum.Gameplay.StreetRules` and `CombatRules` Success on the same editor build. **Not run:** a staged (packaged) matrix of this change, the integrated packaged suite, a rendered capture, the owner playtest.
