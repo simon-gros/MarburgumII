@@ -96,7 +96,7 @@ Dedicated authoritative Unreal server
       clients render approved state
 ```
 
-**Connection/admission:** join and identity validation must be established before consequential commands. A connected socket is not authenticated player identity; accounts, sessions and in-world characters require distinct IDs. Do not put passwords or server secrets in the client.
+**Connection/admission:** on a server that requires accounts, the admission ticket is spent at the engine's hello and the rest of the connection is AES-256-GCM with a per-connection key from the account service (ADR-083); a connection without a valid ticket never reaches login. Join and identity validation must be established before consequential commands. A connected socket is not authenticated player identity; accounts, sessions and in-world characters require distinct IDs. Do not put passwords or server secrets in the client.
 
 **Authoritative mutations:** the server alone accepts or rejects an interaction, skill XP award, inventory/money transfer, reputation change, mission stage completion, vehicle ownership change or world event. Use stable operation IDs, ordering checks, permission/eligibility checks, bounded retries, and one committed receipt per successful result. Client prediction may improve responsiveness, never grant rewards.
 

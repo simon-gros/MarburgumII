@@ -105,6 +105,8 @@ private:
     FString PendingTicket;
     /** The ticket's connection key; never logged, cleared once handed to the connection. */
     TArray<uint8> PendingKey;
+    /** This attempt sent an admission ticket, so the server must have switched the connection to encryption. */
+    bool bExpectEncrypted = false;
     FDelegateHandle EncryptionAckBinding;
     double AttemptStartedSeconds = 0.0;
     double NextReconnectSeconds = 0.0;

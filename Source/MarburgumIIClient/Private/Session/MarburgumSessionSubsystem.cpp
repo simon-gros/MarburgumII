@@ -254,6 +254,7 @@ void UMarburgumSessionSubsystem::BeginAttempt(const FString& Address)
     }
     AttemptStartedSeconds = FPlatformTime::Seconds();
     bReconnectScheduled = false;
+    bExpectEncrypted = false;
     // Signed in (ADR-055): every attempt, a reconnect too, brings a fresh single-use ticket and never the key.
     if (UMarburgumAccountSubsystem* Accounts = GameInstance->GetSubsystem<UMarburgumAccountSubsystem>(); Accounts && Accounts->IsEnabled())
     {
@@ -301,6 +302,7 @@ void UMarburgumSessionSubsystem::HandlePendingConnection(UPendingNetGame* Pendin
     }
     PendingNetGame->URL.AddOption(*FString::Printf(TEXT("%s=%s"), MarburgumII::Accounts::EncryptionTokenOption, *PendingTicket));
     PendingTicket.Reset();
+    bExpectEncrypted = true;
 }
 
 void UMarburgumSessionSubsystem::HandleEncryptionAck(const FOnEncryptionKeyResponse& Respond)
@@ -383,6 +385,7 @@ void UMarburgumSessionSubsystem::ObserveWorld(UWorld* World)
             // Recovery must rejoin as the same character the command-line URL named (or none).
             LastAddress = Pending->URL.GetHostPortString();
             CharacterKey = Pending->URL.GetOption(TEXT("MB2Character="), TEXT(""));
+            bExpectEncrypted = Pending->URL.HasOption(MarburgumII::Accounts::EncryptionTokenOption);
             AttemptStartedSeconds = Now;
             SetPhase(EPhase::Connecting);
         }
@@ -430,6 +433,16 @@ void UMarburgumSessionSubsystem::ObserveWorld(UWorld* World)
 
     if (IsAdmitted(World))
     {
+        // A server that took our ticket must have answered with encryption. One that carried on in the clear is not
+        // the world the ticket was for (an address taken over on the way): leave before anything else is sent.
+        const UNetConnection* Server = World->GetNetDriver() ? World->GetNetDriver()->ServerConnection.Get() : nullptr;
+        if (bExpectEncrypted && (!Server || !Server->IsEncryptionEnabled()))
+        {
+            UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=client event=refused_unencrypted_world"), MarburgumII::Accounts::AdmissionLogPrefix);
+            AbandonAttempt();
+            Fail(EFault::Refused, TEXT("This world did not secure the connection, so you were not let in. Check the server address."));
+            return;
+        }
         const AMarburgumGameState* GameState = World->GetGameState<AMarburgumGameState>();
         if (GameState->NetworkContractVersion != MarburgumII::Network::ContractVersion)
         {
