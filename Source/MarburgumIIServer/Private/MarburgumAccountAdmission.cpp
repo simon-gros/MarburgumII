@@ -112,9 +112,11 @@ void UMarburgumAccountAdmission::Redeem(const FString& Ticket, FMarburgumTicketR
                 Who.LastName = (*Character)->GetStringField(TEXT("last_name"));
                 Who.Model = FName(*(*Character)->GetStringField(TEXT("model")));
             }
+            Who.ConnectionKey = DecodeConnectionKey(Json->GetStringField(TEXT("key")));
             // The service is trusted, but nothing it says becomes a store key or an asset path unchecked.
             if (!MarburgumII::Gameplay::IsValidCharacterKey(Who.CharacterId) || !FindModel(Who.Model) || Who.FirstName.IsEmpty()
-                || Who.LastName.IsEmpty() || Who.FirstName.Len() > NameMax || Who.LastName.Len() > NameMax)
+                || Who.LastName.IsEmpty() || Who.FirstName.Len() > NameMax || Who.LastName.Len() > NameMax
+                || Who.ConnectionKey.Num() != ConnectionKeyBytes)
             {
                 Done.ExecuteIfBound({}, TEXT("The account service sent a character this server cannot admit."));
                 return;

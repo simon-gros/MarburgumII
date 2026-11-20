@@ -10,7 +10,7 @@ public class MarburgumIIEditorTarget : TargetRules
         DefaultBuildSettings = BuildSettingsVersion.Latest;
         ExtraModuleNames.AddRange(new[]
         {
-            "MarburgumII", "MarburgumIIShared", "MarburgumIIClient", "MarburgumIIServer", "MarburgumIIEditorTools"
+            "MarburgumII", "MarburgumIIShared", "MarburgumNetCrypto", "MarburgumIIClient", "MarburgumIIServer", "MarburgumIIEditorTools"
         });
     }
 }

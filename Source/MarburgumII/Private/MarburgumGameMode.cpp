@@ -1,6 +1,8 @@
 #include "MarburgumGameMode.h"
 
+#include "Engine/NetConnection.h"
 #include "EngineUtils.h"
+#include "HAL/IConsoleManager.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
@@ -101,55 +103,123 @@ void AMarburgumGameMode::PreLoginAsync(const FString& Options, const FString& Ad
         Refuse(TEXT("development_key"), TEXT("This server only admits signed-in players."));
         return;
     }
-    // A connection can pass PreLogin and never join (it drops while loading the map): forget its admission after
-    // two minutes, well past the one-minute ticket.
+    // The ticket was spent at the hello (HandleEncryptionToken), which the engine requires before it reads a login.
+    OnComplete.ExecuteIfBound(FString());
+}
+
+void AMarburgumGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+    Super::InitGame(MapName, Options, ErrorMessage);
+    if (!AccountsRequired() || GetNetMode() == NM_Standalone)
+    {
+        return;
+    }
+    // Every connection must bring a ticket as its encryption token; the engine closes one that does not (ADR-083).
+    if (IConsoleVariable* Allow = IConsoleManager::Get().FindConsoleVariable(TEXT("net.AllowEncryption")))
+    {
+        Allow->Set(2, ECVF_SetByCode);
+    }
+    if (IConsoleVariable* Drivers = IConsoleManager::Get().FindConsoleVariable(TEXT("net.RequiredEncryptionNetDriverDefNames")))
+    {
+        Drivers->Set(TEXT("all"), ECVF_SetByCode);
+    }
+    FNetDelegates::OnReceivedNetworkEncryptionToken.BindUObject(this, &AMarburgumGameMode::HandleEncryptionToken);
+    FNetDelegates::OnReceivedNetworkEncryptionFailure.BindUObject(this, &AMarburgumGameMode::HandleEncryptionFailure);
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=encryption_required component=AESGCMHandlerComponent"),
+        MarburgumII::Accounts::AdmissionLogPrefix);
+}
+
+void AMarburgumGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (FNetDelegates::OnReceivedNetworkEncryptionToken.IsBoundToObject(this))
+    {
+        FNetDelegates::OnReceivedNetworkEncryptionToken.Unbind();
+    }
+    if (FNetDelegates::OnReceivedNetworkEncryptionFailure.IsBoundToObject(this))
+    {
+        FNetDelegates::OnReceivedNetworkEncryptionFailure.Unbind();
+    }
+    Super::EndPlay(EndPlayReason);
+}
+
+EEncryptionFailureAction AMarburgumGameMode::HandleEncryptionFailure(UNetConnection* Connection)
+{
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=admission_refused stage=hello reason=no_ticket"), MarburgumII::Accounts::AdmissionLogPrefix);
+    return EEncryptionFailureAction::Default; // required (net.AllowEncryption=2): the engine closes the connection
+}
+
+void AMarburgumGameMode::HandleEncryptionToken(const FString& Token, const FOnEncryptionKeyResponse& Respond)
+{
+    using namespace MarburgumII::Accounts;
+    // The engine binds the answer to the connection that sent the hello.
+    UNetConnection* Connection = Cast<UNetConnection>(Respond.GetUObject());
+    const auto Refuse = [](const FOnEncryptionKeyResponse& Answer, const TCHAR* Stage, const FString& Reason)
+    {
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=admission_refused stage=%s reason=\"%s\""), AdmissionLogPrefix, Stage, *Reason);
+        Answer.ExecuteIfBound(FEncryptionKeyResponse(EEncryptionResponse::InvalidToken, Reason));
+    };
+    UMarburgumAdmissionService* Service = UMarburgumAdmissionService::Get(GetWorld());
+    if (!Connection || !Service || !IsWellFormedTicket(Token))
+    {
+        Refuse(Respond, TEXT("hello"), TEXT("malformed_ticket"));
+        return;
+    }
+    // A connection can be admitted and never log in (it drops while loading the map): forget it after two minutes,
+    // well past the one-minute ticket.
     const double Now = FPlatformTime::Seconds();
     for (auto It = AdmittedAtSeconds.CreateIterator(); It; ++It)
     {
-        if (Now - It.Value() > 120.0)
+        if (!It.Key().IsValid() || Now - It.Value() > 120.0)
         {
             Admitted.Remove(It.Key());
             It.RemoveCurrent();
         }
     }
-    const FString Ticket = UGameplayStatics::ParseOption(Options, TicketOption);
-    UMarburgumAdmissionService* Service = UMarburgumAdmissionService::Get(GetWorld());
-    if (!Service || !IsWellFormedTicket(Ticket))
-    {
-        Refuse(Ticket.IsEmpty() ? TEXT("no_ticket") : TEXT("malformed_ticket"), TEXT("Sign in to enter the world."));
-        return;
-    }
-    Service->Redeem(Ticket, FMarburgumTicketRedeemed::CreateWeakLambda(this,
-        [this, Ticket, OnComplete](const FMarburgumAdmittedCharacter& Who, const FString& Error)
+    const TWeakObjectPtr<UNetConnection> WeakConnection = Connection;
+    Service->Redeem(Token, FMarburgumTicketRedeemed::CreateWeakLambda(this,
+        [this, WeakConnection, Respond, Refuse](const FMarburgumAdmittedCharacter& Who, const FString& Error)
         {
             if (!Error.IsEmpty())
             {
-                UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=admission_refused stage=redeem reason=\"%s\""), AdmissionLogPrefix, *Error);
-                OnComplete.ExecuteIfBound(Error);
+                Refuse(Respond, TEXT("redeem"), Error);
                 return;
+            }
+            if (!WeakConnection.IsValid())
+            {
+                return; // gone while the service answered; the ticket is spent all the same
             }
             if (FindPlayerByCharacterKey(Who.CharacterId))
             {
                 UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=admission_refused stage=redeem reason=already_in_world character=%s"),
                     AdmissionLogPrefix, *Who.CharacterId);
-                OnComplete.ExecuteIfBound(TEXT("This character is already in the world."));
+                Respond.ExecuteIfBound(FEncryptionKeyResponse(EEncryptionResponse::Failure, TEXT("already_in_world")));
                 return;
             }
-            Admitted.Add(Ticket, Who);
-            AdmittedAtSeconds.Add(Ticket, FPlatformTime::Seconds());
-            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=ticket_redeemed character=%s model=%s"), AdmissionLogPrefix,
+            Admitted.Add(WeakConnection, Who);
+            AdmittedAtSeconds.Add(WeakConnection, FPlatformTime::Seconds());
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=ticket_redeemed character=%s model=%s encrypted=1"), AdmissionLogPrefix,
                 *Who.CharacterId, *Who.Model.ToString());
-            OnComplete.ExecuteIfBound(FString());
+            FEncryptionKeyResponse Answer(EEncryptionResponse::Success, FString());
+            Answer.EncryptionData.Key = Who.ConnectionKey;
+            Respond.ExecuteIfBound(Answer);
         }));
 }
 
-FString AMarburgumGameMode::InitAccountPlayer(APlayerController* NewPlayerController, const FString& Options)
+APlayerController* AMarburgumGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options,
+    const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+{
+    LoggingIn = Cast<UNetConnection>(NewPlayer);
+    APlayerController* Controller = Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
+    LoggingIn.Reset();
+    return Controller;
+}
+
+FString AMarburgumGameMode::InitAccountPlayer(APlayerController* NewPlayerController)
 {
     using namespace MarburgumII::Accounts;
     FMarburgumAdmittedCharacter Who;
-    const FString Ticket = UGameplayStatics::ParseOption(Options, TicketOption);
-    AdmittedAtSeconds.Remove(Ticket);
-    if (!Admitted.RemoveAndCopyValue(Ticket, Who))
+    AdmittedAtSeconds.Remove(LoggingIn);
+    if (!LoggingIn.IsValid() || !Admitted.RemoveAndCopyValue(LoggingIn, Who))
     {
         UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=admission_refused stage=init reason=not_redeemed"), AdmissionLogPrefix);
         return TEXT("Sign in to enter the world.");
@@ -218,7 +288,7 @@ FString AMarburgumGameMode::InitNewPlayer(APlayerController* NewPlayerController
     }
     if (AccountsRequired())
     {
-        return InitAccountPlayer(NewPlayerController, Options);
+        return InitAccountPlayer(NewPlayerController);
     }
     // Checked again here: two pending logins with the same key can both pass PreLogin.
     const FString Key = UGameplayStatics::ParseOption(Options, MarburgumII::Gameplay::CharacterOption);

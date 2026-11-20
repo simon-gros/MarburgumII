@@ -83,6 +83,8 @@ private:
     void HandleNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType, const FString& ErrorString);
     void HandleTravelFailure(UWorld* World, ETravelFailure::Type FailureType, const FString& ErrorString);
     void HandlePendingConnection(UPendingNetGame* PendingNetGame);
+    /** The server accepted the hello's ticket: encrypt with the ticket's key from here on (ADR-083). */
+    void HandleEncryptionAck(const FOnEncryptionKeyResponse& Respond);
 
     FTSTicker::FDelegateHandle TickerHandle;
     FDelegateHandle NetworkFailureHandle;
@@ -96,10 +98,14 @@ private:
     FString LastAddress;
     FString CharacterKey;
     /**
-     * The admission ticket for the travel in flight. It joins the pending connection's URL only once the engine has
-     * logged the Browse address, so a client log never shows a ticket the server has not spent yet (AR13).
+     * The admission ticket for the travel in flight. It joins the pending connection's URL as its encryption token
+     * only once the engine has logged the Browse address, and leaves it again at the server's ack, before the login
+     * URL is sent or the map's URL logged: it is never in a log or in the encrypted login (AR13, ADR-083).
      */
     FString PendingTicket;
+    /** The ticket's connection key; never logged, cleared once handed to the connection. */
+    TArray<uint8> PendingKey;
+    FDelegateHandle EncryptionAckBinding;
     double AttemptStartedSeconds = 0.0;
     double NextReconnectSeconds = 0.0;
     bool bReconnectScheduled = false;

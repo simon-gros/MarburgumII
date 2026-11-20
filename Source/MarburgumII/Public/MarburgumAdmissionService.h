@@ -13,9 +13,11 @@ struct FMarburgumAdmittedCharacter
     FString FirstName;
     FString LastName;
     FName Model;
+    /** The connection's AES-256-GCM key from the account service (ADR-083). Never logged. */
+    TArray<uint8> ConnectionKey;
 };
 
-/** Error is empty on success. Always called on the game thread. */
+/** Error is empty on success, and the key is then 32 bytes. Always called on the game thread. */
 DECLARE_DELEGATE_TwoParams(FMarburgumTicketRedeemed, const FMarburgumAdmittedCharacter& /*Who*/, const FString& /*Error*/);
 
 /**

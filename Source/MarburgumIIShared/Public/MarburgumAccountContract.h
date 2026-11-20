@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Misc/Base64.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 
@@ -11,8 +12,14 @@
  */
 namespace MarburgumII::Accounts
 {
-    /** Join-URL option carrying the single-use admission ticket. Never the password or the session. */
-    inline constexpr const TCHAR* TicketOption = TEXT("MB2Ticket");
+    /**
+     * The single-use admission ticket travels as the engine's encryption token (ADR-083): the client adds it to its
+     * pending connection only, the hello carries it, and the server spends it before it answers. Never the password,
+     * the session or the key.
+     */
+    inline constexpr const TCHAR* EncryptionTokenOption = TEXT("EncryptionToken");
+    /** Development and smoke clients joining from a raw URL: the ticket's connection key, in URL-safe base64. */
+    inline constexpr const TCHAR* AdmissionKeySwitch = TEXT("MB2AdmissionKey=");
     /** -MB2Accounts=https://host:port on the client and the server turns the account path on. */
     inline constexpr const TCHAR* ServiceSwitch = TEXT("MB2Accounts=");
     /** Server only: a file holding the key the service accepts for spending tickets. */
@@ -29,6 +36,8 @@ namespace MarburgumII::Accounts
     inline constexpr int32 CodeLength = 8;
     /** An admission ticket is 32 random bytes in URL-safe base64. */
     inline constexpr int32 TicketLength = 43;
+    /** The connection's AES-256-GCM key (the engine's AESGCMHandlerComponent takes exactly 32 bytes). */
+    inline constexpr int32 ConnectionKeyBytes = 32;
 
     /** One body the first-character creator offers. Mirrors Data/Accounts/character_models.v0.1.json. */
     struct FCharacterModel
@@ -83,6 +92,17 @@ namespace MarburgumII::Accounts
     inline bool IsAccountCharacterKey(const FString& Key)
     {
         return Key.StartsWith(TEXT("c_"), ESearchCase::CaseSensitive);
+    }
+
+    /** The connection key the service sent with a ticket, or empty when it is not 32 bytes of URL-safe base64. */
+    inline TArray<uint8> DecodeConnectionKey(const FString& Text)
+    {
+        TArray<uint8> Key;
+        if (Text.Len() != TicketLength || !FBase64::Decode(Text, Key, EBase64Mode::UrlSafe) || Key.Num() != ConnectionKeyBytes)
+        {
+            Key.Reset();
+        }
+        return Key;
     }
 
     /** A ticket is opaque; this only keeps junk out of the request to the service. */

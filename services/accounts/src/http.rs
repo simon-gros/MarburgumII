@@ -487,12 +487,14 @@ mod tests {
         assert_eq!((status, body["error"].as_str()), (StatusCode::FORBIDDEN, Some("server_unknown")));
         let (_, body) = call(&app, "POST", "/v1/admission", Some(&bearer), json!({ "server": SERVER })).await;
         let ticket = body["ticket"].as_str().unwrap().to_string();
+        let key = body["key"].as_str().unwrap().to_string();
         let (status, _) = call(&app, "POST", "/v1/server/redeem", Some(&format!("MB2-Server {OTHER_KEY}")), json!({ "ticket": ticket })).await;
         assert_eq!(status, StatusCode::FORBIDDEN, "another server's key");
         let (status, _) = call(&app, "POST", "/v1/server/redeem", Some(&bearer), json!({ "ticket": ticket })).await;
         assert_eq!(status, StatusCode::UNAUTHORIZED, "a player session is not the server key");
         let (status, body) = call(&app, "POST", "/v1/server/redeem", Some(&format!("MB2-Server {KEY}")), json!({ "ticket": ticket })).await;
         assert_eq!((status, body["character"]["model"].as_str()), (StatusCode::OK, Some("manny")));
+        assert_eq!(body["key"].as_str(), Some(key.as_str()), "the server gets the client's connection key (ADR-083)");
         let (status, _) = call(&app, "POST", "/v1/logout", Some(&bearer), json!({})).await;
         assert_eq!(status, StatusCode::OK);
         let (status, _) = call(&app, "GET", "/v1/me", Some(&bearer), json!({})).await;

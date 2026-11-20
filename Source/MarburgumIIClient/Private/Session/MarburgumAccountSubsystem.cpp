@@ -420,7 +420,7 @@ void UMarburgumAccountSubsystem::RequestTicket(const FString& Address, FMarburgu
 {
     if (Session.IsEmpty() || View.Step != EMarburgumAccountStep::Ready)
     {
-        Done.ExecuteIfBound(FString(), LOCTEXT("SignInFirst", "Sign in and create your character first."));
+        Done.ExecuteIfBound(FString(), {}, LOCTEXT("SignInFirst", "Sign in and create your character first."));
         return;
     }
     const TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
@@ -444,9 +444,12 @@ void UMarburgumAccountSubsystem::RequestTicket(const FString& Address, FMarburgu
                 FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Response->GetContentAsString()), Json);
             }
             FString Ticket;
-            if (Status == 200 && Json.IsValid() && Json->TryGetStringField(TEXT("ticket"), Ticket) && IsWellFormedTicket(Ticket))
+            FString KeyText;
+            TArray<uint8> Key;
+            if (Status == 200 && Json.IsValid() && Json->TryGetStringField(TEXT("ticket"), Ticket) && IsWellFormedTicket(Ticket)
+                && Json->TryGetStringField(TEXT("key"), KeyText) && (Key = DecodeConnectionKey(KeyText)).Num() == ConnectionKeyBytes)
             {
-                Done.ExecuteIfBound(Ticket, FText::GetEmpty());
+                Done.ExecuteIfBound(Ticket, Key, FText::GetEmpty());
                 return;
             }
             FString Code = Status == 0 ? TEXT("unreachable") : FString::Printf(TEXT("http_%d"), Status);
@@ -458,7 +461,7 @@ void UMarburgumAccountSubsystem::RequestTicket(const FString& Address, FMarburgu
             {
                 Fail(Status, Json);
             }
-            Done.ExecuteIfBound(FString(), DescribeError(Code));
+            Done.ExecuteIfBound(FString(), {}, DescribeError(Code));
         });
     Request->ProcessRequest();
 }

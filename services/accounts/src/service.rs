@@ -71,17 +71,31 @@ pub struct Ticket {
     pub expires_in: i64,
 }
 
+/// A world-admission ticket and its connection key.
+#[derive(Serialize, Debug, PartialEq)]
+pub struct AdmissionTicket {
+    pub ticket: String,
+    /// The connection's AES-256-GCM key, 32 random bytes in URL-safe base64. The client keeps it; the ticket travels
+    /// in the clear in the engine's hello, and the key never does (ADR-083).
+    pub key: String,
+    pub expires_in: i64,
+}
+
 /// Who an admission ticket admits, for the game server only.
 #[derive(Serialize, Debug, PartialEq)]
 pub struct Admitted {
     pub account: String,
     pub character: CharacterView,
+    /// The ticket's connection key, for the game server to encrypt that connection with (ADR-083).
+    pub key: String,
 }
 
 struct Admission {
     account: String,
     /// The game server the ticket was asked for; only its key spends it (AR1).
     server: String,
+    /// Held in memory only, like the ticket, and handed out once each: to the client and to the redeeming server.
+    key: String,
     issued_at: i64,
     expires_at: i64,
 }
@@ -422,7 +436,7 @@ impl Service {
     /// A single-use, one-minute ticket that lets this account's character into the game server at `address`, the
     /// address the client is about to join. Only listed servers get tickets, so a player lured to another address
     /// has nothing to hand over, and a ticket is spendable only by the server it names (QA 2026-11-19, AR1).
-    pub fn admission(&mut self, token: &str, address: &str, now: i64) -> Outcome<Ticket> {
+    pub fn admission(&mut self, token: &str, address: &str, now: i64) -> Outcome<AdmissionTicket> {
         let (account_id, account) = self.session_account(token, now)?;
         if account.character.is_none() {
             return refuse(409, "no_character");
@@ -441,10 +455,10 @@ impl Service {
                 self.admissions.remove(verifier);
             }
         }
-        let ticket = secrets::token();
+        let (ticket, key) = (secrets::token(), secrets::token());
         self.admissions.insert(secrets::verifier("admission", &ticket),
-            Admission { account: account_id, server, issued_at: now, expires_at: now + ADMISSION_TTL_S });
-        Ok(Ticket { ticket, expires_in: ADMISSION_TTL_S })
+            Admission { account: account_id, server, key: key.clone(), issued_at: now, expires_at: now + ADMISSION_TTL_S });
+        Ok(AdmissionTicket { ticket, key, expires_in: ADMISSION_TTL_S })
     }
 
     /// A game server spends a ticket; its key says which server it is. A ticket asked for another server is refused
@@ -471,7 +485,7 @@ impl Service {
         let Some(character) = view(account).character else {
             return refuse(403, "ticket_invalid");
         };
-        Ok(Admitted { account: admission.account, character })
+        Ok(Admitted { account: admission.account, character, key: admission.key })
     }
 
     /// "Forgot password": a code to the address if it has an account; the same answer either way.
@@ -629,6 +643,23 @@ pub mod tests {
         service.login("ana_k", "drava-bridge-1990", 30).unwrap().session
     }
 
+    use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+    use base64::Engine;
+
+    /// ADR-083: every ticket has a key of its own.
+    #[test]
+    fn each_ticket_has_its_own_key() {
+        let dir = tempfile::tempdir().unwrap();
+        let (mut service, inbox) = service(dir.path());
+        let session = signed_in(&mut service, &inbox);
+        service.create_character(&session, "req-1", "Ana", "Kos", "manny", 40).unwrap();
+        let a = service.admission(&session, SERVER, 41).unwrap();
+        let b = service.admission(&session, SERVER, 42).unwrap();
+        assert_ne!(a.key, b.key);
+        assert_eq!(service.redeem(KEY, &b.ticket, 43).unwrap().key, b.key);
+        assert_eq!(service.redeem(KEY, &a.ticket, 43).unwrap().key, a.key);
+    }
+
     fn code_of(result: Outcome<impl std::fmt::Debug>) -> &'static str {
         result.unwrap_err().code
     }
@@ -644,16 +675,21 @@ pub mod tests {
         let made = service.create_character(&session, "req-1", " Žiga ", "Kos", "quinn", 50).unwrap();
         let character = made.character.expect("character");
         assert_eq!((character.first_name.as_str(), character.last_name.as_str(), character.model.as_str()), ("Žiga", "Kos", "quinn"));
-        let ticket = service.admission(&session, SERVER, 60).unwrap().ticket;
+        let issued = service.admission(&session, SERVER, 60).unwrap();
+        let ticket = issued.ticket.clone();
         assert_eq!(code_of(service.redeem("wrong-key-wrong-key-wrong-key-xx", &ticket, 61)), "server_key_invalid");
         let admitted = service.redeem(KEY, &ticket, 61).unwrap();
         assert_eq!(admitted.character.id, character.id);
+        // ADR-083: the server gets the key the client got, 32 bytes, and it is not the ticket.
+        assert_eq!(admitted.key, issued.key);
+        assert_eq!(URL_SAFE_NO_PAD.decode(&issued.key).unwrap().len(), 32);
+        assert_ne!(issued.key, ticket);
         assert_eq!(code_of(service.redeem(KEY, &ticket, 62)), "ticket_invalid", "single use");
         let late = service.admission(&session, SERVER, 70).unwrap().ticket;
         assert_eq!(code_of(service.redeem(KEY, &late, 70 + ADMISSION_TTL_S)), "ticket_invalid", "expired");
         // Nothing secret is in the store: no password, code, session or ticket in the clear.
         let text = std::fs::read_to_string(dir.path().join("accounts.json")).unwrap();
-        for secret in ["drava-bridge-1990", session.as_str(), ticket.as_str()] {
+        for secret in ["drava-bridge-1990", session.as_str(), ticket.as_str(), issued.key.as_str()] {
             assert!(!text.contains(secret));
         }
     }
