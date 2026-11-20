@@ -21,4 +21,4 @@ jobs:
       # Catalogue structure, unique stable IDs, rule citations, imagery metadata, manifest rights and no media binaries.
       - run: cargo run --release --manifest-path tools/mb2/Cargo.toml -- validate history
       # Rule/imagery contract tests and the 20 November 2026 expansion regression tests.
-      - run: cargo test --release --manifest-path tools/mb2/Cargo.toml -- history::
+      - run: "cargo test --release --manifest-path tools/mb2/Cargo.toml -- history::"
