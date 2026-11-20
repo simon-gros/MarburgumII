@@ -1,8 +1,11 @@
 # Graphics & rendering roadmap — Marburgum II
 
-**Planned 20 November 2026 · Unreal Engine 5.8.3 · status: proposed work, not implemented or owner-approved.**
+**Status (20 November 2026 evening, ADR-078/082):** GFX-00 **audit and packaged baseline tooling are implemented** ([GFX00_BASELINE.md](GFX00_BASELINE.md)); the captured renderer has no active GI/RT and some GPU frame tails were contended. The owner selected **hardware ray tracing** for a future Lumen A/B (ADR-082), **not an enabled default**. A separate Vulkan SM6/RT project/cook variant, non-RT fallback and uncontended VRAM/frame-time comparison are required. Remaining GFX-01–09 content/technology proposals are not automatically implemented or accepted.
 
 **Related plans:** [Main roadmap](ROADMAP.md) · [Visual-quality issue register](VISUAL_QUALITY_BACKLOG.md) · [NVIDIA renderer and DLSS 5 constraints](RENDERING_NVIDIA.md) · [UI/HUD roadmap](UI_HUD_ROADMAP.md) · [TRELLIS](ASSET_GENERATION_TRELLIS.md) · [Freshness policy](PLAYTEST_FRESHNESS.md).
+
+**New research links:** [Gameplay and production proposals](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) prioritize furnishings and indoor lighting in the five usable interiors, period-checked Lent details, accessibility and short live-city routines. Hardware Lumen and World Partition/HLOD remain **reversible, measured experiments**. Content completion and observed multiplayer performance take precedence over screenshot-only visual effects.
+
 
 ## Vision and boundaries
 

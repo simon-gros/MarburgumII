@@ -1,6 +1,6 @@
 # Milestone roadmap — MMORPG-first from Stage 0
 
-**Reviewed through 20 November 2026 at `bed74712` (ADR-075):** [Current review](DEVELOPMENT_REVIEW_2026-11-20.md), [QA audit](QA_AUDIT_2026-11-19.md), [visual-quality backlog](VISUAL_QUALITY_BACKLOG.md). The clean `c967c46` staged crowd matrix settled most scenes but **opposite banks timed out at 11/28**, so daytime exited 1. Source, editor, partial staged evidence and owner acceptance remain distinct. This documentation update did not execute Unreal tests.
+**Reviewed through 20 November 2026 at `8a01818` (ADR-083):** [Evening 24-hour review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md) is the current baseline, superseding earlier morning and overnight snapshots for implementation status. Both source/archive CI workflows passed at the reviewed SHA. ADR-079 corrected the opposite-bank fixture and passed **editor** day/night, but the fixed crowd matrix needs a newly staged package. ADR-080 bound admission tickets to servers and ADR-083 added packaged-tested AES-256-GCM for signed-in play. Five cut interiors passed staged door tests; Stage 1 story/Photography and Slovene have staged tests; Settings and 657 localized UI strings exist. GFX-00 baseline is recorded; hardware Lumen is **chosen but not enabled**. No full current-head owner-accepted game build is claimed. This documentation review ran no Unreal tests.
 
 **Graphics delivery:** The canonical implementation sequence, verification gates, hardware targets and experimental-rendering boundaries are now in [GRAPHICS_ROADMAP.md](GRAPHICS_ROADMAP.md). The per-defect truth remains in [VISUAL_QUALITY_BACKLOG.md](VISUAL_QUALITY_BACKLOG.md). These plans do not claim graphics milestones have been completed or supersede gameplay P0s.
 
@@ -8,7 +8,21 @@
 
 **Controlling rule:** MarburgumII preserves the majority of original Marburgum world/gameplay requirements but reimplements them in fresh Unreal Engine **5.8.3** C++ code. Dedicated authoritative client/server must be present in the **first running milestone**. “Solo-friendly” describes game experience, **not client authority or an offline-only code path**. See [NETWORK_ARCHITECTURE.md](NETWORK_ARCHITECTURE.md), [ONTOLOGY.md](ONTOLOGY.md), [UI_HUD_ONTOLOGY.md](UI_HUD_ONTOLOGY.md), [UI_HUD_ROADMAP.md](UI_HUD_ROADMAP.md) and [LEGACY_PARITY.md](LEGACY_PARITY.md).
 
-## Morning 20 November 2026 — newly identified blockers and priorities
+## Evening current-state priorities — 20 November 2026
+
+| Priority | Next delivery | Exit condition |
+| --- | --- | --- |
+| **P0: integrated build** | A single latest-source, clean UE 5.8.3 Client/Server including encrypted account admission, schema-6 story/Photography, bilingual UI, interior UFS assets and fixed ADR-079 crowd scenario. Rerun strict packaged day/night, multi-client doors/late join, full story/mission/shop/combat/vehicle/chat/weather/regression and negative tests. | One source/cooked-asset SHA and test evidence; explicit owner personal approval. Do not merge passes from separate packages. |
+| **P0: network security and UI** | ADR-080 server-bound tickets and ADR-083 AES-256-GCM **already implemented/tested**. Threat model token burning, packet sequence/nonce, key lifecycle, reconnect and logs. UI v2 **already has Settings and English/Slovene**; validate packaged fonts/ICU/controller/scale/accessibility. | Security negative cases, responsive screen matrix and owner-approved session/UX. |
+| **P1: lived-in city** | Furnish the five physically opened buildings (581 eligible still sealed); introduce one authored NPC daily routine and period-correct original props. | Staged doors/multi-client regression, period rights, performance and owner acceptance. |
+| **P1: measured visual quality** | GFX-00 read-only packaged baseline exists. Rerun uncontended and isolate owner-selected hardware Lumen on a separate Vulkan SM6/RT cook with non-RT fallback. | Cross-vendor A/B FPS/CPU/GPU/VRAM evidence and owner sign-off. |
+| **P1/P2: researched future work** | [12 candidate additions](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md): Photography album, analog media, small jobs, resident routines, accessible HUD, small events, validated archival details and measured streaming/AOI pilots. | Each item remains **proposed**, owner-approved only after a narrow implementation and game test. |
+
+**Important correction:** The previous 11/28 staged opposite-bank result was a pre-ADR-079 fixture. The corrected fixture reached **28/28 in the editor**; new staged evidence is still required. Earlier failed CI, unavailable Settings, unbound tickets and untested packaged doors are no longer accurate descriptions of present source status.
+
+
+
+## Morning 20 November 2026 — historical checkpoint (superseded by evening status)
 
 **P0: Restore green CI and resolve ADR-018 conflict.** After the research expansion to **246 art references, six unverified imagery/map leads and five source-linked rules**, [source validation](https://github.com/simon-gros/MarburgumII/actions/runs/44680469847) failed at `mb2 validate all` while the [historical archive workflow](https://github.com/simon-gros/MarburgumII/actions/runs/44680469864) passed. The archive adds Python tooling/tests and a Python-invoking workflow, prohibited by accepted ADR-018 and `tools/mb2/src/validate/python_free.rs`. Inspect full job diagnostics, then preferably port archival validation/tests/approved-source fetch to Rust, or formally approve a limited non-runtime exception by updating the ADR, validator, dependency policy and CI together. Both workflows must pass on the **same revision**; no silent check exemptions. **Resolved in source ([ADR-077](DECISIONS.md)):** archive validation, its tests and the downloader are ported to Rust `mb2` (`validate history`, `fetch-art-reference`). The Python-calling crowd smoke summary is `mb2 crowd-summary`, and the stale chat label check is behavioural. Both workflows run on every push and pull request.
 
@@ -94,7 +108,7 @@ Current owner-selected original Unreal Lent launch world `/Game/World/lent` (a f
 
 **Fishing and the opening mission (2026-11-11): qualified in the editor, awaiting a packaged run and the owner playtest.** The original skill curve, Drava fishing and the Lent missions are carried over ([ADR-047](DECISIONS.md), [ADR-048](DECISIONS.md), [ADR-049](DECISIONS.md)). A cast on the Lent bank uses the original wait, bite and species weights. Showing the catch continues "Something in the Water" through the cashbox, Petra Kralj, the service room and Vera Horvat, then Kiosk 67's decision. Money, Fishing and Reputation XP, the choice and the clues survive a restart. Editor automation is 11/11. Vera's follow-up, the late parcel, Hall Three and the sign under the paint are played in the same editor smoke (ADR-050, ADR-051), and so are the Melje and Tabor missions, on temporary floors until those windows are built (ADR-052): all eight of the original's missions. Still open: a packaged run, fishing animation and sound, the Melje and Tabor ground itself, and the owner playtest.
 
-## Stage 1 integrated readiness — updated 20 November 2026, through ADR-076 and morning reconciliation
+## Stage 1 integrated readiness — evening 20 November 2026, through ADR-083
 
 This is an **engineering evidence register**, not an assertion of completed packaged approval. The [20 November review](DEVELOPMENT_REVIEW_2026-11-20.md) supersedes previous dates for current status; earlier reviews remain historical.
 
@@ -124,6 +138,13 @@ This is an **engineering evidence register**, not an assertion of completed pack
 6. **P1 — Graphics modernization ([graphics roadmap](GRAPHICS_ROADMAP.md), [visual backlog](VISUAL_QUALITY_BACKLOG.md), ADR-072).** In order: trees and shrubs in the playable square from the original game's Marburgum-owned species, regions and survey placement (VQ-022); its surveyed street furniture, bus shelters included (VQ-023); mission people drawn with the street-people looks and mission places with real props instead of engine primitives (VQ-006); the landmarks that name places, the cathedral's bell tower first (VQ-010); the Lent quay wall (VQ-024). Measure packaged frame time on a free mid-range GPU before choosing Nanite, LODs or HLOD for the 9.6 M always-loaded triangles (VQ-028). Run `MarburgumVisualFixes` after every opening, façade or ground rebuild.
 
 **Definition of accepted gameplay:** exact clean SHA, correct map and current cooked input hashes, tested genuine server/client with negative and restart cases, clearly identified test mode, visual/performance evidence, and the project owner's explicit `approved` decision. ADR acceptance alone never closes this gate.
+
+### New story, interiors and secure multiplayer checkpoint
+
+ADR-081 delivered **Chapter IV — Voices on Tape**, Maja's outcome branch, Photography, two side missions, animated NPC contacts and visible fishing poses; the later `9b88369` packaged story run includes English/Slovene dialogue and evening NPC posts. Store schema 6 persists the expanded game data. ADR-076 created **586 deterministic floor-data candidates but only five cut enterable shells**, with **581 remaining unopened**, and `a0d0b89` staged multi-client two-building doors PASS. ADR-083's clean `44106bc` signed-in encrypted account smoke and seven development-key regressions PASS. These tests belong to **different revisions** and do not jointly certify the newest integrated game.
+
+The [research board](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) provides bounded period-authentic gameplay additions and reversible engine experiments. None can bypass current gameplay/network acceptance, source licensing or the owner playtest rule.
+
 
 ## Stage 2 — Marburgum-specific missions, skills and economy
 
