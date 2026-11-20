@@ -4,6 +4,8 @@
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Internationalization/Culture.h"
+#include "Internationalization/Internationalization.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "UI/MarburgumUITheme.h"
@@ -20,6 +22,15 @@ float UMarburgumUISettings::TextScale() const
     return TextSize <= 0 ? 1.f : TextSize == 1 ? 1.12f : 1.25f;
 }
 
+bool UMarburgumUISettings::IsSlovene() const
+{
+    if (!Language.IsEmpty())
+    {
+        return Language == TEXT("sl");
+    }
+    return FInternationalization::Get().GetCurrentLanguage()->GetTwoLetterISOLanguageName() == TEXT("sl");
+}
+
 float UMarburgumUISettings::NotificationTimeScale() const
 {
     return NotificationTime <= 0 ? 0.7f : NotificationTime == 1 ? 1.f : 1.6f;
@@ -33,6 +44,10 @@ void UMarburgumUISettings::Sanitize()
     ConditionDisplay = FMath::Clamp(ConditionDisplay, 0, 1);
     NotificationTime = FMath::Clamp(NotificationTime, 0, 2);
     MasterVolume = FMath::IsFinite(MasterVolume) ? FMath::Clamp(MasterVolume, 0.f, 1.f) : 1.f;
+    if (Language != TEXT("en") && Language != TEXT("sl"))
+    {
+        Language.Empty();
+    }
 }
 
 void UMarburgumUISettings::Persist()
@@ -52,6 +67,7 @@ void UMarburgumUISettings::ResetToDefaults()
     NotificationTime = 1;
     bChatTimestamps = true;
     MasterVolume = 1.f;
+    Language.Empty();
 }
 
 float UMarburgumUISettings::EffectiveInterfaceScale() const
@@ -78,10 +94,25 @@ bool UMarburgumUISettings::ApplyToRuntime(UWorld* World) const
             Audio->SetTransientPrimaryVolume(MasterVolume);
         }
     }
+    // The interface language, unless this run names one with -culture= (captures and tests pin their own).
+    bool bLanguageChanged = false;
+    FString CommandLineCulture;
+    if (!FParse::Value(FCommandLine::Get(), TEXT("culture="), CommandLineCulture))
+    {
+        // No preference (a reset, or an undo back to none) returns to the system's language.
+        FInternationalization& I18N = FInternationalization::Get();
+        const FString Wanted = Language.IsEmpty() ? I18N.GetDefaultLanguage()->GetName() : Language;
+        const FCulturePtr Target = I18N.GetCulture(Wanted);
+        if (Target.IsValid() && I18N.GetCurrentLanguage()->GetName() != Target->GetName())
+        {
+            bLanguageChanged = I18N.SetCurrentLanguageAndLocale(Target->GetName());
+        }
+    }
     MarburgumUI::FPresentationOptions Options;
     Options.bHighContrast = bHighContrast;
     Options.bReducedMotion = bReducedMotion;
     Options.TextScale = TextScale();
     Options.NotificationTimeScale = NotificationTimeScale();
-    return MarburgumUI::SetPresentationOptions(Options);
+    const bool bThemeChanged = MarburgumUI::SetPresentationOptions(Options);
+    return bThemeChanged || bLanguageChanged;
 }

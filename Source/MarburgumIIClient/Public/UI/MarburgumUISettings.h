@@ -33,6 +33,8 @@ public:
     UPROPERTY(Config) int32 NotificationTime = 1;
     /** Chat lines carry their local time. */
     UPROPERTY(Config) bool bChatTimestamps = true;
+    /** The interface language, "en" or "sl" (QA U11). Empty follows the system; -culture= on the command line wins. */
+    UPROPERTY(Config) FString Language;
     /** The game's overall loudness, 0 to 1 (the engine's transient primary volume). */
     UPROPERTY(Config) float MasterVolume = 1.f;
     UPROPERTY(Config) int32 Version = 1;
@@ -41,6 +43,8 @@ public:
     static constexpr float MaxInterfaceScale = 2.f;
 
     float TextScale() const;
+    /** True when the interface is showing Slovene (the preference, or the running culture when none is saved). */
+    bool IsSlovene() const;
     float NotificationTimeScale() const;
 
     /** Clamps every value to its range (a hand-edited ini cannot break the interface). */

@@ -81,7 +81,7 @@ namespace
     /** Settings whose change alters the theme tokens, so the whole interface is rebuilt. */
     bool ChangesPresentation(EMarburgumSetting Setting)
     {
-        return Setting == EMarburgumSetting::TextSize || Setting == EMarburgumSetting::HighContrast
+        return Setting == EMarburgumSetting::Language || Setting == EMarburgumSetting::TextSize || Setting == EMarburgumSetting::HighContrast
             || Setting == EMarburgumSetting::ReducedMotion || Setting == EMarburgumSetting::NotificationTime;
     }
 
@@ -115,6 +115,8 @@ void UMarburgumSettingsPanel::Build()
     Descriptions.Reset();
 
     AddSection(LOCTEXT("Interface", "INTERFACE"));
+    AddRow(EMarburgumSetting::Language, LOCTEXT("LanguageLabel", "Language"),
+        LOCTEXT("LanguageDesc", "The language of menus, screens and notices. Place names are always Slovene; what people in the city say, and mission texts, are still in English in this build."), true);
     AddRow(EMarburgumSetting::InterfaceScale, LOCTEXT("ScaleLabel", "Interface scale"),
         ScaleFixedByCommandLine()
             ? LOCTEXT("ScaleFixed", "The size of every panel and text on top of the display's own scaling. Fixed for this run by -MB2UIScale.")
@@ -201,8 +203,8 @@ void UMarburgumSettingsPanel::Build()
         "to your account."), ETypeRole::Caption, T.Color.TextMuted);
     Local->SetAutoWrapText(true);
     FBuilder::Stack(Detail, Local, T.Space.L);
-    FBuilder::Stack(Detail, B.KeyHint(FText::FromString(TEXT("← →")), LOCTEXT("Change", "Change value")), T.Space.XS);
-    FBuilder::Stack(Detail, B.KeyHint(FText::FromString(TEXT("Enter")), LOCTEXT("Next", "Next value")), 0.f);
+    FBuilder::Stack(Detail, B.KeyHint(FText::AsCultureInvariant(TEXT("← →")), LOCTEXT("Change", "Change value")), T.Space.XS);
+    FBuilder::Stack(Detail, B.KeyHint(FText::AsCultureInvariant(TEXT("Enter")), LOCTEXT("Next", "Next value")), 0.f);
     UBorder* DetailCard = B.Surface(ESurfaceKind::Panel, Pad(T.Space.XL), Detail);
     USizeBox* DetailWidth = B.Bounded(DetailCard, 520.f, 320.f);
     FBuilder::InlineTop(Columns, DetailWidth, 0.f);
@@ -311,6 +313,8 @@ FText UMarburgumSettingsPanel::ValueText(EMarburgumSetting Setting) const
     case EMarburgumSetting::NotificationTime:
         return S.NotificationTime == 0 ? LOCTEXT("Short", "Short") : S.NotificationTime == 1 ? LOCTEXT("Standard", "Standard") : LOCTEXT("Long", "Long");
     case EMarburgumSetting::ChatTimestamps: return OnOff(S.bChatTimestamps);
+    // Each language by its own name, never translated.
+    case EMarburgumSetting::Language: return S.IsSlovene() ? FText::AsCultureInvariant(TEXT("Slovenščina")) : FText::AsCultureInvariant(TEXT("English"));
     case EMarburgumSetting::MasterVolume: return Percent(S.MasterVolume);
     case EMarburgumSetting::VSync: return Game ? OnOff(Game->IsVSyncEnabled()) : LOCTEXT("Unavailable", "Unavailable");
     case EMarburgumSetting::FrameRateLimit:
@@ -372,6 +376,7 @@ void UMarburgumSettingsPanel::Change(EMarburgumSetting Setting, int32 Direction)
     case EMarburgumSetting::ConditionDisplay: S.ConditionDisplay = S.ConditionDisplay == 1 ? 0 : 1; break;
     case EMarburgumSetting::NotificationTime: S.NotificationTime = StepIndex(S.NotificationTime, 3, Dir, bWrap); break;
     case EMarburgumSetting::ChatTimestamps: S.bChatTimestamps = !S.bChatTimestamps; break;
+    case EMarburgumSetting::Language: S.Language = S.IsSlovene() ? TEXT("en") : TEXT("sl"); break;
     case EMarburgumSetting::MasterVolume:
         S.MasterVolume = 0.1f * StepIndex(FMath::RoundToInt(S.MasterVolume * 10.f), 11, Dir, bWrap);
         break;
@@ -433,6 +438,7 @@ UMarburgumSettingsPanel::FSnapshot UMarburgumSettingsPanel::Capture() const
     Out.ConditionDisplay = S.ConditionDisplay;
     Out.NotificationTime = S.NotificationTime;
     Out.bChatTimestamps = S.bChatTimestamps;
+    Out.Language = S.Language;
     Out.MasterVolume = S.MasterVolume;
     Out.bVSync = Game && Game->IsVSyncEnabled();
     Out.FrameRateLimit = Game ? Game->GetFrameRateLimit() : 0.f;
@@ -450,6 +456,7 @@ void UMarburgumSettingsPanel::ApplySnapshot(const FSnapshot& Snapshot)
     S.ConditionDisplay = Snapshot.ConditionDisplay;
     S.NotificationTime = Snapshot.NotificationTime;
     S.bChatTimestamps = Snapshot.bChatTimestamps;
+    S.Language = Snapshot.Language;
     S.MasterVolume = Snapshot.MasterVolume;
     if (UGameUserSettings* Game = GEngine ? GEngine->GetGameUserSettings() : nullptr)
     {
@@ -491,6 +498,7 @@ void UMarburgumSettingsPanel::ShowDetail(int32 RowIndex)
     case EMarburgumSetting::ReducedMotion:
     case EMarburgumSetting::VSync: Default = OnOff(false); break;
     case EMarburgumSetting::ChatTimestamps: Default = OnOff(true); break;
+    case EMarburgumSetting::Language: Default = LOCTEXT("SystemLanguage", "The system's"); break;
     case EMarburgumSetting::HudOpacity:
     case EMarburgumSetting::MasterVolume: Default = Percent(1.f); break;
     case EMarburgumSetting::ConditionDisplay: Default = LOCTEXT("WhenItMatters", "When it matters"); break;

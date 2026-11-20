@@ -382,7 +382,7 @@ void UMarburgumInventoryPanel::ShowDetail(FName ItemId)
                 FText::AsNumber(Offer->SellPrice)), ETypeRole::Body, T.Color.TextSecondary);
             Sell->SetAutoWrapText(true);
             FBuilder::Inline(Line, Sell, T.Space.S, true);
-            FBuilder::Inline(Line, B.KeyCap(FText::FromString(TEXT("B")), false), 0.f);
+            FBuilder::Inline(Line, B.KeyCap(FText::AsCultureInvariant(TEXT("B")), false), 0.f);
             FBuilder::Stack(DetailBox, Line, T.Space.XS);
         }
     }

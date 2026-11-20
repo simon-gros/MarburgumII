@@ -219,7 +219,7 @@ void UMarburgumCharacterPanel::Rebuild()
     // Identity card: monogram, name, body, and where the character is kept.
     const bool bNamed = State && State->HasIdentity();
     UBorder* Monogram = B.Surface(ESurfaceKind::Sunken, Pad(T.Space.M),
-        B.Text(bNamed ? Initials(State->GetFirstName(), State->GetLastName()) : FText::FromString(TEXT("—")), ETypeRole::Display, T.Color.Accent), false);
+        B.Text(bNamed ? Initials(State->GetFirstName(), State->GetLastName()) : FText::AsCultureInvariant(TEXT("—")), ETypeRole::Display, T.Color.Accent), false);
     Monogram->SetBrush(RoundedBrush(T.Color.Sunken, 48.f, T.Color.Hairline, T.BorderWidth));
     FBuilder::Align(Monogram, HAlign_Center, VAlign_Center);
     USizeBox* MonogramSize = WidgetTree->ConstructWidget<USizeBox>();

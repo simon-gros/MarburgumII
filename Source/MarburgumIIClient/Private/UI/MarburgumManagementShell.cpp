@@ -69,11 +69,11 @@ FText UMarburgumManagementShell::ScreenKey(EMarburgumScreen Screen)
 {
     switch (Screen)
     {
-    case EMarburgumScreen::Character: return FText::FromString(TEXT("C"));
-    case EMarburgumScreen::Skills: return FText::FromString(TEXT("K"));
-    case EMarburgumScreen::Inventory: return FText::FromString(TEXT("I"));
-    case EMarburgumScreen::Journal: return FText::FromString(TEXT("J"));
-    case EMarburgumScreen::Settings: return FText::FromString(TEXT("O"));
+    case EMarburgumScreen::Character: return FText::AsCultureInvariant(TEXT("C"));
+    case EMarburgumScreen::Skills: return FText::AsCultureInvariant(TEXT("K"));
+    case EMarburgumScreen::Inventory: return FText::AsCultureInvariant(TEXT("I"));
+    case EMarburgumScreen::Journal: return FText::AsCultureInvariant(TEXT("J"));
+    case EMarburgumScreen::Settings: return FText::AsCultureInvariant(TEXT("O"));
     default: return FText::GetEmpty();
     }
 }
@@ -162,7 +162,7 @@ void UMarburgumManagementShell::NativeOnInitialized()
     FBuilder::Align(TabHolder, HAlign_Center, VAlign_Center);
     FBuilder::Inline(Header, TabHolder, T.Space.XL, true);
 
-    UHorizontalBox* CloseHint = B.KeyHint(FText::FromString(TEXT("Esc")), LOCTEXT("Close", "Close"));
+    UHorizontalBox* CloseHint = B.KeyHint(FText::AsCultureInvariant(TEXT("Esc")), LOCTEXT("Close", "Close"));
     FBuilder::Inline(Header, CloseHint, 0.f);
     FBuilder::Stack(Frame, Header, T.Space.M);
     FBuilder::Stack(Frame, B.Rule(T.Color.Hairline, 1.f), T.Space.XL);
@@ -178,10 +178,10 @@ void UMarburgumManagementShell::NativeOnInitialized()
     // Footer: the keys that work on every screen.
     UHorizontalBox* Footer = B.Row();
     FBuilder::Inline(Footer, B.Spacer(1.f, 1.f), 0.f, true);
-    FBuilder::Inline(Footer, B.KeyHint(FText::FromString(TEXT("Q / E")), LOCTEXT("SwitchScreen", "Switch screen")), T.Space.XL);
-    FBuilder::Inline(Footer, B.KeyHint(FText::FromString(TEXT("↑ ↓")), LOCTEXT("Move", "Move")), T.Space.XL);
-    FBuilder::Inline(Footer, B.KeyHint(FText::FromString(TEXT("Enter")), LOCTEXT("Select", "Select")), T.Space.XL);
-    FBuilder::Inline(Footer, B.KeyHint(FText::FromString(TEXT("Esc")), LOCTEXT("Back", "Back to the street")), 0.f);
+    FBuilder::Inline(Footer, B.KeyHint(FText::AsCultureInvariant(TEXT("Q / E")), LOCTEXT("SwitchScreen", "Switch screen")), T.Space.XL);
+    FBuilder::Inline(Footer, B.KeyHint(FText::AsCultureInvariant(TEXT("↑ ↓")), LOCTEXT("Move", "Move")), T.Space.XL);
+    FBuilder::Inline(Footer, B.KeyHint(FText::AsCultureInvariant(TEXT("Enter")), LOCTEXT("Select", "Select")), T.Space.XL);
+    FBuilder::Inline(Footer, B.KeyHint(FText::AsCultureInvariant(TEXT("Esc")), LOCTEXT("Back", "Back to the street")), 0.f);
     FBuilder::Stack(Frame, Footer, 0.f);
 
     UBorder* Gutter = B.Surface(ESurfaceKind::Base, FMargin(T.Space.XXXL, T.Space.XL, T.Space.XXXL, T.Space.L), Frame, false);

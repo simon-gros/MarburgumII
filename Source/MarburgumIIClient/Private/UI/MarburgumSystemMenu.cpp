@@ -120,8 +120,8 @@ void UMarburgumSystemMenu::NativeOnInitialized()
     Note->SetAutoWrapText(true);
     FBuilder::Stack(Column, Note, T.Space.L);
     UHorizontalBox* Hints = B.Row();
-    FBuilder::Inline(Hints, B.KeyHint(FText::FromString(TEXT("Enter")), LOCTEXT("Select", "Select")), T.Space.XL);
-    FBuilder::Inline(Hints, B.KeyHint(FText::FromString(TEXT("Esc")), LOCTEXT("Back", "Back")), 0.f);
+    FBuilder::Inline(Hints, B.KeyHint(FText::AsCultureInvariant(TEXT("Enter")), LOCTEXT("Select", "Select")), T.Space.XL);
+    FBuilder::Inline(Hints, B.KeyHint(FText::AsCultureInvariant(TEXT("Esc")), LOCTEXT("Back", "Back")), 0.f);
     FBuilder::Stack(Column, Hints, 0.f);
 
     USizeBox* Width = B.Bounded(Column, MenuWidth, 300.f);

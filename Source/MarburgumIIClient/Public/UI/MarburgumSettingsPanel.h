@@ -20,6 +20,7 @@ enum class EMarburgumSetting : uint8
     ConditionDisplay,
     NotificationTime,
     ChatTimestamps,
+    Language,
     MasterVolume,
     VSync,
     FrameRateLimit,
@@ -103,6 +104,7 @@ private:
         int32 ConditionDisplay = 0;
         int32 NotificationTime = 1;
         bool bChatTimestamps = true;
+        FString Language;
         float MasterVolume = 1.f;
         bool bVSync = false;
         float FrameRateLimit = 0.f;
