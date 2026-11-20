@@ -1,7 +1,7 @@
 # First-launch, account and character onboarding ontology — Marburgum II
 
 **Version:** 0.1.0, 10 November 2026  
-**Status:** Approved first-launch product contract, now implemented for development by ADR-055/057: Rust HTTPS account service, registration/code/login/recovery, first name/last name/three model choices, 3D preview and dedicated-server one-use ticket admission. The editor account smoke has recorded first-time/returning/denial/preview evidence; **packaged FL-10, real mail sender, production deployment and owner FL-12 remain open**. Latest cross-system summary: [19 November review](DEVELOPMENT_REVIEW_2026-11-19.md) (the authentication implementation itself did not change in that window); [12 November review](DEVELOPMENT_REVIEW_2026-11-12.md).
+**Status (20 November 2026):** Development Rust HTTPS registration/verification/login/reset, First/Last/model character creation, 3D preview and one-use server tickets exist (ADR-055/057). The merged [QA audit](QA_AUDIT_2026-11-19.md) hardened TLS, password/session bounds and service refusal behavior and records **33 service tests**, plus prior editor/staged account smokes. **Open:** per-server ticket audience binding (AR1, proposal), ticket exposure in engine join-URL logs (AR13), real email and deployment, creator overlap at 150%+/5:4 (U9), complete packaged FL-10/resolution/controller/Slovene matrix and personal owner FL-12. See [20 November review](DEVELOPMENT_REVIEW_2026-11-20.md).
 **Normative data:** [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json)  
 **Companions:** [Game ontology](ONTOLOGY.md), [UI/HUD ontology](UI_HUD_ONTOLOGY.md), [network architecture](NETWORK_ARCHITECTURE.md), [main roadmap](ROADMAP.md), [UI roadmap](UI_HUD_ROADMAP.md), [ADR-022](DECISIONS.md).
 
