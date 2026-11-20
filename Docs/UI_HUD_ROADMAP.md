@@ -1,12 +1,12 @@
 # UI/HUD development roadmap — MarburgumII
 
-**Revision:** 0.4.1 — status checked 19 November 2026 through ADR-070 ([current development review](DEVELOPMENT_REVIEW_2026-11-19.md)); no new UI implementation was established in the 24-hour window. Earlier UI-00–UI-07 design gates remain normative.
+**Revision:** 0.4.2 — status reconciled 20 November 2026 against the [overnight review](DEVELOPMENT_REVIEW_2026-11-20.md) and [QA fixes](QA_AUDIT_2026-11-19.md); semantic UI-00–UI-07 gates remain normative.
 **Scope:** P0-to-production user interface program for the new **Unreal Engine 5.8.3** client.  
 **Normative concepts:** [UI/HUD ontology](UI_HUD_ONTOLOGY.md) and [machine-readable module registry](../Data/Ontology/ui_hud.v0.1.json).  
 **Visual contract:** [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md).  
 **Network dependency:** [NET-001](https://github.com/simon-gros/MarburgumII/issues/2), a genuine two-client authoritative session.  
 **Umbrella implementation task:** [UI-001](https://github.com/simon-gros/MarburgumII/issues/3).  
-**Status:** Rendered UMG shell, general/private chat, live prompts/objectives/condition/vehicle/combat messages, Character/Inventory/Journal and first **Skills (K)**, plus editor-tested story/fishing choices. ADR-055/057 implemented real development account screens, server ticket gating and a three-body drag/zoom 3D creator, with ADR-058/059 improving the prototype body's face/head. This is **not** a fully packaged, owner-accepted current-build UI. Settings, focus/controller, packaged auth/mission runs, Slovene localization and 720p–4K/ultrawide acceptance remain open.
+**Status:** The rendered UMG shell, HUD/chat, Character/Inventory/Journal/**Skills (K)** and account/3D creator remain the implemented foundation. QA added **Escape/resume/leave/quit**, scrollable screens, wrapped names, longer-lived story notices, scaled prompts, account-name display and chat click-away/focus fixes. **Settings remains unimplemented**; 150%+/5:4 creator overlap, contrast, controller, localization, full screenshot matrix and personal owner approval remain open.
 
 ## 1. Product requirement and planning principle
 
@@ -56,21 +56,23 @@ Preserve Marburgum's recognizable experience: transient district names; concise 
 
 **Important:** UI-05 breadth and UI-06 extensive customization do not delay Stage 1, but their underlying *module registry, layout policy, tokenized style and state boundaries* must be designed in UI-01/03 so future work does not require rebuilding the interface.
 
-### Updated phase and work-package ledger (12 November 2026)
+### Updated phase and work-package ledger (20 November 2026)
 
 | Phase | Proven first runtime slice | Still required |
 | --- | --- | --- |
 | UI-00 | Ontology, stable module registry and exclusions | Current vehicle/swim vocabulary owner review |
 | UI-01 | Design tokens, actual UMG primitives, SAMPLE DATA gallery | Polish and full scale/contrast matrix |
-| UI-02 | Join/failure/retry/recovery shell | Keyboard/controller focus, logout and session edge cases |
+| UI-02 | Connect/refusal/recovery plus new Escape/resume/leave/quit and improved chat Escape/click-away | Menu focus/restore, controller and logout smoke, owner UX acceptance |
 | UI-02A | Implemented registration/code/credentials/reset, first and returning sign-in, one character, three-model 3D preview/cards and ticket-gated join (ADR-055/057); editor smoke passes | Delivered mail/production operations, packaged FL-10/12, Slovene/controller/scale and owner approval |
 | UI-03 | Chat, receipt notifications, prompt, location, mission, condition/swim/down, car status | Integrated consistent layout and privacy/focus/connection-state review |
-| UI-04 | Character, Inventory, Journal and **first Skills (K)** panels | Settings, live XP/progression/empty/error states and stable navigation/focus |
+| UI-04 | Character, Inventory, Journal, first Skills (K), scroll/clamping and long-text wrapping | Settings, creator at 150%+/5:4, live/empty/error data, contrast/localization and focus matrix |
 | UI-05 | Vehicle/seat/driver, combat receipts, pedestrian incidents, and editor-tested fishing/mission choices | Polished bite/strike/catch UX, mission decision focus/receipt, integrated combat/vehicle/social presentation and multi-client proof |
 | UI-06 | Profile architecture only | Noneditable presets after accepted default, editor later |
-| UI-07 | Selected authentic Linux captures | Current SHA/asset seal, device/scale/accessibility/owner approval |
+| UI-07 | Existing screenshots plus QA source corrections | New source-matched screenshots of Escape, scrolling, 5:4/ultrawide/4K, 150% scale and owner acceptance |
 
 **19 November cross-system dependency:** District-specific pedestrian groups, visits, street hours and blocked chase outcomes (ADR-067–070) must not be represented by new fabricated HUD attributes; the UI should show only warranted in-world prompts/incident or combat outcomes, and never claim a finished city-life system. Regression focus: state and modal/input focus during conversations, missions, combat and driving near crowds. These new AI capabilities do **not** close Settings, screen-scale, localization or packaged UI gates.
+
+**20 November QA-focused UI gate:** Render and interactively validate the Escape menu, chat focus, long account/mission text, scroll regions and first-character creator under 720p/5:4/ultrawide/4K and 100%/150% scale. **U9 creator card overlap is an open defect**; UX1/UX2 have no new focused visual/focus proof. Test Slovene `č š ž`, controller navigation, refusal/reconnect and WCAG-style 4.5:1 ordinary-text contrast. Do not treat compilation as owner UI acceptance. [QA report](QA_AUDIT_2026-11-19.md), [current review](DEVELOPMENT_REVIEW_2026-11-20.md).
 
 **UI-P0A — Current-build integrated visual test.** Repackage the actual default `/Game/World/lent` with the latest façade/roof, protagonist, swim animations, vehicle content and dedicated server. Check display sizes 1280×720, 1366×768, 1920×1080, 2560×1440, 3440×1440, 3840×2160 and UI scales 80/100/125/150/200%. Distinguish gallery SAMPLE DATA from live server-backed captures, record SHA, cooked content hashes and frame-time impact.
 
