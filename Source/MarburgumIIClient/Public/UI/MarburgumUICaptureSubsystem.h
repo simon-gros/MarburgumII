@@ -12,13 +12,18 @@
  * scripted scenario, then exits with 0 (scenario reached its expected end) or non-zero.
  *
  * -MB2UICaptureLabel=<name> names the screenshots (default: the script name).
- * -MB2UICaptureScript=frontend|fail|join|recover   (default frontend)
+ * -MB2UICaptureScript=frontend|fail|join|recover|tour   (default frontend)
  *   frontend: capture the front-end (or gallery with -MB2UIGallery) and exit.
  *   fail:     connect to -MB2Server, expect a truthful error state.
  *   join:     connect to -MB2Server, expect admission; with -MB2UICaptureDrop, then drop the
  *             connection client-side and expect automatic recovery to admission.
  *   recover:  connect to -MB2Server, expect admission, then wait for the harness to stop and restart
  *             the server; expect reconnecting and automatic recovery to admission.
+ *   tour:     connect to -MB2Server, expect admission, then walk through the player-facing surfaces of the
+ *             live session and screenshot each one: -MB2UITour=<step,step,...> picks them (default below).
+ *             Steps: arrival (location banner), explore (quiet HUD), interact (E on the target in front:
+ *             receipt, objective), character, skills, inventory, journal, settings, chat, menu (Escape).
+ *             A step this build does not have is logged as skipped, not failed.
  */
 UCLASS()
 class MARBURGUMIICLIENT_API UMarburgumUICaptureSubsystem : public UGameInstanceSubsystem
@@ -35,6 +40,13 @@ private:
     void RequestShot(const FMarburgumSessionView& View);
     void AfterShot(const FMarburgumSessionView& View);
     void Finish(int32 ExitCode, const TCHAR* Reason);
+
+    /** Tour: start the step at TourIndex; false when this build has no such surface. */
+    bool BeginTourStep(const FString& Step);
+    /** Tour: undo what the step opened, once its screenshot is saved. */
+    void EndTourStep(const FString& Step);
+    void TickTour(double Now);
+    void RequestTourShot(const FString& Step);
 
     FTSTicker::FDelegateHandle TickerHandle;
     TWeakObjectPtr<UMarburgumSessionSubsystem> Session;
@@ -54,8 +66,14 @@ private:
     double PendingSince = 0.0;
     FMarburgumSessionView PendingView;
 
+    TArray<FString> TourSteps;
+    int32 TourIndex = INDEX_NONE;
+    double TourStepSince = 0.0;
+    bool bTourStepShot = false;
+    FString PendingTourStep;
+
     static constexpr double SettleSeconds = 1.2;
     static constexpr double FirstShotDelaySeconds = 2.5;
     static constexpr double ShotTimeoutSeconds = 10.0;
-    static constexpr double ScenarioTimeoutSeconds = 150.0;
+    static constexpr double ScenarioTimeoutSeconds = 240.0;
 };

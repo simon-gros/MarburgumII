@@ -7,18 +7,34 @@
 #   fail      connect to a port with no server: truthful error state
 #   recover   join a packaged dedicated server, stop the server while admitted, restart it, and
 #             expect the client to show reconnecting and recover to admission on its own
+#   tour      join a dedicated server on /Game/World/lent (own throwaway world store) at the riverside angler
+#             and walk the live session's surfaces: location banner, quiet HUD, E on the angler (receipt,
+#             pinned objective), Character, Skills, Inventory, Journal, Settings, general chat, Escape menu
+#   matrix    the same live session at every resolution and UI scale of the UI-07 matrix (720p to 4K,
+#             ultrawide, 5:4; 80 % to 200 %), screenshotting the HUD and each management screen
 #
-# Usage: scripts/ui-capture-linux.sh [staged|editor]
+# Usage: scripts/ui-capture-linux.sh [staged|editor] [scenario,scenario,...]
 #   staged  packaged builds from scripts/package-linux.sh (default)
 #   editor  uncooked UnrealEditor -server / -game processes (requires UE_ROOT)
+#   scenarios default to frontend,gallery,fail,recover; "all" adds tour and matrix.
+#   MB2_CAPTURE_MATRIX="1920x1080@1.0 1280x720@1.5 ..." narrows the matrix.
+#   The live server's clock and weather are held (MB2_CAPTURE_CLOCK, default a June afternoon, clear_dry), so before
+#   and after captures compare the interface and not the hour they were taken.
 # Evidence (PNGs, logs, summary.txt) is written to Saved/UICapture/<UTC timestamp>/.
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 mode="${1:-staged}"
+scenarios=",${2:-frontend,gallery,fail,recover},"
+[[ "$scenarios" == ",all," ]] && scenarios=",frontend,gallery,fail,recover,tour,matrix,"
+wants() { [[ "$scenarios" == *",$1,"* ]]; }
 port="${MB2_CAPTURE_PORT:-27703}"
 dead_port="${MB2_CAPTURE_DEAD_PORT:-27704}"
 map="/Game/Maps/NetSmoke"
+world_map="/Game/World/lent"
+capture_clock="${MB2_CAPTURE_CLOCK:-2026-06-18T12:30:00Z}"
+# UI-07 matrix: resolution@scale. 1280x1024 is the 5:4 case.
+matrix="${MB2_CAPTURE_MATRIX:-1280x720@0.8 1280x720@1.0 1280x720@1.25 1280x720@1.5 1366x768@1.0 1920x1080@1.0 1920x1080@1.25 1920x1080@1.5 1920x1080@2.0 2560x1440@1.0 2560x1440@1.5 3440x1440@1.0 3840x2160@1.0 3840x2160@2.0 1280x1024@1.0 1280x1024@1.5}"
 uproject="$repo_root/MarburgumII.uproject"
 out_dir="$repo_root/Saved/UICapture/$(date -u +%Y%m%dT%H%M%SZ)"
 
@@ -76,14 +92,15 @@ trap stop_server EXIT
 port_busy() { ss -Hlun "sport = :$1" | grep -aq .; }
 
 start_server() {
-    local log="$1"
+    local log="$1" server_map="${2:-$map}"
+    shift 2 || true
     if port_busy "$port"; then
         echo "UDP port $port is already in use; stop the other server or set MB2_CAPTURE_PORT." >&2
         exit 1
     fi
-    setsid "${server_cmd[@]}" "$map" -port="$port" "${common_args[@]}" > "$log" 2>&1 &
+    setsid "${server_cmd[@]}" "$server_map" -port="$port" "${common_args[@]}" "$@" > "$log" 2>&1 &
     server_pid=$!
-    for _ in $(seq 1 240); do
+    for _ in $(seq 1 360); do
         if grep -aq "MB2SMOKE role=server event=ready .* port=$port " "$log"; then
             return 0
         fi
@@ -93,8 +110,30 @@ start_server() {
         fi
         sleep 0.5
     done
-    echo "Server did not become ready on port $port within 120 s; see $log" >&2
+    echo "Server did not become ready on port $port within 180 s; see $log" >&2
     exit 1
+}
+
+# run_world_client <name> <width> <height> <scale> <tour steps> [extra args...]: a client joining the world at the
+# riverside angler, walking the tour. A second offscreen Vulkan client can fail to create its device while another
+# renders on the same GPU; a client that fails that way before connecting is retried.
+run_world_client() {
+    local name="$1" width="$2" height="$3" scale="$4" steps="$5"
+    shift 5
+    local url="127.0.0.1:$port?MB2Start=angler?MB2Character=mb2ui-$name-t$(date +%s)$RANDOM"
+    local log="$out_dir/client-$name.log" code=0 attempt
+    for attempt in 0 1 2; do
+        if [[ "$attempt" -gt 0 ]]; then
+            [[ "$code" -ne 0 ]] && grep -aq "Vulkan device creation failed" "$log" || break
+            mv "$log" "$out_dir/client-$name.vulkan-init-failed-$attempt.log"
+            sleep 3
+            code=0
+        fi
+        "${client_cmd[@]}" "$url" "${common_args[@]}" -RenderOffScreen -windowed -ForceRes -ResX="$width" -ResY="$height" \
+            -MB2UIScale="$scale" -MB2UICapture="$out_dir" -MB2UICaptureScript=tour -MB2UICaptureLabel="$name" -MB2UITour="$steps" "$@" \
+            > "$log" 2>&1 || code=$?
+    done
+    return "$code"
 }
 
 # run_client <name> <width> <height> <script> [extra args...]; returns the client's exit status.
@@ -133,46 +172,78 @@ if port_busy "$dead_port"; then
     exit 1
 fi
 
-echo "Front-end shell"
-for resolution in 1920x1080 1280x720 2560x1440 3840x2160; do
-    code=0
-    run_client "frontend-$resolution" "${resolution%x*}" "${resolution#*x}" frontend || code=$?
-    record "frontend $resolution" "$code"
-done
-
-echo "Component gallery (sample data)"
-for resolution in 1920x1080 2560x1440; do
-    code=0
-    run_client "gallery-$resolution" "${resolution%x*}" "${resolution#*x}" frontend -MB2UIGallery -MB2UICaptureLabel=gallery || code=$?
-    record "gallery $resolution" "$code"
-done
-
-echo "Connection failure (no server on port $dead_port)"
-code=0
-run_client fail 1920 1080 fail -MB2Server="127.0.0.1:$dead_port" || code=$?
-record "fail" "$code"
-
-echo "Join, server loss and automatic recovery (port $port)"
-start_server "$out_dir/server-1.log"
-run_client recover 1920 1080 recover -MB2Server="127.0.0.1:$port" -MB2UIDiagnostics &
-client_pid=$!
-recover_log="$out_dir/client-recover.log"
-if wait_for_line "$recover_log" "stage=await_loss" 90; then
-    echo "  client admitted; stopping the server"
-    stop_server
-    if wait_for_line "$recover_log" "stage=saved .* phase=reconnecting" 30; then
-        echo "  client shows reconnecting; restarting the server"
-        start_server "$out_dir/server-2.log"
-    else
-        echo "  client never showed reconnecting"
-    fi
-else
-    echo "  client was not admitted"
+if wants frontend; then
+    echo "Front-end shell"
+    for resolution in 1920x1080 1280x720 2560x1440 3840x2160; do
+        code=0
+        run_client "frontend-$resolution" "${resolution%x*}" "${resolution#*x}" frontend || code=$?
+        record "frontend $resolution" "$code"
+    done
 fi
-code=0
-wait "$client_pid" || code=$?
-record "recover" "$code"
-stop_server
+
+if wants gallery; then
+    echo "Component gallery (sample data)"
+    for resolution in 1920x1080 2560x1440; do
+        code=0
+        run_client "gallery-$resolution" "${resolution%x*}" "${resolution#*x}" frontend -MB2UIGallery -MB2UICaptureLabel=gallery || code=$?
+        record "gallery $resolution" "$code"
+    done
+fi
+
+if wants fail; then
+    echo "Connection failure (no server on port $dead_port)"
+    code=0
+    run_client fail 1920 1080 fail -MB2Server="127.0.0.1:$dead_port" || code=$?
+    record "fail" "$code"
+fi
+
+if wants recover; then
+    echo "Join, server loss and automatic recovery (port $port)"
+    start_server "$out_dir/server-1.log" "$map"
+    run_client recover 1920 1080 recover -MB2Server="127.0.0.1:$port" &
+    client_pid=$!
+    recover_log="$out_dir/client-recover.log"
+    if wait_for_line "$recover_log" "stage=await_loss" 90; then
+        echo "  client admitted; stopping the server"
+        stop_server
+        if wait_for_line "$recover_log" "stage=saved .* phase=reconnecting" 30; then
+            echo "  client shows reconnecting; restarting the server"
+            start_server "$out_dir/server-2.log" "$map"
+        else
+            echo "  client never showed reconnecting"
+        fi
+    else
+        echo "  client was not admitted"
+    fi
+    code=0
+    wait "$client_pid" || code=$?
+    record "recover" "$code"
+    stop_server
+fi
+
+if wants tour || wants matrix; then
+    # One server and one throwaway world store for every live capture: each client is a new character.
+    start_server "$out_dir/server-world.log" "$world_map" -MB2WorldStore="$out_dir/world-store.json" \
+        -MB2Clock="$capture_clock" -MB2ClockSpeed=0.001 -MB2Weather=clear_dry
+    if wants tour; then
+        echo "Live tour at 1920x1080 (port $port)"
+        code=0
+        run_world_client tour 1920 1080 1.0 "arrival,explore,interact,character,skills,inventory,journal,settings,chat,menu" || code=$?
+        record "tour" "$code"
+    fi
+    if wants matrix; then
+        echo "Resolution and scale matrix"
+        for case in $matrix; do
+            resolution="${case%@*}"
+            scale="${case#*@}"
+            code=0
+            run_world_client "m-$resolution-$scale" "${resolution%x*}" "${resolution#*x}" "$scale" \
+                "explore,interact,character,skills,inventory,journal,settings,menu" || code=$?
+            record "matrix $resolution @ $scale" "$code"
+        done
+    fi
+    stop_server
+fi
 
 {
     echo "MarburgumII Stage 0C rendered UI captures"
@@ -180,6 +251,8 @@ stop_server
     echo "date_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     echo "git_sha: $(git -C "$repo_root" rev-parse HEAD)$(git -C "$repo_root" diff --quiet HEAD -- Source Config Content || echo ' (dirty)')"
     echo "mode: $mode"
+    echo "scenarios: ${scenarios//,/ }"
+    echo "data: front-end, gallery (SAMPLE DATA), fail and recover use no world; tour and matrix are live sessions on $world_map against a dedicated server and a throwaway world store"
     echo "host: $(uname -srm)"
     echo "gpu: $(nvidia-smi --query-gpu=name,driver_version --format=csv,noheader 2>/dev/null || echo unknown)"
     echo "client_cmd: ${client_cmd[*]} ${common_args[*]} -RenderOffScreen -windowed -ForceRes -ResX=<w> -ResY=<h> -MB2UICapture=<dir> -MB2UICaptureScript=<script>"

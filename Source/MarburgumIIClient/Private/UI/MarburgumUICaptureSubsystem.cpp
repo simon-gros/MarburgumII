@@ -4,13 +4,16 @@
 #include "Engine/GameInstance.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
+#include "Framework/Application/SlateApplication.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
 #include "HAL/PlatformTime.h"
 #include "MarburgumNetworkContract.h"
+#include "MarburgumPlayerController.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "UI/MarburgumUISubsystem.h"
 #include "UnrealClient.h"
 
 using namespace MarburgumII::Session;
@@ -42,6 +45,9 @@ void UMarburgumUICaptureSubsystem::Initialize(FSubsystemCollectionBase& Collecti
     Label = Script;
     FParse::Value(CommandLine, TEXT("MB2UICaptureLabel="), Label);
     bDropAfterReady = FParse::Param(CommandLine, TEXT("MB2UICaptureDrop"));
+    FString Tour = TEXT("arrival,explore,interact,character,skills,inventory,journal,settings,chat,menu");
+    FParse::Value(CommandLine, TEXT("MB2UITour="), Tour, false);
+    Tour.ParseIntoArray(TourSteps, TEXT(","), true);
     Directory = FPaths::ConvertRelativePathToFull(Directory);
     IFileManager::Get().MakeDirectory(*Directory, true);
 
@@ -82,6 +88,16 @@ bool UMarburgumUICaptureSubsystem::Tick(float DeltaTime)
         {
             MB2_CAPTURE_LOG("stage=saved file=\"%s\" phase=%s fault=%s", *PendingFile, ToString(PendingView.Phase), ToString(PendingView.Fault));
             PendingFile.Reset();
+            if (!PendingTourStep.IsEmpty())
+            {
+                const FString Step = MoveTemp(PendingTourStep);
+                PendingTourStep.Reset();
+                EndTourStep(Step);
+                ++TourIndex;
+                TourStepSince = Now;
+                bTourStepShot = false;
+                return true;
+            }
             AfterShot(PendingView);
         }
         else if (Now - PendingSince > ShotTimeoutSeconds)
@@ -92,6 +108,16 @@ bool UMarburgumUICaptureSubsystem::Tick(float DeltaTime)
     }
 
     const FMarburgumSessionView& View = SessionSubsystem->GetView();
+    if (TourIndex != INDEX_NONE)
+    {
+        if (View.Phase != EPhase::Ready)
+        {
+            Finish(1, TEXT("tour_lost_admission"));
+            return true;
+        }
+        TickTour(Now);
+        return true;
+    }
     const bool bSettled = Now - View.PhaseStartedSeconds >= SettleSeconds;
     const bool bWarm = Now - StartSeconds >= FirstShotDelaySeconds;
     if (View.Revision != CapturedRevision && View.Phase != EPhase::Starting && bSettled && bWarm)
@@ -137,7 +163,8 @@ void UMarburgumUICaptureSubsystem::AfterShot(const FMarburgumSessionView& View)
     }
 
     const bool bRecover = Script == TEXT("recover");
-    const bool bJoin = Script == TEXT("join") || bRecover;
+    const bool bTour = Script == TEXT("tour");
+    const bool bJoin = Script == TEXT("join") || bRecover || bTour;
     if (Script != TEXT("fail") && !bJoin)
     {
         Finish(5, TEXT("unknown_script"));
@@ -157,6 +184,13 @@ void UMarburgumUICaptureSubsystem::AfterShot(const FMarburgumSessionView& View)
         if (!bJoin)
         {
             Finish(1, TEXT("unexpected_admission"));
+        }
+        else if (bTour)
+        {
+            MB2_CAPTURE_LOG("stage=tour_start steps=%d", TourSteps.Num());
+            TourIndex = 0;
+            TourStepSince = FPlatformTime::Seconds();
+            bTourStepShot = false;
         }
         else if (bRecover && !bAwaitedLoss)
         {
@@ -180,6 +214,130 @@ void UMarburgumUICaptureSubsystem::AfterShot(const FMarburgumSessionView& View)
     default:
         return; // Intermediate phases are captured when they last long enough; no action needed.
     }
+}
+
+namespace
+{
+    /** How long each tour step settles before its screenshot: transitions finish and receipts arrive. */
+    double TourSettleSeconds(const FString& Step)
+    {
+        if (Step == TEXT("arrival")) return 1.8;
+        if (Step == TEXT("explore")) return 5.0;
+        if (Step == TEXT("interact")) return 3.5;
+        if (Step == TEXT("chat")) return 2.5;
+        return 1.2;
+    }
+}
+
+void UMarburgumUICaptureSubsystem::TickTour(double Now)
+{
+    if (!PendingFile.IsEmpty())
+    {
+        return;
+    }
+    if (!TourSteps.IsValidIndex(TourIndex))
+    {
+        Finish(0, TEXT("tour_captured"));
+        return;
+    }
+    const FString& Step = TourSteps[TourIndex];
+    if (!bTourStepShot)
+    {
+        bTourStepShot = true;
+        TourStepSince = Now;
+        if (!BeginTourStep(Step))
+        {
+            MB2_CAPTURE_LOG("stage=tour_skip step=%s", *Step);
+            ++TourIndex;
+            bTourStepShot = false;
+        }
+        return;
+    }
+    if (Now - TourStepSince >= TourSettleSeconds(Step))
+    {
+        RequestTourShot(Step);
+    }
+}
+
+bool UMarburgumUICaptureSubsystem::BeginTourStep(const FString& Step)
+{
+    UGameInstance* GameInstance = GetGameInstance();
+    UMarburgumUISubsystem* UI = GameInstance ? GameInstance->GetSubsystem<UMarburgumUISubsystem>() : nullptr;
+    UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
+    AMarburgumPlayerController* Controller = World ? Cast<AMarburgumPlayerController>(World->GetFirstPlayerController()) : nullptr;
+    if (!UI || !Controller)
+    {
+        return false;
+    }
+    MB2_CAPTURE_LOG("stage=tour_step step=%s", *Step);
+    if (Step == TEXT("arrival") || Step == TEXT("explore"))
+    {
+        return true;
+    }
+    if (Step == TEXT("interact"))
+    {
+        Controller->RequestInteract();
+        return true;
+    }
+    if (Step == TEXT("character")) return UI->ToggleCharacter();
+    if (Step == TEXT("skills")) return UI->ToggleSkills();
+    if (Step == TEXT("inventory")) return UI->ToggleInventory();
+    if (Step == TEXT("journal")) return UI->ToggleJournal();
+    if (Step == TEXT("chat"))
+    {
+        Controller->SendGeneralChat(TEXT("Dober dan from the tour: one general line, as every player on this server sees it."));
+        UI->FocusChat();
+        return true;
+    }
+    if (Step == TEXT("menu"))
+    {
+        UI->Back();
+        return UI->IsSystemMenuOpen();
+    }
+    return false;
+}
+
+void UMarburgumUICaptureSubsystem::EndTourStep(const FString& Step)
+{
+    UGameInstance* GameInstance = GetGameInstance();
+    UMarburgumUISubsystem* UI = GameInstance ? GameInstance->GetSubsystem<UMarburgumUISubsystem>() : nullptr;
+    UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
+    APlayerController* Controller = World ? World->GetFirstPlayerController() : nullptr;
+    if (!UI || !Controller)
+    {
+        return;
+    }
+    if (Step == TEXT("character") || Step == TEXT("skills") || Step == TEXT("inventory") || Step == TEXT("journal")
+        || Step == TEXT("menu"))
+    {
+        UI->Back(); // Escape closes what the step opened.
+    }
+    else if (Step == TEXT("chat"))
+    {
+        Controller->SetInputMode(FInputModeGameOnly());
+        Controller->SetShowMouseCursor(false);
+        if (FSlateApplication::IsInitialized())
+        {
+            FSlateApplication::Get().SetAllUserFocusToGameViewport();
+        }
+    }
+}
+
+void UMarburgumUICaptureSubsystem::RequestTourShot(const FString& Step)
+{
+    FIntPoint Size(0, 0);
+    if (GEngine && GEngine->GameViewport && GEngine->GameViewport->Viewport)
+    {
+        Size = GEngine->GameViewport->Viewport->GetSizeXY();
+    }
+    const FString Name = FString::Printf(TEXT("%02d-%s-%s-%dx%d.png"), ++ShotIndex, *Label, *Step, Size.X, Size.Y);
+    PendingTourStep = Step;
+    PendingView = Session.IsValid() ? Session->GetView() : FMarburgumSessionView();
+    PendingFile = FPaths::Combine(Directory, Name);
+    PendingSince = FPlatformTime::Seconds();
+    IFileManager::Get().Delete(*PendingFile, false, true, true);
+    FScreenshotRequest::RequestScreenshot(PendingFile, true, false);
+    MB2_CAPTURE_LOG("stage=request file=\"%s\" step=%s", *PendingFile, *Step);
 }
 
 void UMarburgumUICaptureSubsystem::Finish(int32 ExitCode, const TCHAR* Reason)
