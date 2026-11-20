@@ -232,6 +232,12 @@ struct ResetBody {
     password: String,
 }
 
+/// The game server address the client is about to join (AR1).
+#[derive(Deserialize)]
+struct AdmissionBody {
+    server: String,
+}
+
 #[derive(Deserialize)]
 struct RedeemBody {
     ticket: String,
@@ -288,9 +294,9 @@ pub fn router_with(shared: Shared, gate: HashGate) -> Router {
             answer(run(&s, move |svc, now| svc.create_character(&token, &b.request, &b.first_name, &b.last_name, &b.model, now)).await,
                 StatusCode::OK)
         }))
-        .route("/v1/admission", post(|State(s): State<Shared>, h: HeaderMap| async move {
+        .route("/v1/admission", post(|State(s): State<Shared>, h: HeaderMap, JsonBody(b): JsonBody<AdmissionBody>| async move {
             let token = credential(&h, "Bearer ").to_string();
-            answer(run(&s, move |svc, now| svc.admission(&token, now)).await, StatusCode::OK)
+            answer(run(&s, move |svc, now| svc.admission(&token, &b.server, now)).await, StatusCode::OK)
         }))
         .route("/v1/server/redeem", post(|State(s): State<Shared>, h: HeaderMap, JsonBody(b): JsonBody<RedeemBody>| async move {
             let key = credential(&h, "MB2-Server ").to_string();
@@ -307,7 +313,7 @@ pub fn router_with(shared: Shared, gate: HashGate) -> Router {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::tests::{service, KEY};
+    use crate::service::tests::{service, KEY, OTHER_KEY, SERVER};
     use axum::body::Body;
     use axum::http::Request;
     use http_body_util::BodyExt;
@@ -475,8 +481,14 @@ mod tests {
         let (status, body) = call(&app, "POST", "/v1/character", Some(&bearer),
             json!({ "request": "r1", "first_name": "Špela", "last_name": "Kos", "model": "manny" })).await;
         assert_eq!((status, body["character"]["first_name"].as_str()), (StatusCode::OK, Some("Špela")));
-        let (_, body) = call(&app, "POST", "/v1/admission", Some(&bearer), json!({})).await;
+        let (status, body) = call(&app, "POST", "/v1/admission", Some(&bearer), json!({})).await;
+        assert_eq!((status, body["error"].as_str()), (StatusCode::BAD_REQUEST, Some("request_invalid")), "the server must be named");
+        let (status, body) = call(&app, "POST", "/v1/admission", Some(&bearer), json!({ "server": "evil.example.si" })).await;
+        assert_eq!((status, body["error"].as_str()), (StatusCode::FORBIDDEN, Some("server_unknown")));
+        let (_, body) = call(&app, "POST", "/v1/admission", Some(&bearer), json!({ "server": SERVER })).await;
         let ticket = body["ticket"].as_str().unwrap().to_string();
+        let (status, _) = call(&app, "POST", "/v1/server/redeem", Some(&format!("MB2-Server {OTHER_KEY}")), json!({ "ticket": ticket })).await;
+        assert_eq!(status, StatusCode::FORBIDDEN, "another server's key");
         let (status, _) = call(&app, "POST", "/v1/server/redeem", Some(&bearer), json!({ "ticket": ticket })).await;
         assert_eq!(status, StatusCode::UNAUTHORIZED, "a player session is not the server key");
         let (status, body) = call(&app, "POST", "/v1/server/redeem", Some(&format!("MB2-Server {KEY}")), json!({ "ticket": ticket })).await;

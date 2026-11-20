@@ -3,6 +3,7 @@
 
 use crate::policy;
 use crate::secrets;
+use crate::servers::GameServer;
 use crate::store::{self, Account, Challenge, Character, Session, Setup, Store};
 use serde::Serialize;
 use std::collections::HashMap;
@@ -79,6 +80,8 @@ pub struct Admitted {
 
 struct Admission {
     account: String,
+    /// The game server the ticket was asked for; only its key spends it (AR1).
+    server: String,
     issued_at: i64,
     expires_at: i64,
 }
@@ -128,7 +131,7 @@ pub struct Service {
     path: PathBuf,
     mailer: Box<dyn Mailer>,
     models: Vec<String>,
-    server_key: String,
+    servers: Vec<GameServer>,
     admissions: HashMap<String, Admission>,
     failures: HashMap<String, Vec<i64>>,
     failures_swept_at: i64,
@@ -152,13 +155,11 @@ fn may_send(sent: &[i64], now: i64) -> bool {
 }
 
 impl Service {
-    pub fn open(path: PathBuf, mailer: Box<dyn Mailer>, models: Vec<String>, server_key: String) -> Result<Self, String> {
-        if server_key.len() < 32 {
-            return Err("the server key must be at least 32 characters".into());
-        }
+    pub fn open(path: PathBuf, mailer: Box<dyn Mailer>, models: Vec<String>, servers: Vec<GameServer>) -> Result<Self, String> {
+        crate::servers::check(&servers)?;
         let store = Store::load(&path)?;
         Ok(Service {
-            store, path, mailer, models, server_key, admissions: HashMap::new(), failures: HashMap::new(), failures_swept_at: 0,
+            store, path, mailer, models, servers, admissions: HashMap::new(), failures: HashMap::new(), failures_swept_at: 0,
         })
     }
 
@@ -418,12 +419,18 @@ impl Service {
         Ok(view(&self.store.accounts[&account_id]))
     }
 
-    /// A single-use, one-minute ticket that lets this account's character into a game server.
-    pub fn admission(&mut self, token: &str, now: i64) -> Outcome<Ticket> {
+    /// A single-use, one-minute ticket that lets this account's character into the game server at `address`, the
+    /// address the client is about to join. Only listed servers get tickets, so a player lured to another address
+    /// has nothing to hand over, and a ticket is spendable only by the server it names (QA 2026-11-19, AR1).
+    pub fn admission(&mut self, token: &str, address: &str, now: i64) -> Outcome<Ticket> {
         let (account_id, account) = self.session_account(token, now)?;
         if account.character.is_none() {
             return refuse(409, "no_character");
         }
+        let address = policy::server_address(address).or_else(|code| refuse(403, code))?;
+        let Some(server) = self.servers.iter().find(|s| s.addresses.contains(&address)).map(|s| s.id.clone()) else {
+            return refuse(403, "server_unknown");
+        };
         self.admissions.retain(|_, a| a.expires_at > now);
         // A few outstanding tickets per account at most: a newer one replaces the oldest.
         let mut outstanding: Vec<(String, i64)> =
@@ -436,18 +443,28 @@ impl Service {
         }
         let ticket = secrets::token();
         self.admissions.insert(secrets::verifier("admission", &ticket),
-            Admission { account: account_id, issued_at: now, expires_at: now + ADMISSION_TTL_S });
+            Admission { account: account_id, server, issued_at: now, expires_at: now + ADMISSION_TTL_S });
         Ok(Ticket { ticket, expires_in: ADMISSION_TTL_S })
     }
 
-    /// The game server spends a ticket. Only a caller holding the server key may.
+    /// A game server spends a ticket; its key says which server it is. A ticket asked for another server is refused
+    /// and left as it was, so a server that is shown a stolen ticket cannot burn it either (AR1).
     pub fn redeem(&mut self, server_key: &str, ticket: &str, now: i64) -> Outcome<Admitted> {
-        if !secrets::same(server_key, &self.server_key) {
+        // Every key is compared, to the end, so the time taken does not say which one came close.
+        let caller = self.servers.iter().fold(None, |found, s| if secrets::same(server_key, &s.key) { Some(s.id.clone()) } else { found });
+        let Some(caller) = caller else {
             return refuse(401, "server_key_invalid");
-        }
-        let Some(admission) = self.admissions.remove(&secrets::verifier("admission", ticket)).filter(|a| a.expires_at > now) else {
-            return refuse(403, "ticket_invalid");
         };
+        let verifier = secrets::verifier("admission", ticket);
+        match self.admissions.get(&verifier) {
+            Some(a) if a.expires_at > now && a.server == caller => {}
+            Some(a) if a.expires_at > now => {
+                eprintln!("mb2-accounts event=redeem_refused reason=other_server caller={caller} ticket_server={}", a.server);
+                return refuse(403, "ticket_invalid");
+            }
+            _ => return refuse(403, "ticket_invalid"),
+        }
+        let admission = self.admissions.remove(&verifier).expect("checked above");
         let Some(account) = self.store.accounts.get(&admission.account) else {
             return refuse(403, "ticket_invalid");
         };
@@ -585,11 +602,23 @@ pub mod tests {
     }
 
     pub const KEY: &str = "0123456789abcdef0123456789abcdef";
+    /// The address of the server KEY belongs to.
+    pub const SERVER: &str = "127.0.0.1:7777";
+    /// A second listed server, with its own key.
+    pub const OTHER_KEY: &str = "fedcba9876543210fedcba9876543210";
+    pub const OTHER: &str = "melje.example.si:7777";
+
+    pub fn servers() -> Vec<GameServer> {
+        vec![
+            GameServer { id: "lent".into(), addresses: vec![SERVER.into(), "localhost:7777".into()], key: KEY.into() },
+            GameServer { id: "melje".into(), addresses: vec![OTHER.into()], key: OTHER_KEY.into() },
+        ]
+    }
 
     pub fn service(dir: &std::path::Path) -> (Service, Inbox) {
         let inbox = Inbox::default();
         let models = vec!["protagonist".to_string(), "manny".into(), "quinn".into()];
-        (Service::open(dir.join("accounts.json"), Box::new(inbox.clone()), models, KEY.into()).unwrap(), inbox)
+        (Service::open(dir.join("accounts.json"), Box::new(inbox.clone()), models, servers()).unwrap(), inbox)
     }
 
     /// Registers, verifies and sets up "ana_k", then signs in.
@@ -611,16 +640,16 @@ pub mod tests {
         let session = signed_in(&mut service, &inbox);
         let me = service.me(&session, 40).unwrap();
         assert_eq!(me, AccountView { username: "ana_k".into(), character: None });
-        assert_eq!(code_of(service.admission(&session, 40)), "no_character");
+        assert_eq!(code_of(service.admission(&session, SERVER, 40)), "no_character");
         let made = service.create_character(&session, "req-1", " Žiga ", "Kos", "quinn", 50).unwrap();
         let character = made.character.expect("character");
         assert_eq!((character.first_name.as_str(), character.last_name.as_str(), character.model.as_str()), ("Žiga", "Kos", "quinn"));
-        let ticket = service.admission(&session, 60).unwrap().ticket;
+        let ticket = service.admission(&session, SERVER, 60).unwrap().ticket;
         assert_eq!(code_of(service.redeem("wrong-key-wrong-key-wrong-key-xx", &ticket, 61)), "server_key_invalid");
         let admitted = service.redeem(KEY, &ticket, 61).unwrap();
         assert_eq!(admitted.character.id, character.id);
         assert_eq!(code_of(service.redeem(KEY, &ticket, 62)), "ticket_invalid", "single use");
-        let late = service.admission(&session, 70).unwrap().ticket;
+        let late = service.admission(&session, SERVER, 70).unwrap().ticket;
         assert_eq!(code_of(service.redeem(KEY, &late, 70 + ADMISSION_TTL_S)), "ticket_invalid", "expired");
         // Nothing secret is in the store: no password, code, session or ticket in the clear.
         let text = std::fs::read_to_string(dir.path().join("accounts.json")).unwrap();
@@ -760,7 +789,7 @@ pub mod tests {
         let (mut service, inbox) = service(dir.path());
         let session = signed_in(&mut service, &inbox);
         service.create_character(&session, "r1", "Ana", "Kos", "quinn", 40).unwrap();
-        let tickets: Vec<String> = (0..5).map(|i| service.admission(&session, 50 + i).unwrap().ticket).collect();
+        let tickets: Vec<String> = (0..5).map(|i| service.admission(&session, SERVER, 50 + i).unwrap().ticket).collect();
         assert_eq!(service.admissions.len(), ADMISSIONS_PER_ACCOUNT);
         for (i, ticket) in tickets.iter().enumerate() {
             let redeemed = service.redeem(KEY, ticket, 56).is_ok();
@@ -785,6 +814,26 @@ pub mod tests {
         }
     }
 
+    /// QA 2026-11-19, AR1: a ticket names its server; an unlisted address gets none, another server cannot spend it
+    /// (nor burn it), and the spelling of the address does not matter.
+    #[test]
+    fn tickets_are_bound_to_their_server() {
+        let dir = tempfile::tempdir().unwrap();
+        let (mut service, inbox) = service(dir.path());
+        let session = signed_in(&mut service, &inbox);
+        service.create_character(&session, "req-1", "Ana", "Kos", "manny", 40).unwrap();
+        assert_eq!(code_of(service.admission(&session, "evil.example.si:7777", 41)), "server_unknown", "lured elsewhere");
+        assert_eq!(code_of(service.admission(&session, "127.0.0.1:7778", 41)), "server_unknown", "another port");
+        assert_eq!(code_of(service.admission(&session, "not an address", 41)), "server_unknown");
+        let ticket = service.admission(&session, " LOCALHOST ", 42).unwrap().ticket;
+        assert_eq!(code_of(service.redeem(OTHER_KEY, &ticket, 43)), "ticket_invalid", "another listed server");
+        assert_eq!(service.redeem(KEY, &ticket, 43).unwrap().character.first_name, "Ana", "not burned by the other server");
+        let melje = service.admission(&session, OTHER, 44).unwrap().ticket;
+        assert_eq!(code_of(service.redeem(KEY, &melje, 45)), "ticket_invalid");
+        assert!(service.redeem(OTHER_KEY, &melje, 45).is_ok());
+        assert_eq!(code_of(service.redeem("wrong-key-wrong-key-wrong-key-xx", &ticket, 45)), "server_key_invalid");
+    }
+
     /// QA 2026-11-19, AR10: signing out or resetting the password spends the outstanding admission tickets.
     #[test]
     fn logout_and_reset_spend_outstanding_tickets() {
@@ -792,11 +841,11 @@ pub mod tests {
         let (mut service, inbox) = service(dir.path());
         let session = signed_in(&mut service, &inbox);
         service.create_character(&session, "r1", "Ana", "Kos", "quinn", 40).unwrap();
-        let ticket = service.admission(&session, 41).unwrap().ticket;
+        let ticket = service.admission(&session, SERVER, 41).unwrap().ticket;
         service.logout(&session, 42).unwrap();
         assert_eq!(code_of(service.redeem(KEY, &ticket, 43)), "ticket_invalid", "after logout");
         let session = service.login("ana_k", "drava-bridge-1990", 44).unwrap().session;
-        let ticket = service.admission(&session, 45).unwrap().ticket;
+        let ticket = service.admission(&session, SERVER, 45).unwrap().ticket;
         service.forgot("ana@example.si", 46).unwrap();
         service.reset("ana@example.si", &inbox.last_code(), "pohorje-snow-1991", 47).unwrap();
         assert_eq!(code_of(service.redeem(KEY, &ticket, 48)), "ticket_invalid", "after a reset");

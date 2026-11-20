@@ -1,7 +1,9 @@
 //! mb2-accounts: the Marburgum II account service (ADR-055).
 //!
 //! mb2-accounts --bind 127.0.0.1:7790 --store <accounts.json> --outbox <dir> --models <character_models.json>
-//!              --server-key-file <file> --tls-cert <cert.pem> --tls-key <key.pem>
+//!              --servers <servers.json> --tls-cert <cert.pem> --tls-key <key.pem>
+//!
+//! The servers file lists the game servers tickets are issued for, each with its own key file (src/servers.rs).
 //!
 //! HTTPS only. Emails are written to the outbox folder, one file each, until a real sender is chosen.
 
@@ -9,6 +11,7 @@ mod conn;
 mod http;
 mod policy;
 mod secrets;
+mod servers;
 mod service;
 mod store;
 
@@ -44,7 +47,7 @@ struct Args {
     store: PathBuf,
     outbox: PathBuf,
     models: PathBuf,
-    server_key_file: PathBuf,
+    servers: PathBuf,
     tls_cert: PathBuf,
     tls_key: PathBuf,
 }
@@ -62,7 +65,7 @@ fn parse() -> Result<Args, String> {
         store: take("store")?.into(),
         outbox: take("outbox")?.into(),
         models: take("models")?.into(),
-        server_key_file: take("server-key-file")?.into(),
+        servers: take("servers")?.into(),
         tls_cert: take("tls-cert")?.into(),
         tls_key: take("tls-key")?.into(),
     })
@@ -90,8 +93,11 @@ async fn main() -> ExitCode {
     };
     let setup = || -> Result<service::Service, String> {
         let models = model_ids(&args.models)?;
-        let key = fs::read_to_string(&args.server_key_file).map_err(|e| format!("{}: {e}", args.server_key_file.display()))?;
-        service::Service::open(args.store.clone(), Box::new(Outbox(args.outbox.clone())), models, key.trim().to_string())
+        let servers = servers::load(&args.servers)?;
+        for server in &servers {
+            println!("mb2-accounts event=game_server id={} addresses={}", server.id, server.addresses.join(","));
+        }
+        service::Service::open(args.store.clone(), Box::new(Outbox(args.outbox.clone())), models, servers)
     };
     let service = match setup() {
         Ok(service) => service,

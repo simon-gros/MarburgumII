@@ -105,9 +105,60 @@ pub fn character_name(raw: &str) -> Result<String, &'static str> {
     Ok(name)
 }
 
+/// The engine's default game port, which a join address without one means.
+pub const DEFAULT_GAME_PORT: u16 = 7777;
+
+/// A game server address as the client typed it, in one spelling: lower-case host, explicit port, IPv6 in brackets.
+/// Nothing is resolved; a ticket names the address the player asked for (QA 2026-11-19, AR1).
+pub fn server_address(raw: &str) -> Result<String, &'static str> {
+    let address = raw.trim().to_lowercase();
+    if address.is_empty() || address.len() > 255
+        || address.chars().any(|c| c.is_whitespace() || c.is_control() || matches!(c, '/' | '?' | '#' | '@' | '\\'))
+    {
+        return Err("server_unknown");
+    }
+    let (host, port) = if let Some(rest) = address.strip_prefix('[') {
+        let (host, after) = rest.split_once(']').ok_or("server_unknown")?;
+        if host.is_empty() || !host.chars().all(|c| c.is_ascii_hexdigit() || matches!(c, ':' | '.')) {
+            return Err("server_unknown");
+        }
+        (format!("[{host}]"), if after.is_empty() { None } else { Some(after.strip_prefix(':').ok_or("server_unknown")?) })
+    } else {
+        match address.split_once(':') {
+            Some((_, port)) if port.contains(':') => return Err("server_unknown"), // bare IPv6 needs brackets
+            Some((host, port)) => (host.to_string(), Some(port)),
+            None => (address.clone(), None),
+        }
+    };
+    if host.is_empty() || (!host.starts_with('[') && !host.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '-'))) {
+        return Err("server_unknown");
+    }
+    let port = match port {
+        None => DEFAULT_GAME_PORT,
+        Some(port) if !port.is_empty() && port.len() <= 5 && port.bytes().all(|b| b.is_ascii_digit()) => {
+            port.parse::<u16>().ok().filter(|p| *p != 0).ok_or("server_unknown")?
+        }
+        Some(_) => return Err("server_unknown"),
+    };
+    Ok(format!("{host}:{port}"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn server_addresses() {
+        assert_eq!(server_address(" 127.0.0.1:27714 ").unwrap(), "127.0.0.1:27714");
+        assert_eq!(server_address("Lent.Example.SI").unwrap(), "lent.example.si:7777");
+        assert_eq!(server_address("[::1]:27714").unwrap(), "[::1]:27714");
+        assert_eq!(server_address("[::1]").unwrap(), "[::1]:7777");
+        for bad in ["", "::1", "host:", "host:0", "host:65536", "host:77x7", "a b:7777", "evil/x:7777", "u@host:7777", "host:7777?x=1",
+            "[::1]x", "[]:7777", "_host:7777"]
+        {
+            assert!(server_address(bad).is_err(), "{bad}");
+        }
+    }
 
     #[test]
     fn emails() {

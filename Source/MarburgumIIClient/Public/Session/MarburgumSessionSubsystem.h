@@ -10,6 +10,7 @@
 class AMarburgumGameState;
 class APlayerController;
 class UNetDriver;
+class UPendingNetGame;
 
 /** Immutable snapshot of the client connection lifecycle, consumed by the UI (signal `connection_phase`). */
 struct FMarburgumSessionView
@@ -81,10 +82,12 @@ private:
 
     void HandleNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType, const FString& ErrorString);
     void HandleTravelFailure(UWorld* World, ETravelFailure::Type FailureType, const FString& ErrorString);
+    void HandlePendingConnection(UPendingNetGame* PendingNetGame);
 
     FTSTicker::FDelegateHandle TickerHandle;
     FDelegateHandle NetworkFailureHandle;
     FDelegateHandle TravelFailureHandle;
+    FDelegateHandle PendingConnectionHandle;
     FMarburgumSessionChanged SessionChanged;
 
     static FString ResolveDefaultCharacterKey();
@@ -92,6 +95,11 @@ private:
     FMarburgumSessionView View;
     FString LastAddress;
     FString CharacterKey;
+    /**
+     * The admission ticket for the travel in flight. It joins the pending connection's URL only once the engine has
+     * logged the Browse address, so a client log never shows a ticket the server has not spent yet (AR13).
+     */
+    FString PendingTicket;
     double AttemptStartedSeconds = 0.0;
     double NextReconnectSeconds = 0.0;
     bool bReconnectScheduled = false;

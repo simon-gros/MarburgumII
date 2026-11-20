@@ -78,8 +78,11 @@ public:
     void CreateCharacter(const FString& FirstName, const FString& LastName, FName Model);
     void SignOut();
 
-    /** A fresh single-use admission ticket for entering a world. */
-    void RequestTicket(FMarburgumTicketReady Done);
+    /**
+     * A fresh single-use admission ticket for entering the world at Address (host[:port], as typed). The service
+     * issues it only for its listed servers and binds it to that one (QA 2026-11-19, AR1).
+     */
+    void RequestTicket(const FString& Address, FMarburgumTicketReady Done);
 
     /** The text shown for a service refusal code. */
     static FText DescribeError(const FString& Code);

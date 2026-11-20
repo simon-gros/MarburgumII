@@ -88,6 +88,7 @@ FText UMarburgumAccountSubsystem::DescribeError(const FString& Code)
         { TEXT("model_unknown"), LOCTEXT("ModelUnknown", "Choose one of the bodies shown.") },
         { TEXT("character_exists"), LOCTEXT("CharacterExists", "This account already has its character.") },
         { TEXT("no_character"), LOCTEXT("NoCharacter", "Create your character first.") },
+        { TEXT("server_unknown"), LOCTEXT("ServerUnknown", "That address is not a Marburgum world. Check the server address.") },
         { TEXT("store_unavailable"), LOCTEXT("StoreUnavailable", "The account service could not save. Nothing changed; try again.") },
         { TEXT("mail_unavailable"), LOCTEXT("MailUnavailable", "The email could not be sent. Try again in a minute.") },
         { TEXT("unreachable"), LOCTEXT("Unreachable", "The account service cannot be reached. Check your connection and try again.") },
@@ -415,7 +416,7 @@ void UMarburgumAccountSubsystem::SignOut()
     Publish();
 }
 
-void UMarburgumAccountSubsystem::RequestTicket(FMarburgumTicketReady Done)
+void UMarburgumAccountSubsystem::RequestTicket(const FString& Address, FMarburgumTicketReady Done)
 {
     if (Session.IsEmpty() || View.Step != EMarburgumAccountStep::Ready)
     {
@@ -428,7 +429,11 @@ void UMarburgumAccountSubsystem::RequestTicket(FMarburgumTicketReady Done)
     Request->SetHeader(TEXT("Authorization"), TEXT("Bearer ") + Session);
     Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
     Request->SetTimeout(15.f);
-    Request->SetContentAsString(TEXT("{}"));
+    const TSharedRef<FJsonObject> Body = MakeShared<FJsonObject>();
+    Body->SetStringField(TEXT("server"), Address);
+    FString Text;
+    FJsonSerializer::Serialize(Body, TJsonWriterFactory<>::Create(&Text));
+    Request->SetContentAsString(Text);
     Request->OnProcessRequestComplete().BindWeakLambda(this,
         [this, Done](FHttpRequestPtr, FHttpResponsePtr Response, bool bConnected)
         {

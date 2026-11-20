@@ -4,6 +4,7 @@
 #include "Engine/GameInstance.h"
 #include "Engine/NetConnection.h"
 #include "Engine/NetDriver.h"
+#include "Engine/NetworkDelegates.h"
 #include "Engine/PendingNetGame.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -94,6 +95,7 @@ void UMarburgumSessionSubsystem::Initialize(FSubsystemCollectionBase& Collection
         NetworkFailureHandle = GEngine->OnNetworkFailure().AddUObject(this, &UMarburgumSessionSubsystem::HandleNetworkFailure);
         TravelFailureHandle = GEngine->OnTravelFailure().AddUObject(this, &UMarburgumSessionSubsystem::HandleTravelFailure);
     }
+    PendingConnectionHandle = FNetDelegates::OnPendingNetGameConnectionCreated.AddUObject(this, &UMarburgumSessionSubsystem::HandlePendingConnection);
     TickerHandle = FTSTicker::GetCoreTicker().AddTicker(
         FTickerDelegate::CreateUObject(this, &UMarburgumSessionSubsystem::Tick), TickIntervalSeconds);
 }
@@ -106,6 +108,8 @@ void UMarburgumSessionSubsystem::Deinitialize()
         GEngine->OnNetworkFailure().Remove(NetworkFailureHandle);
         GEngine->OnTravelFailure().Remove(TravelFailureHandle);
     }
+    FNetDelegates::OnPendingNetGameConnectionCreated.Remove(PendingConnectionHandle);
+    PendingTicket.Reset();
     Super::Deinitialize();
 }
 
@@ -228,7 +232,8 @@ void UMarburgumSessionSubsystem::BeginAttempt(const FString& Address)
     if (UMarburgumAccountSubsystem* Accounts = GameInstance->GetSubsystem<UMarburgumAccountSubsystem>(); Accounts && Accounts->IsEnabled())
     {
         const EPhase AttemptPhase = View.Phase;
-        Accounts->RequestTicket(FMarburgumTicketReady::CreateWeakLambda(this,
+        PendingTicket.Reset();
+        Accounts->RequestTicket(Address, FMarburgumTicketReady::CreateWeakLambda(this,
             [this, Address, AttemptPhase](const FString& Ticket, const FText& Error)
             {
                 if (View.Phase != AttemptPhase)
@@ -244,8 +249,10 @@ void UMarburgumSessionSubsystem::BeginAttempt(const FString& Address)
                 if (UWorld* Current = Instance ? Instance->GetWorld() : nullptr; Current && GEngine)
                 {
                     AttemptStartedSeconds = FPlatformTime::Seconds();
-                    GEngine->SetClientTravel(Current, *FString::Printf(TEXT("%s?%s=%s"), *Address, MarburgumII::Accounts::TicketOption, *Ticket),
-                        TRAVEL_Absolute);
+                    // The engine logs the travel URL (Browse) before it connects: the ticket is added afterwards, to
+                    // the pending connection, and reaches the server in the login message (AR13).
+                    PendingTicket = Ticket;
+                    GEngine->SetClientTravel(Current, *Address, TRAVEL_Absolute);
                 }
             }));
         return;
@@ -256,8 +263,21 @@ void UMarburgumSessionSubsystem::BeginAttempt(const FString& Address)
     GEngine->SetClientTravel(World, *Url, TRAVEL_Absolute);
 }
 
+void UMarburgumSessionSubsystem::HandlePendingConnection(UPendingNetGame* PendingNetGame)
+{
+    const UGameInstance* GameInstance = GetGameInstance();
+    const FWorldContext* Context = GameInstance ? GameInstance->GetWorldContext() : nullptr;
+    if (PendingTicket.IsEmpty() || !PendingNetGame || !Context || Context->PendingNetGame != PendingNetGame)
+    {
+        return;
+    }
+    PendingNetGame->URL.AddOption(*FString::Printf(TEXT("%s=%s"), MarburgumII::Accounts::TicketOption, *PendingTicket));
+    PendingTicket.Reset();
+}
+
 void UMarburgumSessionSubsystem::AbandonAttempt()
 {
+    PendingTicket.Reset();
     UGameInstance* GameInstance = GetGameInstance();
     UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
     if (!World || !GEngine)

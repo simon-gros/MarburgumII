@@ -12,6 +12,11 @@
 #     a development key, no ticket and a forged ticket are refused;
 #     a real ticket is admitted (ADMITTED, held in the world), the same ticket again is refused (single use),
 #     and a second ticket for the same character is refused while the first is in the world.
+#   Tickets name their server (QA 2026-11-19, AR1): the service lists this server and a second one (melje, own key,
+#     not running). No ticket for an unlisted address or without one; melje's key cannot spend (or burn) this
+#     server's ticket, which is then admitted; this server refuses a ticket asked for melje.
+#   Ticket logs (AR13): the rendered clients never log a ticket in the Browse address, which is written before the
+#     server has spent it.
 #   The service restarts and the returning player still signs in (durable store).
 #   Secrets: no password, code, session or ticket appears in the account store; no password, session or verification code in any
 #   game log.
@@ -61,6 +66,13 @@ openssl req -newkey rsa:2048 -nodes -subj "/CN=127.0.0.1" -keyout "$secrets/serv
 openssl x509 -req -in "$secrets/service.csr" -CA "$out_dir/ca.pem" -CAkey "$secrets/ca.key" -CAcreateserial -days 1 \
     -extfile <(printf "subjectAltName=IP:127.0.0.1,DNS:localhost\nextendedKeyUsage=serverAuth\n") -out "$out_dir/service.pem" 2>/dev/null
 head -c 36 /dev/urandom | base64 | tr -d '\n/+=' > "$secrets/server.key"
+head -c 36 /dev/urandom | base64 | tr -d '\n/+=' > "$secrets/melje.key"
+melje_address="127.0.0.1:$((port + 2))"
+cat > "$secrets/servers.json" <<EOF_SERVERS
+{ "servers": [
+    { "id": "lent-smoke", "addresses": ["127.0.0.1:$port", "localhost:$port"], "key_file": "server.key" },
+    { "id": "melje", "addresses": ["$melje_address"], "key_file": "melje.key" } ] }
+EOF_SERVERS
 chmod 600 "$secrets"/*
 
 cargo build -q --release --manifest-path "$repo_root/services/accounts/Cargo.toml"
@@ -73,7 +85,7 @@ status=0
 start_service() {
     local log="$1"
     "$service_bin" --bind "127.0.0.1:$service_port" --store "$out_dir/accounts.json" --outbox "$out_dir/outbox" \
-        --models "$repo_root/Data/Accounts/character_models.v0.1.json" --server-key-file "$secrets/server.key" \
+        --models "$repo_root/Data/Accounts/character_models.v0.1.json" --servers "$secrets/servers.json" \
         --tls-cert "$out_dir/service.pem" --tls-key "$secrets/service.key" > "$log" 2>&1 &
     service_pid=$!
     for _ in $(seq 1 40); do
@@ -112,6 +124,20 @@ api() { # api <method> <path> <json> [bearer]
     local auth=()
     [[ -n "${4:-}" ]] && auth=(-H "Authorization: Bearer $4")
     curl -s --cacert "$out_dir/ca.pem" -X "$1" -H 'Content-Type: application/json' "${auth[@]}" -d "$3" "$service_url$2"
+}
+
+redeem_as() { # redeem_as <server key file> <ticket>: the HTTP status of a redeem by that server
+    curl -s -o /dev/null -w '%{http_code}' --cacert "$out_dir/ca.pem" -X POST -H 'Content-Type: application/json' \
+        -H "Authorization: MB2-Server $(cat "$1")" -d "{\"ticket\":\"$2\"}" "$service_url/v1/server/redeem"
+}
+
+expect_eq() { # expect_eq <what> <got> <want>
+    if [[ "$2" == "$3" ]]; then
+        echo "  $1: yes"
+    else
+        echo "  $1: NO (got '$2', want '$3')"
+        status=1
+    fi
 }
 
 json() { grep -o "\"$1\":\"[^\"]*\"" | head -1 | cut -d'"' -f4; } # json <key>: the first string field of that name
@@ -224,8 +250,16 @@ client no-ticket REFUSED "127.0.0.1:$port" "${nullrhi[@]}"
 expect_server "refused a join without a ticket" 'admission_refused stage=prelogin reason=no_ticket'
 client forged REFUSED "127.0.0.1:$port?MB2Ticket=$forged" "${nullrhi[@]}"
 expect_server "refused a forged ticket" 'admission_refused stage=redeem reason="Your sign-in for this world has expired'
+echo "Tickets name their server (AR1)"
+expect_eq "no ticket without a server" "$(api POST /v1/admission '{}' "$session" | json error)" request_invalid
+expect_eq "no ticket for an unlisted address" "$(api POST /v1/admission '{"server":"evil.example.si:7777"}' "$session" | json error)" server_unknown
+expect_eq "no ticket for another port" "$(api POST /v1/admission "{\"server\":\"127.0.0.1:$((port + 1))\"}" "$session" | json error)" server_unknown
+melje_ticket=$(api POST /v1/admission "{\"server\":\"$melje_address\"}" "$session" | json ticket)
+client other-server REFUSED "127.0.0.1:$port?MB2Ticket=$melje_ticket" "${nullrhi[@]}"
+expect_eq "melje can spend its own ticket after this server refused it" "$(redeem_as "$secrets/melje.key" "$melje_ticket")" 200
 # Each ticket is asked for just before its join: a ticket lives one minute, about four client starts.
-ticket_1=$(api POST /v1/admission '{}' "$session" | json ticket)
+ticket_1=$(api POST /v1/admission "{\"server\":\"localhost:$port\"}" "$session" | json ticket)
+expect_eq "melje cannot spend this server's ticket" "$(redeem_as "$secrets/melje.key" "$ticket_1")" 403
 client admitted ADMITTED "127.0.0.1:$port?MB2Ticket=$ticket_1" "${nullrhi[@]}" -MB2AccountHold=40 -MB2AccountFirst=Bor \
     -MB2AccountLast=Mlakar -MB2AccountModel=manny &
 admitted_pid=$!
@@ -234,16 +268,16 @@ for _ in $(seq 1 240); do
     sleep 0.5
 done
 client replay REFUSED "127.0.0.1:$port?MB2Ticket=$ticket_1" "${nullrhi[@]}"
-ticket_2=$(api POST /v1/admission '{}' "$session" | json ticket)
+ticket_2=$(api POST /v1/admission "{\"server\":\"127.0.0.1:$port\"}" "$session" | json ticket)
 client twice REFUSED "127.0.0.1:$port?MB2Ticket=$ticket_2" "${nullrhi[@]}"
 expect_server "refused the character a second time" 'admission_refused stage=redeem reason=already_in_world'
 wait "$admitted_pid" || true
 grep -aq 'tag=ADMITTED event=pass' "$out_dir/client-admitted.log" || status=1
 replays=$(grep -ac 'admission_refused stage=redeem reason="Your sign-in for this world has expired' "$out_dir/server.log" || true)
-if [[ "$replays" -ge 2 ]]; then
-    echo "  server refused the spent ticket: yes"
+if [[ "$replays" -ge 3 ]]; then
+    echo "  server refused the spent and the other server's tickets: yes"
 else
-    echo "  server refused the spent ticket: NO ($replays expired-ticket refusals, want 2: forged and replay)"
+    echo "  server refused the spent and the other server's tickets: NO ($replays expired-ticket refusals, want 3: forged, melje's, replay)"
     status=1
 fi
 
@@ -277,6 +311,10 @@ for secret in drava-bridge-1990 pohorje-snow-1991 "$session" "${codes[@]}"; do
     fi
 done
 [[ "$leaks" -eq 0 ]] && echo "  none in the store or the logs" || status=1
+# AR13: the clients that signed in through the screens add the ticket after the engine logs the Browse address.
+browsed=$(grep -ac 'Browse: .*MB2Ticket=' "$out_dir"/client-first.log "$out_dir"/client-return.log | awk -F: '{ n += $NF } END { print n + 0 }')
+expect_eq "rendered clients logged no ticket in a Browse address" "$browsed" 0
+expect_eq "the service logged a redeem for another server" "$(grep -ac 'event=redeem_refused reason=other_server caller=melje ticket_server=lent-smoke' "$out_dir"/service-1.log)" 1
 
 # Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
 if [[ "$mode" == staged ]]; then
