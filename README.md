@@ -14,8 +14,8 @@
     <a href="#building-from-source"><strong>Build the game</strong></a> ·
     <a href="Docs/ROADMAP.md"><strong>Roadmap</strong></a>
   </p>
-  <img src="Docs/Captures/stage1-street-places/day-mixed.jpg" width="920" alt="In-engine editor-mode capture of pedestrians and destinations in the developing Maribor world">
-  <p><sub>In-engine development capture · Lent street-places verification, 19 November 2026 · Work in progress, not final release art.</sub></p>
+  <img src="Docs/Captures/visual-audit/survey-air-lent.jpg" width="920" alt="In-engine editor-mode capture of pedestrians and destinations in the developing Maribor world">
+  <p><sub>In-engine nine-window visual survey · November 2026 · Development capture, not final game art.</sub></p>
 </div>
 
 ---
@@ -28,28 +28,22 @@ The experience emphasizes exploration, character growth, missions, social intera
 
 The current world is a **1,536 × 1,536 m nine-window development map** centered on Lent, with surveyed ground, buildings, roads and bridges, the Drava, a walkable street graph and a growing network of interactive locations. It is **one always-loaded level**—not a finished, streamed recreation of all of Maribor. The separately licensed candidate city model remains a future procurement and acceptance decision.
 
-## Recent development: streets that feel inhabited
+## Latest development · 20 November 2026
 
-The six commits reviewed between **18 and 19 November 2026** extend the existing street simulation in three directions:
+The overnight development push brought together a broad **quality-assurance audit** and improvements through **ADR-075**. Accounts, persistence, input, scrolling screens, notifications and packaged-build verification were hardened; pedestrian crowds now follow each player's district, share local budgets and navigate a repaired bridge graph.
 
-| District identity | Places and routines | AI reliability |
-| :--- | :--- | :--- |
-| **ADR-068**: population composition now follows the district and street activity, with distinct day, evening, night and weekend behavior. | **ADR-069**: 239 mapped bus stops, cafés, restaurants, bars, fast-food venues, shops and sights now influence where pedestrians go, wait and enter or exit. | **ADR-070**: blocked hostile pursuit gives up, blocked pedestrian edges stop reversing repeatedly, and lane separation improves passing. The editor rule tests passed on 19 November 2026; a rendered or packaged smoke of that change has not. |
+A real editor pedestrian traversed **283 metres across Stari most and back**. The new multi-client crowd matrix shows **18 pedestrians shared by two players** on a shopping street (not 36), a nighttime pair sharing **2**, and three old-town players reaching the **48-person cap**.
 
-A separate change corrected a **clean-checkout compilation regression**. District and destination features have recorded **one-client editor-mode** smoke results; these are not evidence of a newly packaged, multi-client, owner-approved build.
+**The packaged daytime matrix is not fully passing.** The opposite-bank scenario timed out at **11 of the expected 28 pedestrians** in a clean Linux Development package. The majority of rejected spawn probes found no eligible pavement node. This is the immediate stabilization priority, rather than release readiness.
 
-<div align="center">
-<table>
+<div align="center"><table>
 <tr>
-<td width="33%"><img src="Docs/Captures/stage1-street-districts/day-commercial.jpg" alt="Development capture of the commercial district"><br><sub>Commercial district</sub></td>
-<td width="33%"><img src="Docs/Captures/stage1-street-places/day-bus_stops.jpg" alt="Development capture of pedestrian bus-stop activity"><br><sub>Street destinations</sub></td>
-<td width="33%"><img src="Docs/Captures/stage1-street-places/day-sights.jpg" alt="Development capture near heritage sights"><br><sub>Local landmarks</sub></td>
+<td width="50%"><img src="Docs/Captures/visual-audit/survey-air-lent.jpg" alt="Aerial view of Lent"><br><sub>Nine-window city survey</sub></td>
+<td width="50%"><img src="Docs/Captures/visual-audit/survey-stari-most-deck.jpg" alt="Stari most bridge"><br><sub>Bridge-deck inspection</sub></td>
 </tr>
-</table>
-<sub>Automated editor-mode captures; scenes and systems are under development.</sub>
-</div>
+</table><sub>Actual in-engine development captures. Not final release art.</sub></div>
 
-[**Read the 19 November engineering review**](Docs/DEVELOPMENT_REVIEW_2026-11-19.md) · [**Gameplay AI backlog**](Docs/AI_GAMEPLAY.md) · [**Street places evidence**](Docs/STAGE1_STREET_PLACES_EVIDENCE.md)
+[20 November review](Docs/DEVELOPMENT_REVIEW_2026-11-20.md) · [QA audit](Docs/QA_AUDIT_2026-11-19.md) · [Visual backlog](Docs/VISUAL_QUALITY_BACKLOG.md) · [AI evidence](Docs/AI_GAMEPLAY.md)
 
 ## Development progress
 
@@ -57,15 +51,15 @@ The table distinguishes **recorded engineering implementation** from **release a
 
 | System | What exists today | What remains open |
 | --- | --- | --- |
-| **Online foundation** | Native UE 5.8.3 dedicated server/client targets, authoritative gameplay state, connection/reconnection and earlier packaged multiplayer evidence | Requalify the latest combined source/assets; Windows and scale testing |
-| **Identity and creation** | Development HTTPS registration/verification flow, password recovery, one character/account, First/Last/model selection, rotating/zooming 3D creator and one-use server tickets | Actual mail delivery and production operations, packaged/login matrix, owner approval |
-| **World and atmosphere** | Nine-window Lent map, Drava, ground/roads, landmarks, day/night, weather, street lamps and lit windows | World Partition, map-wide performance, period correction and art sign-off |
-| **Living streets** | Server-owned pedestrians, district/time/weather distribution, visits to mapped destinations, incident and car reactions; ADR-070 navigation fixes in source | Execute ADR-070 tests, packaged two/three-client crowd/AI verification, navigation detours and performance profiling |
+| **Online foundation** | Authoritative Linux Client/Server, chat, QA fixes for RPC trust, persistence and packaged-build traceability | Full current regression, Windows parity, production operations and scaling |
+| **Identity and creation** | Development HTTPS registration/recovery, First/Last/model creator, rotating 3D preview and account-service hardening | Server-bound tickets (AR1), production email, complete UI matrix and owner approval |
+| **World and atmosphere** | Nine-window Lent, weather/day-night and lights; ADR-072 visual audit and targeted placement/signage corrections | Period-correct landmarks, vegetation, furniture, frame-time/streaming and art sign-off |
+| **Living streets** | Server-owned district/hour visitors and 239 places; shared crowds, bridge repairs and real 2–3-client packaged scenarios | **Opposite-bank crowd timeout: 11/28 staged**; complete settled matrix, incident regression and owner test |
 | **Life and progression** | Fishing, persistent 0–1990 skill progression, Inventory, Journal, Skills, Kiosk 67 and all eight original mission flows | Integrated packaged mission/trade contention and restart cases, additional professions and authored remote terrain |
 | **Movement and vehicles** | Third-person character, persisted condition, swimming, unarmed combat, five-car catalogue and authoritative vehicle seats/driving | Owner retest of the previously reported long-drive defect; current packaged passenger/combat regressions |
-| **Presentation and chat** | UMG session/chat, server-backed HUD, Character/Inventory/Journal/Skills, basic combat/vehicle/mission feedback; earlier three-client private-chat isolation | Settings, focus/controller, localization, accessibility and resolution matrix, visual owner acceptance |
+| **Presentation and chat** | UMG chat, HUD and management screens; new Escape/resume/leave/quit, scroll, wrapping and input fixes | Settings, 150%+/5:4 creator overlap, controller, localization, contrast and owner UX approval |
 
-**Current status: pre-alpha.** No release build, large-scale MMORPG capacity, complete city environment or latest-build personal owner approval is claimed.
+**Current status: pre-alpha.** The clean packaged multi-client crowd test is **partially passing**; the daytime matrix exits nonzero. No release build, full-city completion, production-scale MMO capacity or personal owner acceptance is claimed.
 
 ### Development gallery
 
@@ -104,7 +98,7 @@ For actual staged binaries and existing smoke suites:
 ./scripts/vehicle-smoke-linux.sh
 ```
 
-The newest district/venue evidence was recorded with **editor-mode** tooling, not the packaged commands above. To reproduce these focused cases:
+District/venue behaviors have editor-mode evidence. A separate clean `c967c46` Linux Development package ran real two/three-client crowd scenarios, including the failing opposite-bank case. To reproduce:
 
 ```bash
 ./scripts/street-hours-smoke-linux.sh editor
@@ -113,6 +107,10 @@ The newest district/venue evidence was recorded with **editor-mode** tooling, no
 ./scripts/street-smoke-linux.sh editor
 ./scripts/mission-smoke-linux.sh editor
 ./scripts/account-smoke-linux.sh editor
+./scripts/bridge-cross-linux.sh editor
+./scripts/street-multiplayer-smoke-linux.sh editor night
+./scripts/street-multiplayer-smoke-linux.sh staged night
+./scripts/street-multiplayer-smoke-linux.sh staged # current opposite-bank timeout, exit 1
 ```
 
 Independent source and data checks:
@@ -156,21 +154,21 @@ The server owns meaningful gameplay mutations, NPC destinations, combat resoluti
 
 ## What's next
 
-**Priority 0:** run the new ADR-070 regression assertions; qualify the **complete current street/district/venues/combat/mission slice** in a freshly cooked two-client dedicated-server build; reproduce blocked-path cases, third-client separation and prior vehicle issues; record performance and negative cases.
+**P0:** Resolve the reproducible opposite-bank crowd timeout without weakening settlement checks; rerun the entire day/night matrix on clean matched Client/Server builds. Then close full account/mission/vehicle regressions, secure admission-ticket audience design, test the revised UI at varied resolutions and obtain a personal owner playtest.
 
-Then close first-launch packaging and UI/Settings/focus/localization gates, secure a **personal owner playtest**, and continue the map, ecology, traffic and profession work behind individual acceptance decisions. A wider streamed city and 250-player ambitions require independent proof.
+**P1:** Follow the [visual-quality backlog](Docs/VISUAL_QUALITY_BACKLOG.md) for original Marburgum trees, street furniture, period signage, mission props and landmark art. **Microsoft TRELLIS remains the selected image-to-3D workflow (ADR-071), not Hunyuan3D.**
 
-[**Full milestone roadmap**](Docs/ROADMAP.md) · [**UI/HUD roadmap**](Docs/UI_HUD_ROADMAP.md) · [**Latest review**](Docs/DEVELOPMENT_REVIEW_2026-11-19.md)
+[Full roadmap](Docs/ROADMAP.md) · [20 November review](Docs/DEVELOPMENT_REVIEW_2026-11-20.md) · [AI backlog](Docs/AI_GAMEPLAY.md)
 
 ## Documentation
 
 | Area | Documents |
 | --- | --- |
 | **Game design** | [Vision](Docs/VISION.md) · [Ontology](Docs/ONTOLOGY.md) · [Original-game parity](Docs/LEGACY_PARITY.md) |
-| **Roadmaps and status** | [Milestones](Docs/ROADMAP.md) · [UI/HUD](Docs/UI_HUD_ROADMAP.md) · [19 November review](Docs/DEVELOPMENT_REVIEW_2026-11-19.md) · [AI backlog](Docs/AI_GAMEPLAY.md) |
-| **Engineering** | [Development](Docs/DEVELOPMENT.md) · [Architecture](Docs/ARCHITECTURE.md) · [Networking](Docs/NETWORK_ARCHITECTURE.md) · [Decision log](Docs/DECISIONS.md) · [Fresh owner playtests](Docs/PLAYTEST_FRESHNESS.md) |
+| **Roadmaps and status** | [Milestones](Docs/ROADMAP.md) · [UI/HUD](Docs/UI_HUD_ROADMAP.md) · [20 November review](Docs/DEVELOPMENT_REVIEW_2026-11-20.md) · [AI backlog](Docs/AI_GAMEPLAY.md) |
+| **Engineering** | [QA audit](Docs/QA_AUDIT_2026-11-19.md) · [Development](Docs/DEVELOPMENT.md) · [Architecture](Docs/ARCHITECTURE.md) · [Networking](Docs/NETWORK_ARCHITECTURE.md) · [Decision log](Docs/DECISIONS.md) · [Fresh owner playtests](Docs/PLAYTEST_FRESHNESS.md) |
 | **Player experience** | [First launch](Docs/FIRST_LAUNCH_ONTOLOGY.md) · [UI/HUD design](Docs/UI_HUD_DESIGN.md) · [UI ontology](Docs/UI_HUD_ONTOLOGY.md) · [Chat](Docs/CHAT.md) |
-| **Art and world** | [Map and licensing strategy](Docs/WORLD_MAP_ADOPTION.md) · [Character](Docs/CHARACTER_PROTAGONIST.md) · [Microsoft TRELLIS image-to-3D workflow](Docs/ASSET_GENERATION_TRELLIS.md) · [Rendering](Docs/RENDERING_NVIDIA.md) |
+| **Art and world** | [Visual backlog](Docs/VISUAL_QUALITY_BACKLOG.md) · [Map and licensing strategy](Docs/WORLD_MAP_ADOPTION.md) · [Character](Docs/CHARACTER_PROTAGONIST.md) · [Microsoft TRELLIS image-to-3D workflow](Docs/ASSET_GENERATION_TRELLIS.md) · [Rendering](Docs/RENDERING_NVIDIA.md) |
 | **Test evidence** | [Districts](Docs/STAGE1_STREET_DISTRICTS_EVIDENCE.md) · [Destinations](Docs/STAGE1_STREET_PLACES_EVIDENCE.md) · [Street incidents](Docs/STAGE1_STREET_EVIDENCE.md) · [Mission play](Docs/STAGE1_LENT_EVIDENCE.md) · [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) |
 
 Gameplay and ontology data live under `Data/`. Native game code is in `Source/`, tooling in `tools/` and `native/`, and scripts in `scripts/`. Rust/.NET CI **does not substitute for an Unreal package or a visual gameplay test**.
