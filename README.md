@@ -1,22 +1,23 @@
 <div align="center">
-
-# MAGNA RAEDARUM: MARBURGUM II
-
-**A living city. A shared world. A second beginning.**
-
-*A server-authoritative urban MMORPG in a fictionalized 1990s Maribor, Slovenia.*
-
-![Pre-alpha](https://img.shields.io/badge/STATUS-PRE--ALPHA-886b53?style=flat-square)
-![Engine](https://img.shields.io/badge/UNREAL-5.8.3-29364e?style=flat-square)
-![Development](https://img.shields.io/badge/DEVELOPMENT-LINUX-43596a?style=flat-square)
-![Architecture](https://img.shields.io/badge/MULTIPLAYER-SERVER%20AUTHORITATIVE-436857?style=flat-square)
-
-[The world](#the-world) · [Recent development](#recent-development) · [Progress](#development-progress) · [Build](#building-from-source) · [Roadmap](Docs/ROADMAP.md) · [Graphics](Docs/GRAPHICS_ROADMAP.md)
-
-<img src="Docs/Captures/ui-overhaul/after/04-explore-arrival-1920x1080.jpg" width="980" alt="Actual development screenshot of the redesigned exploration HUD in Marburgum II">
-
-<sub>Actual Unreal client development capture · November 2026 · Work in progress; owner acceptance pending.</sub>
-
+  <h1>MAGNA RAEDARUM<br>MARBURGUM II</h1>
+  <p><strong>A living city. A shared world. A second beginning.</strong></p>
+  <p><em>A server-authoritative urban MMORPG in a fictionalized 1990s Maribor, Slovenia.</em></p>
+  <p>
+    <img alt="Status: pre-alpha" src="https://img.shields.io/badge/STATUS-PRE--ALPHA-886b53?style=flat-square">
+    <img alt="Engine: Unreal Engine 5.8.3" src="https://img.shields.io/badge/UNREAL-5.8.3-29364e?style=flat-square">
+    <img alt="Primary development: Linux" src="https://img.shields.io/badge/DEVELOPMENT-LINUX-43596a?style=flat-square">
+    <img alt="Network: server authoritative" src="https://img.shields.io/badge/MULTIPLAYER-SERVER%20AUTHORITATIVE-436857?style=flat-square">
+  </p>
+  <p>
+    <a href="#the-world">The world</a> ·
+    <a href="#recent-development">Recent development</a> ·
+    <a href="#development-progress">Progress</a> ·
+    <a href="#building-from-source">Build</a> ·
+    <a href="Docs/ROADMAP.md">Roadmap</a> ·
+    <a href="Docs/GRAPHICS_ROADMAP.md">Graphics</a>
+  </p>
+  <img src="Docs/Captures/ui-overhaul/after/04-explore-arrival-1920x1080.jpg" width="980" alt="Actual Unreal development screenshot of the exploration HUD and Maribor city">
+  <p><sub>Actual Unreal client development capture · November 2026 · Work in progress; owner acceptance pending.</sub></p>
 </div>
 
 ---
