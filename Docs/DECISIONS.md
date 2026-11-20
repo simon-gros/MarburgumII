@@ -1204,3 +1204,22 @@ Closes QA 2026-11-19 **AR1** and mitigates **AR13** at Simon's request ("address
 - No gameplay, collision, server or replication behaviour depends on it; the dedicated server is untouched.
 
 **Not decided here.** Lumen quality levels per graphics preset (GFX-07), MegaLights, virtual shadow maps and Nanite (GFX-06), and whether hardware Lumen ships enabled by default.
+
+## ADR-083 — Chapter VI *The Negative* and Frame 37: conditional stages, deductions, unique evidence and story furniture (implemented 2026-11-20; owner approval OPEN)
+
+**Context.** After ADR-081 the next canonical chapter, VI *The Negative*, was feasible: Nika and Photography existed and the Kiosk 67 outcome was recorded. But the canon asks for things the mission framework could not express: Albin Rojko's testimony takes a different route for each of five Kiosk 67 outcomes inside one chapter; Frame 37 is meant to be found by reasoning, not by walking up to a marker; the same unique piece of evidence can come from two missions; and the storyline insists on telling originals, prints, copies, testimony, information and inference apart. The places (Foto Vidmar, the Block 13 cage, the Melje date board) were grey cubes or did not exist.
+
+**Decision.**
+
+1. **Conditional stages.** A stage may carry `when` gates (an earlier mission completed with one of its outcomes); a character's route through the mission passes over stages whose gates do not hold. The gated missions must be prerequisites (validated), so the route is fixed when the mission starts; the first stage is never conditional; every outcome of a gated mission must lead to some stage (validated). Shared logic (`StageApplies`, `FirstStage`, `NextStage`, `PreviousStage`) is used by the server, the journal and the notifications alike.
+2. **Deductions.** A choice may be marked `correct: false`: choosing it is refused (`WrongConclusion`) with nothing recorded, and its text is the reply that sends the player back to look again. Validated to carry no money, XP, outcome, flags or items. The choice panel hides reward chips on a deduction, which would otherwise give the answer away.
+3. **Evidence.** Items may be `unique` (never held twice, however many missions hand them over), carry an evidence class (original, print, copy, testimony, information, inference) and a description. Choices may grant items. Missions may author open questions answered by a stage or by holding an item; the journal shows them as open or established.
+4. **Documents on props.** A photo subject may be anchored to an interactable (aim point above the ground under it) and may require an item in hand (the contact sheet on the light table). The `[P]` card shows at such a prop when a mission step asks for exactly that photograph.
+5. **Story furniture.** A catalogue `prop` gives a place a recognisable shape built at runtime on every machine from engine primitives (the Kainach trucks from the project's lorry mesh): Foto Vidmar's counter and light table, the Block 13 cage, the Melje date board, the Glas archive desk. No imported or generated asset; the server traces what the clients draw.
+6. **Content.** `raeda_the_negative` (canonical Chapter VI, mid-decade variant) and `nika_frame_37` (canonical side story 3.23), sharing the Frame 37 print and the date-board photograph so either can be played first; Ivana Zupan placed on the Tabor temporary floor beside her storage cage; Ernest Pavlič (the canon's unnamed collector) and Boris (an ordinary terrace regular, 3.25) added on Lent. All text in English and Slovene.
+
+**Not decided here.** The 1990–92 and 1997–99 variants (Stefan alive with the negatives; Nika's scan as a copy); the match-day event Albin's `left_alone` route belongs to (Boris stands in for the gathering); Foto Vidmar, Block 13 and the Melje yard as real places (props on the square and on the ADR-052 floors meanwhile); a gameplay controller layer (`[E]`, `[P]` and the choice keys have no gamepad bindings; menus do).
+
+**Rejected.** Duplicating Chapter VI per Kiosk 67 outcome as five missions (five copies of the spine); a hard "skip if already held" rule for shared evidence (unique items express it without stage logic); a client-side deduction check (the server decides what is right, like everything else); Hunyuan3D or new generated meshes for the props (primitives suffice and need no owner review of generated art).
+
+**Evidence.** [STORY_EXPANSION.md](STORY_EXPANSION.md) §10.7. Owner playtest: **not yet**.
