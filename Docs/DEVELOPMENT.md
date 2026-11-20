@@ -290,14 +290,14 @@ Recommended order: verify a clean checkout and engine pin; run `./scripts/mb2.sh
 
 ### Current packaged-multiplayer and QA checkpoint — 20 November 2026
 
-The [overnight review](DEVELOPMENT_REVIEW_2026-11-20.md) covers the merged [QA corrections](QA_AUDIT_2026-11-19.md), ADR-072 world audit, ADR-073–075 bridge/shared crowds and strict real-client population tests. A **clean Linux Development package of `c967c46`** (2026-11-20 01:31 UTC, exact server/client hashes in [AI evidence](AI_GAMEPLAY.md)) settled its night pair, local districts, shared street and 48-person cap. **The staged daytime matrix exited 1** because opposite-bank population timed out at **11/28** after 90 seconds.
+**Historical early-20-November checkpoint (pre-ADR-079):** The [overnight review](DEVELOPMENT_REVIEW_2026-11-20.md) covers the merged [QA corrections](QA_AUDIT_2026-11-19.md), ADR-072 world audit, ADR-073–075 bridge/shared crowds and strict real-client population tests. A **clean Linux Development package of `c967c46`** (2026-11-20 01:31 UTC, exact server/client hashes in [AI evidence](AI_GAMEPLAY.md)) settled its night pair, local districts, shared street and 48-person cap. **The staged daytime matrix exited 1** because opposite-bank population timed out at **11/28** after 90 seconds.
 
 ```bash
 ./scripts/bridge-cross-linux.sh editor             # Stari most 283 m each direction; editor evidence
 ./scripts/street-multiplayer-smoke-linux.sh editor night
-./scripts/street-multiplayer-smoke-linux.sh editor  # currently fails opposite banks
+./scripts/street-multiplayer-smoke-linux.sh editor  # ADR-079 corrected fixture; latest editor matrix PASSED
 ./scripts/street-multiplayer-smoke-linux.sh staged night
-./scripts/street-multiplayer-smoke-linux.sh staged  # currently fails opposite banks
+./scripts/street-multiplayer-smoke-linux.sh staged  # post-ADR-079 staged qualification still required
 ```
 
 The driver waits for **settled, constrained or timeout**, rather than a fixed-window budget check. Log source/build stamps, cooked data, viewer-to-node distance, target and spawned count, candidate rejection reasons, per-client visibility and `-MB2NetRate` samples. At the failing staged banks **3,364/4,242** spawn attempts found no qualifying pavement node. Do not weaken settlement conditions to obtain a PASS. The complete latest cross-system packaged matrix and personal owner playtest remain open.

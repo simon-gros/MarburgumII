@@ -97,7 +97,7 @@ For actual staged binaries and existing smoke suites:
 ./scripts/vehicle-smoke-linux.sh
 ```
 
-District/venue behaviors have editor-mode evidence. A separate clean `c967c46` Linux Development package ran real two/three-client crowd scenarios, including the failing opposite-bank case. To reproduce:
+District/venue behaviors have editor-mode evidence. A separate clean `c967c46` Linux Development package recorded the **older** opposite-bank timeout. ADR-079 later corrected the editor fixture, which now passes; its fixed scene needs a new staged package. To reproduce the focused checks:
 
 ```bash
 ./scripts/street-hours-smoke-linux.sh editor
@@ -109,7 +109,7 @@ District/venue behaviors have editor-mode evidence. A separate clean `c967c46` L
 ./scripts/bridge-cross-linux.sh editor
 ./scripts/street-multiplayer-smoke-linux.sh editor night
 ./scripts/street-multiplayer-smoke-linux.sh staged night
-./scripts/street-multiplayer-smoke-linux.sh staged # current opposite-bank timeout, exit 1
+./scripts/street-multiplayer-smoke-linux.sh staged # must requalify fixed ADR-079 on newly packaged binaries
 ```
 
 Independent source and data checks:
