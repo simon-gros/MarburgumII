@@ -1,6 +1,6 @@
 # Gameplay AI — status and backlog
 
-Audit of the AI that is actually in the repository on 2026-11-19, through ADR-070 (base commit `d2e083ce`). This is not a claim that Marburgum II runs Unreal Behavior Trees, StateTree, EQS or MassEntity. It does not. The living street, the fights and the missions are server-owned C++ with shared pure rules. Replacing that with the engine AI framework would be a new architecture and needs approval.
+Current AI evidence reconciled on 20 November 2026, through ADR-075 and the clean `c967c46` staged crowd test. The original audit was made at `d2e083ce` (ADR-070). This is not a claim that Marburgum II runs Unreal Behavior Trees, StateTree, EQS or MassEntity. It does not. The living street, the fights and the missions are server-owned C++ with shared pure rules. Replacing that with the engine AI framework would be a new architecture and needs approval.
 
 Statuses: **FIX NOW** (done in this pass where marked), **IMPROVE NOW**, **TO BE DONE**, **NEEDS VERIFICATION**, **REQUIRES APPROVAL**.
 
@@ -42,9 +42,9 @@ There is no behavior tree, no perception component, no navigation mesh, and no W
 | Mission NPCs that walk, wait or react | **REQUIRES APPROVAL** | `AMarburgumNpc` is a stationary interactable. Moving the angler or Petra is player-facing. |
 | New mission framework | **REQUIRES APPROVAL** | The eight missions already have prerequisites, stages, choices, one reward and restart. Do not replace them. |
 | Mission sites in Melje and Tabor on real ground | **TO BE DONE** | Logic is done. The sites are temporary floors (ADR-052). |
-| Packaged two-client mission and street qualification | **TO BE DONE** | Editor smokes exist. Not a fresh packaged suite. |
+| Packaged two-client mission and street qualification | **PARTIAL** | Clean 2–3-client population tests exist, but opposite-bank settlement failed at 11/28 staged and a complete packaged mission/incident matrix remains open. |
 | Side pieces of the walk graph, including a bridge piece | **EXPLAINED** (ADR-074, audit on the same branch) | The file's largest piece is 12,335. Of those, 121 nodes are dropped (no ground, no room, or wet). The rest were split by sweeps. After the loader steps past the bridge mesh and the paving volume, and past an upward face of the landscape, the loaded largest piece is 11,719 and still reaches both banks. The 23 edges still blocked hit building meshes (`w*`) or a steep landscape face. Wet edges stay 0. The 14 m piece was not given a new edge. `-MB2WalkGraphAudit=<dir>` writes the rejected nodes and edges. |
-| Distance-based think rates, pooling, relevance budgets beyond cull | **TO BE DONE** | Population is capped and culled. No measurement of think cost at the cap in this pass. |
+| Distance-based think rates, pooling, relevance budgets beyond cull | **TO BE DONE** | A 48-pedestrian null-RHI cap scenario measured 0.87 ms per street step and server output 15.2–15.8 KB/s for three clients; no broad production performance qualification follows. |
 | Owner playtest of street and combat | **REQUIRES APPROVAL** | ADR-008. This pass did not play the game. |
 
 ## What was checked and left alone
@@ -94,4 +94,4 @@ The same scenes on a fresh Development package of `c967c46` (`dirty=0`, packaged
 
 ## Next verified delivery
 
-**P0: execute and integrate existing fixes before adding behavior.** Run the previously unexecuted `Marburgum.Gameplay.CombatRules` and `Marburgum.Gameplay.StreetRules` cases on a clean UE 5.8.3 checkout, then render blocked-pavement, blocked-chase, crowd-pass-lane and river-boundary probes. Recheck ADR-068 zone mixing and ADR-069 place visiting at day/night/Sunday plus body/run-over answers. On genuinely freshly cooked Linux Client/Server binaries, test two independent clients on the same crowd, one other client in a different zone, transitions, disconnection and resumption; capture source and cooked asset hashes, server-owned state, screenshots, logs, CPU/replication metrics and failures. Escalate reproducible defects to small fixes with negative controls; record outstanding route-search, traffic/perception and author-NPC behavior separately. Mark a row owner-accepted only after an actual owner playtest. See [19 November review](DEVELOPMENT_REVIEW_2026-11-19.md) and [roadmap](ROADMAP.md).
+**P0: close the opposite-bank crowd settlement regression, not the testing gap.** The strict daytime editor test timed out at 14/28, and a fresh Development package of `c967c46` reproduced **11/28** after 90 seconds; 3,364/4,242 staged spawn attempts found no eligible pavement node. Inspect the actual viewer/zone graph locality, candidate band and spawn sampling before implementing a narrow measured fix with negative controls. Then rerun complete editor and staged day/night multi-client matrices, preserving passing shared shopping (18), night (2), different districts, reconnect and three-player cap (48). Follow with current-package incidents, mission/combat/chase/vehicle regressions and rendered evidence. Personal owner approval remains a separate gate. [20 November review](DEVELOPMENT_REVIEW_2026-11-20.md) · [Roadmap](ROADMAP.md).
