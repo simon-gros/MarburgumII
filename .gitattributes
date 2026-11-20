@@ -18,3 +18,4 @@ Data/World/lent_ground/*.bin filter=lfs diff=lfs merge=lfs -text
 Data/World/lent_ground/*.png filter=lfs diff=lfs merge=lfs -text
 Data/World/lent_ground/*.json.gz filter=lfs diff=lfs merge=lfs -text
 Content/Marburgum/Ground/*.bin filter=lfs diff=lfs merge=lfs -text
+Content/Marburgum/Fonts/*.ttf filter=lfs diff=lfs merge=lfs -text

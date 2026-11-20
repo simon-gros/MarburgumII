@@ -265,7 +265,7 @@ namespace MarburgumUI
         return Line;
     }
 
-    UBorder* FBuilder::Toast(const FText& Kind, const FText& Message, ETone Tone) const
+    UBorder* FBuilder::Toast(const FText& Kind, const FText& Message, ETone Tone, EMarburgumGlyph Icon) const
     {
         const FTokens& T = Tokens();
         UHorizontalBox* Line = Row();
@@ -273,15 +273,153 @@ namespace MarburgumUI
         UHorizontalBoxSlot* AccentSlot = Line->AddChildToHorizontalBox(Accent);
         AccentSlot->SetVerticalAlignment(VAlign_Fill);
         AccentSlot->SetPadding(FMargin(0.f, 0.f, T.Space.M, 0.f));
+        if (Icon != EMarburgumGlyph::None)
+        {
+            UMarburgumGlyph* Mark = Glyph(Icon, ToneColor(Tone), T.Icon.Medium);
+            UHorizontalBoxSlot* MarkSlot = Line->AddChildToHorizontalBox(Mark);
+            MarkSlot->SetVerticalAlignment(VAlign_Top);
+            MarkSlot->SetPadding(FMargin(0.f, 1.f, T.Space.M, 0.f));
+        }
 
         UVerticalBox* TextColumn = Column();
-        Stack(TextColumn, Text(Kind, ETypeRole::Overline, ToneColor(Tone)), T.Space.XS);
+        Stack(TextColumn, Text(Kind, ETypeRole::Overline, ToneColor(Tone)), T.Space.XXS);
         UTextBlock* MessageBlock = Text(Message, ETypeRole::Body);
         MessageBlock->SetAutoWrapText(true);
         Stack(TextColumn, MessageBlock, 0.f);
         Inline(Line, TextColumn, 0.f, true, false);
 
         return Surface(ESurfaceKind::Overlay, FMargin(T.Space.M, T.Space.M, T.Space.L, T.Space.M), Line);
+    }
+
+    UMarburgumMeter* FBuilder::Bar(ETone Tone, float Percent, float Height, int32 Segments) const
+    {
+        UMarburgumMeter* Meter = Tree.ConstructWidget<UMarburgumMeter>();
+        Meter->SetFillColor(Tone == ETone::Neutral ? Tokens().Color.TextMuted : ToneColor(Tone));
+        Meter->SetPercent(Percent);
+        Meter->SetHeight(Height);
+        Meter->SetSegments(Segments);
+        return Meter;
+    }
+
+    UMarburgumGlyph* FBuilder::Glyph(EMarburgumGlyph Icon, const FLinearColor& Color, float Size) const
+    {
+        UMarburgumGlyph* Mark = Tree.ConstructWidget<UMarburgumGlyph>();
+        Mark->SetGlyph(Icon);
+        Mark->SetColor(Color);
+        // Icons follow the text size preference with the type they sit beside.
+        Mark->SetSize((Size > 0.f ? Size : Tokens().Icon.Medium) * Tokens().TextScale);
+        return Mark;
+    }
+
+    UHorizontalBox* FBuilder::GlyphText(EMarburgumGlyph Icon, const FText& Value, ETypeRole Role, const FLinearColor& Color,
+        UTextBlock** OutText, float GlyphSize) const
+    {
+        const FTokens& T = Tokens();
+        UHorizontalBox* Line = Row();
+        Inline(Line, Glyph(Icon, Color, GlyphSize > 0.f ? GlyphSize : T.Icon.Small), T.Space.S);
+        UTextBlock* Label = Text(Value, Role, Color);
+        Inline(Line, Label, 0.f, true);
+        if (OutText)
+        {
+            *OutText = Label;
+        }
+        return Line;
+    }
+
+    UBorder* FBuilder::KeyCap(const FText& Key, bool bActive, UTextBlock** OutLabel) const
+    {
+        const FTokens& T = Tokens();
+        const FColors& C = T.Color;
+        UTextBlock* Label = Text(Key, ETypeRole::Key, bActive ? C.TextOnAccent : C.TextSecondary);
+        Label->SetJustification(ETextJustify::Center);
+        UBorder* Cap = Surface(ESurfaceKind::Raised, FMargin(T.Space.S, T.Space.XXS), Label, false);
+        Cap->SetBrush(bActive ? RoundedBrush(C.Accent, T.Radius.Medium, C.AccentPressed, T.BorderWidth)
+                              : RoundedBrush(C.Sunken, T.Radius.Medium, C.BorderStrong, T.BorderWidth));
+        Align(Cap, HAlign_Center, VAlign_Center);
+        if (OutLabel)
+        {
+            *OutLabel = Label;
+        }
+        return Cap;
+    }
+
+    UHorizontalBox* FBuilder::KeyHint(const FText& Key, const FText& Action) const
+    {
+        const FTokens& T = Tokens();
+        UHorizontalBox* Line = Row();
+        UTextBlock* KeyLabel = Text(Key, ETypeRole::Caption, T.Color.TextPrimary);
+        KeyLabel->SetFont(Font(ETypeRole::Label));
+        UBorder* Cap = Surface(ESurfaceKind::Sunken, FMargin(T.Space.XS + 2.f, 0.f), KeyLabel, false);
+        Cap->SetBrush(RoundedBrush(T.Color.Sunken, T.Radius.Small, T.Color.BorderStrong, T.BorderWidth));
+        Align(Cap, HAlign_Center, VAlign_Center);
+        Inline(Line, Cap, T.Space.XS + 2.f);
+        Inline(Line, Text(Action, ETypeRole::Caption, T.Color.TextSecondary), 0.f);
+        return Line;
+    }
+
+    UMarburgumScrim* FBuilder::Scrim(EMarburgumScrimShape Shape, const FLinearColor& Color) const
+    {
+        UMarburgumScrim* Backing = Tree.ConstructWidget<UMarburgumScrim>();
+        Backing->Setup(Shape, Color);
+        return Backing;
+    }
+
+    UMarburgumSelectable* FBuilder::Selectable(UWidget* Content, const FMargin& Padding, bool bQuiet) const
+    {
+        UMarburgumSelectable* Row = Tree.ConstructWidget<UMarburgumSelectable>();
+        Row->SetQuiet(bQuiet);
+        UBorder* Inner = Tree.ConstructWidget<UBorder>();
+        Inner->SetBrush(SolidBrush(FLinearColor::Transparent));
+        Inner->SetPadding(Padding);
+        Inner->SetContent(Content);
+        Row->SetContent(Inner);
+        return Row;
+    }
+
+    UHorizontalBox* FBuilder::SectionTitle(const FText& Title, const FLinearColor& Color) const
+    {
+        const FTokens& T = Tokens();
+        UHorizontalBox* Line = Row();
+        Inline(Line, Text(Title, ETypeRole::Overline, Color), T.Space.M);
+        UImage* Hair = Rule(T.Color.Border, 1.f);
+        UHorizontalBoxSlot* HairSlot = Line->AddChildToHorizontalBox(Hair);
+        HairSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
+        HairSlot->SetVerticalAlignment(VAlign_Center);
+        return Line;
+    }
+
+    UBorder* FBuilder::Chip(EMarburgumGlyph Icon, const FText& Label, ETone Tone, UTextBlock** OutLabel) const
+    {
+        const FTokens& T = Tokens();
+        const FLinearColor Color = Tone == ETone::Neutral ? T.Color.TextSecondary : ToneColor(Tone);
+        UHorizontalBox* Line = Row();
+        if (Icon != EMarburgumGlyph::None)
+        {
+            Inline(Line, Glyph(Icon, Color, 14.f), T.Space.XS);
+        }
+        UTextBlock* LabelBlock = Text(Label, ETypeRole::Overline, Color);
+        Inline(Line, LabelBlock, 0.f);
+        UBorder* Capsule = Surface(ESurfaceKind::Raised, FMargin(T.Space.S + 2.f, T.Space.XXS + 1.f), Line, false);
+        Capsule->SetBrush(RoundedBrush(Color.CopyWithNewOpacity(T.bHighContrast ? 0.26f : 0.14f), T.Radius.Pill, Color.CopyWithNewOpacity(0.7f),
+            T.BorderWidth));
+        Align(Capsule, HAlign_Center, VAlign_Center);
+        if (OutLabel)
+        {
+            *OutLabel = LabelBlock;
+        }
+        return Capsule;
+    }
+
+    USizeBox* FBuilder::Bounded(UWidget* Content, float MaxWidth, float MinWidth) const
+    {
+        USizeBox* Box = Tree.ConstructWidget<USizeBox>();
+        Box->SetMaxDesiredWidth(MaxWidth);
+        if (MinWidth > 0.f)
+        {
+            Box->SetMinDesiredWidth(MinWidth);
+        }
+        Box->SetContent(Content);
+        return Box;
     }
 
     UBorder* FBuilder::StateCard(const FText& Title, const FText& Body, ETone Tone) const

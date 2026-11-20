@@ -1,7 +1,12 @@
 #include "UI/MarburgumUITheme.h"
 
+#include "Fonts/CompositeFont.h"
+#include "HAL/FileManager.h"
+#include "MarburgumNetworkContract.h"
+#include "MarburgumSessionContract.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "Misc/Paths.h"
 #include "Styling/CoreStyle.h"
 
 namespace MarburgumUI
@@ -15,74 +20,232 @@ namespace MarburgumUI
             return Color;
         }
 
-        FTokens MakeDefaultTokens()
+        FTokens MakeTokens(const FPresentationOptions& Options)
         {
             FTokens T;
             FColors& C = T.Color;
-            // Charcoal/slate surfaces, warm off-white type, muted copper accent, desaturated teal.
-            C.Backdrop = Hex(TEXT("101315"));
-            C.Panel = Hex(TEXT("191D20"), 0.96f);
-            C.Raised = Hex(TEXT("23292D"));
-            C.Overlay = Hex(TEXT("15191C"), 0.82f);
-            C.Border = Hex(TEXT("343C42"));
-            C.BorderStrong = Hex(TEXT("4A545B"));
-            C.TextPrimary = Hex(TEXT("EEE7DB"));
-            C.TextSecondary = Hex(TEXT("B3ACA1"));
-            C.TextMuted = Hex(TEXT("7E8388"));
-            C.TextOnAccent = Hex(TEXT("17110C"));
-            C.Accent = Hex(TEXT("C27D46"));
-            C.AccentHover = Hex(TEXT("D48F57"));
-            C.AccentPressed = Hex(TEXT("A5683A"));
-            C.Info = Hex(TEXT("5E9696"));
-            C.Success = Hex(TEXT("74A86F"));
-            C.Warning = Hex(TEXT("D6A94F"));
-            C.Danger = Hex(TEXT("CC5B4E"));
-            C.Focus = Hex(TEXT("E9C08F"));
+            // Charcoal/slate surfaces, warm off-white type, muted copper accent, desaturated teal. Every text colour
+            // meets 4.5:1 on Panel, Raised and Sunken (Marburgum.Client.UIContrast).
+            C.Backdrop = Hex(TEXT("0E1114"));
+            C.Panel = Hex(TEXT("15191C"), 0.97f);
+            C.Raised = Hex(TEXT("1D2226"));
+            C.Sunken = Hex(TEXT("101316"));
+            C.Overlay = Hex(TEXT("111518"), 0.84f);
+            C.Scrim = Hex(TEXT("07090B"), 0.74f);
+            C.Border = Hex(TEXT("2C3338"));
+            C.BorderStrong = Hex(TEXT("46515A"));
+            C.Hairline = Hex(TEXT("C8834B"), 0.45f);
+            C.TextPrimary = Hex(TEXT("F2EBDF"));
+            C.TextSecondary = Hex(TEXT("C2B9AC"));
+            C.TextMuted = Hex(TEXT("959AA0"));
+            C.TextOnAccent = Hex(TEXT("1A120B"));
+            C.Accent = Hex(TEXT("C8834B"));
+            C.AccentHover = Hex(TEXT("D9985F"));
+            C.AccentPressed = Hex(TEXT("A86A3B"));
+            C.AccentSoft = Hex(TEXT("C8834B"), 0.16f);
+            C.Info = Hex(TEXT("72A7A3"));
+            C.Success = Hex(TEXT("86B57F"));
+            C.Warning = Hex(TEXT("E2B65E"));
+            C.Danger = Hex(TEXT("E06B5D"));
+            C.Focus = Hex(TEXT("F2CB96"));
             C.Disabled = Hex(TEXT("4B5257"));
-            C.SampleData = Hex(TEXT("B07FD0"));
+            C.SampleData = Hex(TEXT("B48AD6"));
+            C.Paper = Hex(TEXT("1C1A17"));
+            C.PaperText = Hex(TEXT("EDE3D0"));
+            if (Options.bHighContrast)
+            {
+                // Opaque surfaces, brighter secondary text and outlines that read over any street.
+                C.Panel = Hex(TEXT("101315"));
+                C.Raised = Hex(TEXT("1A1F23"));
+                C.Overlay = Hex(TEXT("0D1012"), 0.96f);
+                C.Scrim = Hex(TEXT("050607"), 0.88f);
+                C.Border = Hex(TEXT("6A7680"));
+                C.BorderStrong = Hex(TEXT("A3AEB7"));
+                C.Hairline = Hex(TEXT("D9985F"), 0.9f);
+                C.TextSecondary = Hex(TEXT("E2DACE"));
+                C.TextMuted = Hex(TEXT("C1C6CB"));
+                C.Focus = Hex(TEXT("FFE0B0"));
+                C.AccentSoft = Hex(TEXT("C8834B"), 0.3f);
+            }
+            T.TextScale = FMath::Clamp(Options.TextScale, 0.8f, 1.6f);
+            T.NotificationTimeScale = FMath::Clamp(Options.NotificationTimeScale, 0.5f, 3.f);
+            T.bHighContrast = Options.bHighContrast;
+            T.bReducedMotion = Options.bReducedMotion;
+            T.FocusWidth = Options.bHighContrast ? 3.f : 2.f;
+            T.BorderWidth = Options.bHighContrast ? 1.5f : 1.f;
+            T.FadeSeconds = Options.bReducedMotion ? 0.f : 0.18f;
             return T;
+        }
+
+        FPresentationOptions& ActiveOptions()
+        {
+            static FPresentationOptions Options;
+            return Options;
+        }
+
+        FTokens& ActiveTokens()
+        {
+            static FTokens Active = MakeTokens(ActiveOptions());
+            return Active;
+        }
+
+        FString FontFile(const TCHAR* Name)
+        {
+            return FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Marburgum/Fonts"), FString(Name) + TEXT(".ttf"));
+        }
+
+        /** Three composite families: the interface sans, its condensed cut and the editorial serif. */
+        struct FFamilies
+        {
+            TSharedPtr<const FCompositeFont> Sans;
+            TSharedPtr<const FCompositeFont> Condensed;
+            TSharedPtr<const FCompositeFont> Serif;
+            bool bBrand = false;
+        };
+
+        const FFamilies& Families()
+        {
+            static const FFamilies Built = []()
+            {
+                FFamilies Out;
+                const TCHAR* Required[] = { TEXT("FiraSans-Light"), TEXT("FiraSans-Regular"), TEXT("FiraSans-Medium"),
+                    TEXT("FiraSans-SemiBold"), TEXT("FiraSans-Bold"), TEXT("FiraSans-Italic"), TEXT("FiraSansCondensed-SemiBold"),
+                    TEXT("NotoSerif-Regular"), TEXT("NotoSerif-Italic") };
+                TArray<FString> Missing;
+                for (const TCHAR* Name : Required)
+                {
+                    if (!IFileManager::Get().FileExists(*FontFile(Name)))
+                    {
+                        Missing.Add(Name);
+                    }
+                }
+                if (!Missing.IsEmpty())
+                {
+                    UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=client event=font_fallback missing=\"%s\" dir=\"%s\""),
+                        MarburgumII::Session::UiLogPrefix, *FString::Join(Missing, TEXT(",")), *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Marburgum/Fonts")));
+                    return Out;
+                }
+                // Glyphs a face lacks (arrows, symbols, scripts beyond Latin/Greek/Cyrillic) come from the engine faces.
+                auto AddFallback = [](FCompositeFont& Font)
+                {
+                    const FString Engine = FPaths::Combine(FPaths::EngineContentDir(), TEXT("Slate/Fonts"));
+                    Font.FallbackTypeface.Typeface.AppendFont(TEXT("Regular"), Engine / TEXT("Roboto-Regular.ttf"), EFontHinting::Default,
+                        EFontLoadingPolicy::LazyLoad);
+                };
+                auto Face = [](FCompositeFont& Font, const TCHAR* Typeface, const TCHAR* File)
+                {
+                    Font.DefaultTypeface.AppendFont(Typeface, FontFile(File), EFontHinting::Default, EFontLoadingPolicy::LazyLoad);
+                };
+                TSharedRef<FCompositeFont> Sans = MakeShared<FCompositeFont>();
+                Face(*Sans, TEXT("Light"), TEXT("FiraSans-Light"));
+                Face(*Sans, TEXT("Regular"), TEXT("FiraSans-Regular"));
+                Face(*Sans, TEXT("Medium"), TEXT("FiraSans-Medium"));
+                Face(*Sans, TEXT("SemiBold"), TEXT("FiraSans-SemiBold"));
+                Face(*Sans, TEXT("Bold"), TEXT("FiraSans-Bold"));
+                Face(*Sans, TEXT("Italic"), TEXT("FiraSans-Italic"));
+                AddFallback(*Sans);
+                TSharedRef<FCompositeFont> Condensed = MakeShared<FCompositeFont>();
+                Face(*Condensed, TEXT("SemiBold"), TEXT("FiraSansCondensed-SemiBold"));
+                AddFallback(*Condensed);
+                TSharedRef<FCompositeFont> Serif = MakeShared<FCompositeFont>();
+                Face(*Serif, TEXT("Regular"), TEXT("NotoSerif-Regular"));
+                Face(*Serif, TEXT("Italic"), TEXT("NotoSerif-Italic"));
+                AddFallback(*Serif);
+                Out.Sans = Sans;
+                Out.Condensed = Condensed;
+                Out.Serif = Serif;
+                Out.bBrand = true;
+                return Out;
+            }();
+            return Built;
+        }
+
+        FSlateFontInfo Make(const TSharedPtr<const FCompositeFont>& Family, const TCHAR* Typeface, float Size, const char* FallbackStyle)
+        {
+            const float Scaled = FMath::RoundToFloat(Size * ActiveTokens().TextScale);
+            if (Family.IsValid())
+            {
+                return FSlateFontInfo(Family, Scaled, FName(Typeface));
+            }
+            return FCoreStyle::GetDefaultFontStyle(FallbackStyle, FMath::RoundToInt(Scaled));
         }
     }
 
     const FTokens& Tokens()
     {
-        static const FTokens Default = MakeDefaultTokens();
-        return Default;
+        return ActiveTokens();
+    }
+
+    bool SetPresentationOptions(const FPresentationOptions& Options)
+    {
+        if (Options == ActiveOptions())
+        {
+            return false;
+        }
+        ActiveOptions() = Options;
+        ActiveTokens() = MakeTokens(Options);
+        return true;
+    }
+
+    const FPresentationOptions& GetPresentationOptions()
+    {
+        return ActiveOptions();
+    }
+
+    bool HasBrandFonts()
+    {
+        return Families().bBrand;
     }
 
     FSlateFontInfo Font(ETypeRole Role)
     {
-        // Engine-bundled Roboto (Apache-2.0; covers Slovene diacritics). A licensed brand face can
-        // replace it here without touching any widget.
+        const FFamilies& F = Families();
         FSlateFontInfo Info;
         switch (Role)
         {
         case ETypeRole::Display:
-            Info = FCoreStyle::GetDefaultFontStyle("Light", 56);
-            Info.LetterSpacing = 20;
-            break;
-        case ETypeRole::Title:
-            Info = FCoreStyle::GetDefaultFontStyle("Regular", 28);
-            break;
-        case ETypeRole::Heading:
-            Info = FCoreStyle::GetDefaultFontStyle("Bold", 17);
+            Info = Make(F.Serif, TEXT("Regular"), 52.f, "Light");
             Info.LetterSpacing = 10;
             break;
+        case ETypeRole::Title:
+            Info = Make(F.Sans, TEXT("Light"), 28.f, "Light");
+            break;
+        case ETypeRole::PlaceTitle:
+            Info = Make(F.Serif, TEXT("Regular"), 36.f, "Regular");
+            break;
+        case ETypeRole::Heading:
+            Info = Make(F.Sans, TEXT("SemiBold"), 18.f, "Bold");
+            break;
+        case ETypeRole::Subheading:
+            Info = Make(F.Sans, TEXT("Medium"), 15.f, "Bold");
+            break;
         case ETypeRole::Body:
-            Info = FCoreStyle::GetDefaultFontStyle("Regular", 14);
+            Info = Make(F.Sans, TEXT("Regular"), 14.f, "Regular");
             break;
         case ETypeRole::BodyStrong:
-            Info = FCoreStyle::GetDefaultFontStyle("Bold", 14);
+            Info = Make(F.Sans, TEXT("SemiBold"), 14.f, "Bold");
+            break;
+        case ETypeRole::Quote:
+            Info = Make(F.Serif, TEXT("Italic"), 16.f, "Italic");
             break;
         case ETypeRole::Caption:
-            Info = FCoreStyle::GetDefaultFontStyle("Regular", 12);
+            Info = Make(F.Sans, TEXT("Regular"), 12.f, "Regular");
             break;
         case ETypeRole::Overline:
-            Info = FCoreStyle::GetDefaultFontStyle("Bold", 11);
-            Info.LetterSpacing = 160;
+            Info = Make(F.Condensed, TEXT("SemiBold"), 12.f, "Bold");
+            Info.LetterSpacing = 110;
+            break;
+        case ETypeRole::Label:
+            Info = Make(F.Sans, TEXT("Medium"), 13.f, "Regular");
             break;
         case ETypeRole::Numeric:
-            Info = FCoreStyle::GetDefaultFontStyle("Mono", 13);
+            Info = Make(F.Sans, TEXT("Medium"), 13.f, "Mono");
+            break;
+        case ETypeRole::NumericLarge:
+            Info = Make(F.Sans, TEXT("Light"), 40.f, "Light");
+            break;
+        case ETypeRole::Key:
+            Info = Make(F.Sans, TEXT("SemiBold"), 14.f, "Bold");
             break;
         }
         return Info;
@@ -141,8 +304,30 @@ namespace MarburgumUI
         case ESurfaceKind::Base: return SolidBrush(T.Color.Backdrop);
         case ESurfaceKind::Panel: return RoundedBrush(T.Color.Panel, T.Radius.Large, Outline, Width);
         case ESurfaceKind::Raised: return RoundedBrush(T.Color.Raised, T.Radius.Medium, Outline, Width);
+        case ESurfaceKind::Sunken: return RoundedBrush(T.Color.Sunken, T.Radius.Medium, Outline, Width);
         case ESurfaceKind::Overlay: return RoundedBrush(T.Color.Overlay, T.Radius.Large, Outline, Width);
         }
         return SolidBrush(T.Color.Panel);
+    }
+
+    float RelativeLuminance(const FLinearColor& Color)
+    {
+        // FLinearColor channels are already linear, which is what the WCAG formula takes after its sRGB decode.
+        return 0.2126f * Color.R + 0.7152f * Color.G + 0.0722f * Color.B;
+    }
+
+    float ContrastRatio(const FLinearColor& Foreground, const FLinearColor& Background)
+    {
+        const float A = RelativeLuminance(Foreground);
+        const float B = RelativeLuminance(Background);
+        return (FMath::Max(A, B) + 0.05f) / (FMath::Min(A, B) + 0.05f);
+    }
+
+    FLinearColor Composite(const FLinearColor& Top, const FLinearColor& Below)
+    {
+        const float A = FMath::Clamp(Top.A, 0.f, 1.f);
+        FLinearColor Out = Top * A + Below * (1.f - A);
+        Out.A = 1.f;
+        return Out;
     }
 }

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UI/MarburgumUITheme.h"
+#include "UI/MarburgumUIWidgets.h"
 
 class UBorder;
 class UButton;
@@ -69,6 +70,28 @@ namespace MarburgumUI
 
         /** Themed horizontal meter; marquee for honest indeterminate progress. */
         UProgressBar* Meter(ETone Tone, float Percent, bool bMarquee = false) const;
+        /** Vector meter of a fixed height: rounded track, toned fill, optional segment ticks. */
+        UMarburgumMeter* Bar(ETone Tone, float Percent, float Height = 6.f, int32 Segments = 0) const;
+
+        /** A line glyph from the UI-01 icon family. */
+        UMarburgumGlyph* Glyph(EMarburgumGlyph Icon, const FLinearColor& Color, float Size = 0.f) const;
+        /** Glyph and text on one line. */
+        UHorizontalBox* GlyphText(EMarburgumGlyph Icon, const FText& Value, ETypeRole Role, const FLinearColor& Color,
+            UTextBlock** OutText = nullptr, float GlyphSize = 0.f) const;
+        /** A keyboard key cap ("E", "Esc"); inactive caps are drawn hollow. */
+        UBorder* KeyCap(const FText& Key, bool bActive = true, UTextBlock** OutLabel = nullptr) const;
+        /** A key cap and what it does: "[Esc] Close". */
+        UHorizontalBox* KeyHint(const FText& Key, const FText& Action) const;
+        /** A soft gradient behind text over the street. */
+        UMarburgumScrim* Scrim(EMarburgumScrimShape Shape, const FLinearColor& Color) const;
+        /** A focusable row/tile/tab around Content (padded). Bind its events before adding it to a parent. */
+        UMarburgumSelectable* Selectable(UWidget* Content, const FMargin& Padding, bool bQuiet = false) const;
+        /** Section title: spaced capitals followed by a hairline. */
+        UHorizontalBox* SectionTitle(const FText& Title, const FLinearColor& Color) const;
+        /** A chip: glyph and spaced capitals on a toned capsule. */
+        UBorder* Chip(EMarburgumGlyph Icon, const FText& Label, ETone Tone, UTextBlock** OutLabel = nullptr) const;
+        /** Width-constrained box: at most MaxWidth, shrinking with the screen (no fixed pixel layouts). */
+        USizeBox* Bounded(UWidget* Content, float MaxWidth, float MinWidth = 0.f) const;
 
         /** Single-line themed text field. */
         UEditableTextBox* TextField(const FText& Initial, const FText& Hint) const;
@@ -77,7 +100,7 @@ namespace MarburgumUI
         UHorizontalBox* Field(const FText& Key, const FText& Value, UTextBlock** OutValue = nullptr) const;
 
         /** Notification card: tone accent bar, kind overline and message (notification_feed item). */
-        UBorder* Toast(const FText& Kind, const FText& Message, ETone Tone) const;
+        UBorder* Toast(const FText& Kind, const FText& Message, ETone Tone, EMarburgumGlyph Icon = EMarburgumGlyph::None) const;
 
         /** Designed empty/error/unsupported state card; never a bare empty string. */
         UBorder* StateCard(const FText& Title, const FText& Body, ETone Tone) const;
