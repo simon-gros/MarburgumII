@@ -69,20 +69,26 @@ Two null-RHI clients on port 27852 at 00:26 Marburgum time, both read as `reside
 
 During the crossing the district lookup ran 156 times, 155 from the 5 m / 3 m hold, and the one search took 0.09 ms. One player.
 
-## Multiplayer matrix, 20 November 2026
+## Multiplayer matrix, 20 November 2026, `73b6ed6`
 
-`scripts/street-multiplayer-smoke-linux.sh editor`, port 27853, null RHI, clock pinned to 10:00 on 18 June 2026, clear weather, places off. Evidence `Saved/StreetMulti/20261119T235248Z/` (`summary.json`, the script exited 0). The run was the driver on top of `1c8dcf7`, before that driver was committed.
+The earlier editor matrix (`Saved/StreetMulti/20261119T235248Z`, on `1c8dcf7`) closed each scene after 15 seconds and called a budget a pass. It is not the qualification below. The runner now keeps a scene until the count has held, the spawns have stalled under the target, or 90 seconds run out. The clock argument is `1996-06-18`, which is Tuesday 18 June 1996 in Maribor, not a 2026 instant that only mirrors there.
 
-| Scenario | Result | What the server kept |
+Night, two clients together in `residential_blocks`, 02:00, clear. Two runs, `Saved/StreetMulti/20261120T001454Z` and `20261120T001525Z`. Both settled at wants 1 and 1, target 2, 2 people, max 2. Each client saw the same two pedestrians. Not 4.
+
+Day, port 27856, null RHI, 10:00, clear, places off. `Saved/StreetMulti/20261120T001658Z`. The script exited 1 because the banks timed out.
+
+| Scenario | State | What was alive |
 | --- | --- | --- |
-| A day, commercial and houses | Pass | wants 18 and 8, haves 18 and 8, 26 people |
-| B day, two players 8–35 m apart on the shopping street | Pass | one crowd of 18, split 9 and 9, not 36 |
-| C apart, then back | Pass | 18+8 while apart, 18 shared again when back. One budget change each way |
-| D opposite banks | Pass for place and district | blocks and school, wants 12 and 16. After 15 s only 8 of 28 had spawned, 5 and 3 on the two banks |
-| E drop and return | Pass | one viewer left at 12; both back, 12+12 and 24 people. Same zone name, far apart, so not a shared crowd |
-| Cap, three old-town players | Pass for the budget | unconstrained 60, target clamped to 48 (16 each). 40 had spawned when the window closed. The most alive at once was 40 |
+| One player, commercial | Settled | 18 of 18 |
+| Commercial and houses | Settled | 18 and 8, 26 people |
+| Two players on one shopping street | Settled | 18, split 9 and 9, not 36 |
+| Apart, then back | Settled | 26, then 18 again |
+| Opposite banks | Timeout | Blocks and school, wants 12 and 16. After 91 s, 14 of 28 were alive. 4,222 tries: 3,284 found no pavement node, 886 fell outside the spawn band, none were a collision. The north viewer was logged 85 m from the nearest stored node. Still spawning, so this is not a hard stall and not a pass |
+| Disconnect, then return | Settled | One viewer, then 24 of 24 |
+| Three old-town players | Settled | Target 48, 48 alive, and the most alive at once was 48 |
+| One of those three leaves | Lifecycle | Target fell to 40. 39 were alive 12 s later. Still never over 48 |
 
-`-MB2NetRate` during the three-client cap, null RHI: server out 7.2–13.3 KB/s, the busiest client 3.2–5.8 KB/s, 17–39 street people. District lookups across the teleports: 2,527 of 2,541 from the hold, 0.70 ms in `NearestNode` altogether. The night shared-budget run was not repeated on this revision. No packaged build.
+`-MB2NetRate`, null RHI, over the whole day run: server out 0–16.9 KB/s. With three clients and 46–48 people, server out was 15.2–15.8 KB/s and the busiest client 6.2–6.8 KB/s. A street step at the cap averaged 0.87 ms. District lookups were 5,820 of 5,834 from the hold, 0.69 ms in `NearestNode` altogether. No packaged build of `73b6ed6` yet.
 
 ## Next verified delivery
 
