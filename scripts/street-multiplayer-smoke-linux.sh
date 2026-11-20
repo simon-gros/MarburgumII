@@ -22,6 +22,13 @@ pids=()
 last_pid=""
 stopping=0
 
+# Still running: a killed child stays a zombie (kill -0 succeeds) until this shell reaps it, so that is not alive.
+running() {
+    local state
+    state="$(ps -o stat= -p "$1" 2>/dev/null)" || return 1
+    [[ -n "$state" && "$state" != Z* ]]
+}
+
 kill_tree() {
     local pid="$1"
     if kill -0 "$pid" 2>/dev/null; then
@@ -45,12 +52,24 @@ stop_all() {
             kill -KILL -- "-$pid" 2>/dev/null || kill -KILL "$pid" 2>/dev/null || true
         fi
     done
-    sleep 0.3
+    local tick any
+    for tick in $(seq 1 25); do
+        any=0
+        for pid in "${pids[@]}"; do
+            if running "$pid"; then
+                any=1
+            fi
+        done
+        [[ "$any" -eq 0 ]] && break
+        sleep 0.2
+    done
     : > "$out/cleanup.txt"
     for pid in "${pids[@]}"; do
-        if kill -0 "$pid" 2>/dev/null; then
+        if running "$pid"; then
             echo "still_alive $pid" >> "$out/cleanup.txt"
             status=3
+        else
+            wait "$pid" 2>/dev/null || true
         fi
     done
     if [[ "$mode" != "drill" ]] && ss -Hlun "sport = :$port" | grep -aq .; then
@@ -77,6 +96,10 @@ if [[ "$mode" == "drill" ]]; then
     start_tracked sleep "$hold"
     start_tracked sleep "$hold"
     start_tracked sleep "$hold"
+    # DRILL_STUBBORN=1: one that ignores SIGTERM, as a slow Unreal shutdown does, and only goes on SIGKILL.
+    if [[ "${DRILL_STUBBORN:-0}" == "1" ]]; then
+        start_tracked bash -c "trap '' TERM; sleep $hold & wait"
+    fi
     echo "drill_pids=${pids[*]}"
     sleep "${DRILL_HOLD:-1}"
     exit "${DRILL_EXIT:-0}"

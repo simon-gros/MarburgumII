@@ -5,6 +5,7 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/Controller.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerState.h"
 #include "HAL/PlatformMisc.h"
 #include "MarburgumCharacter.h"
@@ -259,6 +260,24 @@ void UMarburgumStreetSubsystem::StepCrowdMatrix(double Time)
         }
         return Who->TeleportTo(Graph.GetNodes()[Node].Location + FVector(0.0, 0.0, 120.0), FRotator::ZeroRotator, false, true);
     };
+    // At the end of the loaded window a player looks back into the town. Their view is where most newcomers are put,
+    // and a client's own spawn heading can point past the edge of the world, where there is no pavement at all.
+    auto FaceTown = [&](const FMarburgumStreetViewer& Viewer) -> bool
+    {
+        AMarburgumCharacter* Who = Viewer.Character.Get();
+        AController* Controller = Who ? Who->GetController() : nullptr;
+        if (!Controller)
+        {
+            return false;
+        }
+        const FRotator Toward(0.0, (-Who->GetActorLocation()).Rotation().Yaw, 0.0);
+        Controller->SetControlRotation(Toward);
+        if (APlayerController* Player = Cast<APlayerController>(Controller))
+        {
+            Player->ClientSetRotation(Toward, true);
+        }
+        return true;
+    };
     auto Begin = [&](uint8 Phase)
     {
         CrowdPhase = Phase;
@@ -443,7 +462,7 @@ void UMarburgumStreetSubsystem::StepCrowdMatrix(double Time)
         }
         else if (CrowdPhase == 5 && Ordered.Num() >= 2)
         {
-            bOk = Place(Ordered[0], Bank(false)) && Place(Ordered[1], Bank(true));
+            bOk = Place(Ordered[0], Bank(false)) && Place(Ordered[1], Bank(true)) && FaceTown(Ordered[0]) && FaceTown(Ordered[1]);
         }
         else if (CrowdPhase == 9 && Ordered.Num() >= 3)
         {
