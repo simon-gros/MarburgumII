@@ -54,6 +54,7 @@ void UMarburgumChoicePanel::NativeOnInitialized()
     UTextBlock* Hint = B.Text(LOCTEXT("Hint", "Press a number to decide. The server records your choice; it cannot be taken back."),
         ETypeRole::Caption, T.Color.TextMuted);
     Hint->SetAutoWrapText(true);
+    HintLabel = Hint;
     FBuilder::Inline(Footer, Hint, 0.f, true, false);
     FBuilder::Stack(Column, Footer, 0.f);
 
@@ -117,6 +118,10 @@ void UMarburgumChoicePanel::Rebuild()
     {
         bDeduction |= !Current->Choices[Index].bCorrect;
     }
+    // A deduction's wrong answer is not recorded (ADR-083): the footer must not say every answer is final.
+    HintLabel->SetText(bDeduction
+        ? LOCTEXT("DeductionHint", "Press a number to answer. Only the right conclusion is recorded; a wrong one changes nothing.")
+        : LOCTEXT("Hint", "Press a number to decide. The server records your choice; it cannot be taken back."));
     ObjectiveLabel->SetText(bDeduction
         ? FText::Format(LOCTEXT("Deduction", "{0}  A wrong conclusion records nothing; you can look again."),
             FText::FromString(MarburgumII::Gameplay::Localized(Current->ObjectiveText)))

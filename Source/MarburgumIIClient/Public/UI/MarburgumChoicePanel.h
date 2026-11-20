@@ -39,6 +39,7 @@ private:
 
     UPROPERTY(Transient) TObjectPtr<UTextBlock> MissionLabel;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> ObjectiveLabel;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> HintLabel;
     UPROPERTY(Transient) TObjectPtr<UVerticalBox> Rows;
 
     TWeakObjectPtr<AMarburgumInteractable> Target;

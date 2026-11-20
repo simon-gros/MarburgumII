@@ -4,8 +4,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Game\n"
-"POT-Creation-Date: 2026-11-20 16:14\n"
-"PO-Revision-Date: 2026-11-20 16:14\n"
+"POT-Creation-Date: 2026-11-20 16:23\n"
+"PO-Revision-Date: 2026-11-20 16:23\n"
 "Language-Team: \n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
@@ -1168,37 +1168,44 @@ msgctxt "MarburgumCharacterPreview,Selected"
 msgid "SELECTED"
 msgstr "SELECTED"
 
+#. Key:	DeductionHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(123)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(123)
+msgctxt "MarburgumChoicePanel,DeductionHint"
+msgid "Press a number to answer. Only the right conclusion is recorded; a wrong one changes nothing."
+msgstr "Press a number to answer. Only the right conclusion is recorded; a wrong one changes nothing."
+
 #. Key:	Deduction
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(121)
-#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(121)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(126)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(126)
 msgctxt "MarburgumChoicePanel,Deduction"
 msgid "{0}  A wrong conclusion records nothing; you can look again."
 msgstr "{0}  A wrong conclusion records nothing; you can look again."
 
 #. Key:	Gain
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(147)
-#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(147)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(152)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(152)
 msgctxt "MarburgumChoicePanel,Gain"
 msgid "+{0} money"
 msgstr "+{0} money"
 
 #. Key:	Cost
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(148)
-#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(148)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(153)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(153)
 msgctxt "MarburgumChoicePanel,Cost"
 msgid "−{0} money"
 msgstr "−{0} money"
 
 #. Key:	Xp
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(154)
-#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(154)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(159)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(159)
 msgctxt "MarburgumChoicePanel,Xp"
 msgid "{0} +{1} XP"
 msgstr "{0} +{1} XP"
 
 #. Key:	Short
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(159)
-#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(159)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(164)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(164)
 msgctxt "MarburgumChoicePanel,Short"
 msgid "Not enough money"
 msgstr "Not enough money"
@@ -2667,162 +2674,162 @@ msgid "Settings"
 msgstr "Settings"
 
 #. Key:	CompletedLine
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(204)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(204)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(209)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(209)
 msgctxt "MarburgumPinnedObjective,CompletedLine"
 msgid "Completed and saved by the server. [J] has the journal entry."
 msgstr "Completed and saved by the server. [J] has the journal entry."
 
 #. Key:	Completed
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(208)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(208)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(213)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(213)
 msgctxt "MarburgumPinnedObjective,Completed"
 msgid "COMPLETED"
 msgstr "COMPLETED"
 
 #. Key:	Mission
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(235)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(235)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(240)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(240)
 msgctxt "MarburgumPinnedObjective,Mission"
 msgid "MISSION"
 msgstr "MISSION"
 
 #. Key:	Story
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(235)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(235)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(240)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(240)
 msgctxt "MarburgumPinnedObjective,Story"
 msgid "STORY MISSION"
 msgstr "STORY MISSION"
 
 #. Key:	UnknownStage
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(238)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(238)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(243)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(243)
 msgctxt "MarburgumPinnedObjective,UnknownStage"
 msgid "The next step is not known to this client version."
 msgstr "The next step is not known to this client version."
 
 #. Key:	Updated
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(245)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(245)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(250)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(250)
 msgctxt "MarburgumPinnedObjective,Updated"
 msgid "UPDATED"
 msgstr "UPDATED"
 
 #. Key:	New
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(249)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(249)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(254)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(254)
 msgctxt "MarburgumPinnedObjective,New"
 msgid "NEW"
 msgstr "NEW"
 
 #. Key:	GuideAbsent
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(304)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(304)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(309)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(309)
 msgctxt "MarburgumPinnedObjective,GuideAbsent"
 msgid "{0} · not in this part of the city yet"
 msgstr "{0} · not in this part of the city yet"
 
 #. Key:	E
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(311)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(311)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(316)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(316)
 msgctxt "MarburgumPinnedObjective,E"
 msgid "east"
 msgstr "east"
 
 #. Key:	N
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(311)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(311)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(316)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(316)
 msgctxt "MarburgumPinnedObjective,N"
 msgid "north"
 msgstr "north"
 
 #. Key:	NE
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(311)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(311)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(316)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(316)
 msgctxt "MarburgumPinnedObjective,NE"
 msgid "north-east"
 msgstr "north-east"
 
 #. Key:	SE
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(311)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(311)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(316)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(316)
 msgctxt "MarburgumPinnedObjective,SE"
 msgid "south-east"
 msgstr "south-east"
 
 #. Key:	NW
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(312)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(312)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(317)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(317)
 msgctxt "MarburgumPinnedObjective,NW"
 msgid "north-west"
 msgstr "north-west"
 
 #. Key:	S
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(312)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(312)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(317)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(317)
 msgctxt "MarburgumPinnedObjective,S"
 msgid "south"
 msgstr "south"
 
 #. Key:	SW
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(312)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(312)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(317)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(317)
 msgctxt "MarburgumPinnedObjective,SW"
 msgid "south-west"
 msgstr "south-west"
 
 #. Key:	W
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(312)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(312)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(317)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(317)
 msgctxt "MarburgumPinnedObjective,W"
 msgid "west"
 msgstr "west"
 
 #. Key:	Here
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(315)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(315)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(320)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(320)
 msgctxt "MarburgumPinnedObjective,Here"
 msgid "here"
 msgstr "here"
 
 #. Key:	Metres
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(316)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(316)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(321)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(321)
 msgctxt "MarburgumPinnedObjective,Metres"
 msgid "{0} m {1}"
 msgstr "{0} m {1}"
 
 #. Key:	Kilometres
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(317)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(317)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(322)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(322)
 msgctxt "MarburgumPinnedObjective,Kilometres"
 msgid "{0} km {1}"
 msgstr "{0} km {1}"
 
 #. Key:	GuideTemporary
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(319)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(319)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(324)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(324)
 msgctxt "MarburgumPinnedObjective,GuideTemporary"
 msgid "{0} · {1} · on a temporary floor until that district is built"
 msgstr "{0} · {1} · on a temporary floor until that district is built"
 
 #. Key:	Guide
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(320)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(320)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(325)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(325)
 msgctxt "MarburgumPinnedObjective,Guide"
 msgid "{0} · {1}"
 msgstr "{0} · {1}"
 
 #. Key:	Journal
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(71)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(71)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(70)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(70)
 msgctxt "MarburgumPinnedObjective,Journal"
 msgid "Journal"
 msgstr "Journal"
 
 #. Key:	JournalKey
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(71)
-#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(71)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(70)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(70)
 msgctxt "MarburgumPinnedObjective,JournalKey"
 msgid "J"
 msgstr "J"

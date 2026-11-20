@@ -67,9 +67,14 @@ void UMarburgumPinnedObjective::NativeOnInitialized()
     NewsChip = B.Chip(EMarburgumGlyph::Check, FText::GetEmpty(), ETone::Success, &NewsText);
     NewsLabel = NewsText;
     NewsChip->SetVisibility(ESlateVisibility::Collapsed);
-    FBuilder::Inline(Header, NewsChip, T.Space.S);
     FBuilder::Inline(Header, B.KeyHint(LOCTEXT("JournalKey", "J"), LOCTEXT("Journal", "Journal")), 0.f);
     FBuilder::Stack(Column, Header, T.Space.XS);
+    // The news chip (UPDATED, COMPLETED) on its own line: beside a longer kind ("ZGODBENA NALOGA") it ran over the label.
+    FBuilder::Stack(Column, NewsChip, T.Space.XS);
+    if (UVerticalBoxSlot* ChipSlot = Cast<UVerticalBoxSlot>(Column->GetSlots().Last()))
+    {
+        ChipSlot->SetHorizontalAlignment(HAlign_Left);
+    }
     NameLabel = B.Text(FText::GetEmpty(), ETypeRole::Heading);
     NameLabel->SetAutoWrapText(true);
     FBuilder::Stack(Column, NameLabel, T.Space.XS);
