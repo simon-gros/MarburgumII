@@ -31,10 +31,17 @@ namespace MarburgumWalkGraphCheck
 
     bool IsBridgeStructure(const AActor* Actor, const UPrimitiveComponent* Component)
     {
-        if (Actor && (Actor->GetName().StartsWith(TEXT("Bridge_")) || Actor->GetFolderPath().ToString().Contains(TEXT("Bridge"))))
+        // Folder paths exist in the editor only. A cooked client or server still knows a bridge by its name or mesh.
+        if (Actor && Actor->GetName().StartsWith(TEXT("Bridge_")))
         {
             return true;
         }
+#if WITH_EDITOR
+        if (Actor && Actor->GetFolderPath().ToString().Contains(TEXT("Bridge")))
+        {
+            return true;
+        }
+#endif
         const UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(Component);
         const UStaticMesh* Mesh = MeshComponent ? MeshComponent->GetStaticMesh() : nullptr;
         return Mesh && Mesh->GetPathName().Contains(TEXT("/World/Bridges/"));
