@@ -1,14 +1,19 @@
 # UI/HUD development roadmap — MarburgumII
 
-**Revision:** 0.5 — 20 November 2026: the UI/HUD overhaul from `feat/ui-hud-major-overhaul`, merged to `main` ([evidence](UI_OVERHAUL_EVIDENCE.md)); status reconciled against the [overnight review](DEVELOPMENT_REVIEW_2026-11-20.md) and [QA fixes](QA_AUDIT_2026-11-19.md). Earlier UI-00–UI-07 design gates remain normative.
+**Revision:** 0.6 — 20 November 2026 evening, reconciled with [current review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md), UI v2 evidence and ADR-081 localized gameplay. UI-00–UI-07 quality gates remain normative.
 **Scope:** P0-to-production user interface program for the new **Unreal Engine 5.8.3** client.  
 **Normative concepts:** [UI/HUD ontology](UI_HUD_ONTOLOGY.md) and [machine-readable module registry](../Data/Ontology/ui_hud.v0.1.json).  
 **Visual contract:** [UI_HUD_DESIGN.md](UI_HUD_DESIGN.md).  
 **Network dependency:** [NET-001](https://github.com/simon-gros/MarburgumII/issues/2), a genuine two-client authoritative session.  
 **Umbrella implementation task:** [UI-001](https://github.com/simon-gros/MarburgumII/issues/3).  
-**Status:** Rendered UMG shell, general/private chat, live prompts/objectives/condition/vehicle/combat messages, Character/Inventory/Journal and first **Skills (K)**, plus editor-tested story/fishing choices. ADR-055/057 implemented real development account screens, server ticket gating and a three-body drag/zoom 3D creator, with ADR-058/059 improving the prototype body's face/head. QA added **Escape/resume/leave/quit**, scrollable screens, wrapped names, longer-lived story notices, scaled prompts, account-name display and chat click-away/focus fixes. This is **not** a fully packaged, owner-accepted current-build UI. **20 November (merged from `feat/ui-hud-major-overhaul`, [evidence](UI_OVERHAUL_EVIDENCE.md)):** design system v2, a rewritten exploration HUD, one management shell for Character/Skills/Inventory/Journal, a working client-local **Settings** screen, restyled chat, decision/counter cards and Escape menu, redesigned title/account/creator screens (U9 fixed), contrast-tested text (U13) and English/Slovene interface text, all in editor-build live runs and awaiting owner playtest. Still open: packaged qualification, the after-change 720p–4K/ultrawide/80–200 % matrix, gamepad verification, key rebinding and translated gameplay content.
+**Status (current):** Merged UMG design system v2, unified Character/Skills/Inventory/Journal, **working Settings**, split creator and bilingual English/Slovene UI (**657 strings**) with localized dates; contrast and input fixes have **37/37 editor automation** and actual screenshots. ADR-081 adds localized story/Photography with separate staged evidence. Open: full current-head packaged fonts/ICU/controller/focus, 720p–4K/accessibility matrix, native Slovene text review and personal owner approval. Settings, Slovene UI and corrected U9 creator fit are **implemented**, not absent.
 
 **Morning status:** Merged UI v2 delivers functional Settings, a management shell, 657 localized interface strings, fixed 5:4/150% creator layout and contrast tests, with 37/37 editor automation ([evidence](UI_OVERHAUL_EVIDENCE.md)). These are **implemented**, not still pending development. Outstanding: fresh cooked fonts/ICU/locres, gameplay-text translation, live after-change 720p–4K/80–200% and gamepad matrix, E-door/chat/F/R/G focus, Slate timings and personal owner UX approval. Include ADR-076 interiors and failing opposite-bank crowd in integrated UI tests. [Morning review](DEVELOPMENT_REVIEW_2026-11-20_MORNING.md).
+
+### Researched UI possibilities (not yet implemented)
+
+The [research roadmap](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) proposes a Photography gallery, text/notification size, richer contrast/remapping and clearer door/NPC interaction. Epic [Common UI](https://dev.epicgames.com/documentation/unreal-engine/common-ui-plugin-for-advanced-user-interfaces-in-unreal-engine) can be evaluated on **one isolated panel**, not as a replacement for the current UMG v2 without approval. [UMG optimization](https://dev.epicgames.com/documentation/en-us/unreal-engine/optimization-guidelines-for-umg-in-unreal-engine) and [Game Accessibility Guidelines](https://gameaccessibilityguidelines.com/basic/) inform measured improvements.
+
 
 ## 1. Product requirement and planning principle
 

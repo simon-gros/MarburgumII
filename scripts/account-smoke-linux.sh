@@ -15,11 +15,14 @@
 #   Tickets name their server (QA 2026-11-19, AR1): the service lists this server and a second one (melje, own key,
 #     not running). No ticket for an unlisted address or without one; melje's key cannot spend (or burn) this
 #     server's ticket, which is then admitted; this server refuses a ticket asked for melje.
-#   Ticket logs (AR13): the rendered clients never log a ticket in the Browse address, which is written before the
-#     server has spent it.
+#   Encrypted transport (ADR-083): the ticket is the connection's encryption token and its key comes with it from
+#     the service. A stolen ticket without its key is spent but admits nobody. The admitted client joins through a
+#     recording UDP relay (mb2 wire-relay): the ticket shows in its hello, and nothing after it carries the map's
+#     name, the game mode or the character's name in the clear. No server log holds a ticket or a key, and the
+#     rendered clients never log the encryption token at all (AR13).
 #   The service restarts and the returning player still signs in (durable store).
-#   Secrets: no password, code, session or ticket appears in the account store; no password, session or verification code in any
-#   game log.
+#   Secrets: no password, code, session, ticket or key appears in the account store; no password, session or
+#   verification code in any game log.
 #
 # Usage: scripts/account-smoke-linux.sh [editor|staged]. Evidence: Saved/AccountSmoke/<UTC timestamp>/.
 set -euo pipefail
@@ -96,6 +99,12 @@ start_service() {
     exit 1
 }
 
+relay_pid=""
+stop_relay() {
+    [[ -n "$relay_pid" ]] && { kill "$relay_pid" 2>/dev/null || true; wait "$relay_pid" 2>/dev/null || true; }
+    relay_pid=""
+}
+
 stop_service() {
     if [[ -n "$service_pid" ]]; then
         kill "$service_pid" 2>/dev/null || true
@@ -118,7 +127,7 @@ stop_server() {
     fi
     server_pid=""
 }
-trap 'stop_server; stop_service' EXIT
+trap 'stop_relay; stop_server; stop_service' EXIT
 
 api() { # api <method> <path> <json> [bearer]
     local auth=()
@@ -242,37 +251,72 @@ ticket=$(api POST /v1/verify "{\"email\":\"bor@example.si\",\"code\":\"$(code_fo
 api POST /v1/setup "{\"ticket\":\"$ticket\",\"username\":\"bor_m\",\"password\":\"pohorje-snow-1991\"}" >/dev/null
 session=$(api POST /v1/login '{"username":"bor_m","password":"pohorje-snow-1991"}' | json session)
 api POST /v1/character '{"request":"r1","first_name":"Bor","last_name":"Mlakar","model":"manny"}' "$session" >/dev/null
-forged=$(head -c 32 /dev/urandom | base64 | tr '+/' '-_' | tr -d '=')
+random_b64() { head -c 32 /dev/urandom | base64 | tr '+/' '-_' | tr -d '='; }
+# admit <server address> <name>: ask for a ticket; sets <name>_ticket and <name>_key.
+admit() {
+    local answer
+    answer=$(api POST /v1/admission "{\"server\":\"$1\"}" "$session")
+    printf -v "$2_ticket" '%s' "$(json ticket <<< "$answer")"
+    printf -v "$2_key" '%s' "$(json key <<< "$answer")"
+}
+forged=$(random_b64)
 nullrhi=(-nullrhi -MB2AccountTimeout=60)
 client dev-key REFUSED "127.0.0.1:$port?MB2Character=dev-key-player" "${nullrhi[@]}"
-expect_server "refused a development key" 'admission_refused stage=prelogin reason=development_key'
 client no-ticket REFUSED "127.0.0.1:$port" "${nullrhi[@]}"
-expect_server "refused a join without a ticket" 'admission_refused stage=prelogin reason=no_ticket'
-client forged REFUSED "127.0.0.1:$port?MB2Ticket=$forged" "${nullrhi[@]}"
+no_ticket=$({ grep -ac 'admission_refused stage=hello reason=no_ticket' "$out_dir/server.log" || true; })
+expect_eq "refused a development key and a join without a ticket at the hello" "$([[ $no_ticket -ge 2 ]] && echo yes || echo "no ($no_ticket)")" yes
+client forged REFUSED "127.0.0.1:$port?EncryptionToken=$forged" "${nullrhi[@]}" "-MB2AdmissionKey=$(random_b64)"
 expect_server "refused a forged ticket" 'admission_refused stage=redeem reason="Your sign-in for this world has expired'
 echo "Tickets name their server (AR1)"
 expect_eq "no ticket without a server" "$(api POST /v1/admission '{}' "$session" | json error)" request_invalid
 expect_eq "no ticket for an unlisted address" "$(api POST /v1/admission '{"server":"evil.example.si:7777"}' "$session" | json error)" server_unknown
 expect_eq "no ticket for another port" "$(api POST /v1/admission "{\"server\":\"127.0.0.1:$((port + 1))\"}" "$session" | json error)" server_unknown
-melje_ticket=$(api POST /v1/admission "{\"server\":\"$melje_address\"}" "$session" | json ticket)
-client other-server REFUSED "127.0.0.1:$port?MB2Ticket=$melje_ticket" "${nullrhi[@]}"
+admit "$melje_address" melje
+client other-server REFUSED "127.0.0.1:$port?EncryptionToken=$melje_ticket" "${nullrhi[@]}" "-MB2AdmissionKey=$melje_key"
 expect_eq "melje can spend its own ticket after this server refused it" "$(redeem_as "$secrets/melje.key" "$melje_ticket")" 200
+echo "Encrypted transport (ADR-083)"
+# A ticket stolen off the wire (it is in the clear in the hello) but without its key: spent, and nobody admitted.
+admit "127.0.0.1:$port" stolen
+client stolen REFUSED "127.0.0.1:$port?EncryptionToken=$stolen_ticket" -nullrhi -MB2AccountTimeout=120 "-MB2AdmissionKey=$(random_b64)"
+expect_server "spent the stolen ticket at the hello" 'MB2ACCOUNT role=server event=ticket_redeemed .* model=manny encrypted=1'
+admitted_manny=$({ grep -ac 'MB2ACCOUNT role=server event=admitted .* model=manny' "$out_dir/server.log" || true; })
+expect_eq "admitted nobody with the stolen ticket" "$admitted_manny" 0
 # Each ticket is asked for just before its join: a ticket lives one minute, about four client starts.
-ticket_1=$(api POST /v1/admission "{\"server\":\"localhost:$port\"}" "$session" | json ticket)
+admit "localhost:$port" t1
+ticket_1=$t1_ticket
 expect_eq "melje cannot spend this server's ticket" "$(redeem_as "$secrets/melje.key" "$ticket_1")" 403
-client admitted ADMITTED "127.0.0.1:$port?MB2Ticket=$ticket_1" "${nullrhi[@]}" -MB2AccountHold=40 -MB2AccountFirst=Bor \
-    -MB2AccountLast=Mlakar -MB2AccountModel=manny &
+# The admitted client joins through the recording relay, as an observer on the path would see it.
+relay_port=$((port + 3))
+"$repo_root/scripts/mb2.sh" wire-relay "127.0.0.1:$relay_port" "127.0.0.1:$port" "$out_dir/wire-admitted.txt" > "$out_dir/relay.log" 2>&1 &
+relay_pid=$!
+sleep 1
+client admitted ADMITTED "127.0.0.1:$relay_port?EncryptionToken=$ticket_1" "${nullrhi[@]}" "-MB2AdmissionKey=$t1_key" -MB2AccountHold=40 \
+    -MB2AccountFirst=Bor -MB2AccountLast=Mlakar -MB2AccountModel=manny &
 admitted_pid=$!
 for _ in $(seq 1 240); do
     grep -aq 'tag=ADMITTED event=in_world' "$out_dir/client-admitted.log" 2>/dev/null && break
     sleep 0.5
 done
-client replay REFUSED "127.0.0.1:$port?MB2Ticket=$ticket_1" "${nullrhi[@]}"
-ticket_2=$(api POST /v1/admission "{\"server\":\"127.0.0.1:$port\"}" "$session" | json ticket)
-client twice REFUSED "127.0.0.1:$port?MB2Ticket=$ticket_2" "${nullrhi[@]}"
+client replay REFUSED "127.0.0.1:$port?EncryptionToken=$ticket_1" "${nullrhi[@]}" "-MB2AdmissionKey=$t1_key"
+admit "127.0.0.1:$port" t2
+ticket_2=$t2_ticket
+client twice REFUSED "127.0.0.1:$port?EncryptionToken=$ticket_2" "${nullrhi[@]}" "-MB2AdmissionKey=$t2_key"
 expect_server "refused the character a second time" 'admission_refused stage=redeem reason=already_in_world'
 wait "$admitted_pid" || true
 grep -aq 'tag=ADMITTED event=pass' "$out_dir/client-admitted.log" || status=1
+stop_relay
+# On the wire: the ticket is in the hello (the scan's own control: it finds a string the engine bit-packed), and
+# nothing the server sends after it, nor the client's login, carries these in the clear.
+"$repo_root/scripts/mb2.sh" wire-scan "$out_dir/wire-admitted.txt" "$ticket_1" /Game/World/lent MarburgumGameMode Mlakar manny \
+    > "$out_dir/wire-scan.txt"
+sed 's/needle=[A-Za-z0-9_-]\{43\} /needle=<ticket> /; s/^/  /' "$out_dir/wire-scan.txt"
+wire_hits() { grep "needle=$1 " "$out_dir/wire-scan.txt" | sed -n "s/.* $2_hits=\([0-9]*\).*/\1/p"; }
+wire_packets=$(sed -n 's/^wire packets=\([0-9]*\).*/\1/p' "$out_dir/wire-scan.txt")
+expect_eq "the relay carried the session (100+ datagrams)" "$([[ ${wire_packets:-0} -ge 100 ]] && echo yes || echo "no (${wire_packets:-0})")" yes
+expect_eq "the hello carried the ticket in the clear (scan control)" "$([[ $(wire_hits "$ticket_1" client) -ge 1 ]] && echo yes || echo no)" yes
+for needle in /Game/World/lent MarburgumGameMode Mlakar manny; do
+    expect_eq "no '$needle' on the wire" "$(( $(wire_hits "$needle" client) + $(wire_hits "$needle" server) ))" 0
+done
 replays=$(grep -ac 'admission_refused stage=redeem reason="Your sign-in for this world has expired' "$out_dir/server.log" || true)
 if [[ "$replays" -ge 3 ]]; then
     echo "  server refused the spent and the other server's tickets: yes"
@@ -298,7 +342,7 @@ leaks=0
 # Every verification code the service mailed (the outbox), as the header promises.
 mapfile -t codes < <(grep -hE '^\s+[A-Z2-9]{8}\s*$' "$out_dir"/outbox/*.txt | tr -d ' ' | sort -u)
 echo "  verification codes checked: ${#codes[@]}"
-for secret in drava-bridge-1990 pohorje-snow-1991 "$session" "$ticket_1" "$ticket_2" "${codes[@]}"; do
+for secret in drava-bridge-1990 pohorje-snow-1991 "$session" "$ticket_1" "$ticket_2" "$t1_key" "$t2_key" "$stolen_key" "${codes[@]}"; do
     if grep -q -- "$secret" "$out_dir/accounts.json"; then
         echo "  account store holds a secret in the clear: ${secret:0:6}…"
         leaks=1
@@ -311,10 +355,16 @@ for secret in drava-bridge-1990 pohorje-snow-1991 "$session" "${codes[@]}"; do
     fi
 done
 [[ "$leaks" -eq 0 ]] && echo "  none in the store or the logs" || status=1
-# AR13: the clients that signed in through the screens add the ticket after the engine logs the Browse address.
+# AR13: the server never logs a ticket or a key; the clients that signed in through the screens never log the token.
 # (grep -c exits 1 on no match, which set -e must not take for a failure.)
-browsed=$(cat "$out_dir"/client-first.log "$out_dir"/client-return.log | { grep -ac 'Browse: .*MB2Ticket=' || true; })
-expect_eq "rendered clients logged no ticket in a Browse address" "$browsed" 0
+server_secrets=0
+for secret in "$ticket_1" "$ticket_2" "$stolen_ticket" "$melje_ticket" "$t1_key" "$t2_key" "$stolen_key"; do
+    grep -aq -- "$secret" "$out_dir/server.log" "$out_dir"/service-*.log && server_secrets=$((server_secrets + 1))
+done
+expect_eq "the server and service logs hold no ticket or key" "$server_secrets" 0
+token_lines=$(cat "$out_dir"/client-first.log "$out_dir"/client-return.log | { grep -ac 'EncryptionToken=\|MB2Ticket=' || true; })
+expect_eq "rendered clients logged no encryption token" "$token_lines" 0
+expect_eq "rendered clients encrypted their sessions" "$(cat "$out_dir"/client-first.log "$out_dir"/client-return.log | { grep -ac 'MB2ACCOUNT role=client event=encrypted' || true; })" 2
 expect_eq "the service logged a redeem for another server" "$({ grep -ac 'event=redeem_refused reason=other_server caller=melje ticket_server=lent-smoke' "$out_dir"/service-1.log || true; })" 1
 
 # Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).

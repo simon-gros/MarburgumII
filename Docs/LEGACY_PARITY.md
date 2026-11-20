@@ -4,6 +4,8 @@
 **Companion data:** [`Data/Parity/source-matrix.v0.1.json`](../Data/Parity/source-matrix.v0.1.json).  
 **Authority:** [Vision](VISION.md), [Ontology](ONTOLOGY.md), [Network architecture](NETWORK_ARCHITECTURE.md), [Decisions](DECISIONS.md) and [Roadmap](ROADMAP.md).
 
+**Latest parity additions (20 November evening):** Original-game mission semantics now have Chapter IV *Voices on Tape*, Photography and two new side missions, while the bank angler and authored contacts use animated mannequin/rod presentation. Native UMG provides bilingual UI and Settings. Interiors have **five physically cut entrances** (not 586 open buildings). Security includes account tickets bound to their destination server and signed-in AES-256-GCM. Earlier scoping and test history remain valid for their own commits; no owner-approved all-game package exists. New suggestions—named resident routines, photo album, analog media and small noncombat work—are **proposals**, defined in [research roadmap](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md).
+
 ## Inheritance rule
 
 **The majority of original Marburgum game design is carried forward.** MarburgumII is a **new technical implementation of substantially the same intended game**, rather than a new and unrelated concept. We preserve the period setting, cultural/geographical identity, major world systems, RPG disciplines, original narrative direction, economy, social simulation, vehicle mobility and expected persistent shared-world experience. The initial vertical slice is deliberately small because we must prove the new MMORPG foundation, not because the full project scope has been discarded.

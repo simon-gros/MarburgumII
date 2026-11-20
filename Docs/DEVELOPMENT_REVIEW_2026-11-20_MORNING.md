@@ -2,6 +2,8 @@
 
 **Repository baseline:** [`8fd4aaff`](https://github.com/simon-gros/MarburgumII/commit/8fd4aaff1daad50d3e2bc8dd3f06677ed5e93efe) (20 November 05:21 UTC), including archive migration `659e28f`, graphics roadmap ~05:01 UTC, UI merge ~02:14 UTC and interiors ADR-076. **Method:** GitHub commits/files, roadmap and ADR reconciliation, evidence and Actions run statuses. No new Unreal build, package smoke, GPU benchmark or owner playtest was run in this documentation review; older reports retain their own tested SHAs.
 
+**Subsequent 20 November evening correction:** This is a **dated historical snapshot** of earlier failing source CI, incomplete UX/staging and account-ticket planning. The current [evening review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md) records both source/archive workflows **green** at `8a01818`, staged two-interior tests passing, ADR-079 **editor** crowd fix passing, UI v2 with Settings and Slovene, ADR-081 staged story/Photography and ADR-083 staged AES-256-GCM signed-in multiplayer. Preserve the older failure reports below as historical evidence, not present-tense implementation blockers.
+
 ## Recent implementation and planning evidence
 
 | Change | What is verified | Not yet accepted |

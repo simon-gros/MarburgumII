@@ -73,6 +73,24 @@ namespace
         default: return EFault::ConnectionLost;
         }
     }
+
+    /** The engine's bare encryption refusals (ADR-083) in words a player can act on; anything else unchanged. */
+    FString DescribeRefusal(const FString& Error)
+    {
+        if (Error == TEXT("InvalidToken"))
+        {
+            return TEXT("Your sign-in for this world has expired. Sign in again.");
+        }
+        if (Error == TEXT("Failure"))
+        {
+            return TEXT("This world could not admit your character. It may already be in the world.");
+        }
+        if (Error.Contains(TEXT("Encryption token missing")) || Error.Contains(TEXT("EncryptionToken")))
+        {
+            return TEXT("Sign in to enter the world.");
+        }
+        return Error;
+    }
 }
 
 bool UMarburgumSessionSubsystem::ShouldCreateSubsystem(UObject* Outer) const
@@ -96,6 +114,9 @@ void UMarburgumSessionSubsystem::Initialize(FSubsystemCollectionBase& Collection
         TravelFailureHandle = GEngine->OnTravelFailure().AddUObject(this, &UMarburgumSessionSubsystem::HandleTravelFailure);
     }
     PendingConnectionHandle = FNetDelegates::OnPendingNetGameConnectionCreated.AddUObject(this, &UMarburgumSessionSubsystem::HandlePendingConnection);
+    // The engine's delegate is single-cast, and UGameInstance::Init has just bound a placeholder that refuses every
+    // ack ("not implemented"): replace it (ADR-083).
+    FNetDelegates::OnReceivedNetworkEncryptionAck.BindUObject(this, &UMarburgumSessionSubsystem::HandleEncryptionAck);
     TickerHandle = FTSTicker::GetCoreTicker().AddTicker(
         FTickerDelegate::CreateUObject(this, &UMarburgumSessionSubsystem::Tick), TickIntervalSeconds);
 }
@@ -109,7 +130,12 @@ void UMarburgumSessionSubsystem::Deinitialize()
         GEngine->OnTravelFailure().Remove(TravelFailureHandle);
     }
     FNetDelegates::OnPendingNetGameConnectionCreated.Remove(PendingConnectionHandle);
+    if (FNetDelegates::OnReceivedNetworkEncryptionAck.IsBoundToObject(this))
+    {
+        FNetDelegates::OnReceivedNetworkEncryptionAck.Unbind();
+    }
     PendingTicket.Reset();
+    PendingKey.Reset();
     Super::Deinitialize();
 }
 
@@ -228,13 +254,15 @@ void UMarburgumSessionSubsystem::BeginAttempt(const FString& Address)
     }
     AttemptStartedSeconds = FPlatformTime::Seconds();
     bReconnectScheduled = false;
+    bExpectEncrypted = false;
     // Signed in (ADR-055): every attempt, a reconnect too, brings a fresh single-use ticket and never the key.
     if (UMarburgumAccountSubsystem* Accounts = GameInstance->GetSubsystem<UMarburgumAccountSubsystem>(); Accounts && Accounts->IsEnabled())
     {
         const EPhase AttemptPhase = View.Phase;
         PendingTicket.Reset();
+        PendingKey.Reset();
         Accounts->RequestTicket(Address, FMarburgumTicketReady::CreateWeakLambda(this,
-            [this, Address, AttemptPhase](const FString& Ticket, const FText& Error)
+            [this, Address, AttemptPhase](const FString& Ticket, const TArray<uint8>& Key, const FText& Error)
             {
                 if (View.Phase != AttemptPhase)
                 {
@@ -250,8 +278,9 @@ void UMarburgumSessionSubsystem::BeginAttempt(const FString& Address)
                 {
                     AttemptStartedSeconds = FPlatformTime::Seconds();
                     // The engine logs the travel URL (Browse) before it connects: the ticket is added afterwards, to
-                    // the pending connection, and reaches the server in the login message (AR13).
+                    // the pending connection, and reaches the server in the hello (AR13, ADR-083).
                     PendingTicket = Ticket;
+                    PendingKey = Key;
                     GEngine->SetClientTravel(Current, *Address, TRAVEL_Absolute);
                 }
             }));
@@ -271,13 +300,46 @@ void UMarburgumSessionSubsystem::HandlePendingConnection(UPendingNetGame* Pendin
     {
         return;
     }
-    PendingNetGame->URL.AddOption(*FString::Printf(TEXT("%s=%s"), MarburgumII::Accounts::TicketOption, *PendingTicket));
+    PendingNetGame->URL.AddOption(*FString::Printf(TEXT("%s=%s"), MarburgumII::Accounts::EncryptionTokenOption, *PendingTicket));
     PendingTicket.Reset();
+    bExpectEncrypted = true;
+}
+
+void UMarburgumSessionSubsystem::HandleEncryptionAck(const FOnEncryptionKeyResponse& Respond)
+{
+    using namespace MarburgumII::Accounts;
+    // The token has done its work: out of the URL before the login message copies it or the map load logs it.
+    if (UPendingNetGame* Pending = Cast<UPendingNetGame>(Respond.GetUObject()))
+    {
+        const FString Prefix = FString(EncryptionTokenOption) + TEXT("=");
+        Pending->URL.Op.RemoveAll([&Prefix](const FString& Option) { return Option.StartsWith(Prefix); });
+    }
+    TArray<uint8> Key = MoveTemp(PendingKey);
+    PendingKey.Reset();
+#if !UE_BUILD_SHIPPING
+    // A smoke client that joined from a raw URL brings the key on its command line instead.
+    FString KeyText;
+    if (Key.IsEmpty() && FParse::Value(FCommandLine::Get(), AdmissionKeySwitch, KeyText))
+    {
+        Key = DecodeConnectionKey(KeyText);
+    }
+#endif
+    if (Key.Num() != ConnectionKeyBytes)
+    {
+        UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=client event=encryption_failed reason=no_key"), AdmissionLogPrefix);
+        Respond.ExecuteIfBound(FEncryptionKeyResponse(EEncryptionResponse::NoKey, TEXT("no connection key")));
+        return;
+    }
+    FEncryptionKeyResponse Answer(EEncryptionResponse::Success, FString());
+    Answer.EncryptionData.Key = MoveTemp(Key);
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=encrypted"), AdmissionLogPrefix);
+    Respond.ExecuteIfBound(Answer);
 }
 
 void UMarburgumSessionSubsystem::AbandonAttempt()
 {
     PendingTicket.Reset();
+    PendingKey.Reset();
     UGameInstance* GameInstance = GetGameInstance();
     UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
     if (!World || !GEngine)
@@ -323,6 +385,7 @@ void UMarburgumSessionSubsystem::ObserveWorld(UWorld* World)
             // Recovery must rejoin as the same character the command-line URL named (or none).
             LastAddress = Pending->URL.GetHostPortString();
             CharacterKey = Pending->URL.GetOption(TEXT("MB2Character="), TEXT(""));
+            bExpectEncrypted = Pending->URL.HasOption(MarburgumII::Accounts::EncryptionTokenOption);
             AttemptStartedSeconds = Now;
             SetPhase(EPhase::Connecting);
         }
@@ -370,6 +433,16 @@ void UMarburgumSessionSubsystem::ObserveWorld(UWorld* World)
 
     if (IsAdmitted(World))
     {
+        // A server that took our ticket must have answered with encryption. One that carried on in the clear is not
+        // the world the ticket was for (an address taken over on the way): leave before anything else is sent.
+        const UNetConnection* Server = World->GetNetDriver() ? World->GetNetDriver()->ServerConnection.Get() : nullptr;
+        if (bExpectEncrypted && (!Server || !Server->IsEncryptionEnabled()))
+        {
+            UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=client event=refused_unencrypted_world"), MarburgumII::Accounts::AdmissionLogPrefix);
+            AbandonAttempt();
+            Fail(EFault::Refused, TEXT("This world did not secure the connection, so you were not let in. Check the server address."));
+            return;
+        }
         const AMarburgumGameState* GameState = World->GetGameState<AMarburgumGameState>();
         if (GameState->NetworkContractVersion != MarburgumII::Network::ContractVersion)
         {
@@ -439,7 +512,7 @@ void UMarburgumSessionSubsystem::HandleNetworkFailure(UWorld* World, UNetDriver*
     case EPhase::Connecting:
     case EPhase::Joining:
     case EPhase::LoadingWorld:
-        Fail(FaultForNetworkFailure(FailureType), ErrorString);
+        Fail(FaultForNetworkFailure(FailureType), DescribeRefusal(ErrorString));
         return;
 
     case EPhase::Starting:
@@ -478,7 +551,7 @@ void UMarburgumSessionSubsystem::HandleTravelFailure(UWorld* World, ETravelFailu
     else if (View.Phase == EPhase::Starting || View.Phase == EPhase::Connecting || View.Phase == EPhase::Joining
         || View.Phase == EPhase::LoadingWorld)
     {
-        Fail(EFault::TravelFailed, ErrorString);
+        Fail(EFault::TravelFailed, DescribeRefusal(ErrorString));
     }
 }
 

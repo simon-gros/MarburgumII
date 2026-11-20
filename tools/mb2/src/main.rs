@@ -15,6 +15,7 @@ mod store_check;
 mod survey_views;
 mod validate;
 mod wet_footsteps;
+mod wire;
 
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -52,7 +53,11 @@ Usage: mb2 <command>
                          Verdict and summary.json of scripts/street-multiplayer-smoke-linux.sh.
   fetch-art-reference [--output <dir>] [--force]
                          Download the auto_fetch=yes rows of the licensed art-reference manifest (HTTPS only,
-                         outside Git by default) and write their SHA-256 checksums (ADR-077).";
+                         outside Git by default) and write their SHA-256 checksums (ADR-077).
+  wire-relay <listen addr> <server addr> <record file>
+                         Forward one game client's UDP to the server and record every datagram (ADR-083).
+  wire-scan <record file> <text>...
+                         How many recorded datagrams from each side carry each text, at any bit offset.";
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -96,6 +101,8 @@ fn main() -> ExitCode {
             crowd_summary::run(out, sha, case_name, clock)
         }
         ["fetch-art-reference", rest @ ..] => history::fetch(rest),
+        ["wire-relay", listen, server, record] => wire::relay(listen, server, record),
+        ["wire-scan", record, needles @ ..] if !needles.is_empty() => wire::scan(record, needles),
         _ => {
             eprintln!("{USAGE}");
             2

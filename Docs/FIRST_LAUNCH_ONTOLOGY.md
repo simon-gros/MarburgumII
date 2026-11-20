@@ -5,6 +5,10 @@
 **Normative data:** [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json)  
 **Companions:** [Game ontology](ONTOLOGY.md), [UI/HUD ontology](UI_HUD_ONTOLOGY.md), [network architecture](NETWORK_ARCHITECTURE.md), [main roadmap](ROADMAP.md), [UI roadmap](UI_HUD_ROADMAP.md), [ADR-022](DECISIONS.md).
 
+**ADR-080/083 security update:** The development first-launch flow now requires named-server admission tickets and per-session AES-256-GCM encryption in account-required worlds. The clean `44106bc` Development package recorded signed-in relay/negative controls and 38 account-service tests. Previous QA defects AR1 (server ticket audience) and AR13 (secret ticket logging) were addressed by these implementations. Remaining security review includes Hello-ticket burning, packet-sequence/IV assumptions, reconnect/key lifetime and deployment. Shipping email service, full current-head UX and personal owner acceptance are still open. [Current review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md).
+
+
+
 ## 1. Product contract and first-encounter sequence
 
 A fresh player must **never appear in Marburgum's playable world before** completing account ownership verification, logging in with a username and password, and committing an actual character consisting of a **First name**, a **Last name**, and a **character model**. The design follows the original Marburgum's email-confirmed account pattern at the product level; the original implementation or protocol is not being transplanted.

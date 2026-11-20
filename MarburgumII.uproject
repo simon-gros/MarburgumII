@@ -15,6 +15,11 @@
       "LoadingPhase": "Default"
     },
     {
+      "Name": "MarburgumNetCrypto",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
       "Name": "MarburgumIIClient",
       "Type": "ClientOnly",
       "LoadingPhase": "Default"
@@ -31,6 +36,10 @@
     }
   ],
   "Plugins": [
+    {
+      "Name": "AESGCMHandlerComponent",
+      "Enabled": true
+    },
     {
       "Name": "PythonScriptPlugin",
       "Enabled": false

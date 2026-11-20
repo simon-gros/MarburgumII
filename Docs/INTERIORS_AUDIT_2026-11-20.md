@@ -2,7 +2,7 @@
 
 The ground floors and doors of ADR-076 ([INTERIORS.md](INTERIORS.md)), audited in the real level and in the running game. They had not been entered by anybody before this audit. Branch `qa/interiors-audit-2026-11-19`, Unreal Engine 5.8.3, Linux, RTX 5080.
 
-**Status: qualified in the editor build, not production-ready.** Five buildings are open and walked through in a server and client run of the editor build. After the UFS correction a packaged Client/Server compiled, but **no passing staged multi-client door smoke was recorded** and the owner has not playtested it.
+**Evening follow-up (20 November):** This file's initial *editor-only* audit remains historical. **Later** clean `a0d0b89` staged evidence records a multi-client **two-building door smoke PASS**, including a lagged vine museum, Hotel Lent rooms, rival/late join and streaming back in; see [P0 evidence](P0_PACKAGED_EVIDENCE_2026-11-20.md). Only **five** shells are physically opened out of **586** eligible floor-data candidates, **581** remain sealed and **346** exceptions persist. Furnishing, full building rollout and personal owner acceptance are still open.
 
 ## What was checked, and at which level
 

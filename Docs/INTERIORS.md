@@ -2,6 +2,10 @@
 
 Ground floors for the Lent shells (ADR-076). The façades stay the outside of the building. A player walks in through one cut in a street wall. The rooms are not a second copy of the mesh sent over the network: every machine builds them from the footprint and the measured floor. The audit of 20 November, its evidence and the backlog are in [INTERIORS_AUDIT_2026-11-20.md](INTERIORS_AUDIT_2026-11-20.md).
 
+**Evening status:** Of **586 deterministic floor-data candidates**, **only five** have actually opened/cut and walkable entrances, **581** eligible remain sealed and **346** are exceptions. The clean staged `a0d0b89` package exercised concurrent Hotel Lent and vine museum door traversal, rival actions, late joining, 120-ms lag/1%-loss and stream-out/back, **PASS**. It did not furnish all rooms, open all candidates, certify general city performance or replace an owner walkthrough. [Staged evidence](P0_PACKAGED_EVIDENCE_2026-11-20.md). [Research proposals](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) recommend furnishing the existing five interiors first.
+
+
+
 ## What is generated
 
 `MarburgumInteriorCore.h` is plain C++. The same plan is the same rooms on the server, on a client, in the façade mesher and in the tests.

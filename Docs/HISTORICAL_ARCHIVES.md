@@ -4,6 +4,8 @@
 
 The reboot inherits two complementary historical research collections from the original [Magna Raedarum: Marburgum](https://github.com/simon-gros/magna-raedarum-marburgum). Both are **reference data**, not game assets. Neither a listed photograph nor an orthophoto is implicitly owned, redistributable, georeferenced, dated precisely, or accepted as correct 1990s Maribor scenery.
 
+**Later validation, 20 November evening:** ADR-077 ports archival validation and authorized reference retrieval to Rust; both source and historical archive GitHub workflows completed **success** on `8a01818`. The [research proposals](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) identify Kamra's **Stari most 1980–1990** reference grouping as a potentially useful lead. It has **not** been downloaded or counted as a new accepted record merely by being linked. Verify date, perspective, source rights and period accuracy before importing any image or generating TRELLIS assets. [Current review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md).
+
 ## 1. Art Reference Archive: imported
 
 - [`art_reference/CATALOG.csv`](../art_reference/CATALOG.csv): **246 records**: the original 236 imported records preserved, with ten additional source-linked research records on 20 November 2026.

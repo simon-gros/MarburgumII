@@ -8,6 +8,8 @@
 
 **Engineering status note (20 November 2026):** The [current development review](DEVELOPMENT_REVIEW_2026-11-20.md) and [QA audit](QA_AUDIT_2026-11-19.md) describe which account, mission, AI and persistent-world terms have working implementations and which remain incomplete. This document is a semantic baseline only; an entity definition does not certify a shipped feature, a passing multi-client test or owner acceptance.
 
+**Implementation cross-reference (20 November evening):** The current [24-hour engineering review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md) records actual identity/security, server Photography/Chapter IV, interiors and UI/Settings, and explicitly separates editor tests, staged evidence and owner acceptance. The [research board](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) proposes additional daily resident routines, analog objects, media/archive work and noncombat skills but **does not modify this ontology or declare those entities operational**. Original game constraints and exclusions still govern revisions.
+
 ## 1. Purpose and identity
 
 This ontology defines what exists **in the game world**, what relationships can hold between those things, and what facts or events can change persistent state. It is a domain language for design documents, content catalogues, data contracts, save migrations, Unreal gameplay code, future deterministic Rust routines, C# validation tools, and UI. It is **not** an Unreal class diagram, an implementation roadmap, a database schema, or an import of legacy source code.

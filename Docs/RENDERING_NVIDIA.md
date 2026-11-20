@@ -4,6 +4,8 @@ Marburgum II can use DLSS Super Resolution and DLAA, DLSS Frame Generation and R
 
 For the **broader engine-native graphics modernization** (Lumen/A-B checks, physically based materials, water, environment, packaged benchmarks and the playable Lent showcase), see [GRAPHICS_ROADMAP.md](GRAPHICS_ROADMAP.md). Neural-rendering research is deliberately outside the critical path; proprietary or unofficial binary dependencies never gate an approved playable build.
 
+**Evening graphics direction (ADR-082):** [GFX-00](GFX00_BASELINE.md) now has an instrumented staged baseline with no enabled GI/RT, and the owner selected **hardware ray tracing for a future Lumen A/B**, not a shipped default. Vulkan SM6/RT requires a separate fully cooked experiment and fallback when unsupported. Proprietary NVIDIA enhancements, including optional DLSS/Reflex or any unofficial DLSS 5 experiments, remain gated and do not define the baseline renderer. See [graphics roadmap](GRAPHICS_ROADMAP.md) and [evening review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md).
+
 ## What the original did
 
 Unreal Marburgum (`magna-raedarum-marburgum`, `UnrealMarburgum/`) never ran DLSS in the game. Its uproject enables no NVIDIA plugin. What it had:

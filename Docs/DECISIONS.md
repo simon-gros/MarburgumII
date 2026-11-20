@@ -1205,6 +1205,36 @@ Closes QA 2026-11-19 **AR1** and mitigates **AR13** at Simon's request ("address
 
 **Not decided here.** Lumen quality levels per graphics preset (GFX-07), MegaLights, virtual shadow maps and Nanite (GFX-06), and whether hardware Lumen ships enabled by default.
 
+## ADR-083 — Game traffic is AES-256-GCM encrypted with a per-connection key from the account service (accepted 2026-11-20)
+
+Simon asked to encrypt the traffic. This also closes the server half of QA **AR13**, which ADR-080 had left open.
+
+- **Key distribution.** With every admission ticket, `POST /v1/admission` now returns a `key`: 32 random bytes in URL-safe base64. The service keeps it in memory with the ticket and returns it once more, in `/v1/server/redeem`, to the server whose key spends the ticket (ADR-080). The key never crosses the game connection.
+- **Handshake.** The ticket is the engine's encryption token. The client adds `EncryptionToken=<ticket>` to its pending connection only, after the engine has logged `Browse`. The token reaches the server in `NMT_Hello`, and the server redeems it there (`AMarburgumGameMode::HandleEncryptionToken`) and answers with the key. The engine then sends `NMT_EncryptionAck` and switches the connection to AES-256-GCM. The client's ack handler removes the token from its URL and switches with its own copy of the key. From the challenge onwards every packet in both directions is encrypted, including the login. Admission is now by connection (`Login` → `InitAccountPlayer`), not by a URL option.
+- **Required.** A server that requires accounts (`-MB2Accounts`, always in Shipping/Test) sets `net.AllowEncryption=2`. A hello without a token is closed (`admission_refused stage=hello reason=no_ticket`). A token the service refuses gets `InvalidToken`. A character already in the world gets `Failure`. A signed-in client that reaches a world which never switched to encryption drops the session ("This world did not secure the connection…"). Servers without `-MB2Accounts` remain unencrypted development servers, and every development-key smoke runs as before.
+- **Strict component.** UE 5.8.3's `FAESGCMHandlerComponent` treats any packet starting with a zero byte as plaintext and accepts it even after encryption is on. Anyone on the path could slip unauthenticated packets into an encrypted session. `MarburgumNetCrypto` (`FMarburgumStrictAESGCM`, config `[PacketHandlerComponents] EncryptionComponent=MarburgumNetCrypto`) drops such packets once the connection has its key. Plaintext sent before the switch is dropped too, and the reliable data in it is resent encrypted.
+- **What an observer sees.** The ticket, in the clear in the hello. Spending it requires the key, so a thief who replays it first only burns it: the server switches to a key the thief does not have, and nobody is admitted. The real player's join fails and they try again with a new ticket. This is a nuisance an on-path attacker can cause, not impersonation.
+- **Logs.** Neither the client nor the server logs the ticket or the key. The token is gone from the client's URL before `Login` and `LoadMap`, and the server's `Login request` no longer contains it. That closes AR13.
+- **Not covered.**
+  - Datagram metadata (sizes, timing, addresses) stays visible.
+  - The hello's ticket can be stolen and burned, as above.
+  - Replays of encrypted packets are rejected only by the engine's packet sequence handling; AES-GCM here does not check the IV counter.
+  - No smoke exercises a malicious server that ignores the ticket, which the client guard above refuses.
+  - Development servers are unencrypted.
+  - Keys are per connection, not rotated during a session.
+- **Evidence.**
+  - Service tests: 38 (key round trip, a key per ticket, no key in the store).
+  - `Marburgum.Net.StrictEncryption`: round trip, no plaintext on the wire, injected plaintext dropped once keyed but passed before, a tampered packet refused, another key refused.
+  - `mb2 wire-relay` / `wire-scan` (2 tests).
+  - The account smoke's new checks:
+    - a stolen ticket without its key is spent and admits nobody;
+    - the admitted client joins through the recording relay. Its 4,050 datagrams carry the ticket once, in the hello, which serves as the scan's own control, and no `/Game/World/lent`, `MarburgumGameMode`, character name or body;
+    - no ticket or key appears in any server or service log, and no encryption token in the rendered clients' logs.
+  - Unencrypted control: through the same relay, a development session showed the map path in 10 server datagrams, the game mode in 2, and the character key in the client's login.
+  - **Packaged:** Development Client and Server from `44106bc`, clean, fresh stamp, 2,322 packages cooked.
+    - Staged account smoke PASS (`Saved/AccountSmoke/20261120T164656Z`): every check above; the relay carried 4,124 datagrams with the ticket once in the hello and none of the four strings.
+    - The development-key smokes on the same pair, unencrypted through the same packet component: door, net, interaction, chat, mission, vehicle and combat all PASS.
+
 ## ADR-084 — Chapter VI *The Negative* and Frame 37: conditional stages, deductions, unique evidence and story furniture (implemented 2026-11-20; owner approval OPEN)
 
 **Context.** After ADR-081 the next canonical chapter, VI *The Negative*, was feasible: Nika and Photography existed and the Kiosk 67 outcome was recorded. But the canon asks for things the mission framework could not express: Albin Rojko's testimony takes a different route for each of five Kiosk 67 outcomes inside one chapter; Frame 37 is meant to be found by reasoning, not by walking up to a marker; the same unique piece of evidence can come from two missions; and the storyline insists on telling originals, prints, copies, testimony, information and inference apart. The places (Foto Vidmar, the Block 13 cage, the Melje date board) were grey cubes or did not exist.

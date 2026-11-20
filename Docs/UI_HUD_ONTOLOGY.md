@@ -9,6 +9,8 @@
 
 **Pre-world companion (10 November 2026):** [FIRST_LAUNCH_ONTOLOGY.md](FIRST_LAUNCH_ONTOLOGY.md) and [first_launch.v0.1.json](../Data/Ontology/first_launch.v0.1.json) formally specify login, email confirmation, character creation and world admission. These are full-screen identity surfaces distinct from the in-world HUD. Existing UI-02 connection states cannot claim account authentication; UI-02A adds that feature before any public player entry.
 
+**Current implementation context (20 November evening):** This is the canonical semantic contract, while [UI overhaul evidence](UI_OVERHAUL_EVIDENCE.md) verifies an actual UMG design system v2, **Settings**, English/Slovene interface and creator/focus changes in editor tests. Server-judged Photography and Chapter IV now add live presentation signals (ADR-081), and ADR-083 secures account-required world sessions. The [research board](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) proposes accessibility and photo-journal modules, **not yet approved semantics or runtime implementations**. [Evening review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md).
+
 ## 1. Fundamental conception
 
 The interface is a **semantic projection of the game world, player capabilities and current activity**, constrained by what the server has confirmed, what the character knows, what the user needs to decide next, and what the display can comfortably communicate. It is not a decorative overlay glued onto a standalone game. The HUD is one **low-interruption presentation mode** within a broader modular, accessible, persistent MMORPG interface.

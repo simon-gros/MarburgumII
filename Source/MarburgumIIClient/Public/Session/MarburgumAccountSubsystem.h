@@ -43,7 +43,8 @@ struct FMarburgumAccountView
 };
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumAccountChanged, const FMarburgumAccountView&);
-DECLARE_DELEGATE_TwoParams(FMarburgumTicketReady, const FString& /*Ticket*/, const FText& /*Error*/);
+/** Ticket and Key are empty on failure; Key is the connection's 32-byte AES-256-GCM key (ADR-083). */
+DECLARE_DELEGATE_ThreeParams(FMarburgumTicketReady, const FString& /*Ticket*/, const TArray<uint8>& /*Key*/, const FText& /*Error*/);
 
 /**
  * The client side of accounts (ADR-055): email confirmation, username and password, sign-in, the first character

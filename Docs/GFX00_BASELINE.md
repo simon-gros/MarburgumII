@@ -3,6 +3,8 @@
 **20 November 2026 · branch `feat/gfx-00-baseline` · [Graphics roadmap](GRAPHICS_ROADMAP.md) GFX-00 · [ADR-078](DECISIONS.md) (approval open).**
 **State: tooling implemented; packaged-and-measured on one high-end GPU, with the frame-time tails of five scenes contended by another session (see [Measurements](#measurements)). Not owner-approved. Nothing was enabled, disabled or retuned. No setting in this report is a tested recommendation.**
 
+**ADR-082 follow-up:** GFX-00 audit and staged benchmark evidence now exist, but recorded GPU contention limits the accuracy of some tails. **Hardware ray-traced Lumen has been selected as the next separately cooked experiment**, not enabled in the current graphics configuration. The Linux target needs Vulkan SM6/RT and a complete shader/cook qualification alongside a known non-RT fallback. Do not change global lighting settings or claim improved frame rate from this baseline alone. [Graphics plan](GRAPHICS_ROADMAP.md), [latest review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md).
+
 ## What was built
 
 | Piece | What it does |

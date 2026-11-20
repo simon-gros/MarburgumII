@@ -1,8 +1,11 @@
 # Graphics & rendering roadmap — Marburgum II
 
-**Planned 20 November 2026 · Unreal Engine 5.8.3 · status: proposed work, not implemented or owner-approved.**
+**Status (20 November 2026 evening, ADR-078/082):** GFX-00 **audit and packaged baseline tooling are implemented** ([GFX00_BASELINE.md](GFX00_BASELINE.md)); the captured renderer has no active GI/RT and some GPU frame tails were contended. The owner selected **hardware ray tracing** for a future Lumen A/B (ADR-082), **not an enabled default**. A separate Vulkan SM6/RT project/cook variant, non-RT fallback and uncontended VRAM/frame-time comparison are required. Remaining GFX-01–09 content/technology proposals are not automatically implemented or accepted.
 
 **Related plans:** [Main roadmap](ROADMAP.md) · [Visual-quality issue register](VISUAL_QUALITY_BACKLOG.md) · [NVIDIA renderer and DLSS 5 constraints](RENDERING_NVIDIA.md) · [UI/HUD roadmap](UI_HUD_ROADMAP.md) · [TRELLIS](ASSET_GENERATION_TRELLIS.md) · [Freshness policy](PLAYTEST_FRESHNESS.md).
+
+**New research links:** [Gameplay and production proposals](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) prioritize furnishings and indoor lighting in the five usable interiors, period-checked Lent details, accessibility and short live-city routines. Hardware Lumen and World Partition/HLOD remain **reversible, measured experiments**. Content completion and observed multiplayer performance take precedence over screenshot-only visual effects.
+
 
 ## Vision and boundaries
 
@@ -42,7 +45,7 @@ Current code already includes a dynamic sun/moon, skylight, sky atmosphere, heig
 
 ## Morning dependencies and evidence controls
 
-The 20 November expansion brought the [historical archive](HISTORICAL_ARCHIVES.md) to **246 art records, six unverified map/imagery leads and five research rules**. These remain metadata and rights-gated evidence, not approved historical scene materials. General source CI is failing following the Python tool import (ADR-077). ADR-076 provides five real cut ground-floor entrances with editor walking proof, but 581 eligible shells remain closed and no staged three-client door acceptance exists. Benchmark a **real** current-head cooked Client+Server scene containing one of those five interiors, NPCs, HUD and weather before global Lumen/Nanite/DLSS plugin changes. Do not batch rebuild all city facades during experimental rendering.
+The 20 November expansion brought the [historical archive](HISTORICAL_ARCHIVES.md) to **246 art records, six unverified map/imagery leads and five research rules**. These remain metadata and rights-gated evidence, not approved historical scene materials. The earlier morning source-CI failure after Python archive import was resolved by **ADR-077's Rust migration**; both source/archive CI passed at `8a01818`. ADR-076 provides five actual cut entrances (581 eligible shells remain sealed); subsequent **two-building staged multi-client door smoke PASS** is recorded in [P0 evidence](P0_PACKAGED_EVIDENCE_2026-11-20.md). Benchmark a **real** current-head cooked Client+Server scene containing one of those five interiors, NPCs, HUD and weather before global Lumen/Nanite/DLSS plugin changes. Do not batch rebuild all city facades during experimental rendering.
 
 ## Showcase reference route and work packages
 

@@ -4,6 +4,8 @@
 
 **Review method:** GitHub history/changed files, implementation and decision notes, current canonical documentation, [QA audit](QA_AUDIT_2026-11-19.md), [visual audit](VISUAL_QUALITY_BACKLOG.md) and recorded [AI test evidence](AI_GAMEPLAY.md). This is a **source-and-documentation review**, not an additional Unreal build or playtest.
 
+**Subsequent evidence update:** This overnight 01:36 UTC review predates ADR-079–083 and is retained as historical. The [evening 24-hour review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md) documents corrected **editor** opposite-bank density (28/28), later clean staged doors, story/Photography/localization, server-bound tickets and packaged AES-256-GCM, measured GFX-00 baseline, and restored source/archive CI. No newly packaged ADR-079 crowd matrix or personal owner approval is claimed.
+
 ## Overview
 
 The strongest changes are a broad quality-assurance correction series, the ADR-072 nine-window world inspection, and ADR-073–075 changes to server-owned street populations and bridge walk-graph loading. Evidence now includes an editor bridge traversal and genuinely packaged Linux multi-client crowds. **The latest staged daytime population matrix is not fully passing**, so this milestone is not owner-approved.
