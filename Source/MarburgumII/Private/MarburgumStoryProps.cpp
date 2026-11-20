@@ -107,6 +107,11 @@ namespace MarburgumStoryProps
                 Owner.AddInstanceComponent(Letters);
             }
 
+            /**
+             * A small practical light. Intensities are in candelas against this world's exposure, where the noon sun is
+             * about 8 lux: a lamp a few tens of centimetres above a surface gives it a few times sunlight at 1-2 cd.
+             * It casts shadows, so a lamp on a table does not light the ground through the top (GFX-03 playtest).
+             */
             void Lamp(const FVector& At, float Intensity, float Radius, const FLinearColor& Colour)
             {
                 if (!bDraws)
@@ -121,7 +126,8 @@ namespace MarburgumStoryProps
                 Light->SetIntensity(Intensity);
                 Light->SetAttenuationRadius(Radius);
                 Light->SetLightColor(Colour);
-                Light->SetCastShadows(false);
+                Light->SetSourceRadius(3.f);
+                Light->SetCastShadows(true);
                 Light->RegisterComponent();
                 Owner.AddInstanceComponent(Light);
             }
@@ -181,8 +187,8 @@ namespace MarburgumStoryProps
             Kit.Cylinder(FVector(8.0, 12.0, 90.0), 5.0, 6.0, DarkSteel);
             Kit.Cylinder(FVector(26.0, 54.0, 112.0), 3.0, 50.0, DarkSteel);
             Kit.Cylinder(FVector(14.0, 40.0, 136.0), 16.0, 9.0, DarkSteel, FRotator(-30.0, 0.0, 0.0));
-            // The glass glows: a small warm light just above it.
-            Kit.Lamp(FVector(0.0, 0.0, 96.0), 60.f, 160.f, FLinearColor(1.0f, 0.96f, 0.88f));
+            // The glass glows: a small warm light a hand's span above it, about four times sunlight on the opal.
+            Kit.Lamp(FVector(0.0, 0.0, 112.0), 2.f, 120.f, FLinearColor(1.0f, 0.96f, 0.88f));
             Kit.Text(FVector(-36.2, 0.0, 76.0), TEXT("FOTO VIDMAR"), 6.f, Paper);
         }
 
@@ -327,7 +333,8 @@ namespace MarburgumStoryProps
             Kit.Cylinder(FVector(16.0, -58.0, 80.0), 12.0, 4.0, DarkSteel);
             Kit.Cylinder(FVector(16.0, -58.0, 98.0), 2.0, 34.0, DarkSteel);
             Kit.Cylinder(FVector(8.0, -58.0, 116.0), 26.0, 10.0, FLinearColor(0.02f, 0.18f, 0.06f), FRotator(-20.0, 0.0, 0.0));
-            Kit.Lamp(FVector(0.0, -40.0, 100.0), 30.f, 140.f, FLinearColor(1.0f, 0.9f, 0.75f));
+            // The bulb under the green shade, about twice sunlight on the paper below it.
+            Kit.Lamp(FVector(8.0, -52.0, 110.0), 1.5f, 140.f, FLinearColor(1.0f, 0.9f, 0.75f));
             Kit.Text(FVector(-38.0, 0.0, 60.0), TEXT("MARIBORSKI GLAS · ARHIV"), 6.f, Paper);
         }
     }

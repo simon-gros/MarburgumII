@@ -51,6 +51,10 @@ Visually (A | B in the captures): sunlit plaster bounces warm light into shaded 
 - **Cook:** every shader is compiled for SM5 and SM6, with ray-tracing permutations, and every static mesh gets a distance field. The first cook on this branch took about 25 minutes of shader compile and **peaked at 23.5 GB of memory** (6 compile jobs, shader workers at 25 %). A package run inside the 16 GB exec bound was killed; it ran as a `systemd-run` unit with `MemoryMax=28G`. Every session that packages after this reaches `main` pays the first recompile and needs the same headroom.
 - **Package size:** cooked client content 0.69 → 1.5 GB (staged client 2.9 → 3.7 GB).
 
+## Owner playtest (21 November)
+
+Package `216dd07`, night (real clock) and then noon (`-MB2Clock`). Simon: impressed with the lighting, except the archive desk's lamp, which was too bright. Cause: the story props' two practical lights (Mariborski Glas archive desk, Foto Vidmar light table, ADR-083) were 30 and 60 cd, 23 cm and 9 cm above their surfaces, against a world whose noon sun is about 8 lux, and cast no shadow, so they lit the paving through the tabletops; Lumen's bounce made it worse. Now 1.5 and 2 cd, inside the shade and a hand's span above the glass, with shadows: [desk at noon](Captures/gfx03-2026-11-20/lamp-desk-noon-before-after.jpg), [light table at night](Captures/gfx03-2026-11-20/lamp-lighttable-night-before-after.jpg) (before | after, editor mode).
+
 ## Open
 
 - Owner look at A | B in the captures and a real playtest at night and indoors.
