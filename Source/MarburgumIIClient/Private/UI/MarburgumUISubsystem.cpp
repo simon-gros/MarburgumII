@@ -13,7 +13,9 @@
 #include "MarburgumClientUiHooks.h"
 #include "MarburgumCombatContract.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumMissionLogic.h"
 #include "MarburgumNetworkContract.h"
+#include "UI/MarburgumEvidenceText.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
 #include "Session/MarburgumAccountSubsystem.h"
@@ -999,12 +1001,17 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
     }
     if (bApplied && (Receipt.Effect == EMarburgumInteractionEffect::StageCompleted || Receipt.Effect == EMarburgumInteractionEffect::MissionCompleted))
     {
-        // The stage just done is the one before the new current stage, or the last one on completion.
+        // The stage just done is the one before the new current stage on this character's route (conditional stages for
+        // another outcome are not it, ADR-083), or the last one on completion.
         const FMissionStageDefinition* Done = nullptr;
         if (Mission)
         {
             const FMissionStageDefinition* Now = FindStage(*Mission, Receipt.MissionStage.ToString());
-            Done = Receipt.Effect == EMarburgumInteractionEffect::MissionCompleted ? Now : (Now && Now > Mission->Stages ? Now - 1 : nullptr);
+            const APlayerController* Owner = GameInstance ? GameInstance->GetFirstLocalPlayerController() : nullptr;
+            const TMap<FString, MarburgumII::Missions::FProgressView> Views =
+                MarburgumUI::ProgressViews(Owner ? Owner->GetPlayerState<AMarburgumPlayerState>() : nullptr);
+            Done = Receipt.Effect == EMarburgumInteractionEffect::MissionCompleted ? Now
+                : Now ? MarburgumII::Missions::PreviousStage(*Mission, *Now, [&Views](const FString& Id) { return Views.Find(Id); }) : nullptr;
         }
         const FMissionChoiceDefinition* Choice = Done && !Receipt.Choice.IsNone() ? FindChoice(*Done, Receipt.Choice.ToString()) : nullptr;
         const FString Told = MarburgumII::Gameplay::Localized(Choice ? Choice->CompletionText : Done ? Done->CompletionText : TEXT(""));
@@ -1069,11 +1076,31 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
     case EMarburgumInteractionReason::RequirementNotMet:
     {
         const FText Needed = RequiredItemsText(Receipt.MissionId, Receipt.MissionStage);
-        Message = Needed.IsEmpty()
-            ? FText::Format(LOCTEXT("Requirement", "{0} needs something you do not have yet. Nothing was changed."), SubjectName)
-            : FText::Format(LOCTEXT("RequirementItems", "{0} wants to see one {1} first. You have none, so nothing was changed."), SubjectName, Needed);
+        if (const FPhotoSubjectDefinition* Photo = Receipt.MissionId.IsNone() ? FindPhotoSubject(Receipt.InteractableId.ToString()) : nullptr)
+        {
+            // A document only there when you bring it (ADR-083): the contact sheet on the light table.
+            Message = FText::Format(LOCTEXT("PhotoNeedsItem", "Nothing to photograph yet: {1} is only there once you bring {0}. Nothing was changed."),
+                ItemName, FText::FromString(MarburgumII::Gameplay::Localized(Photo->DisplayName)));
+        }
+        else
+        {
+            Message = Needed.IsEmpty()
+                ? FText::Format(LOCTEXT("Requirement", "{0} needs something you do not have yet. Nothing was changed."), SubjectName)
+                : FText::Format(LOCTEXT("RequirementItems", "{0} wants to see one {1} first. You have none, so nothing was changed."), SubjectName, Needed);
+        }
         Tone = MarburgumUI::ETone::Info;
         break;
+    }
+    case EMarburgumInteractionReason::WrongConclusion:
+    {
+        // A deduction's wrong answer (ADR-083): the reply that sends the player back to look again; nothing changed.
+        const FMissionStageDefinition* At = Mission ? FindStage(*Mission, Receipt.MissionStage.ToString()) : nullptr;
+        const FMissionChoiceDefinition* Answer = At && !Receipt.Choice.IsNone() ? FindChoice(*At, Receipt.Choice.ToString()) : nullptr;
+        Feed->Push(Key, LOCTEXT("LookAgainKind", "LOOK AGAIN"),
+            Answer ? FText::FromString(MarburgumII::Gameplay::Localized(Answer->CompletionText))
+                   : LOCTEXT("WrongConclusion", "That does not hold up. Nothing was recorded; look again and press [E]."),
+            MarburgumUI::ETone::Info, false, EMarburgumGlyph::Info);
+        return;
     }
     case EMarburgumInteractionReason::NothingToDo:
         if (Subject && !Subject->Dialogue.IsEmpty())

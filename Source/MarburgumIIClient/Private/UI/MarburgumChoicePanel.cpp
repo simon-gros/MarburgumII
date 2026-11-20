@@ -111,7 +111,16 @@ void UMarburgumChoicePanel::Rebuild()
     }
     Stage = FName(Current->Id);
     MissionLabel->SetText(FText::FromString(MarburgumII::Gameplay::Localized(Definition->Name)));
-    ObjectiveLabel->SetText(FText::FromString(MarburgumII::Gameplay::Localized(Current->ObjectiveText)));
+    // A deduction (ADR-083): some answers are wrong. What each would earn is not shown, or it would give the answer away.
+    bool bDeduction = false;
+    for (int32 Index = 0; Index < Current->ChoiceCount; ++Index)
+    {
+        bDeduction |= !Current->Choices[Index].bCorrect;
+    }
+    ObjectiveLabel->SetText(bDeduction
+        ? FText::Format(LOCTEXT("Deduction", "{0}  A wrong conclusion records nothing; you can look again."),
+            FText::FromString(MarburgumII::Gameplay::Localized(Current->ObjectiveText)))
+        : FText::FromString(MarburgumII::Gameplay::Localized(Current->ObjectiveText)));
     for (int32 Index = 0; Index < Current->ChoiceCount; ++Index)
     {
         const FMissionChoiceDefinition& Choice = Current->Choices[Index];
@@ -128,14 +137,18 @@ void UMarburgumChoicePanel::Rebuild()
         // What each answer costs or earns, as chips that wrap: never a clipped line of dots.
         UWrapBox* Chips = WidgetTree->ConstructWidget<UWrapBox>();
         Chips->SetInnerSlotPadding(FVector2D(T.Space.XS, T.Space.XS));
-        if (Choice.MoneyDelta != 0)
+        if (bDeduction)
+        {
+            // Nothing to show: the reasoning is the point.
+        }
+        else if (Choice.MoneyDelta != 0)
         {
             Chips->AddChildToWrapBox(B.Chip(EMarburgumGlyph::Coin, Choice.MoneyDelta > 0
                 ? FText::Format(LOCTEXT("Gain", "+{0} money"), FText::AsNumber(Choice.MoneyDelta))
                 : FText::Format(LOCTEXT("Cost", "−{0} money"), FText::AsNumber(-Choice.MoneyDelta)),
                 Choice.MoneyDelta > 0 ? ETone::Success : ETone::Warning));
         }
-        for (int32 Award = 0; Award < Choice.SkillXpCount; ++Award)
+        for (int32 Award = 0; Award < (bDeduction ? 0 : Choice.SkillXpCount); ++Award)
         {
             const FSkillDefinition* Skill = FindSkill(Choice.SkillXp[Award].Skill);
             Chips->AddChildToWrapBox(B.Chip(EMarburgumGlyph::Skill, FText::Format(LOCTEXT("Xp", "{0} +{1} XP"),

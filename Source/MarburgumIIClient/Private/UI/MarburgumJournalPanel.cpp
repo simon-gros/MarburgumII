@@ -11,6 +11,8 @@
 #include "Components/VerticalBoxSlot.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumPlayerState.h"
+#include "MarburgumMissionLogic.h"
+#include "UI/MarburgumEvidenceText.h"
 #include "UI/MarburgumPinnedObjective.h"
 #include "UI/MarburgumUIBuilder.h"
 
@@ -321,17 +323,76 @@ void UMarburgumJournalPanel::ShowDossier(FName MissionId)
         FBuilder::Stack(Dossier, Objective, T.Space.XL);
     }
 
-    // Steps already taken; the ones ahead stay unrevealed, as they do in play.
+    // This character's route through the mission (ADR-083): stages for another outcome were never part of it.
+    const TMap<FString, MarburgumII::Missions::FProgressView> Views = MarburgumUI::ProgressViews(State);
+    const auto OnRoute = [&Views](const FMissionStageDefinition& Stage)
+    {
+        return MarburgumII::Missions::StageApplies(Stage, [&Views](const FString& Id) { return Views.Find(Id); });
+    };
+    // Questions the mission leaves open, and what has been established (ADR-083): unresolved first, then settled.
+    if (Mission && Mission->QuestionCount > 0)
+    {
+        TArray<const FMissionQuestion*> Open;
+        TArray<const FMissionQuestion*> Settled;
+        for (int32 Index = 0; Index < Mission->QuestionCount; ++Index)
+        {
+            const FMissionQuestion& Question = Mission->Questions[Index];
+            const int32 By = *Question.AnsweredBy ? StageIndex(*Mission, FName(Question.AnsweredBy)) : INDEX_NONE;
+            const bool bByStage = By != INDEX_NONE && (Progress->bCompleted || By < Current);
+            const bool bByItem = *Question.AnsweredByItem && State->GetInventory().ContainsByPredicate(
+                [&Question](const FMarburgumItemStack& Stack) { return Stack.ItemId == FName(Question.AnsweredByItem) && Stack.Quantity > 0; });
+            (bByStage || bByItem ? Settled : Open).Add(&Question);
+        }
+        if (!Open.IsEmpty())
+        {
+            FBuilder::Stack(Dossier, B.SectionTitle(LOCTEXT("OpenQuestions", "OPEN QUESTIONS"), T.Color.Accent), T.Space.S);
+            for (const FMissionQuestion* Question : Open)
+            {
+                FBuilder::Stack(Dossier, B.GlyphText(EMarburgumGlyph::Info, FText::FromString(MarburgumII::Gameplay::Localized(Question->Text)), ETypeRole::BodyStrong, Ink),
+                    T.Space.XS);
+            }
+            FBuilder::Stack(Dossier, B.Spacer(1.f, T.Space.M), 0.f);
+        }
+        if (!Settled.IsEmpty())
+        {
+            FBuilder::Stack(Dossier, B.SectionTitle(LOCTEXT("Established", "ESTABLISHED"), T.Color.TextSecondary), T.Space.S);
+            for (const FMissionQuestion* Question : Settled)
+            {
+                UHorizontalBox* Line = B.Row();
+                FBuilder::Inline(Line, B.Glyph(EMarburgumGlyph::Check, T.Color.Success, T.Icon.Small), T.Space.S, false, false);
+                UVerticalBox* Words = B.Column();
+                FBuilder::Stack(Words, Wrapped(B, FText::FromString(MarburgumII::Gameplay::Localized(Question->Text)), ETypeRole::Body, T.Color.TextSecondary), T.Space.XXS);
+                FBuilder::Stack(Words, Wrapped(B, FText::FromString(MarburgumII::Gameplay::Localized(Question->Answer)), ETypeRole::BodyStrong, Ink), 0.f);
+                FBuilder::Inline(Line, Words, 0.f, true);
+                FBuilder::Stack(Dossier, Line, T.Space.S);
+            }
+            FBuilder::Stack(Dossier, B.Spacer(1.f, T.Space.M), 0.f);
+        }
+    }
+
+    // Steps already taken and what each turned up; the ones ahead stay unrevealed, as they do in play.
     if (Mission && (Current > 0 || Progress->bCompleted))
     {
         FBuilder::Stack(Dossier, B.SectionTitle(LOCTEXT("Steps", "STEPS TAKEN"), T.Color.TextSecondary), T.Space.S);
         const int32 Done = Progress->bCompleted ? Mission->StageCount : Current;
         for (int32 Index = 0; Index < Done; ++Index)
         {
+            const FMissionStageDefinition& Taken = Mission->Stages[Index];
+            if (!OnRoute(Taken))
+            {
+                continue;
+            }
             UHorizontalBox* Step = B.Row();
             FBuilder::Inline(Step, B.Glyph(EMarburgumGlyph::Check, T.Color.Success, T.Icon.Small), T.Space.S, false, false);
-            FBuilder::Inline(Step, Wrapped(B, FText::FromString(MarburgumII::Gameplay::Localized(Mission->Stages[Index].ObjectiveText)), ETypeRole::Body, T.Color.TextSecondary), 0.f, true);
-            FBuilder::Stack(Dossier, Step, T.Space.XS);
+            UVerticalBox* Words = B.Column();
+            FBuilder::Stack(Words, Wrapped(B, FText::FromString(MarburgumII::Gameplay::Localized(Taken.ObjectiveText)), ETypeRole::Body, T.Color.TextSecondary), T.Space.XXS);
+            // A decision's words are under YOUR DECISION; a step's own finding is shown here.
+            if (Taken.Objective != EObjectiveType::Choice && *Taken.CompletionText && (Index < Mission->StageCount - 1 || !Progress->bCompleted))
+            {
+                FBuilder::Stack(Words, Wrapped(B, FText::FromString(MarburgumII::Gameplay::Localized(Taken.CompletionText)), ETypeRole::Caption, T.Color.TextMuted), 0.f);
+            }
+            FBuilder::Inline(Step, Words, 0.f, true);
+            FBuilder::Stack(Dossier, Step, T.Space.S);
         }
         if (!Progress->bCompleted)
         {
@@ -351,8 +412,14 @@ void UMarburgumJournalPanel::ShowDossier(FName MissionId)
             const FItemDefinition* Item = FindItem(Id);
             if (Stack && Item)
             {
-                Held.Add(Stack->Quantity > 1 ? FText::Format(LOCTEXT("HeldMany", "{0}  ×{1}"), FText::FromString(MarburgumII::Gameplay::Localized(Item->DisplayName)),
-                    FText::AsNumber(Stack->Quantity)) : FText::FromString(MarburgumII::Gameplay::Localized(Item->DisplayName)));
+                FText Line = Stack->Quantity > 1 ? FText::Format(LOCTEXT("HeldMany", "{0}  ×{1}"), FText::FromString(MarburgumII::Gameplay::Localized(Item->DisplayName)),
+                    FText::AsNumber(Stack->Quantity)) : FText::FromString(MarburgumII::Gameplay::Localized(Item->DisplayName));
+                // Original, print, copy, testimony, information or inference (ADR-083): never one mistaken for another.
+                if (Item->Evidence != EEvidenceClass::None)
+                {
+                    Line = FText::Format(LOCTEXT("HeldClass", "{0}  ·  {1}"), Caps(MarburgumUI::EvidenceClassName(Item->Evidence)), Line);
+                }
+                Held.Add(Line);
             }
         }
         if (!Held.IsEmpty())

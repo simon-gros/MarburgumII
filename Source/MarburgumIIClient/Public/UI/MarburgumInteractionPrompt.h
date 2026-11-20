@@ -48,7 +48,11 @@ private:
     void RefreshFishing(const AMarburgumInteractable& Spot, const AMarburgumPlayerState* State, bool bWaiting);
     void RefreshVehicle(const AMarburgumVehicle& Vehicle, FName Seat, bool bSeated, bool bWaiting);
     /** With a camera in custody and nothing else in reach: what [P] would photograph (ADR-081). False when nothing. */
-    bool RefreshPhoto(const AMarburgumPlayerController& Controller);
+    /**
+     * The [P] card for what the camera points at. With an interaction Target in reach it shows only for a document on that
+     * very prop which a mission step is asking to be photographed (ADR-083), so the counter's [E] does not hide it.
+     */
+    bool RefreshPhoto(const AMarburgumPlayerController& Controller, const AMarburgumInteractable* Target = nullptr);
     void Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone, bool bKeyActive,
         EMarburgumGlyph Icon);
     void ApplyTo(const AActor& Target, const FText& Subject, bool bFixture, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone,

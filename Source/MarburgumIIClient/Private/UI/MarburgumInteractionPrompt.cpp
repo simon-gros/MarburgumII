@@ -197,7 +197,7 @@ void UMarburgumInteractionPrompt::Refresh()
         }
     }
     AMarburgumInteractable* Target = bAdmitted ? Controller->FindInteractionCandidate() : nullptr;
-    if (!Target && bAdmitted && RefreshPhoto(*Controller))
+    if (bAdmitted && RefreshPhoto(*Controller, Target))
     {
         return;
     }
@@ -474,7 +474,7 @@ void UMarburgumInteractionPrompt::RefreshVehicle(const AMarburgumVehicle& Vehicl
     ApplyTo(Vehicle, Vehicle.GetDisplayName(), false, Verb, Detail, Tone, bKeyActive, EMarburgumGlyph::Car);
 }
 
-bool UMarburgumInteractionPrompt::RefreshPhoto(const AMarburgumPlayerController& Controller)
+bool UMarburgumInteractionPrompt::RefreshPhoto(const AMarburgumPlayerController& Controller, const AMarburgumInteractable* Target)
 {
     const AMarburgumPlayerState* State = Controller.GetPlayerState<AMarburgumPlayerState>();
     const APawn* Body = Controller.GetPawn();
@@ -489,7 +489,42 @@ bool UMarburgumInteractionPrompt::RefreshPhoto(const AMarburgumPlayerController&
     {
         return false;
     }
+    if (Target)
+    {
+        // Something to talk to or inspect is in reach: [E] wins, unless the camera is on a document lying on that very
+        // prop and a step of a mission under way asks for exactly this photograph (ADR-083).
+        bool bAsked = false;
+        for (const FMarburgumMissionState& Progress : State->GetMissions())
+        {
+            const MarburgumII::Gameplay::FMissionDefinition* Mission = Progress.bCompleted ? nullptr : MarburgumII::Gameplay::FindMission(Progress.MissionId.ToString());
+            const MarburgumII::Gameplay::FMissionStageDefinition* Stage = Mission ? MarburgumII::Gameplay::FindStage(*Mission, Progress.StageId.ToString()) : nullptr;
+            bAsked |= Stage && Stage->Objective == MarburgumII::Gameplay::EObjectiveType::Photograph && FCString::Strcmp(Stage->CompleteTarget, Frame.Subject->Id) == 0;
+        }
+        if (!bAsked || !*Frame.Subject->Anchor || Target->GetCatalogueId() != FName(Frame.Subject->Anchor))
+        {
+            return false;
+        }
+    }
     const bool bHeld = State->CountItem(FName(Frame.Subject->Item)) > 0;
+    // A document that is only there once you bring it (ADR-083): say what to bring instead of promising a photograph.
+    const bool bMissing = *Frame.Subject->RequiresItem && State->CountItem(FName(Frame.Subject->RequiresItem)) <= 0;
+    if (bMissing)
+    {
+        const MarburgumII::Gameplay::FItemDefinition* Needed = MarburgumII::Gameplay::FindItem(Frame.Subject->RequiresItem);
+        const FString Signature = FString::Printf(TEXT("photo|%s|missing"), Frame.Subject->Id);
+        ShownPoint = Frame.AimPoint;
+        Shown.Reset();
+        if (Signature != LastSignature)
+        {
+            LastSignature = Signature;
+            ApplyTo(*Body, FText::FromString(MarburgumII::Gameplay::Localized(Frame.Subject->DisplayName)), false, LOCTEXT("PhotographVerb", "Photograph"),
+                FText::Format(LOCTEXT("PhotoNeeds", "Bring {0} and lay it here first."),
+                    FText::FromString(MarburgumII::Gameplay::Localized(Needed ? Needed->DisplayName : Frame.Subject->RequiresItem))),
+                ETone::Warning, false, EMarburgumGlyph::Info);
+            KeyLabel->SetText(LOCTEXT("PhotoKey", "P"));
+        }
+        return true;
+    }
     const FString Signature = FString::Printf(TEXT("photo|%s|%d"), Frame.Subject->Id, bHeld ? 1 : 0);
     ShownPoint = Frame.AimPoint;
     Shown.Reset();

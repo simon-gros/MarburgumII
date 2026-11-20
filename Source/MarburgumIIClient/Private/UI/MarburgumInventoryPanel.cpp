@@ -14,6 +14,7 @@
 #include "MarburgumGameplayContract.h"
 #include "MarburgumPlayerState.h"
 #include "Session/MarburgumSessionSubsystem.h"
+#include "UI/MarburgumEvidenceText.h"
 #include "UI/MarburgumUIBuilder.h"
 
 #define LOCTEXT_NAMESPACE "MarburgumInventoryPanel"
@@ -355,6 +356,21 @@ void UMarburgumInventoryPanel::ShowDetail(FName ItemId)
     UTextBlock* Name = B.Text(Definition ? FText::FromString(MarburgumII::Gameplay::Localized(Definition->DisplayName)) : FText::FromName(ItemId), ETypeRole::Title);
     Name->SetAutoWrapText(true);
     FBuilder::Stack(DetailBox, Name, T.Space.M);
+    // What kind of evidence it is and what it says (ADR-083): an original, a print, a copy, testimony, information or an
+    // inference are never shown as the same thing.
+    if (Definition && Definition->Evidence != MarburgumII::Gameplay::EEvidenceClass::None)
+    {
+        FBuilder::Stack(DetailBox, B.Field(LOCTEXT("EvidenceClass", "Evidence"), MarburgumUI::EvidenceClassName(Definition->Evidence)), T.Space.XS);
+        UTextBlock* Meaning = B.Text(MarburgumUI::EvidenceClassMeaning(Definition->Evidence), ETypeRole::Caption, T.Color.TextMuted);
+        Meaning->SetAutoWrapText(true);
+        FBuilder::Stack(DetailBox, Meaning, T.Space.M);
+    }
+    if (Definition && *Definition->Description)
+    {
+        UTextBlock* Description = B.Text(FText::FromString(MarburgumII::Gameplay::Localized(Definition->Description)), ETypeRole::Quote, T.Color.TextSecondary);
+        Description->SetAutoWrapText(true);
+        FBuilder::Stack(DetailBox, Description, T.Space.L);
+    }
     FBuilder::Stack(DetailBox, B.Field(LOCTEXT("Carried", "Carried"), FText::AsNumber(Quantity)), T.Space.XS);
     FBuilder::Stack(DetailBox, B.Field(LOCTEXT("Custody", "Custody"), LOCTEXT("Confirmed", "Confirmed and saved by the server")), T.Space.L);
 
