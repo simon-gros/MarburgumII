@@ -1187,21 +1187,24 @@ Closes QA 2026-11-19 **AR1** and mitigates **AR13** at Simon's request ("address
 
 **Evidence.** See [STORY_EXPANSION.md](STORY_EXPANSION.md) §8 for the commands and revisions. Owner playtest: **not yet**.
 
-## ADR-082 — Lumen, when it comes, uses hardware ray tracing (owner decision 2026-11-20; not yet implemented)
+## ADR-082 — Lumen uses hardware ray tracing, with mesh distance fields as its software fallback (owner decision 2026-11-20; implemented and measured on `feat/gfx-03-lumen-rt`; not on `main`, owner review open)
 
 **Context.** GFX-00 ([GFX00_BASELINE.md](GFX00_BASELINE.md)) found the shipped renderer with no global illumination at all (`r.DynamicGlobalIlluminationMethod=0`, nothing baked) and showed that Lumen cannot be tried by a run-time switch: software Lumen needs mesh distance fields built (`r.GenerateMeshDistanceFields=0` today) and hardware Lumen needs ray tracing in the project (`r.RayTracing=0`). The report asked the owner to choose one before GFX-03.
 
-**Decision.** Simon chose **hardware ray tracing** for Lumen GI and reflections. Mesh distance fields stay off; software Lumen is not pursued.
+**Decision.** Simon chose **hardware ray tracing** for Lumen GI and reflections, and then (same day) **mesh distance fields as well**. Hardware tracing is the primary path; distance fields let Lumen trace in software on a GPU that cannot run `VULKAN_SM6` or has no Vulkan ray tracing, instead of dropping to no GI at all.
 
-**What it takes on Linux, from UE 5.8.3's own configuration** (checked, not yet done):
-- The game runs on `VULKAN_SM5`, which has `bSupportsRayTracing = false` (`Engine/Config/VulkanPC/DataDrivenPlatformInfo.ini`). `VULKAN_SM6` supports full ray tracing, and the engine configures it bindless "because bindless is necessary for Vulkan ray tracing" (`Engine/Config/Linux/BaseLinuxEngine.ini`). Linux targets only `SF_VULKAN_SM5` by default, so the project must add `+TargetedRHIs=SF_VULKAN_SM6` under `[/Script/LinuxTargetPlatform.LinuxTargetSettings]`.
-- `r.RayTracing=True` in `[/Script/Engine.RendererSettings]`; skinned characters additionally need the GPU skin cache to appear in ray-traced scenes. `r.Lumen.HardwareRayTracing` already reads 1.
+**What it takes on Linux, from UE 5.8.3's own configuration** (done in `Config/DefaultEngine.ini` on the GFX-03 branch):
+- The game runs on `VULKAN_SM5`, which has `bSupportsRayTracing = false` (`Engine/Config/VulkanPC/DataDrivenPlatformInfo.ini`). `VULKAN_SM6` supports full ray tracing, and the engine configures it bindless "because bindless is necessary for Vulkan ray tracing" (`Engine/Config/Linux/BaseLinuxEngine.ini`). Linux targets only `SF_VULKAN_SM5` by default, so the project adds `+TargetedRHIs=SF_VULKAN_SM6` and keeps SM5. `LinuxDynamicRHI.cpp` tries the targeted Vulkan platforms highest first and takes the first the GPU supports, so an SM6-capable GPU gets ray tracing and an older one gets SM5 with software Lumen; `-sm5` forces the fallback for testing.
+- `r.RayTracing=True`, `r.SkinCache.CompileShaders=True` (animated characters in the ray-traced scene), `r.GenerateMeshDistanceFields=True`, `r.Lumen.HardwareRayTracing=True` in `[/Script/Engine.RendererSettings]`. On the branch Lumen GI and reflections are also the default (`r.DynamicGlobalIlluminationMethod=1`, `r.ReflectionMethod=1`); `=0` and `=2` at run time are the GFX-00 renderer.
+- Distance fields cost cook time and memory for every static mesh (1,531 unique in Lent); their VRAM is measured with the rest.
 - Every shader recompiles and the game is cooked again; the shared DDC and every worktree that builds after the change pay that once.
 
 **Constraints kept from ADR-078 and the graphics roadmap.**
 - The switch is made on a GFX-03 branch and measured with `scripts/gfx-baseline-linux.sh staged` on the same eight scenes, uncontended, against the GFX-00 numbers (GPU p50/p95/p99, VRAM) before it reaches `main`.
 - A GPU or driver without Vulkan ray tracing keeps today's renderer (no Lumen, SSR, TSR) and must still start and play; that fallback is tested, not assumed. Windows/D3D12 follows the same decision when that lane is packaged (ADR-029).
 - No gameplay, collision, server or replication behaviour depends on it; the dedicated server is untouched.
+
+**Evidence (GFX-03, [GFX03_LUMEN.md](GFX03_LUMEN.md)).** Packaged and measured uncontended on the RTX 5080: hardware Lumen 3.6–4.7 ms GPU median per 1080p frame against 2.1–2.9 ms for GFX-00, 3.1 GB VRAM against 1.5 GB; distance-field Lumen on SM6 within 0.5 ms of it; a client forced to SM5 starts and renders distance-field Lumen at 3.5–4.5 ms. The first cook peaks at 23.5 GB of memory. Owner look and playtest: not yet.
 
 **Not decided here.** Lumen quality levels per graphics preset (GFX-07), MegaLights, virtual shadow maps and Nanite (GFX-06), and whether hardware Lumen ships enabled by default.
 
