@@ -1186,3 +1186,21 @@ Closes QA 2026-11-19 **AR1** and mitigates **AR13** at Simon's request ("address
 **Rejected.** Placing hands by eye-tuned numbers (the hands would drift off the rod in other clips); a client-side photograph check (would let a client grant itself XP); keeping the cylinders until bespoke character models exist (the template mannequin is already the street population's body and reads as a person).
 
 **Evidence.** See [STORY_EXPANSION.md](STORY_EXPANSION.md) §8 for the commands and revisions. Owner playtest: **not yet**.
+
+## ADR-082 — Lumen, when it comes, uses hardware ray tracing (owner decision 2026-11-20; not yet implemented)
+
+**Context.** GFX-00 ([GFX00_BASELINE.md](GFX00_BASELINE.md)) found the shipped renderer with no global illumination at all (`r.DynamicGlobalIlluminationMethod=0`, nothing baked) and showed that Lumen cannot be tried by a run-time switch: software Lumen needs mesh distance fields built (`r.GenerateMeshDistanceFields=0` today) and hardware Lumen needs ray tracing in the project (`r.RayTracing=0`). The report asked the owner to choose one before GFX-03.
+
+**Decision.** Simon chose **hardware ray tracing** for Lumen GI and reflections. Mesh distance fields stay off; software Lumen is not pursued.
+
+**What it takes on Linux, from UE 5.8.3's own configuration** (checked, not yet done):
+- The game runs on `VULKAN_SM5`, which has `bSupportsRayTracing = false` (`Engine/Config/VulkanPC/DataDrivenPlatformInfo.ini`). `VULKAN_SM6` supports full ray tracing, and the engine configures it bindless "because bindless is necessary for Vulkan ray tracing" (`Engine/Config/Linux/BaseLinuxEngine.ini`). Linux targets only `SF_VULKAN_SM5` by default, so the project must add `+TargetedRHIs=SF_VULKAN_SM6` under `[/Script/LinuxTargetPlatform.LinuxTargetSettings]`.
+- `r.RayTracing=True` in `[/Script/Engine.RendererSettings]`; skinned characters additionally need the GPU skin cache to appear in ray-traced scenes. `r.Lumen.HardwareRayTracing` already reads 1.
+- Every shader recompiles and the game is cooked again; the shared DDC and every worktree that builds after the change pay that once.
+
+**Constraints kept from ADR-078 and the graphics roadmap.**
+- The switch is made on a GFX-03 branch and measured with `scripts/gfx-baseline-linux.sh staged` on the same eight scenes, uncontended, against the GFX-00 numbers (GPU p50/p95/p99, VRAM) before it reaches `main`.
+- A GPU or driver without Vulkan ray tracing keeps today's renderer (no Lumen, SSR, TSR) and must still start and play; that fallback is tested, not assumed. Windows/D3D12 follows the same decision when that lane is packaged (ADR-029).
+- No gameplay, collision, server or replication behaviour depends on it; the dedicated server is untouched.
+
+**Not decided here.** Lumen quality levels per graphics preset (GFX-07), MegaLights, virtual shadow maps and Nanite (GFX-06), and whether hardware Lumen ships enabled by default.

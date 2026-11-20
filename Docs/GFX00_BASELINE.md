@@ -49,7 +49,7 @@ Also seen: the "Obreška pot" street-name lettering hangs tilted in mid-air acro
 ## Prerequisites before GFX-01–04 can be measured
 
 - A **free GPU** for the measuring run (another session's smoke at 92 % invalidated the editor numbers here) and the **packaged** client/server from one clean commit (the staged run below).
-- **Lumen A/B** needs a project decision first: mesh distance fields (`r.GenerateMeshDistanceFields=1`, cook and DDC cost, memory) or hardware ray tracing (`r.RayTracing=1`, Vulkan RT support on the Linux driver). Neither can be toggled at run time in the shipped configuration.
+- **Lumen uses hardware ray tracing** (owner decision, [ADR-082](DECISIONS.md)). It needs the Linux target moved to `SF_VULKAN_SM6` (the shipped `VULKAN_SM5` platform has no ray tracing in 5.8.3) and `r.RayTracing=True`, then a full shader recompile and cook. It cannot be toggled at run time in the shipped configuration.
 - **Virtual shadow maps** are only sensible with Nanite geometry; pilot them together with Nanite on the shells and paving (VQ-028), set in the generators.
 - **Exposure calibration** (extended luminance range) before any material roughness/albedo tuning, or GFX-02 will be tuned against the wrong exposure.
 - The **content passes** (vegetation, furniture, quay) are art-rights work (VA-01/05/08, ADR-071) and do not depend on renderer changes.
@@ -62,7 +62,7 @@ Every experiment is a command-line or ini override on the same packaged build an
 | --- | --- | --- | --- | --- |
 | GFX-03a | Volumetric fog on the existing height fog | weather presentation flag / `-ini:` override of the fog component default | dusk, night, rain night | remove the override |
 | GFX-03b | Extended luminance range + calibrated sun/sky | `-ini:Engine:[SystemSettings]:r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange=1` plus light values from one data table | all eight scenes | remove the override |
-| GFX-03c | Lumen GI + reflections | separate cook with distance fields (or RT), then `r.DynamicGlobalIlluminationMethod=1`, `r.ReflectionMethod=1` at run time | all eight scenes; GPU p95/p99, VRAM | `=0`/`=2` at run time; the cook is a branch |
+| GFX-03c | Hardware-ray-traced Lumen GI + reflections (ADR-082) | separate cook targeting `SF_VULKAN_SM6` with `r.RayTracing=True`, then `r.DynamicGlobalIlluminationMethod=1`, `r.ReflectionMethod=1` at run time | all eight scenes; GPU p95/p99, VRAM; a GPU without Vulkan RT falls back | `=0`/`=2` at run time; the cook is a branch |
 | GFX-02 | Material instances (paving, plaster, roof, glass) | asset branch | noon, rain noon, overcast | asset branch |
 | GFX-04 | Single Layer Water on the Drava | asset branch | river cameras, four times/weather | asset branch; swim/fish smokes unchanged |
 | GFX-01 | Vegetation, furniture, quay along the showcase route | asset branch | street, quay, roof cameras | asset branch; crowd/door smokes unchanged |
