@@ -4,6 +4,8 @@
 #include "Engine/StaticMesh.h"
 #include "Internationalization/Internationalization.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumStoryProps.h"
+#include "Materials/MaterialInterface.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -23,6 +25,15 @@ AMarburgumInteractable::AMarburgumInteractable()
     }
     Mesh->SetCollisionProfileName(TEXT("BlockAll"));
     Mesh->SetMobility(EComponentMobility::Static);
+
+    // Story furniture (ADR-083) is full size whatever the marker's scale.
+    PropRoot = CreateDefaultSubobject<USceneComponent>(TEXT("PropRoot"));
+    PropRoot->SetupAttachment(Mesh);
+    PropRoot->SetUsingAbsoluteScale(true);
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> Cylinder(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+    static ConstructorHelpers::FObjectFinder<UMaterialInterface> Plain(TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
+    PropCylinder = Cylinder.Object;
+    PropMaterial = Plain.Object;
 }
 
 void AMarburgumInteractable::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -67,11 +78,35 @@ void AMarburgumInteractable::ConfigureFromCatalogue()
     // An authored place is a marker the body walks through, not an obstacle on the promenade.
     Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     Mesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+    if (Entry->Prop != MarburgumII::Gameplay::EPropKind::None)
+    {
+        // The furniture is the place: the marker cube neither shows nor gets in the camera's way.
+        Mesh->SetVisibility(false);
+        Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
+    EnsureProp();
+}
+
+void AMarburgumInteractable::EnsureProp()
+{
+    const MarburgumII::Gameplay::FInteractableDefinition* Entry =
+        CatalogueId.IsNone() ? nullptr : MarburgumII::Gameplay::FindInteractable(CatalogueId.ToString());
+    if (bPropBuilt || !Entry || Entry->Prop == MarburgumII::Gameplay::EPropKind::None || !HasActorBegunPlay() || !PropRoot)
+    {
+        return;
+    }
+    bPropBuilt = true;
+    MarburgumStoryProps::FPrimitives Primitives;
+    Primitives.Cube = Mesh->GetStaticMesh();
+    Primitives.Cylinder = PropCylinder;
+    Primitives.Plain = PropMaterial;
+    MarburgumStoryProps::Build(*this, *PropRoot, Entry->Prop, Primitives);
 }
 
 void AMarburgumInteractable::BeginPlay()
 {
     Super::BeginPlay();
+    EnsureProp();
     // The interface language can change in Settings while playing: names, verbs and lines follow it (ADR-081).
     CultureHandle = FInternationalization::Get().OnCultureChanged().AddWeakLambda(this, [this]()
     {

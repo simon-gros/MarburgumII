@@ -5,6 +5,7 @@
 #include "MarburgumInteractable.generated.h"
 
 class UStaticMeshComponent;
+class UStaticMesh;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumInteractableChanged, class AMarburgumInteractable*);
 
@@ -109,6 +110,12 @@ protected:
     UPROPERTY(VisibleAnywhere, Category = "Marburgum|Interaction")
     TObjectPtr<UStaticMeshComponent> Mesh;
 
+    /**
+     * Where story furniture hangs (ADR-083): at the marker, in the place's facing, at full scale whatever the marker's.
+     */
+    UPROPERTY(VisibleAnywhere, Category = "Marburgum|Interaction")
+    TObjectPtr<USceneComponent> PropRoot;
+
 private:
     UPROPERTY(ReplicatedUsing = OnRep_RemainingStock)
     int32 RemainingStock = -1;
@@ -124,4 +131,14 @@ private:
 
     FName ShopId;
     FDelegateHandle CultureHandle;
+
+    /** Builds the catalogue's prop once the actor is in play (ADR-083); a marker with none keeps its plain look. */
+    void EnsureProp();
+    bool bPropBuilt = false;
+
+    UPROPERTY()
+    TObjectPtr<UStaticMesh> PropCylinder;
+
+    UPROPERTY()
+    TObjectPtr<class UMaterialInterface> PropMaterial;
 };
