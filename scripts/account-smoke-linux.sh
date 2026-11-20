@@ -312,9 +312,10 @@ for secret in drava-bridge-1990 pohorje-snow-1991 "$session" "${codes[@]}"; do
 done
 [[ "$leaks" -eq 0 ]] && echo "  none in the store or the logs" || status=1
 # AR13: the clients that signed in through the screens add the ticket after the engine logs the Browse address.
-browsed=$(grep -ac 'Browse: .*MB2Ticket=' "$out_dir"/client-first.log "$out_dir"/client-return.log | awk -F: '{ n += $NF } END { print n + 0 }')
+# (grep -c exits 1 on no match, which set -e must not take for a failure.)
+browsed=$(cat "$out_dir"/client-first.log "$out_dir"/client-return.log | { grep -ac 'Browse: .*MB2Ticket=' || true; })
 expect_eq "rendered clients logged no ticket in a Browse address" "$browsed" 0
-expect_eq "the service logged a redeem for another server" "$(grep -ac 'event=redeem_refused reason=other_server caller=melje ticket_server=lent-smoke' "$out_dir"/service-1.log)" 1
+expect_eq "the service logged a redeem for another server" "$({ grep -ac 'event=redeem_refused reason=other_server caller=melje ticket_server=lent-smoke' "$out_dir"/service-1.log || true; })" 1
 
 # Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
 if [[ "$mode" == staged ]]; then
