@@ -125,7 +125,11 @@ code_for() { # the code in the newest outbox message to $1
 tls_args=("-ini:Engine:[SSL]:OverrideCertificateBundlePath=$out_dir/ca.pem")
 accounts_args=("-MB2Accounts=$service_url" "${tls_args[@]}")
 common_args=(-log -unattended -nosound -nosplash -stdout -FullStdOutLogOutput)
-render_args=(-RenderOffScreen -windowed -ForceRes -ResX=1920 -ResY=1080)
+# MB2_ACCOUNT_RES=WxH and MB2_ACCOUNT_UI_SCALE=f render the screenshot clients at another size and interface scale
+# (QA U9: the account and creator screens at 150 % on 5:4).
+account_res="${MB2_ACCOUNT_RES:-1920x1080}"
+render_args=(-RenderOffScreen -windowed -ForceRes "-ResX=${account_res%x*}" "-ResY=${account_res#*x}")
+[[ -n "${MB2_ACCOUNT_UI_SCALE:-}" ]] && render_args+=("-MB2UIScale=$MB2_ACCOUNT_UI_SCALE")
 
 start_server() {
     local log="$1"

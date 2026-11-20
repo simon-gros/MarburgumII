@@ -37,6 +37,9 @@ public:
 
 protected:
     virtual void NativeOnInitialized() override;
+    /** Splits the width between the card and the creator's preview (QA U9): the card narrows to 340 before the
+     *  preview gives way, and a preview with too little room is not shown rather than drawn under the card. */
+    virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
     UFUNCTION() void HandleSignIn();
@@ -77,6 +80,11 @@ private:
 
     UPROPERTY(Transient) TArray<TObjectPtr<class UMarburgumModelCard>> ModelCards;
     UPROPERTY(Transient) TObjectPtr<class UMarburgumCharacterPreview> Preview;
+    UPROPERTY(Transient) TObjectPtr<class USizeBox> CardWidthBox;
+    UPROPERTY(Transient) TObjectPtr<UWidget> PreviewFrame;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> PreviewCaption;
+    bool bCreatorShown = false;
+    bool bPreviewFits = true;
     int32 ModelIndex = 0;
 
     EMarburgumAccountStep ShownStep = EMarburgumAccountStep::Disabled;

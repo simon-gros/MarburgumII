@@ -9,12 +9,15 @@
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
 #include "Components/SafeZone.h"
+#include "Components/ScrollBox.h"
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "Engine/GameInstance.h"
 #include "MarburgumAccountContract.h"
+#include "MarburgumNetworkContract.h"
+#include "MarburgumSessionContract.h"
 #include "UI/MarburgumCharacterPreview.h"
 #include "UI/MarburgumUIBuilder.h"
 
@@ -26,7 +29,6 @@ using EStep = EMarburgumAccountStep;
 namespace
 {
     constexpr float CardWidth = 560.f;
-    constexpr float PreviewWidthUnits = 620.f;
     constexpr int32 StepCount = static_cast<int32>(EStep::Ready) + 1;
 
     FText TitleFor(EStep Step)
@@ -90,40 +92,88 @@ void UMarburgumAccountScreen::NativeOnInitialized()
     MotifSlot->SetVerticalAlignment(VAlign_Top);
     MotifSlot->SetPadding(FMargin(0.f, T.Space.ScreenGutter * 0.8f - T.Space.L, T.Space.ScreenGutter, 0.f));
 
+    // One screen, two halves that never overlap (QA U9): the brand and the card on the left, scrolling when a high
+    // interface scale makes them taller than the window; on the character step, the body on its stage on the right.
     UVerticalBox* Content = B.Column();
     FBuilder::Stack(Content, BuildBrand(), T.Space.XXXL);
-    FBuilder::Stack(Content, B.Spacer(1.f, 1.f), 0.f, true);
     UWidget* Card = BuildCard();
-    FBuilder::Stack(Content, Card, T.Space.XXL);
+    FBuilder::Stack(Content, Card, T.Space.XL);
     if (UVerticalBoxSlot* CardSlot = Cast<UVerticalBoxSlot>(Card->Slot))
     {
         CardSlot->SetHorizontalAlignment(HAlign_Left);
     }
-    FBuilder::Stack(Content, B.Text(LOCTEXT("Footer",
-        "Development preview  ·  account service: email codes are written to the service's outbox folder until a mail sender is chosen"),
-        ETypeRole::Caption, T.Color.TextMuted), 0.f);
+    if (ShowsDiagnostics())
+    {
+        // Developer detail (QA U14): only with -MB2UIDiagnostics, never on a player's screen.
+        UTextBlock* Footer = B.Text(LOCTEXT("Footer",
+            "Development preview  ·  account service: email codes are written to the service's outbox folder until a mail sender is chosen"),
+            ETypeRole::Caption, T.Color.TextMuted);
+        Footer->SetAutoWrapText(true);
+        FBuilder::Stack(Content, Footer, 0.f);
+    }
+    UScrollBox* ContentScroll = B.Scroll(Content);
+    CardWidthBox = WidgetTree->ConstructWidget<USizeBox>();
+    CardWidthBox->SetWidthOverride(CardWidth);
+    CardWidthBox->SetContent(ContentScroll);
 
-    UBorder* Gutter = B.Surface(ESurfaceKind::Base, FMargin(T.Space.ScreenGutter, T.Space.ScreenGutter * 0.8f), Content, false);
+    UHorizontalBox* Split = B.Row();
+    FBuilder::Inline(Split, CardWidthBox, T.Space.XXL, false, false);
+
+    // The creator's body, in 3D (ADR-057), on a framed stage with what it is and how to turn it.
+    Preview = CreateWidget<UMarburgumCharacterPreview>(this, UMarburgumCharacterPreview::StaticClass());
+    UVerticalBox* Stage = B.Column();
+    FBuilder::Stack(Stage, Preview, T.Space.M, true);
+    UHorizontalBox* StageFoot = B.Row();
+    PreviewCaption = B.Text(FText::GetEmpty(), ETypeRole::Subheading, T.Color.TextPrimary);
+    FBuilder::Inline(StageFoot, PreviewCaption, T.Space.L, true);
+    FBuilder::Inline(StageFoot, B.Text(LOCTEXT("PreviewHint", "Drag to turn  ·  wheel to come closer"), ETypeRole::Caption, T.Color.TextSecondary), 0.f);
+    FBuilder::Stack(Stage, StageFoot, 0.f);
+    UBorder* Frame = B.Surface(ESurfaceKind::Sunken, Pad(T.Space.L), Stage, false);
+    Frame->SetBrush(RoundedBrush(T.Color.Sunken.CopyWithNewOpacity(0.6f), T.Radius.Large, T.Color.Hairline, T.BorderWidth));
+    PreviewFrame = Frame;
+    FBuilder::Inline(Split, Frame, 0.f, true, false);
+    PreviewFrame->SetVisibility(ESlateVisibility::Collapsed);
+
+    UBorder* Gutter = B.Surface(ESurfaceKind::Base, FMargin(T.Space.ScreenGutter, T.Space.ScreenGutter * 0.8f), Split, false);
     Gutter->SetBrushColor(FLinearColor::Transparent);
     USafeZone* Safe = WidgetTree->ConstructWidget<USafeZone>();
     Safe->SetContent(Gutter);
     UOverlaySlot* SafeSlot = Root->AddChildToOverlay(Safe);
     SafeSlot->SetHorizontalAlignment(HAlign_Fill);
     SafeSlot->SetVerticalAlignment(VAlign_Fill);
-
-    // The creator's body, in 3D, beside the card (ADR-057); shown only on the character step.
-    // Full height, from the top gutter to the bottom one, in the space the brand and the card leave free.
-    Preview = CreateWidget<UMarburgumCharacterPreview>(this, UMarburgumCharacterPreview::StaticClass());
-    USizeBox* PreviewWidth = WidgetTree->ConstructWidget<USizeBox>();
-    PreviewWidth->SetWidthOverride(PreviewWidthUnits);
-    PreviewWidth->SetContent(Preview);
-    UOverlaySlot* PreviewSlot = Root->AddChildToOverlay(PreviewWidth);
-    PreviewSlot->SetHorizontalAlignment(HAlign_Right);
-    PreviewSlot->SetVerticalAlignment(VAlign_Fill);
-    PreviewSlot->SetPadding(FMargin(0.f, T.Space.ScreenGutter * 0.8f, T.Space.ScreenGutter, T.Space.ScreenGutter * 0.8f));
-    Preview->SetVisibility(ESlateVisibility::Collapsed);
     ShowModel();
     SetIsFocusable(true);
+}
+
+void UMarburgumAccountScreen::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+    Super::NativeTick(MyGeometry, InDeltaTime);
+    if (!CardWidthBox || GetVisibility() == ESlateVisibility::Collapsed)
+    {
+        return;
+    }
+    const FTokens& T = Tokens();
+    const float Available = MyGeometry.GetLocalSize().X - 2.f * T.Space.ScreenGutter;
+    constexpr float MinCard = 340.f;
+    constexpr float MinPreview = 280.f;
+    // The card keeps its full width while the preview has room beside it, then narrows; below that the preview yields.
+    const float Card = bCreatorShown
+        ? FMath::Clamp(Available - MinPreview - T.Space.XXL, MinCard, CardWidth)
+        : FMath::Clamp(Available, MinCard, CardWidth);
+    if (!FMath::IsNearlyEqual(Card, CardWidthBox->GetWidthOverride(), 1.f))
+    {
+        CardWidthBox->SetWidthOverride(Card);
+    }
+    const bool bFits = Available - Card - T.Space.XXL >= MinPreview;
+    if (bFits != bPreviewFits)
+    {
+        bPreviewFits = bFits;
+        const bool bShowPreview = bCreatorShown && bPreviewFits;
+        PreviewFrame->SetVisibility(bShowPreview ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+        Preview->SetActive(bShowPreview);
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=creator_layout card=%.0f available=%.0f preview=%d"),
+            MarburgumII::Session::UiLogPrefix, Card, Available, bShowPreview ? 1 : 0);
+    }
 }
 
 UWidget* UMarburgumAccountScreen::BuildBrand()
@@ -243,8 +293,15 @@ UWidget* UMarburgumAccountScreen::BuildCard()
     }
     {
         UVerticalBox* Panel = MakePanel(EStep::Character);
-        Fields(EStep::Character).Add(AddField(Panel, LOCTEXT("FirstName", "FIRST NAME"), LOCTEXT("FirstNameHint", "e.g. Špela")));
-        Fields(EStep::Character).Add(AddField(Panel, LOCTEXT("LastName", "LAST NAME"), LOCTEXT("LastNameHint", "e.g. Novak")));
+        // First and last name side by side, the same width each.
+        UHorizontalBox* Names = B.Row();
+        UVerticalBox* FirstColumn = B.Column();
+        UVerticalBox* LastColumn = B.Column();
+        Fields(EStep::Character).Add(AddField(FirstColumn, LOCTEXT("FirstName", "FIRST NAME"), LOCTEXT("FirstNameHint", "e.g. Špela")));
+        Fields(EStep::Character).Add(AddField(LastColumn, LOCTEXT("LastName", "LAST NAME"), LOCTEXT("LastNameHint", "e.g. Novak")));
+        FBuilder::Inline(Names, FirstColumn, T.Space.M, true, false);
+        FBuilder::Inline(Names, LastColumn, 0.f, true, false);
+        FBuilder::Stack(Panel, Names, 0.f);
         FBuilder::Stack(Panel, B.Text(LOCTEXT("Body", "BODY"), ETypeRole::Overline), T.Space.XS);
         // One card per approved body (ADR-057); the preview beside the card shows the chosen one.
         UHorizontalBox* Chooser = B.Row();
@@ -274,10 +331,8 @@ UWidget* UMarburgumAccountScreen::BuildCard()
     FBuilder::Stack(Body, Message, 0.f);
 
     UBorder* Card = B.Surface(ESurfaceKind::Panel, Pad(T.Space.XL), Body);
-    USizeBox* Width = WidgetTree->ConstructWidget<USizeBox>();
-    Width->SetWidthOverride(CardWidth);
-    Width->SetContent(Card);
-    return Width;
+    Card->SetBrush(RoundedBrush(T.Color.Panel, T.Radius.Large, T.Color.Border, T.BorderWidth));
+    return Card;
 }
 
 void UMarburgumAccountScreen::ShowModel()
@@ -292,6 +347,10 @@ void UMarburgumAccountScreen::ShowModel()
     if (Preview)
     {
         Preview->ShowModel(ModelIndex);
+    }
+    if (PreviewCaption)
+    {
+        PreviewCaption->SetText(FText::FromString(CharacterModels[ModelIndex].NameEn));
     }
 }
 
@@ -345,11 +404,12 @@ void UMarburgumAccountScreen::ApplyView(const FMarburgumAccountView& View)
     Message->SetVisibility(View.Message.IsEmpty() ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
     if (Preview)
     {
-        const bool bCreator = View.Step == EStep::Character;
-        Preview->SetVisibility(bCreator ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
-        Preview->SetActive(bCreator);
+        bCreatorShown = View.Step == EStep::Character;
+        const bool bShowPreview = bCreatorShown && bPreviewFits;
+        PreviewFrame->SetVisibility(bShowPreview ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+        Preview->SetActive(bShowPreview);
         // The coordinates would show half-covered behind the preview.
-        Motif->SetVisibility(bCreator ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
+        Motif->SetVisibility(bCreatorShown ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
     }
 }
 
