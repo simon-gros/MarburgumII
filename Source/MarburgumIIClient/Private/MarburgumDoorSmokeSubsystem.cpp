@@ -591,7 +591,16 @@ bool UMarburgumDoorSmokeSubsystem::Tick(float DeltaTime)
             {
                 return true;
             }
-            Expect(Local->FindUseCandidate() == Street, TEXT("rival_street_door_not_the_use_candidate"));
+            const AActor* Candidate = Local->FindUseCandidate();
+            const AMarburgumDoor* CandidateDoor = Cast<AMarburgumDoor>(Candidate);
+            MB2_DOOR_SMOKE_LOG("event=use_candidate actor=%s door=%s street=%d body_yaw=%.0f view_yaw=%.0f at=%s",
+                Candidate ? *Candidate->GetName() : TEXT("none"),
+                CandidateDoor ? *CandidateDoor->GetPlaceName() : TEXT("-"),
+                CandidateDoor && CandidateDoor->IsStreetDoor() ? 1 : 0,
+                Body ? Body->GetActorRotation().Yaw : 0.f,
+                Local->GetControlRotation().Yaw,
+                Body ? *Body->GetActorLocation().ToString() : TEXT("-"));
+            Expect(Candidate == Street, TEXT("rival_street_door_not_the_use_candidate"));
             Local->RequestInteract();
             DoorRequestedSeconds = Now;
             MB2_DOOR_SMOKE_LOG("event=request door=street want=close states=%s", *DoorStates());
