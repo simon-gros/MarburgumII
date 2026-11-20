@@ -6,6 +6,8 @@
 
 This file is the single register for graphical, environmental and 3D-asset problems. Functional QA stays in the [QA audit](https://github.com/simon-gros/MarburgumII/blob/qa/fixes-2026-11-19/Docs/QA_AUDIT_2026-11-19.md) of the same day. Keep an entry's ID when its status changes; add new entries at the end of their group.
 
+**20 November status reconciliation:** The ADR-072 visual audit and its in-engine captures remain the reference list for missing/incorrect city art. ADR-073–075 have improved server-side *navigation and shared populations*, not resolved the open vegetation, street furniture, landmark, mission-prop, period-accuracy or current packaged GPU-budget work. The clean staged crowd matrix has a reproducible **opposite-bank timeout (11/28)**, so it cannot be presented as complete visual/world acceptance. [Current review](DEVELOPMENT_REVIEW_2026-11-20.md), [QA audit](QA_AUDIT_2026-11-19.md).
+
 ## What was inspected, and what was not
 
 | Inspected | How | Evidence |
