@@ -403,8 +403,13 @@ int32 UMarburgumInteriorAuditCommandlet::Main(const FString& Params)
         FString Json;
         const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Json);
         FJsonSerializer::Serialize(Root, Writer);
-        const FString Path = FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground/interior_floors.json"));
-        const bool bSaved = FFileHelper::SaveStringToFile(Json + TEXT("\n"), *Path, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+        // The source beside buildings.json, and the copies the packaged game reads (both files, so they match).
+        const FString Path = UMarburgumInteriorSubsystem::SourceFile(TEXT("interior_floors.json"));
+        bool bSaved = FFileHelper::SaveStringToFile(Json + TEXT("\n"), *Path, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+        for (const TCHAR* Name : { TEXT("interior_floors.json"), TEXT("buildings.json") })
+        {
+            bSaved &= IFileManager::Get().Copy(*UMarburgumInteriorSubsystem::RuntimeFile(Name), *UMarburgumInteriorSubsystem::SourceFile(Name)) == COPY_OK;
+        }
         UE_LOG(LogMarburgumInteriorAudit, Display, TEXT("MB2INTERIOR_AUDIT floors measured=%d refused=%d too_steep=%d confined=%d written=%d path=%s"), Measured, Refused, Stepped, Confined,
             bSaved ? 1 : 0, *Path);
         return bSaved ? 0 : 1;

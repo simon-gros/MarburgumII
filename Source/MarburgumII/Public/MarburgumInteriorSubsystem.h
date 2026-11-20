@@ -56,6 +56,14 @@ public:
     static constexpr float MaxStepCm = 40.f;
 
     /**
+     * The packaged game reads the footprints and measured floors from Content/Marburgum/Interiors, staged with the
+     * build. They are byte copies of Data/World/lent_ground/buildings.json and interior_floors.json; the audit's
+     * -WriteFloors writes both, and Marburgum.Gameplay.Interiors fails when they differ.
+     */
+    static FString RuntimeFile(const TCHAR* Name);
+    static FString SourceFile(const TCHAR* Name);
+
+    /**
      * buildings.json, prepared the way the façade commandlet sees it. Names are the buildings' own, or empty. With
      * bMeasured, each building takes its floor, street and any refusal from interior_floors.json (MarburgumInteriorAudit
      * -WriteFloors), measured against the level's ground.

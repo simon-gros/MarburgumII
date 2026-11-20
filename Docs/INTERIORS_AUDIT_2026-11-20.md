@@ -62,6 +62,8 @@ Before the fixes the 762 were not usable at all: the rooms sat on `buildings.jso
 | D6 | A leaf blocked people while it swung; nothing stopped a door closing on somebody | Collision on in every state, no obstruction check | Only a shut leaf blocks; the server refuses to shut, or stops shutting, while a pawn is in the swing | FIXED AND VERIFIED (smoke: `door_refused_blocked`, walker never moved) |
 | D7 | Walls, floors and ceilings rendered as the engine's grey checker in the game | `M_Building` lacked the instanced-static-mesh usage; a game cannot add it | The façade commandlet sets the usage on the master it instances; `M_Building` saved once | FIXED AND VERIFIED (smoke 1 log warned for three materials, smoke 2 none; captures before and after) |
 | D8 | The prompt named the building by its OpenStreetMap id | Id passed as the name | The building's own name, or none | FIXED, source only |
+| D9 | A packaged game had no interiors at all: the server logged `cannot read buildings.json` | The runtime read `Data/World/lent_ground`, which packaging does not stage | The runtime reads byte copies in `Content/Marburgum/Interiors`, staged as UFS; `-WriteFloors` writes both, and `Marburgum.Gameplay.Interiors` fails when they differ | FIXED; packaged verification below |
+| D10 | `main` (ADR-074) did not build its game targets, so nothing could be packaged | `MarburgumWalkGraph.cpp` calls the editor-only `AActor::GetFolderPath` | The folder test only in the editor; a packaged game recognises bridges by name and mesh path | FIXED (packaged client and server built). Whether a bridge actor that is recognised only by its outliner folder is missed in a packaged game is NEEDS VERIFICATION for the street-people owners |
 
 ## Doors and multiplayer, in the game
 

@@ -67,6 +67,16 @@ namespace MarburgumInteriorRuntime
     }
 }
 
+FString UMarburgumInteriorSubsystem::RuntimeFile(const TCHAR* Name)
+{
+    return FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Marburgum/Interiors"), Name);
+}
+
+FString UMarburgumInteriorSubsystem::SourceFile(const TCHAR* Name)
+{
+    return FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground"), Name);
+}
+
 bool UMarburgumInteriorSubsystem::ReadPlans(std::vector<MarburgumInteriors::FPlan>& OutPlans, TArray<FString>* OutNames, bool bMeasured)
 {
     TSharedPtr<FJsonObject> Floors;
@@ -74,7 +84,7 @@ bool UMarburgumInteriorSubsystem::ReadPlans(std::vector<MarburgumInteriors::FPla
     {
         FString FloorsText;
         TSharedPtr<FJsonObject> FloorsRoot;
-        const FString FloorsPath = FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground/interior_floors.json"));
+        const FString FloorsPath = RuntimeFile(TEXT("interior_floors.json"));
         if (FFileHelper::LoadFileToString(FloorsText, *FloorsPath) && FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(FloorsText), FloorsRoot)
             && FloorsRoot.IsValid())
         {
@@ -85,7 +95,7 @@ bool UMarburgumInteriorSubsystem::ReadPlans(std::vector<MarburgumInteriors::FPla
             }
         }
     }
-    const FString Path = FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground/buildings.json"));
+    const FString Path = RuntimeFile(TEXT("buildings.json"));
     FString Text;
     TSharedPtr<FJsonObject> Root;
     if (!FFileHelper::LoadFileToString(Text, *Path) || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) || !Root.IsValid())

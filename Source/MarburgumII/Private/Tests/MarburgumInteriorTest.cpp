@@ -289,7 +289,17 @@ bool FMarburgumInteriorTest::RunTest(const FString& Parameters)
     const MI::FLayout EllLayout = MI::Generate(Ell);
     TestTrue(TEXT("An L can be entered"), EllLayout.Status == MI::EStatus::Eligible && MI::RoomsConnected(EllLayout));
 
-    const FString Path = FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground/buildings.json"));
+    // The packaged game reads staged copies; a copy that lags behind its source would be a different city.
+    for (const TCHAR* Name : { TEXT("buildings.json"), TEXT("interior_floors.json") })
+    {
+        TArray<uint8> Source;
+        TArray<uint8> Runtime;
+        const bool bBoth = FFileHelper::LoadFileToArray(Source, *UMarburgumInteriorSubsystem::SourceFile(Name))
+            && FFileHelper::LoadFileToArray(Runtime, *UMarburgumInteriorSubsystem::RuntimeFile(Name));
+        TestTrue(FString::Printf(TEXT("Content/Marburgum/Interiors/%s is the same as Data/World/lent_ground/%s"), Name, Name), bBoth && Source == Runtime);
+    }
+
+    const FString Path = UMarburgumInteriorSubsystem::SourceFile(TEXT("buildings.json"));
     FString Text;
     TSharedPtr<FJsonObject> Root;
     if (!FFileHelper::LoadFileToString(Text, *Path) || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) || !Root.IsValid())
