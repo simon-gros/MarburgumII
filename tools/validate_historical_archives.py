@@ -20,7 +20,8 @@ INDEX = ROOT / "art_reference" / "media" / "reference-only" / "INDEX.md"
 def read_csv(path: Path, mandatory: set[str]) -> list[dict[str, str]]:
     with path.open(newline="", encoding="utf-8-sig") as file:
         reader = csv.DictReader(file)
-        if not reader.fieldnames or missing := mandatory - set(reader.fieldnames or []):
+        missing = mandatory - set(reader.fieldnames or [])
+        if missing:
             raise ValueError(f"{path}: missing required headers: {sorted(missing)}")
         rows = []
         for num, item in enumerate(reader, 2):
