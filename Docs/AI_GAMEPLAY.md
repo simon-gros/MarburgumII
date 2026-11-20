@@ -88,7 +88,9 @@ Day, port 27856, null RHI, 10:00, clear, places off. `Saved/StreetMulti/20261120
 | Three old-town players | Settled | Target 48, 48 alive, and the most alive at once was 48 |
 | One of those three leaves | Lifecycle | Target fell to 40. 39 were alive 12 s later. Still never over 48 |
 
-`-MB2NetRate`, null RHI, over the whole day run: server out 0–16.9 KB/s. With three clients and 46–48 people, server out was 15.2–15.8 KB/s and the busiest client 6.2–6.8 KB/s. A street step at the cap averaged 0.87 ms. District lookups were 5,820 of 5,834 from the hold, 0.69 ms in `NearestNode` altogether. No packaged build of `73b6ed6` yet.
+`-MB2NetRate`, null RHI, over the whole day run: server out 0–16.9 KB/s. With three clients and 46–48 people, server out was 15.2–15.8 KB/s and the busiest client 6.2–6.8 KB/s. A street step at the cap averaged 0.87 ms. District lookups were 5,820 of 5,834 from the hold, 0.69 ms in `NearestNode` altogether.
+
+The same scenes on a fresh Development package of `c967c46` (`dirty=0`, packaged 2026-11-20T01:31:07Z, server `4e188292c0a3345bf9167ac0f6baaf741a98e0d63d1dd3c79d6de38429fd1c51`, client `9d9782b9986501eec6c246d59d24420aba82ed7479ddbda886ec3a4aa3caced8`) agreed. Staged night, `Saved/StreetMulti/20261120T013134Z`, settled at 2. Staged day, `Saved/StreetMulti/20261120T013156Z`: solo, the two districts, the shared street, apart, back, and the reconnect settled. Three old-town players held 48, and after one left the target was 40 with 40 alive. The banks timed out again, 11 of 28 after 90 s, 3,364 of 4,242 tries with no pavement node and no collision reject. The script exited 1 for that timeout. Not an owner playtest.
 
 ## Next verified delivery
 
