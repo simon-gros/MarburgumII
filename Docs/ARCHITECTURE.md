@@ -2,6 +2,10 @@
 
 **Morning integration warning:** Source CI failed after the imported Python archive tooling contradicted accepted ADR-018. [ADR-077](DECISIONS.md) resolved this by porting the tooling to Rust `mb2`; both workflows now run on every revision. Only five ADR-076 shell doors have editor walks; a packaged build is not yet staged door acceptance. See [morning review](DEVELOPMENT_REVIEW_2026-11-20_MORNING.md).
 
+**Evening status, 20 November 2026:** UE 5.8.3 client/server boundaries remain binding. ADR-080 and ADR-083 implement server-bound one-use account tickets and per-session AES-256-GCM, with packaged smoke/wire evidence. ADR-081 implements Chapter IV, Photography and schema-6 persistent gameplay; ADR-076 generates data for 586 ground-floor candidates but has only **five** physically cut enterable shells, with staged multi-client proof for two. UI v2 includes functional Settings and English/Slovene text. No single-current-head complete game package or owner acceptance is claimed. [Latest review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md).
+
+
+
 ## Engine invariant
 
 **Unreal Engine 5.8.3 is required.** `.unreal-engine-version` pins the exact patch. The portable `EngineAssociation` in `MarburgumII.uproject` uses `5.8` because official engine associations may be major/minor identifiers; source-built engines can use machine-specific GUIDs. Neither proves patch level. Verify `Engine/Build/Build.version` before each Unreal build.

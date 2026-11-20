@@ -2,6 +2,10 @@
 
 **Status (20 November 2026):** The fail-closed build/asset guard, executable hashing and process-group cleanup are implemented. Separately, a **clean UE 5.8.3 Development package of `c967c46`** was created and used for real multi-client crowd tests; the staged night pair settled but daytime opposite-bank population failed (11/28). This does **not** demonstrate end-to-end qualification of the generic `mb2 playtest` example profile, the entire game or owner approval.
 
+**Latest integration note (20 November evening):** Clean Development packages exist for `a0d0b89` staged interior/older regression, `9b88369` staged English/Slovene story/Photography and `44106bc` staged signed-in encrypted account/packet controls. **They are separate proven versions, not one all-feature packaged PASS.** The ADR-079 crowd fix was editor-tested but needs a fresh staged run. The latest playtest seal must include account-service/crypto source, local UI ICU/fonts, schema-6 story, intermediate/cooked interiors and walk graph. Owner acceptance remains open. [24-hour review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md).
+
+
+
 ## Principle
 
 A test of an old executable or cooked map is not acceptance of current MarburgumII. Before each personal gameplay test, synchronize `main` with `origin/main`, reject dirty/untracked source changes, inventory/hashes all game asset roots (including locally licensed/ignored and separately supplied generated content), run required import commands, build client and server, fully cook/package a **new, isolated** archive, seal file hashes, verify the seal immediately before launching, and verify it again afterward.

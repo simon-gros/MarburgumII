@@ -4,6 +4,13 @@ Current AI evidence reconciled on 20 November 2026, through ADR-075 and the clea
 
 Statuses: **FIX NOW** (done in this pass where marked), **IMPROVE NOW**, **TO BE DONE**, **NEEDS VERIFICATION**, **REQUIRES APPROVAL**.
 
+### Latest correction and proposed AI progression (20 November evening)
+
+**ADR-079 resolved an opposing-bank fixture problem in the editor:** players in the test were facing *away* from eligible town pavement; after correcting their view direction the strict editor day matrix settled at **28/28** opposite-bank pedestrians, all ten scenes accepted, and nighttime at **2**. The older clean packaged **11/28** (`c967c46`) and **8/28** (`a0d0b89`) remain historical pre-fix failures. A **new packaged ADR-079 matrix is still required**. This is not evidence of new AI navigation or infinite spawn capacity.
+
+**ADR-081 added animated/named mission people and a visible fishing angler**, but not comprehensive NPC daily schedules. The [research board](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) proposes one contained named resident clock routine and one reserved café/bus-stop/bench interaction; [Unreal Smart Objects](https://dev.epicgames.com/documentation/en-us/unreal-engine/smart-objects-in-unreal-engine---overview) are a possible study, not the currently implemented architecture. Preserve existing server C++ walk graph, authored missions and authority until a separate approved migration.
+
+
 ## What is implemented
 
 | Subsystem | Where | Authority | What it does |

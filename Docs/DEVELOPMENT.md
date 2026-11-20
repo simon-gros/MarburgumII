@@ -1,6 +1,13 @@
 # Development environment
 
-**Current preflight (20 November):** [Source CI](https://github.com/simon-gros/MarburgumII/actions/runs/44680469847) failed at `mb2 validate all` while [historical archive CI](https://github.com/simon-gros/MarburgumII/actions/runs/44680469864) passed. The Python archival tools are now Rust `mb2` (`validate history`, `fetch-art-reference`; [ADR-077](DECISIONS.md)). Both workflows run on every revision and must pass on the same SHA. No packaged staged door smoke, post-merge UI matrix or owner acceptance is established. [Morning review](DEVELOPMENT_REVIEW_2026-11-20_MORNING.md).
+**Current preflight (20 November evening):** Both **Source validation** and **Validate historical research archives** GitHub workflows completed **success** at `8a01818` after ADR-077's Rust-only archive fixes; the [morning failure](DEVELOPMENT_REVIEW_2026-11-20_MORNING.md) is historical. Separate Development packages show signed-in encrypted account relay PASS (`44106bc`), staged two-building interiors PASS (`a0d0b89`) and localized Story/Photography staged evidence (`9b88369`). ADR-079 strict crowds pass in **editor** but need a matching clean staged rerun. No complete latest-head single-package or owner acceptance is claimed. [Evening review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md).
+
+## One-build verification requirement (20 November evening)
+
+Use the exact clean latest source SHA and account-service revision; seal **UE code + local UFS floors, physical cut-door content, zoned street graph, schema-6 gameplay/Photography, bilingual fonts/ICU, asset manifests and encrypted admission/packet handler**. Generate a matching UE 5.8.3 Linux Client and Server package. Repeat staged signed-in encrypted account/relay/negative cases; ADR-079 strict day/night 2–3-client crowd matrix; two-building interior door/lag/late-join/stream; Chapter IV/Photography in English and Slovene; and original mission, shop, combat, vehicle, chat, world, swim/condition and restart regression. Require build stamps, cooked hashes, logs and explicit owner decision. Older tests on different SHAs **must not be silently combined**.
+
+The [evening review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md) and [research candidate list](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) distinguish packaged implementation, source-only work and proposed additions. GFX-00 GPU frame-time analysis should run **without competing Unreal sessions** and preserve the baseline. No new runtime check was executed by this documentation update.
+
 
 ## Required toolchains
 

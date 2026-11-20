@@ -1,9 +1,12 @@
 # Story, NPC and progression expansion (ADR-081)
 
-**Status:** implemented on branch `feat/story-chapter-iv`; **awaiting the owner's in-game playtest and approval** (ADR-008). Nothing here is accepted release content. Test results are in [§8](#8-tests-and-evidence); what is not done is in [§9](#9-not-done-limits-and-blockers).
+**Status (20 November evening):** Chapter IV *Voices on Tape*, outcome-dependent Maja branch, Nika/Brane side stories, server-judged Photography and animated/fishing NPC presentation are implemented. `9e11f2c` ran **44/44** editor automation plus staged story/eight original mission/shop/combat/Lent/interaction smoke PASS; later `9b88369` staged runs recorded English/Slovene content and NPC evening post behavior. These are scoped packaged tests, **not owner approval or a single all-feature latest-head release**. The specialisations in §7 remain a proposal and may not revive generated talent trees. [Current review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md).
 **Sources:** original [`MAIN_STORYLINE.md`](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/MAIN_STORYLINE.md), [`NARRATIVE_BIBLE.md`](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/NARRATIVE_BIBLE.md), [`SIDE_STORY_BIBLE.md`](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/SIDE_STORY_BIBLE.md), [`SKILLING_ROADMAP.md`](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/SKILLING_ROADMAP.md) and `project/data/{missions,npcs,interactions,skills}.json`, compared with `Data/Gameplay/gameplay.v0.1.json`, the [parity register](LEGACY_PARITY.md) and the [roadmap](ROADMAP.md).
 
 This pass adds one main-story chapter, its branch, two side missions, Photography as a working skill, recognisable animated people in place of every geometric mission contact, and a visible fishing activity for the angler and the player. It is deliberately small: each piece works end to end on the server, persists and is tested, rather than a wider set of half-wired content.
+
+**Research follow-ups, not present features:** a player Photography album with permitted historical “then and now” references, a simple cassette/payphone interaction in the Chapter IV setting and a noncombat courier/repair task could extend the existing mission/skill loop. See the [proposal roadmap](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md). Each requires rights, server-authoritative persistence, content localization and personal owner review.
+
 
 ## 1. Migration matrix
 
