@@ -239,12 +239,18 @@ cargo test --manifest-path services/accounts/Cargo.toml
 cargo build --release --manifest-path services/accounts/Cargo.toml
 services/accounts/target/release/mb2-accounts --bind 127.0.0.1:7790 --store Saved/Accounts/accounts.json \
     --outbox Saved/Accounts/outbox --models Data/Accounts/character_models.v0.1.json \
-    --server-key-file <file with 32+ random characters> --tls-cert <cert.pem> --tls-key <key.pem>
+    --servers <servers.json> --tls-cert <cert.pem> --tls-key <key.pem>
 ```
 
-Start the dedicated server with `-MB2Accounts=https://127.0.0.1:7790 -MB2AccountsKeyFile=<the same key file>`, and the client with `-MB2Accounts=https://127.0.0.1:7790`. If the certificate is not signed by a public CA, add `-ini:Engine:[SSL]:OverrideCertificateBundlePath=<ca.pem>` to both. Emails, including confirmation codes, are files in the outbox folder until a mail sender is chosen. Without `-MB2Accounts`, a development server and client keep the ADR-014 key, and every other smoke runs as before. A shipping server always requires accounts.
+The servers file lists every game server the service issues admission tickets for, with the addresses players type to reach it and its own key file (32+ random characters, beside the servers file). Ids, keys and addresses must each be unique:
 
-`scripts/account-smoke-linux.sh editor` makes a throwaway CA and runs the service, a dedicated server and rendered clients through the first-time and returning flows (every body in the creator's 3D preview, turned and zoomed) and five refused admissions. Ports: `MB2_ACCOUNT_PORT` (game, default 27714) and `MB2_ACCOUNT_SERVICE_PORT` (service, default 27715). Evidence goes to `Saved/AccountSmoke/<UTC timestamp>/`, with screenshots of the screens. Evidence through ADR-059 is primarily **editor-mode**, including per-model rotate/zoom and close-up captures. The latest packaged FL-10 input/scale/Slovene and full owner FL-12 gates remain open. Keep outbox, CA secrets, passwords and tickets out of source control/captures. Engine join-URL logs currently include **spent one-time tickets** and need security-log review.
+```json
+{ "servers": [ { "id": "lent-dev", "addresses": ["127.0.0.1:7777", "localhost:7777"], "key_file": "lent-dev.key" } ] }
+```
+
+A client asks for a ticket for the address it is about to join (`POST /v1/admission {"server": "host:port"}`). An address not in the file gets none (`server_unknown`), and a ticket is spendable only with the key of the server it names (ADR-079, QA AR1). Start the dedicated server with `-MB2Accounts=https://127.0.0.1:7790 -MB2AccountsKeyFile=<its key file>`, and the client with `-MB2Accounts=https://127.0.0.1:7790`. If the certificate is not signed by a public CA, add `-ini:Engine:[SSL]:OverrideCertificateBundlePath=<ca.pem>` to both. Emails, including confirmation codes, are files in the outbox folder until a mail sender is chosen. Without `-MB2Accounts`, a development server and client keep the ADR-014 key, and every other smoke runs as before. A shipping server always requires accounts.
+
+`scripts/account-smoke-linux.sh editor` makes a throwaway CA and runs the service, a dedicated server and rendered clients through the first-time and returning flows (every body in the creator's 3D preview, turned and zoomed) and five refused admissions. Ports: `MB2_ACCOUNT_PORT` (game, default 27714) and `MB2_ACCOUNT_SERVICE_PORT` (service, default 27715). Evidence goes to `Saved/AccountSmoke/<UTC timestamp>/`, with screenshots of the screens. Evidence through ADR-059 is primarily **editor-mode**, including per-model rotate/zoom and close-up captures. The latest packaged FL-10 input/scale/Slovene and full owner FL-12 gates remain open. Keep outbox, CA secrets, passwords and tickets out of source control/captures. A signed-in client adds its ticket to the connection after the engine has logged the Browse address, so the client log shows a ticket only after the server has spent it. The server's engine log still prints the ticket in its `Login request` line while it redeems it, and only that server's key could spend it (ADR-079, QA AR13).
 
 ## Messaging validation (CHAT-001)
 

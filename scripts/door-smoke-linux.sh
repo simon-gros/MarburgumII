@@ -138,11 +138,23 @@ start_server "$out_dir/server-1.log" || exit 1
 
 # Building B first (headless, lagged): its route runs alongside A's.
 "${client_cmd[@]}" "$(url ba "$building_b")" "${common_args[@]}" "${headless_args[@]}" "${lag_args[@]}" -MB2DoorSmoke=walker \
-    -MB2DoorBuilding="$building_b" -MB2DoorTimeout=420 -MB2DoorHold=120 > "$out_dir/b-walker.log" 2>&1 &
+    -MB2DoorBuilding="$building_b" -MB2DoorTimeout=420 -MB2DoorHold=150 > "$out_dir/b-walker.log" 2>&1 &
 walker_b_pid=$!
 "${client_cmd[@]}" "$(url bb "$building_b")" "${common_args[@]}" "${headless_args[@]}" "${lag_args[@]}" -MB2DoorSmoke=rival \
     -MB2DoorBuilding="$building_b" -MB2DoorTimeout=300 > "$out_dir/b-rival.log" 2>&1 &
 rival_b_pid=$!
+# B's late joiner as soon as B's walker is done, while it still holds the building (it does not wait for A).
+(
+    left_b=$(wait_route "$out_dir/b-walker.log" "$walker_b_pid")
+    if [[ -z "$left_b" ]]; then
+        echo skipped > "$out_dir/b-observer-1.code"
+        exit 0
+    fi
+    "${client_cmd[@]}" "$(url bc "$building_b")" "${common_args[@]}" "${headless_args[@]}" "${lag_args[@]}" -MB2DoorSmoke=observer \
+        -MB2DoorBuilding="$building_b" -MB2DoorExpect="$left_b" -MB2DoorTimeout=180 > "$out_dir/b-observer-1.log" 2>&1
+    echo $? > "$out_dir/b-observer-1.code"
+) &
+observer_b_job=$!
 
 "${client_cmd[@]}" "$(url a)" "${common_args[@]}" "${render_args[@]}" -MB2DoorSmoke=walker -MB2DoorBuilding="$building" \
     -MB2DoorShot="$out_dir/walker" -MB2DoorTimeout=420 -MB2DoorHold=150 > "$out_dir/walker.log" 2>&1 &
@@ -169,11 +181,9 @@ else
 fi
 wait "$rival_b_pid"
 client_result "B rival" "$out_dir/b-rival.log" $?
-left_b=$(wait_route "$out_dir/b-walker.log" "$walker_b_pid")
-if [[ -n "$left_b" ]]; then
-    "${client_cmd[@]}" "$(url bc "$building_b")" "${common_args[@]}" "${headless_args[@]}" "${lag_args[@]}" -MB2DoorSmoke=observer \
-        -MB2DoorBuilding="$building_b" -MB2DoorExpect="$left_b" -MB2DoorTimeout=180 > "$out_dir/b-observer-1.log" 2>&1
-    client_result "B observer (late join, lagged)" "$out_dir/b-observer-1.log" $?
+wait "$observer_b_job"
+if [[ "$(cat "$out_dir/b-observer-1.code" 2>/dev/null)" =~ ^[0-9]+$ ]]; then
+    client_result "B observer (late join, lagged)" "$out_dir/b-observer-1.log" "$(cat "$out_dir/b-observer-1.code")"
 else
     echo "  B observer (late join): SKIPPED, B's walker did not finish its route"
     status=1

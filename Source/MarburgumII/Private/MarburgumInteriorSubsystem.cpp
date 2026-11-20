@@ -470,7 +470,9 @@ void UMarburgumInteriorSubsystem::UpdateNear()
             }
         }
     }
-    if (People.IsEmpty())
+    // With nobody in the world every built interior goes too: the last player to leave an otherwise empty server must
+    // not leave its doors standing open for the next arrival (door smoke, 20 November).
+    if (People.IsEmpty() && Data->Streamed.IsEmpty())
     {
         return;
     }
