@@ -568,7 +568,11 @@ bool UMarburgumDoorSmokeSubsystem::Tick(float DeltaTime)
     }
 
     // ---- rival ----
-    const FVector Beside = Route[0] + FVector::CrossProduct(Into, FVector::UpVector) * 70.0;
+    // Measured from the doorway, not the walk route: the vine museum's route starts far enough out that 70 cm
+    // aside from it left the rival at the edge of the 160 cm reach and no door was the use candidate.
+    // Outside the leaf's swing, a step to the side of the walker's line.
+    const FVector Beside = FVector(DoorCentre.X, DoorCentre.Y, FloorZ) - Into * 80.0
+        + FVector::CrossProduct(Into, FVector::UpVector) * 70.0;
     if (Step == EStep::AwaitOpen)
     {
         if (!MoveTo(Beside, Now))
@@ -593,13 +597,16 @@ bool UMarburgumDoorSmokeSubsystem::Tick(float DeltaTime)
             }
             const AActor* Candidate = Local->FindUseCandidate();
             const AMarburgumDoor* CandidateDoor = Cast<AMarburgumDoor>(Candidate);
-            MB2_DOOR_SMOKE_LOG("event=use_candidate actor=%s door=%s street=%d body_yaw=%.0f view_yaw=%.0f at=%s",
+            MB2_DOOR_SMOKE_LOG("event=use_candidate actor=%s door=%s street=%d body_yaw=%.0f view_yaw=%.0f at=%s street_dist_cm=%.0f street_dz_cm=%.0f reach_cm=%.0f",
                 Candidate ? *Candidate->GetName() : TEXT("none"),
                 CandidateDoor ? *CandidateDoor->GetPlaceName() : TEXT("-"),
                 CandidateDoor && CandidateDoor->IsStreetDoor() ? 1 : 0,
                 Body ? Body->GetActorRotation().Yaw : 0.f,
                 Local->GetControlRotation().Yaw,
-                Body ? *Body->GetActorLocation().ToString() : TEXT("-"));
+                Body ? *Body->GetActorLocation().ToString() : TEXT("-"),
+                Body ? FVector::Dist2D(Body->GetActorLocation(), DoorCentre) : -1.0,
+                Body ? Body->GetActorLocation().Z - DoorCentre.Z : 0.0,
+                Street->GetInteractionRange());
             Expect(Candidate == Street, TEXT("rival_street_door_not_the_use_candidate"));
             Local->RequestInteract();
             DoorRequestedSeconds = Now;
