@@ -224,5 +224,25 @@ private:
     int32 CrowdBudgetChanges = 0;
     int32 CrowdLastTarget = -1;
     int32 CrowdMaxPeople = 0;
+    bool bCrowdNight = false;
+    /** How long a placed scenario may wait before it is settled, constrained, or timed out. */
+    double CrowdSettleSeconds = 90.0;
+    double CrowdSampleAt = -1.0;
+    int32 CrowdStable = 0;
+    int32 CrowdHitStable = 0;
+    int32 CrowdLastPeople = -1;
+    int32 CrowdLastHits = 0;
+    int32 CrowdSpawnTries = 0;
+    int32 CrowdSpawnHits = 0;
+    int32 CrowdSpawnMisses = 0;
+    int32 CrowdRejectNode = 0;
+    int32 CrowdRejectComponent = 0;
+    int32 CrowdRejectBand = 0;
+    int32 CrowdRejectActivity = 0;
+    int32 CrowdRejectCollision = 0;
+    int32 CrowdDespawnHome = 0;
+    int32 CrowdDespawnCull = 0;
+    double CrowdStepMs = 0.0;
+    int32 CrowdStepN = 0;
     FVector WaterProbeStart = FVector::ZeroVector;
 };
