@@ -22,6 +22,22 @@ fn text(value: &Value) -> &str {
     value.as_str().unwrap_or("")
 }
 
+fn object_empty(value: &Value) -> bool {
+    value.as_object().map_or(true, |o| o.is_empty())
+}
+
+/// The outcomes a mission's choices record (a choice without one records its id); wrong answers record none.
+fn outcomes_of<'a>(missions: &'a [Value], mission: &str) -> Vec<&'a str> {
+    missions
+        .iter()
+        .filter(|m| text(&m["id"]) == mission)
+        .flat_map(|m| list(m, "stages"))
+        .flat_map(|s| list(s, "choices"))
+        .filter(|c| c["correct"] != false)
+        .map(|c| c["outcome"].as_str().unwrap_or(text(&c["id"])))
+        .collect()
+}
+
 /// Metres as the commandlet writes them (`-78.0`).
 fn metres(value: &Value) -> String {
     format!("{:.1}", value.as_f64().unwrap_or(f64::NAN))
@@ -107,6 +123,24 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
         problems.expect(
             item.get("provenance").is_some(),
             format!("item without provenance: {id}"),
+        );
+        // Evidence (ADR-083): a known class, and only things a mission hands over can be evidence.
+        if let Some(class) = item.get("evidence") {
+            problems.expect(
+                matches!(
+                    class.as_str(),
+                    Some("original" | "print" | "copy" | "testimony" | "note" | "inference")
+                ),
+                format!("item {id}: unknown evidence class {class}"),
+            );
+            problems.expect(
+                item["kind"] == "clue" || item["kind"] == "photo",
+                format!("item {id}: only clues and photographs are evidence"),
+            );
+        }
+        problems.expect(
+            item.get("unique").map_or(true, Value::is_boolean),
+            format!("item {id}: unique must be true or false"),
         );
     }
     let skills: Vec<&str> = list(&catalogue["skills"], "entries")
@@ -271,6 +305,32 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
                 .any(|i| i["id"] == item && i["kind"] == "photo"),
             format!("photo subject {id}: {item} is not a registered photograph"),
         );
+        // A document on a prop (ADR-083): the anchor is a placed place, the item in hand a registered one.
+        if let Some(anchor) = subject.get("anchor") {
+            problems.expect(
+                list(&catalogue, "interactables").iter().any(|e| {
+                    e["id"] == *anchor && e["kind"] != "npc" && matches!(e["placement"].as_str(), Some("original" | "pad"))
+                }),
+                format!("photo subject {id}: anchor {anchor} is not a placed place"),
+            );
+        }
+        if let Some(required) = subject.get("requires_item") {
+            problems.expect(
+                json_items.contains_key(text(required)),
+                format!("photo subject {id}: requires unregistered item {required}"),
+            );
+        }
+    }
+    for entry in list(&catalogue, "interactables") {
+        if let Some(prop) = entry.get("prop") {
+            problems.expect(
+                matches!(
+                    prop.as_str(),
+                    Some("order_book" | "light_table" | "storage_cage" | "date_board" | "truck" | "archive_desk")
+                ) && entry["kind"] != "npc",
+                format!("{}: unknown prop {prop}, or a prop on a person", text(&entry["id"])),
+            );
+        }
     }
     for entry in list(&catalogue, "interactables") {
         let id = text(&entry["id"]);
@@ -430,7 +490,50 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
                 choice == !list(stage, "choices").is_empty(),
                 format!("mission {id}: stage {stage_id}: choices and objective disagree"),
             );
+            // Conditional stages (ADR-083): never the first, gated only on a prerequisite's recorded outcomes, so the
+            // route is decided before the mission starts.
+            for gate in list(stage, "when") {
+                let gated = text(&gate["mission"]);
+                problems.expect(
+                    stages.first().map_or(true, |first| first["id"] != stage["id"]),
+                    format!("mission {id}: the first stage cannot be conditional"),
+                );
+                problems.expect(
+                    list(mission, "requires_completed").iter().any(|r| text(r) == gated),
+                    format!("mission {id}: stage {stage_id} is conditional on {gated}, which it does not require"),
+                );
+                let outcomes = outcomes_of(missions, gated);
+                problems.expect(
+                    !list(gate, "any_of").is_empty()
+                        && list(gate, "any_of").iter().all(|o| outcomes.contains(&text(o))),
+                    format!("mission {id}: stage {stage_id} names an outcome {gated} never records"),
+                );
+            }
+            // A deduction (ADR-083): at least one right answer; a wrong one changes nothing but says why.
+            if choice {
+                problems.expect(
+                    list(stage, "choices").iter().any(|c| c["correct"] != false),
+                    format!("mission {id}: stage {stage_id} has no right answer"),
+                );
+            }
             for option in list(stage, "choices") {
+                if option["correct"] == false {
+                    problems.expect(
+                        option["money_delta"].as_i64().unwrap_or(0) == 0
+                            && object_empty(&option["skill_xp"])
+                            && option.get("outcome").is_none()
+                            && object_empty(&option["set_flags"])
+                            && list(option, "grant_items").is_empty()
+                            && !text(&option["completion_text"]["en"]).is_empty(),
+                        format!("mission {id}: wrong answer {} must change nothing and say why", text(&option["id"])),
+                    );
+                }
+                for grant in list(option, "grant_items") {
+                    problems.expect(
+                        json_items.contains_key(text(&grant["id"])),
+                        format!("mission {id}: choice grants unregistered item {}", text(&grant["id"])),
+                    );
+                }
                 for skill in option["skill_xp"]
                     .as_object()
                     .map(|o| o.keys().cloned().collect::<Vec<_>>())
@@ -448,6 +551,40 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
                 || stages.iter().all(|s| s["final"] != true),
             format!("mission {id}: only the last stage may be final"),
         );
+        // Every outcome of a mission a stage is conditional on leads somewhere: for each recorded outcome, some
+        // conditional stage of that gate applies, so no route through the mission is silently empty (ADR-083).
+        let mut gated: Vec<&str> = stages
+            .iter()
+            .flat_map(|s| list(s, "when"))
+            .map(|g| text(&g["mission"]))
+            .collect();
+        gated.sort_unstable();
+        gated.dedup();
+        for gate_mission in gated {
+            for outcome in outcomes_of(missions, gate_mission) {
+                problems.expect(
+                    stages.iter().any(|s| {
+                        list(s, "when").iter().any(|g| {
+                            text(&g["mission"]) == gate_mission && list(g, "any_of").iter().any(|o| text(o) == outcome)
+                        })
+                    }),
+                    format!("mission {id}: no stage for {gate_mission} ending in {outcome}"),
+                );
+            }
+        }
+        let stage_ids: Vec<&str> = stages.iter().map(|s| text(&s["id"])).collect();
+        for question in list(mission, "questions") {
+            let by = text(&question["answered_by"]);
+            let by_item = text(&question["answered_by_item"]);
+            problems.expect(
+                (by.is_empty() || stage_ids.contains(&by)) && (by_item.is_empty() || json_items.contains_key(by_item)),
+                format!("mission {id}: question {} is answered by an unknown stage or item", text(&question["id"])),
+            );
+            problems.expect(
+                (by.is_empty() && by_item.is_empty()) == text(&question["answer"]["en"]).is_empty(),
+                format!("mission {id}: question {} needs an answer exactly when something answers it", text(&question["id"])),
+            );
+        }
         for start in list(mission, "start_items") {
             problems.expect(
                 json_items.contains_key(text(&start["id"])),

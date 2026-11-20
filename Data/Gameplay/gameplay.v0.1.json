@@ -156,6 +156,11 @@
         "source": "original Marburgum project/data/items.json",
         "source_version": 3,
         "note": "Identifier and English name carried forward; no legacy code or asset."
+      },
+      "evidence": "original",
+      "description": {
+        "en": "A black-and-white print of six people at the Melje yard gate, its right-hand strip torn away. The back carries the Foto Vidmar lab stamp.",
+        "sl": "Črno-bela fotografija šestih ljudi pri vratih dvorišča v Meljah, desni trak je odtrgan. Na hrbtni strani je žig laboratorija Foto Vidmar."
       }
     },
     {
@@ -170,6 +175,11 @@
         "source": "original Marburgum project/data/items.json",
         "source_version": 3,
         "note": "Identifier and English name carried forward; no legacy code or asset."
+      },
+      "evidence": "original",
+      "description": {
+        "en": "A city bus ticket for the Melje line, punched on 16 February 1990. It came out of the cashbox in the Drava.",
+        "sl": "Vozovnica za mestni avtobus na progi do Melja, preluknjana 16. februarja 1990. Bila je v blagajnici iz Drave."
       }
     },
     {
@@ -394,6 +404,11 @@
         "source": "original Marburgum project/data/items.json",
         "source_version": 3,
         "note": "Identifier and English name carried forward; no legacy code or asset."
+      },
+      "evidence": "print",
+      "description": {
+        "en": "Your photographs of the serial plates on the two abandoned Kainach trucks in the Melje yard. One cab still carries its fleet number, K 07.",
+        "sl": "Tvoje fotografije serijskih tablic na dveh zapuščenih tovornjakih Kainach na dvorišču v Meljah. Ena kabina ima še garažno številko K 07."
       }
     },
     {
@@ -743,6 +758,222 @@
       "provenance": {
         "source": "Marburgum II extension (ADR-081)",
         "note": "A print of a character's own photograph; nothing is imported."
+      }
+    },
+    {
+      "id": "photo_foto_vidmar_order_book",
+      "kind": "photo",
+      "name": {
+        "en": "Photograph — Foto Vidmar order book, February 1990",
+        "sl": "Fotografija — knjiga naročil Foto Vidmar, februar 1990"
+      },
+      "evidence": "copy",
+      "unique": true,
+      "description": {
+        "en": "A copy of one page of the lab's order book. Order 0217: 'Vogrin I., 36 posn., 20.2.1990', collected three days later. The book itself stays in the lab.",
+        "sl": "Kopija ene strani laboratorijske knjige naročil. Naročilo 0217: 'Vogrin I., 36 posn., 20. 2. 1990', prevzeto tri dni pozneje. Knjiga sama ostane v laboratoriju."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('The lab order book reads: Vogrin I., 36 posn., 20.2.1990')",
+        "note": "Chapter VI (ADR-083); the order number 0217 is new."
+      }
+    },
+    {
+      "id": "drago_wallet_print_account",
+      "kind": "clue",
+      "name": {
+        "en": "Drago's account of his wallet print",
+        "sl": "Dragovo pričevanje o fotografiji iz denarnice"
+      },
+      "evidence": "testimony",
+      "unique": true,
+      "description": {
+        "en": "Testimony, not a document. Drago keeps a small print of himself at twenty-five beside a new truck, the Foto Vidmar stamp and '36' on the back. He says Stefan from the correspondence office took it with Irena's camera. He keeps the print.",
+        "sl": "Pričevanje, ne listina. Drago hrani majhno fotografijo, na kateri je pri petindvajsetih ob novem tovornjaku, na hrbtni strani žig Foto Vidmar in '36'. Pravi, da jo je posnel Stefan iz pisarne za korespondenco z Ireninim fotoaparatom. Fotografijo obdrži."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI beat 2 ('Drago's old wallet photo: him at 25 beside a new truck') and §3 (Stefan Zupan took the photograph with Irena's camera)",
+        "note": "Chapter VI (ADR-083)."
+      }
+    },
+    {
+      "id": "zupan_contact_sheet",
+      "kind": "clue",
+      "name": {
+        "en": "Stefan Zupan's contact sheet, order 0217",
+        "sl": "Kontaktna kopija Stefana Zupana, naročilo 0217"
+      },
+      "evidence": "original",
+      "unique": true,
+      "description": {
+        "en": "A Foto Vidmar contact sheet from February 1990, 'naročilo 0217' pencilled in the margin: thirty-seven frames from a thirty-six-exposure roll. Ivana Zupan lent it to you; it belongs to her late husband's papers.",
+        "sl": "Kontaktna kopija Foto Vidmar iz februarja 1990, na robu s svinčnikom 'naročilo 0217': sedemintrideset posnetkov s filma za šestintrideset. Posodila ti jo je Ivana Zupan; spada med papirje njenega pokojnega moža."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('Proposed evidence: zupan_contact_sheet'; 'The contact sheet shows frames 34–37')",
+        "note": "Chapter VI (ADR-083)."
+      }
+    },
+    {
+      "id": "photo_zupan_contact_sheet",
+      "kind": "photo",
+      "name": {
+        "en": "Photograph — Zupan contact sheet on the light table",
+        "sl": "Fotografija — kontaktna kopija Zupanovih na svetlobni mizi"
+      },
+      "evidence": "copy",
+      "unique": true,
+      "description": {
+        "en": "Your own photograph of the contact sheet under even light: a copy, made so the original can go back into safe keeping.",
+        "sl": "Tvoja fotografija kontaktne kopije pri enakomerni svetlobi: kopija, narejena zato, da gre izvirnik lahko nazaj v varno hrambo."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('photograph the contact sheet under proper light ... document chain of custody (original, print, copy)')",
+        "note": "Chapter VI (ADR-083)."
+      }
+    },
+    {
+      "id": "frame_37_print",
+      "kind": "clue",
+      "name": {
+        "en": "Frame 37 — enlargement",
+        "sl": "Posnetek 37 — povečava"
+      },
+      "evidence": "print",
+      "unique": true,
+      "description": {
+        "en": "A print Nika pulled from a fogged end-of-roll scrap of negative her father kept: a cab-over truck with an oval 'A' plate and fleet number K 07 on the door, being unloaded under a yard date board chalked '16.2.'",
+        "sl": "Fotografija, ki jo je Nika izdelala z osvetljenega konca negativa, ki ga je hranil njen oče: tovornjak s kabino nad motorjem, z ovalno tablico 'A' in garažno številko K 07 na vratih, ki ga raztovarjajo pod tablo z datumom na dvorišču, s kredo napisano '16.2.'"
+      },
+      "provenance": {
+        "source": "original Marburgum docs/SIDE_STORY_BIBLE.md 3.23 and docs/MAIN_STORYLINE.md Chapter VI ('Proposed evidence: frame_37_print')",
+        "note": "Shared by Chapter VI and the Frame 37 side story; granted only by the side story (ADR-083). The scrap negative kept in the lab is new."
+      }
+    },
+    {
+      "id": "photo_melje_date_board",
+      "kind": "photo",
+      "name": {
+        "en": "Photograph — date board at the Melje yard",
+        "sl": "Fotografija — tabla z datumom na dvorišču v Meljah"
+      },
+      "evidence": "print",
+      "unique": true,
+      "description": {
+        "en": "Your photograph of the yard's dispatch date board from where Frame 37 was taken: the same two posts, the same bracket, the same loading bay behind.",
+        "sl": "Tvoja fotografija table z datumom odpreme na dvorišču, posneta s kraja, kjer je nastal posnetek 37: ista stebra, isti nosilec, ista nakladalna rampa zadaj."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('match the date board')",
+        "note": "ADR-083."
+      }
+    },
+    {
+      "id": "chronology_frame_37",
+      "kind": "clue",
+      "name": {
+        "en": "Chronology note: Kainach at Melje, 16 February 1990",
+        "sl": "Zapis o kronologiji: Kainach v Meljah, 16. februarja 1990"
+      },
+      "evidence": "inference",
+      "unique": true,
+      "description": {
+        "en": "Your and Vera's inference, not a document: truck K 07 was unloaded in the Melje yard on 16 February 1990, two months after the settlement's file says the Kainach arrangement closed without obligation. The print, the place and the serial photographs from the yard support it; none of them says why.",
+        "sl": "Sklep, tvoj in Verin, ne listina: tovornjak K 07 so v Meljah raztovorili 16. februarja 1990, dva meseca po tem, ko naj bi se po spisu poravnave dogovor s Kainachom decembra končal brez obveznosti. Podpirajo ga fotografija, kraj in fotografije serijskih tablic z dvorišča; nobena od njih ne pove, zakaj."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI beat 3 and §7 (16 Feb 1990)",
+        "note": "ADR-083."
+      }
+    },
+    {
+      "id": "torn_strip_print",
+      "kind": "clue",
+      "name": {
+        "en": "The missing strip — copy from the Glas archive",
+        "sl": "Manjkajoči trak — kopija iz arhiva Glasa"
+      },
+      "evidence": "copy",
+      "unique": true,
+      "description": {
+        "en": "A copy print of the strip torn from your photograph, made from the uncropped bromide the Glas photo desk filed in April 1990. Seven people at the gate, not six: a man in a foreign overcoat with a clipboard and, sharp at the edge, Albin Rojko.",
+        "sl": "Kopija traku, odtrganega z tvoje fotografije, narejena po neobrezani bromidni fotografiji, ki jo je fotoredakcija Glasa arhivirala aprila 1990. Pri vratih stoji sedem ljudi, ne šest: moški v tujem plašču z mapo in ob robu, ostro, Albin Rojko."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI beats 2 and 4 ('the Glas photo desk'; 'Proposed evidence: torn_strip_print')",
+        "note": "ADR-083."
+      }
+    },
+    {
+      "id": "machine_hall_council_stamp",
+      "kind": "clue",
+      "name": {
+        "en": "Machine-hall council stamp",
+        "sl": "Žig sveta strojne hale"
+      },
+      "evidence": "original",
+      "unique": true,
+      "description": {
+        "en": "A rubber stamp in a worn wooden handle: 'Delavski svet — strojna hala'. Albin sold it to a collector to cover his kiosk tab.",
+        "sl": "Gumijasti žig v obrabljenem lesenem ročaju: 'Delavski svet — strojna hala'. Albin ga je prodal zbiralcu, da je pokril dolg v kiosku."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('The object he sold was his old machine-hall council stamp. It must be bought back from a collector')",
+        "note": "ADR-083."
+      }
+    },
+    {
+      "id": "terrace_scarf",
+      "kind": "clue",
+      "name": {
+        "en": "Faded purple scarf",
+        "sl": "Zbledel vijoličen šal"
+      },
+      "evidence": "note",
+      "unique": true,
+      "description": {
+        "en": "Boris tied it round your wrist: the match-day circle's way of saying you were vouched for. It proves nothing to anyone outside it.",
+        "sl": "Boris ti ga je zavezal okrog zapestja: tako krog s tribune pove, da je nekdo jamčil zate. Nikomur zunaj tega kroga ne dokazuje ničesar."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/SIDE_STORY_BIBLE.md 3.25 Purple Saturday (the scarf, the match-day circle) and docs/MAIN_STORYLINE.md Chapter VI (left_alone)",
+        "note": "ADR-083. A token of the side story's circle; the match-day event itself is not built."
+      }
+    },
+    {
+      "id": "albin_testimony",
+      "kind": "clue",
+      "name": {
+        "en": "Albin Rojko's testimony",
+        "sl": "Pričevanje Albina Rojka"
+      },
+      "evidence": "testimony",
+      "unique": true,
+      "description": {
+        "en": "What Albin saw at the Melje gate on 16 February 1990: the trucks driven in at ten, the man from Kainach with his clipboard, and nobody asking for the council's stamp. He was the council's administrator and said nothing. He will repeat it to whoever asks properly.",
+        "sl": "Kaj je Albin videl pri vratih v Meljah 16. februarja 1990: tovornjake, ki so jih ob desetih pripeljali noter, moškega od Kainacha z mapo in to, da nihče ni vprašal za žig sveta. Bil je administrator sveta in ni rekel ničesar. Ponovil bo vsakomur, ki ga bo vprašal, kot se spodobi."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('Proposed evidence: albin_testimony')",
+        "note": "ADR-083."
+      }
+    },
+    {
+      "id": "contact_sheet_custody_receipt",
+      "kind": "clue",
+      "name": {
+        "en": "Custody receipt for the Zupan contact sheet",
+        "sl": "Potrdilo o hrambi kontaktne kopije Zupanovih"
+      },
+      "evidence": "original",
+      "unique": true,
+      "description": {
+        "en": "Nika's receipt, dated and stamped: the original contact sheet is in the Foto Vidmar safe in Ivana Zupan's name, received from you, untouched since it left the Block 13 storage cage.",
+        "sl": "Nikino potrdilo z datumom in žigom: izvirna kontaktna kopija je v sefu Foto Vidmar na ime Ivane Zupan, prejeta od tebe, nedotaknjena, odkar je zapustila kletno shrambo v Bloku 13."
+      },
+      "provenance": {
+        "source": "Marburgum II extension (ADR-083) of Chapter VI's 'document chain of custody (original, print, copy)'",
+        "note": "New."
       }
     }
   ],
@@ -1685,7 +1916,8 @@
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
         "source_version": 3
-      }
+      },
+      "prop": "archive_desk"
     },
     {
       "id": "maja_koren",
@@ -1938,12 +2170,12 @@
       },
       "verb": "talk",
       "godot_position_m": [
-        -50.2,
-        22.31,
-        958.8
+        74.0,
+        22.8,
+        1064.0
       ],
       "range_cm": 400,
-      "placement": "unplaced",
+      "placement": "pad",
       "dialogue": {
         "en": "The spare room is let to a student. He pays, mostly. The telephone is the argument. My husband kept old office letters in the storage cage, if that is what you actually came for.",
         "sl": "Sobo oddajam študentu. Plačuje, večinoma. Prepiramo se zaradi telefona. Moj mož je hranil stara pisarniška pisma v kleti, če si res prišel po to."
@@ -1962,7 +2194,8 @@
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
-        "source_version": 3
+        "source_version": 3,
+        "note": "Chapter VI (ADR-083): Block 13 is not built. Ivana stands on the temporary Tabor floor (ADR-052) beside her storage cage until the Tabor window exists; the canon's Block 13 lies about 170 m south-west of this spot."
       }
     },
     {
@@ -2327,7 +2560,8 @@
         "source": "original Marburgum project/data/interactions.json",
         "source_version": 3,
         "note": "Outside the nine-window map. Stood on a temporary pad until the Greenwich, Melje and Tabor windows are built (ADR-052)."
-      }
+      },
+      "prop": "truck"
     },
     {
       "id": "melje_vehicle_log_shelf",
@@ -2632,6 +2866,178 @@
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter IV ('a Tabor household')",
         "note": "The canon's unnamed Tabor household, named here (ADR-081). Tabor is not built yet: she stands on the temporary Tabor floor (ADR-052)."
+      }
+    },
+    {
+      "id": "foto_vidmar_order_book",
+      "kind": "location",
+      "display_name": {
+        "en": "Foto Vidmar order book",
+        "sl": "Knjiga naročil Foto Vidmar"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -18.9,
+        11.48,
+        -168.3
+      ],
+      "range_cm": 300,
+      "placement": "original",
+      "prop": "order_book",
+      "dialogue": {
+        "en": "Order books from 1978 to 1991, one a year, in Nika's father's square hand: number, customer, film, date in, date out.",
+        "sl": "Knjige naročil od 1978 do 1991, ena na leto, v oglati pisavi Nikinega očeta: številka, stranka, film, datum prevzema in izdaje."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('The lab order book reads ...')",
+        "note": "Chapter VI (ADR-083): the lab's counter set out beside Nika at her original spot; Foto Vidmar has no interior yet."
+      }
+    },
+    {
+      "id": "foto_vidmar_light_table",
+      "kind": "location",
+      "display_name": {
+        "en": "Foto Vidmar light table",
+        "sl": "Svetlobna miza Foto Vidmar"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        -18.9,
+        11.48,
+        -165.5
+      ],
+      "range_cm": 300,
+      "placement": "original",
+      "prop": "light_table",
+      "dialogue": {
+        "en": "An opal-glass light table and a loupe. Anything laid on it shows what the eye alone misses.",
+        "sl": "Svetlobna miza z opalnim steklom in lupa. Kar položiš nanjo, pokaže, kar samo oko spregleda."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('Photography integration: photograph the contact sheet under proper light') and docs/SIDE_STORY_BIBLE.md 3.23 ('With careful inspection')",
+        "note": "Chapter VI (ADR-083): beside Nika at her original spot; Foto Vidmar has no interior yet."
+      }
+    },
+    {
+      "id": "block_13_storage_cage",
+      "kind": "location",
+      "display_name": {
+        "en": "Block 13 storage cage (Zupan)",
+        "sl": "Kletna shramba v Bloku 13 (Zupan)"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        70.0,
+        22.8,
+        1068.0
+      ],
+      "range_cm": 350,
+      "placement": "pad",
+      "prop": "storage_cage",
+      "dialogue": {
+        "en": "A wire-mesh storage cage from a Block 13 cellar: winter tyres, jars, and three cardboard boxes marked 'Stefan — pisarna'.",
+        "sl": "Kletna shramba iz žične mreže v Bloku 13: zimske gume, kozarci in tri kartonske škatle z napisom 'Stefan — pisarna'."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('the Block 13 storage cage') and docs/SIDE_STORY_BIBLE.md 3.21",
+        "note": "Chapter VI (ADR-083). Provisional: stands on the temporary Tabor floor (ADR-052) beside Ivana Zupan until Tabor and its block cellars are built."
+      }
+    },
+    {
+      "id": "melje_date_board",
+      "kind": "location",
+      "display_name": {
+        "en": "Melje yard date board",
+        "sl": "Tabla z datumom na dvorišču v Meljah"
+      },
+      "verb": "inspect",
+      "godot_position_m": [
+        1418.0,
+        1.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "pad",
+      "prop": "date_board",
+      "dialogue": {
+        "en": "A dispatch board on two steel posts, 'RAEDA — ODPREMA — DATUM' in stencil, the slot for the day's card empty for years.",
+        "sl": "Tabla odpreme na dveh jeklenih stebrih, šablonsko 'RAEDA — ODPREMA — DATUM', reža za dnevno kartico že leta prazna."
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('under the yard's own date board reading 16.2.')",
+        "note": "Chapter VI (ADR-083). On the temporary Melje floor (ADR-052) between the Kainach trucks and the vehicle-log shelf."
+      }
+    },
+    {
+      "id": "stamp_collector",
+      "kind": "npc",
+      "display_name": {
+        "en": "Ernest Pavlič, collector",
+        "sl": "Ernest Pavlič, zbiralec"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -32.0,
+        2.1,
+        -67.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Stamps, badges, enamel signs. Everything a closed factory leaves behind ends up on this table sooner or later.",
+        "sl": "Žigi, značke, emajlirani napisi. Vse, kar ostane za zaprto tovarno, prej ali slej pristane na tej mizi."
+      },
+      "colors": {
+        "primary": [
+          0.34,
+          0.31,
+          0.26
+        ],
+        "secondary": [
+          0.16,
+          0.15,
+          0.14
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('It must be bought back from a collector (Trading)')",
+        "note": "The collector is unnamed in the canon; named here (ADR-083). Stands on Lent near the Glas archive desk."
+      }
+    },
+    {
+      "id": "viole_terrace_regular",
+      "kind": "npc",
+      "display_name": {
+        "en": "Boris, a terrace regular",
+        "sl": "Boris, stalni obiskovalec tribune"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -104.0,
+        2.1,
+        -61.5
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Purple since 1960, whatever the table says. Saturdays we sit together; the rest of the week we pretend we do not need to.",
+        "sl": "Vijoličen od leta 1960, kar koli kaže lestvica. Ob sobotah sedimo skupaj; preostanek tedna se delamo, da tega ne potrebujemo."
+      },
+      "colors": {
+        "primary": [
+          0.22,
+          0.2,
+          0.22
+        ],
+        "secondary": [
+          0.36,
+          0.2,
+          0.46
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum docs/SIDE_STORY_BIBLE.md 3.25 Purple Saturday ('an ordinary terrace regular'; 'one former Raeda employee is only reliably found among the same match-day group')",
+        "note": "New name (ADR-083). An ordinary supporter, not a gang member (3.25). Stands by the Kiosk 67 café; Ljudski vrt and the match-day event are not built."
       }
     }
   ],
@@ -5324,6 +5730,1129 @@
         "source": "original Marburgum docs/SIDE_STORY_BIBLE.md 3.10 'The Sign Painter — Old Letters' and MAIN_STORYLINE.md timeline (Aug 1990) and Chapter X typography row",
         "note": "Canonical side story; which signs Brane asks for is new (two heritage-register buildings and the Prehod sign at the Melje yard pad). The Chapter X deduction that uses the flag is not implemented yet."
       }
+    },
+    {
+      "id": "raeda_the_negative",
+      "name": {
+        "en": "The Negative",
+        "sl": "Negativ"
+      },
+      "category": "story",
+      "offer_target": "nika_vidmar",
+      "story_family": "The City in the Ledger",
+      "requires_completed": [
+        "raeda_city_for_sale",
+        "nika_then_and_now",
+        "kiosk_67_customer_stopped_coming"
+      ],
+      "summary": {
+        "en": "The torn photograph from the Drava cashbox came out of Foto Vidmar's enlarger in February 1990. Nika Vidmar can date the print but cannot find the negative. Other prints from the same roll survive across the city, and one frame on it should not exist at all.",
+        "sl": "Strgana fotografija iz blagajnice iz Drave je februarja 1990 prišla izpod povečevalnika Foto Vidmar. Nika Vidmar lahko fotografijo datira, negativa pa ne najde. Druge fotografije z istega filma so ohranjene po mestu, en posnetek na njem pa sploh ne bi smel obstajati."
+      },
+      "start_items": [],
+      "questions": [
+        {
+          "id": "who_took_it",
+          "text": {
+            "en": "Who took the gate photograph?",
+            "sl": "Kdo je posnel fotografijo pri vratih?"
+          },
+          "answer": {
+            "en": "Stefan Zupan, with Irena Vogrin's camera. Drago's account: testimony.",
+            "sl": "Stefan Zupan, z fotoaparatom Irene Vogrin. Dragovo pričevanje."
+          },
+          "answered_by": "ask_drago"
+        },
+        {
+          "id": "where_is_the_roll",
+          "text": {
+            "en": "Where is the rest of the roll?",
+            "sl": "Kje je preostanek filma?"
+          },
+          "answer": {
+            "en": "The negatives went back to the customer. Stefan's contact sheet survives: an original, now in the Foto Vidmar safe.",
+            "sl": "Negativi so šli nazaj k stranki. Ohranila se je Stefanova kontaktna kopija: izvirnik, zdaj v sefu Foto Vidmar."
+          },
+          "answered_by": "open_cage"
+        },
+        {
+          "id": "what_frame_37_shows",
+          "text": {
+            "en": "What does Frame 37 show, and when was it taken?",
+            "sl": "Kaj kaže posnetek 37 in kdaj je nastal?"
+          },
+          "answer": {
+            "en": "Kainach truck K 07 unloaded in the Melje yard under a date board reading 16.2. An inference from a print, a place and the serial photographs.",
+            "sl": "Tovornjak Kainach K 07, raztovorjen na dvorišču v Meljah pod tablo z datumom 16.2. Sklep iz fotografije, kraja in fotografij serijskih tablic."
+          },
+          "answered_by": "chronology"
+        },
+        {
+          "id": "who_is_on_the_strip",
+          "text": {
+            "en": "Who is on the torn-off strip?",
+            "sl": "Kdo je na odtrganem traku?"
+          },
+          "answer": {
+            "en": "A man from Kainach, not yet named, and Albin Rojko. A copy of the Glas print.",
+            "sl": "Moški od Kainacha, še brez imena, in Albin Rojko. Kopija fotografije Glasa."
+          },
+          "answered_by": "glas_full_frame"
+        },
+        {
+          "id": "will_albin_speak",
+          "text": {
+            "en": "Will Albin say what he saw?",
+            "sl": "Ali bo Albin povedal, kaj je videl?"
+          },
+          "answer": {
+            "en": "He has: testimony, in his own words.",
+            "sl": "Je: pričevanje, z njegovimi besedami."
+          },
+          "answered_by_item": "albin_testimony"
+        },
+        {
+          "id": "why_december",
+          "text": {
+            "en": "Why does the settlement's file say the Kainach arrangement ended in December 1989?",
+            "sl": "Zakaj spis poravnave pravi, da se je dogovor s Kainachom končal decembra 1989?"
+          },
+          "answer": {
+            "en": "",
+            "sl": ""
+          }
+        }
+      ],
+      "stages": [
+        {
+          "id": "date_the_print",
+          "objective_text": {
+            "en": "Show Nika Vidmar the torn photograph from the cashbox.",
+            "sl": "Niki Vidmar pokaži strgano fotografijo iz blagajnice."
+          },
+          "complete_target": "nika_vidmar",
+          "action": {
+            "en": "Show Nika the torn photograph",
+            "sl": "Pokaži Niki strgano fotografijo"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "required_items": [
+            {
+              "id": "torn_gate_photograph",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Nika turns it over before she looks at the picture. 'Our stamp, the 1989 one. Fotokemika paper, the batch with the cream base. February 1990, give or take a week.' She cannot find the negative: 'Strips go back to the customer in the envelope. My father kept the books, not the film.'",
+            "sl": "Nika jo obrne, preden pogleda sliko. 'Naš žig, tisti iz leta 1989. Papir Fotokemika, serija s kremasto podlago. Februar 1990, teden gor ali dol.' Negativa ne najde: 'Trakovi gredo v kuverti nazaj k stranki. Oče je hranil knjige, ne filmov.'"
+          }
+        },
+        {
+          "id": "read_order_book",
+          "objective_text": {
+            "en": "Look up February 1990 in the Foto Vidmar order book on the counter beside Nika.",
+            "sl": "V knjigi naročil Foto Vidmar na pultu ob Niki poišči februar 1990."
+          },
+          "complete_target": "foto_vidmar_order_book",
+          "action": {
+            "en": "Read the order book",
+            "sl": "Preberi knjigo naročil"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Order 0217, in her father's square hand: 'Vogrin I., 36 posn., 20.2.1990', collected on the 23rd. One roll of thirty-six, developed and contact-printed. The name is a fact on a page; why that roll was taken is not.",
+            "sl": "Naročilo 0217, v očetovi oglati pisavi: 'Vogrin I., 36 posn., 20. 2. 1990', prevzeto 23. Film s šestintridesetimi posnetki, razvit in kontaktno kopiran. Ime je dejstvo na strani; zakaj je nastal ta film, ni."
+          }
+        },
+        {
+          "id": "copy_order_book",
+          "objective_text": {
+            "en": "The book stays in the lab. Photograph the open page so you carry a copy: stand at the counter, frame the book and press [P].",
+            "sl": "Knjiga ostane v laboratoriju. Fotografiraj odprto stran, da boš imel kopijo: stopi k pultu, ujemi knjigo v kader in pritisni [P]."
+          },
+          "complete_target": "foto_vidmar_order_book_page",
+          "action": {
+            "en": "Photograph the page",
+            "sl": "Fotografiraj stran"
+          },
+          "objective": {
+            "type": "photograph"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "A copy of the entry, sharp enough to read. Nika pencils her initials and today's date in the margin of the book: whoever reads it next will know someone looked.",
+            "sl": "Kopija vpisa, dovolj ostra za branje. Nika na rob knjige s svinčnikom zapiše svoje začetnice in današnji datum: kdor jo bo bral naslednji, bo vedel, da je nekdo gledal."
+          }
+        },
+        {
+          "id": "ask_drago",
+          "objective_text": {
+            "en": "Drago Potočnik drove for Raeda in 1990. Ask him whether anyone else kept prints from that February.",
+            "sl": "Drago Potočnik je leta 1990 vozil za Raedo. Vprašaj ga, ali je še kdo hranil fotografije iz tistega februarja."
+          },
+          "complete_target": "drago_potocnik",
+          "action": {
+            "en": "Ask about the prints",
+            "sl": "Vprašaj o fotografijah"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "grant_items": [
+            {
+              "id": "drago_wallet_print_account",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Drago takes a small print from his wallet: himself at twenty-five beside a new cab-over truck, the Foto Vidmar stamp and '36' on the back. 'Stefan from correspondence took it. Irena brought her camera that day and he ran about with it. Stefan kept everything. Ask his widow, in Block 13.'",
+            "sl": "Drago iz denarnice potegne majhno fotografijo: on pri petindvajsetih ob novem tovornjaku s kabino nad motorjem, na hrbtni strani žig Foto Vidmar in '36'. 'Stefan iz korespondence jo je posnel. Irena je tisti dan prinesla fotoaparat in on je tekal okrog z njim. Stefan je vse shranil. Vprašaj vdovo, v Bloku 13.'"
+          }
+        },
+        {
+          "id": "ask_ivana",
+          "objective_text": {
+            "en": "Find Ivana Zupan at Block 13 in Tabor and ask about her late husband's photographs.",
+            "sl": "Poišči Ivano Zupan v Bloku 13 na Taboru in jo vprašaj o fotografijah njenega pokojnega moža."
+          },
+          "complete_target": "ivana_zupan",
+          "action": {
+            "en": "Ask about Stefan's photographs",
+            "sl": "Vprašaj o Stefanovih fotografijah"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "'He photographed the office the way other men photograph their children.' She gives you the key to the storage cage, and a condition: 'Bring back what you borrow. I would like a receipt.'",
+            "sl": "'Pisarno je fotografiral, kot drugi moški fotografirajo otroke.' Da ti ključ kletne shrambe in pogoj: 'Prinesi nazaj, kar si sposodiš. Rada bi potrdilo.'"
+          }
+        },
+        {
+          "id": "open_cage",
+          "objective_text": {
+            "en": "Open the Zupan storage cage and go through Stefan's office boxes.",
+            "sl": "Odpri kletno shrambo Zupanovih in preglej Stefanove pisarniške škatle."
+          },
+          "complete_target": "block_13_storage_cage",
+          "action": {
+            "en": "Search Stefan's boxes",
+            "sl": "Preišči Stefanove škatle"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "grant_items": [
+            {
+              "id": "zupan_contact_sheet",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Between carbon copies and a returned registered letter you leave sealed, a Foto Vidmar envelope, order 0217, holds one contact sheet. No negatives. Frames 34 and 35 are the gate photograph, 36 is Drago and the truck, and after 36 there is a 37th: fogged, almost nothing.",
+            "sl": "Med kopijami z indigom in vrnjenim priporočenim pismom, ki ga pustiš zaprtega, je kuverta Foto Vidmar, naročilo 0217, v njej ena kontaktna kopija. Negativov ni. Posnetka 34 in 35 sta fotografija pri vratih, 36 je Drago s tovornjakom, za 36 pa je še 37.: osvetljen, skoraj nič."
+          }
+        },
+        {
+          "id": "copy_contact_sheet",
+          "objective_text": {
+            "en": "Lay the contact sheet on Nika's light table and photograph it under even light, so the original can go back into safe keeping.",
+            "sl": "Kontaktno kopijo položi na Nikino svetlobno mizo in jo fotografiraj pri enakomerni svetlobi, da gre izvirnik lahko nazaj v varno hrambo."
+          },
+          "complete_target": "zupan_contact_sheet_copy",
+          "action": {
+            "en": "Photograph the contact sheet",
+            "sl": "Fotografiraj kontaktno kopijo"
+          },
+          "objective": {
+            "type": "photograph"
+          },
+          "required_items": [
+            {
+              "id": "zupan_contact_sheet",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Under the opal glass the fog on frame 37 has a shape in it: the corner of something tall, and a board. Your photograph is a copy; the sheet is the original, and from now on you will have to say which is which.",
+            "sl": "Pod opalnim steklom ima megla na posnetku 37 obliko: vogal nečesa visokega in tablo. Tvoja fotografija je kopija; list je izvirnik in odslej boš moral povedati, kaj je kaj."
+          }
+        },
+        {
+          "id": "frame_37_print",
+          "objective_text": {
+            "en": "Frame 37 is a thumbnail on the sheet. Ask Nika how to get a print you can actually read.",
+            "sl": "Posnetek 37 je na listu le sličica. Vprašaj Niko, kako dobiti fotografijo, ki jo lahko zares bereš."
+          },
+          "complete_target": "nika_vidmar",
+          "action": {
+            "en": "Compare Frame 37 with Nika's print",
+            "sl": "Primerjaj posnetek 37 z Nikino fotografijo"
+          },
+          "objective": {
+            "type": "inventory_any",
+            "items": [
+              "frame_37_print"
+            ],
+            "quantity": 1,
+            "consume": false
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Nika lays the enlargement over the sheet. Same fog, same scratch across the corner: frame 37 of order 0217. 'Now the scrap has a roll, a customer and a date. Before, it was a nice mystery. Now it is evidence.'",
+            "sl": "Nika položi povečavo čez list. Ista megla, ista praska čez vogal: posnetek 37 naročila 0217. 'Zdaj ima odrezek film, stranko in datum. Prej je bil lepa uganka. Zdaj je dokaz.'"
+          }
+        },
+        {
+          "id": "chronology",
+          "objective_text": {
+            "en": "Take the Frame 37 print, your photograph of the Melje yard's date board and the Kainach serial photographs to Vera Horvat.",
+            "sl": "Fotografijo posnetka 37, svojo fotografijo table z datumom na dvorišču v Meljah in fotografije serijskih tablic Kainach odnesi Veri Horvat."
+          },
+          "complete_target": "vera_horvat",
+          "action": {
+            "en": "Lay out the chronology",
+            "sl": "Razgrni kronologijo"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "required_items": [
+            {
+              "id": "frame_37_print",
+              "quantity": 1
+            },
+            {
+              "id": "photo_melje_date_board",
+              "quantity": 1
+            },
+            {
+              "id": "kainach_serial_photos",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "chronology_frame_37",
+              "quantity": 1
+            }
+          ],
+          "set_flags": {
+            "kainach_after_december": true
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Vera reads the settlement's summary aloud: 'Kainach arrangement closed without obligation, December 1989.' Then she finds K 07 on your serial photograph, on the print, and the board above it. 'Sixteenth of February. Two months after it closed, it was still delivering trucks.' She will not say who lied: 'That is an inference. Write it down as one.'",
+            "sl": "Vera na glas prebere povzetek poravnave: 'Dogovor s Kainachom zaključen brez obveznosti, december 1989.' Nato poišče K 07 na tvoji fotografiji serijske tablice, na povečavi in tablo nad njim. 'Šestnajstega februarja. Dva meseca po tem, ko se je končal, je še vedno dostavljal tovornjake.' Ne bo rekla, kdo je lagal: 'To je sklep. Zapiši ga kot sklep.'"
+          }
+        },
+        {
+          "id": "glas_full_frame",
+          "objective_text": {
+            "en": "The Glas ran one frame from this roll beside Prehod-Kainach's notice in April 1990. Ask at the Mariborski Glas archive desk for the photo desk's print.",
+            "sl": "Glas je aprila 1990 ob obvestilu Prehod-Kainach objavil en posnetek s tega filma. Pri arhivski mizi Mariborskega glasa vprašaj za fotografijo fotoredakcije."
+          },
+          "complete_target": "mariborski_glas_archive",
+          "action": {
+            "en": "Ask for the photo desk's print",
+            "sl": "Vprašaj za fotografijo fotoredakcije"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "required_items": [
+            {
+              "id": "torn_gate_photograph",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "torn_strip_print",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "The photo desk's bromide is uncropped, with grease-pencil marks where the paper trimmed it. The archivist makes you a copy of the strip your print is missing. Seven people, not six: a man in a foreign overcoat with a clipboard and, sharp at the edge, a face you know from Kiosk 67. Albin Rojko.",
+            "sl": "Bromidna fotografija fotoredakcije ni obrezana, z mastnim svinčnikom so označene meje, kjer jo je časopis porezal. Arhivarka ti naredi kopijo traku, ki manjka tvoji fotografiji. Sedem ljudi, ne šest: moški v tujem plašču z mapo in ob robu, ostro, obraz, ki ga poznaš iz Kioska 67. Albin Rojko."
+          }
+        },
+        {
+          "id": "albin_willing",
+          "when": [
+            {
+              "mission": "kiosk_67_customer_stopped_coming",
+              "any_of": [
+                "temporary_work"
+              ]
+            }
+          ],
+          "objective_text": {
+            "en": "Albin Rojko, the Kiosk 67 customer, is working mornings with Matej now. Show him the strip.",
+            "sl": "Albin Rojko, stranka Kioska 67, zdaj dopoldne dela z Matejem. Pokaži mu trak."
+          },
+          "complete_target": "kiosk_67_customer",
+          "action": {
+            "en": "Show Albin the strip",
+            "sl": "Pokaži Albinu trak"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "required_items": [
+            {
+              "id": "torn_strip_print",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "albin_testimony",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Albin wipes his hands on a rag from Hall Three before he takes the copy. 'You found me work when I was hiding. I will not hide from this.' Ten o'clock, 16 February: the trucks driven in, the man from Kainach ticking them off, Lorber's car at the gate. 'Nobody asked for the council's stamp. It was in my pocket. I said nothing.'",
+            "sl": "Albin si roke obriše v cunjo iz Hale tri, preden vzame kopijo. 'Ko sem se skrival, si mi našel delo. Pred tem se ne bom skrival.' Ob desetih, 16. februarja: tovornjaki pripeljani noter, moški od Kainacha jih kljuka na seznamu, Lorberjev avto pri vratih. 'Nihče ni vprašal za žig sveta. Imel sem ga v žepu. Nisem rekel ničesar.'"
+          }
+        },
+        {
+          "id": "albin_hesitates",
+          "when": [
+            {
+              "mission": "kiosk_67_customer_stopped_coming",
+              "any_of": [
+                "tab_paid",
+                "debt_erased"
+              ]
+            }
+          ],
+          "objective_text": {
+            "en": "Albin Rojko, the Kiosk 67 customer, is back at his old routine. Show him the strip.",
+            "sl": "Albin Rojko, stranka Kioska 67, je spet pri starih navadah. Pokaži mu trak."
+          },
+          "complete_target": "kiosk_67_customer",
+          "action": {
+            "en": "Show Albin the strip",
+            "sl": "Pokaži Albinu trak"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "required_items": [
+            {
+              "id": "torn_strip_print",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "He looks at his own face for a long time. 'The tab is settled and I am grateful. This is a different debt.' He hands the copy back. 'Ask Petra what I was like in 1990. Then ask me again.'",
+            "sl": "Dolgo gleda svoj obraz. 'Račun je poravnan in hvaležen sem. To je drug dolg.' Kopijo ti vrne. 'Vprašaj Petro, kakšen sem bil leta 1990. Potem me vprašaj še enkrat.'"
+          }
+        },
+        {
+          "id": "petra_word",
+          "when": [
+            {
+              "mission": "kiosk_67_customer_stopped_coming",
+              "any_of": [
+                "tab_paid",
+                "debt_erased"
+              ]
+            }
+          ],
+          "objective_text": {
+            "en": "Ask Petra Kralj what Albin was like in 1990.",
+            "sl": "Vprašaj Petro Kralj, kakšen je bil Albin leta 1990."
+          },
+          "complete_target": "petra_kralj",
+          "action": {
+            "en": "Ask about Albin",
+            "sl": "Vprašaj o Albinu"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "'He bought the Delo and the Glas, both, so he could complain about both. That spring he bought neither for a month.' Petra folds a paper for him without being asked. 'Take him this. Tell him I said to stop being proud.'",
+            "sl": "'Kupoval je Delo in Glas, oba, da se je lahko pritoževal nad obema. Tisto pomlad cel mesec ni kupil nobenega.' Petra mu nevprašana zloži časopis. 'Odnesi mu tole. Povej mu, da sem rekla, naj neha biti ponosen.'"
+          }
+        },
+        {
+          "id": "albin_second_talk",
+          "when": [
+            {
+              "mission": "kiosk_67_customer_stopped_coming",
+              "any_of": [
+                "tab_paid",
+                "debt_erased"
+              ]
+            }
+          ],
+          "objective_text": {
+            "en": "Go back to Albin with Petra's message.",
+            "sl": "S Petrinim sporočilom se vrni k Albinu."
+          },
+          "complete_target": "kiosk_67_customer",
+          "action": {
+            "en": "Ask Albin again",
+            "sl": "Še enkrat vprašaj Albina"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "required_items": [
+            {
+              "id": "torn_strip_print",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "albin_testimony",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "He laughs once at Petra's message, then tells it plainly. Ten o'clock, 16 February: the trucks driven in, the man from Kainach ticking them off, Lorber's car at the gate. 'Nobody asked for the council's stamp. It was in my pocket. I said nothing. Petra is right: I have been proud about the wrong thing.'",
+            "sl": "Ob Petrinem sporočilu se enkrat zasmeje, potem pove naravnost. Ob desetih, 16. februarja: tovornjaki pripeljani noter, moški od Kainacha jih kljuka na seznamu, Lorberjev avto pri vratih. 'Nihče ni vprašal za žig sveta. Imel sem ga v žepu. Nisem rekel ničesar. Petra ima prav: ponosen sem bil na napačno stvar.'"
+          }
+        },
+        {
+          "id": "albin_stamp",
+          "when": [
+            {
+              "mission": "kiosk_67_customer_stopped_coming",
+              "any_of": [
+                "object_sold"
+              ]
+            }
+          ],
+          "objective_text": {
+            "en": "Show Albin Rojko, the Kiosk 67 customer, the strip.",
+            "sl": "Pokaži trak Albinu Rojku, stranki Kioska 67."
+          },
+          "complete_target": "kiosk_67_customer",
+          "action": {
+            "en": "Show Albin the strip",
+            "sl": "Pokaži Albinu trak"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "required_items": [
+            {
+              "id": "torn_strip_print",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "'The thing you helped me sell,' he says. 'It was the council stamp from the machine hall. I carried it to the gate that day and never took it out of my pocket.' He will not say more without it in his hand. 'Ernest Pavlič has it. He buys anything with a factory's name on it.'",
+            "sl": "'Stvar, ki si mi jo pomagal prodati,' reče. 'To je bil žig sveta strojne hale. Tisti dan sem ga nesel k vratom in ga nikoli nisem vzel iz žepa.' Brez njega v roki ne bo povedal več. 'Ima ga Ernest Pavlič. Kupi vse, na čemer je ime tovarne.'"
+          }
+        },
+        {
+          "id": "buy_back_stamp",
+          "when": [
+            {
+              "mission": "kiosk_67_customer_stopped_coming",
+              "any_of": [
+                "object_sold"
+              ]
+            }
+          ],
+          "objective_text": {
+            "en": "Get the machine-hall council stamp back from Ernest Pavlič, the collector near the Glas archive.",
+            "sl": "Od zbiralca Ernesta Pavliča pri arhivu Glasa dobi nazaj žig sveta strojne hale."
+          },
+          "complete_target": "stamp_collector",
+          "action": {
+            "en": "Ask about the stamp",
+            "sl": "Vprašaj o žigu"
+          },
+          "objective": {
+            "type": "choice"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "",
+            "sl": ""
+          },
+          "choices": [
+            {
+              "id": "buy_stamp",
+              "label": {
+                "en": "Buy it back for 40.",
+                "sl": "Odkupi ga za 40."
+              },
+              "money_delta": -40,
+              "skill_xp": {
+                "trading": 15
+              },
+              "outcome": "stamp_bought",
+              "grant_items": [
+                {
+                  "id": "machine_hall_council_stamp",
+                  "quantity": 1
+                }
+              ],
+              "completion_text": {
+                "en": "Pavlič names a price, you name a lower one, and you settle near his. 'For a rubber stamp,' he says, wrapping it in newspaper, 'it has had an interesting life.'",
+                "sl": "Pavlič pove ceno, ti nižjo, in dogovorita se blizu njegove. 'Za gumijast žig,' reče, ko ga zavija v časopis, 'je imel zanimivo življenje.'"
+              }
+            },
+            {
+              "id": "catalogue_work",
+              "label": {
+                "en": "Photograph his stock for his price list instead.",
+                "sl": "Namesto tega fotografiraj njegovo zalogo za cenik."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "photography": 20
+              },
+              "outcome": "stamp_for_work",
+              "grant_items": [
+                {
+                  "id": "machine_hall_council_stamp",
+                  "quantity": 1
+                }
+              ],
+              "completion_text": {
+                "en": "An afternoon of enamel badges and union pins under a desk lamp. At the end he slides the stamp across the table. 'Fair. Your pictures will sell more than that stamp ever would.'",
+                "sl": "Popoldne emajliranih in sindikalnih značk pod namizno svetilko. Na koncu ti žig potisne čez mizo. 'Pošteno. Tvoje slike bodo prodale več, kot bi ta žig kdaj.'"
+              }
+            }
+          ]
+        },
+        {
+          "id": "albin_with_stamp",
+          "when": [
+            {
+              "mission": "kiosk_67_customer_stopped_coming",
+              "any_of": [
+                "object_sold"
+              ]
+            }
+          ],
+          "objective_text": {
+            "en": "Bring Albin his council stamp.",
+            "sl": "Albinu prinesi njegov žig sveta."
+          },
+          "complete_target": "kiosk_67_customer",
+          "action": {
+            "en": "Give Albin the stamp",
+            "sl": "Daj Albinu žig"
+          },
+          "objective": {
+            "type": "inventory_any",
+            "items": [
+              "machine_hall_council_stamp"
+            ],
+            "quantity": 1,
+            "consume": true
+          },
+          "required_items": [
+            {
+              "id": "torn_strip_print",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "albin_testimony",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "He holds the stamp the way you would hold a tool you have not used in years. Ten o'clock, 16 February: the trucks driven in, the man from Kainach ticking them off, Lorber's car at the gate. 'This should have been on the transfer. Nobody asked for it, and I did not offer.'",
+            "sl": "Žig drži, kot bi držal orodje, ki ga ni uporabljal leta. Ob desetih, 16. februarja: tovornjaki pripeljani noter, moški od Kainacha jih kljuka na seznamu, Lorberjev avto pri vratih. 'Ta bi moral biti na prenosu. Nihče ni vprašal zanj in jaz ga nisem ponudil.'"
+          }
+        },
+        {
+          "id": "albin_refuses",
+          "when": [
+            {
+              "mission": "kiosk_67_customer_stopped_coming",
+              "any_of": [
+                "left_alone"
+              ]
+            }
+          ],
+          "objective_text": {
+            "en": "Show Albin Rojko, the Kiosk 67 customer, the strip.",
+            "sl": "Pokaži trak Albinu Rojku, stranki Kioska 67."
+          },
+          "complete_target": "kiosk_67_customer",
+          "action": {
+            "en": "Show Albin the strip",
+            "sl": "Pokaži Albinu trak"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "required_items": [
+            {
+              "id": "torn_strip_print",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "He does not take the copy. 'You came looking for me once and then you left me be. Leave me be now.' He turns back to the street. Petra once said he complains about football; somebody he watches it with may know how to reach him.",
+            "sl": "Kopije ne vzame. 'Enkrat si me prišel iskat in potem si me pustil pri miru. Pusti me pri miru tudi zdaj.' Obrne se nazaj proti ulici. Petra je nekoč rekla, da se pritožuje nad nogometom; kdo, s komer ga gleda, morda ve, kako priti do njega."
+          }
+        },
+        {
+          "id": "match_day_circle",
+          "when": [
+            {
+              "mission": "kiosk_67_customer_stopped_coming",
+              "any_of": [
+                "left_alone"
+              ]
+            }
+          ],
+          "objective_text": {
+            "en": "Find the terrace regulars Albin watches the match with, by the Kiosk 67 café, and ask one of them to vouch for you.",
+            "sl": "Pri kavarni ob Kiosku 67 poišči stalne obiskovalce tribune, s katerimi Albin gleda tekmo, in prosi enega, naj jamči zate."
+          },
+          "complete_target": "viole_terrace_regular",
+          "action": {
+            "en": "Ask about Albin",
+            "sl": "Vprašaj o Albinu"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "grant_items": [
+            {
+              "id": "terrace_scarf",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Boris hears you out without looking away from the radio. 'Albin sits with us on Saturdays because nobody asks him anything there.' He ties a faded purple scarf round your wrist. 'Show him that. It means we said you were all right.'",
+            "sl": "Boris te posluša in ne odmakne pogleda od radia. 'Albin ob sobotah sedi z nami, ker ga tam nihče nič ne sprašuje.' Okrog zapestja ti zaveže zbledel vijoličen šal. 'Pokaži mu to. Pomeni, da smo rekli, da si v redu.'"
+          }
+        },
+        {
+          "id": "albin_match_day",
+          "when": [
+            {
+              "mission": "kiosk_67_customer_stopped_coming",
+              "any_of": [
+                "left_alone"
+              ]
+            }
+          ],
+          "objective_text": {
+            "en": "Go back to Albin with the circle's scarf.",
+            "sl": "S šalom tribune se vrni k Albinu."
+          },
+          "complete_target": "kiosk_67_customer",
+          "action": {
+            "en": "Show Albin the scarf",
+            "sl": "Pokaži Albinu šal"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "required_items": [
+            {
+              "id": "torn_strip_print",
+              "quantity": 1
+            },
+            {
+              "id": "terrace_scarf",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "albin_testimony",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "He looks at the scarf, then at you. 'Boris does not vouch for anybody.' Ten o'clock, 16 February: the trucks driven in, the man from Kainach ticking them off, Lorber's car at the gate. 'Nobody asked for the council's stamp. I said nothing. Write that I said nothing; it is the truest part.'",
+            "sl": "Pogleda šal, potem tebe. 'Boris ne jamči za nikogar.' Ob desetih, 16. februarja: tovornjaki pripeljani noter, moški od Kainacha jih kljuka na seznamu, Lorberjev avto pri vratih. 'Nihče ni vprašal za žig sveta. Nisem rekel ničesar. Zapiši, da nisem rekel ničesar; to je najbolj resničen del.'"
+          }
+        },
+        {
+          "id": "the_ticket",
+          "objective_text": {
+            "en": "Bring Nika the bus ticket from the cashbox, Albin's account and the original contact sheet.",
+            "sl": "Niki prinesi avtobusno vozovnico iz blagajnice, Albinovo pričevanje in izvirno kontaktno kopijo."
+          },
+          "complete_target": "nika_vidmar",
+          "action": {
+            "en": "Lay it all out for Nika",
+            "sl": "Vse razgrni pred Niko"
+          },
+          "objective": {
+            "type": "inventory_any",
+            "items": [
+              "zupan_contact_sheet"
+            ],
+            "quantity": 1,
+            "consume": true
+          },
+          "required_items": [
+            {
+              "id": "faded_transport_ticket",
+              "quantity": 1
+            },
+            {
+              "id": "albin_testimony",
+              "quantity": 1
+            },
+            {
+              "id": "photo_zupan_contact_sheet",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "contact_sheet_custody_receipt",
+              "quantity": 1
+            }
+          ],
+          "set_flags": {
+            "frame_37_chronology": true,
+            "albin_testified": true
+          },
+          "final": true,
+          "completion_text": {
+            "en": "Nika reads the punch on the ticket: Melje line, 16 February 1990, the morning of frame 35. 'The order book names the camera's owner, and the ticket puts her at the gate.' She locks the contact sheet in the lab safe in Ivana's name and writes you a receipt. 'Now you know who stood behind the camera's owner. That is not the same as knowing why.'",
+            "sl": "Nika prebere luknjo na vozovnici: proga do Melja, 16. februar 1990, jutro posnetka 35. 'Knjiga naročil imenuje lastnico fotoaparata, vozovnica pa jo postavi k vratom.' Kontaktno kopijo na Ivanino ime zaklene v laboratorijski sef in ti napiše potrdilo. 'Zdaj veš, kdo je stal za lastnico fotoaparata. To ni isto kot vedeti, zakaj.'"
+          }
+        }
+      ],
+      "reward_money": 60,
+      "journal_entry": {
+        "id": "blue_ledger_the_negative",
+        "title": {
+          "en": "Blue Ledger — The Negative",
+          "sl": "Modra knjiga — Negativ"
+        },
+        "text": {
+          "en": "The torn gate photograph is frame 35 of Foto Vidmar order 0217, 'Vogrin I.', developed on 20 February 1990. Stefan Zupan took it. His contact sheet, now in the Foto Vidmar safe in his widow's name, shows a 37th frame: Kainach truck K 07 unloaded in the Melje yard under a date board reading 16.2. The settlement's file says the Kainach arrangement closed without obligation in December 1989. The uncropped Glas print shows a seventh man at the gate, and Albin Rojko, who has now said what he saw. A date and a presence are established; why the page says otherwise is still a question.",
+          "sl": "Strgana fotografija pri vratih je posnetek 35 naročila Foto Vidmar 0217, 'Vogrin I.', razvitega 20. februarja 1990. Posnel jo je Stefan Zupan. Njegova kontaktna kopija, zdaj v sefu Foto Vidmar na ime njegove vdove, kaže 37. posnetek: tovornjak Kainach K 07, raztovorjen na dvorišču v Meljah pod tablo z datumom 16.2. Spis poravnave pravi, da se je dogovor s Kainachom končal brez obveznosti decembra 1989. Neobrezana fotografija Glasa kaže sedmega moškega pri vratih in Albina Rojka, ki je zdaj povedal, kaj je videl. Datum in navzočnost sta ugotovljena; zakaj stran trdi drugače, ostaja vprašanje."
+        }
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI 'The Negative' (proposed id raeda_the_negative), with SIDE_STORY_BIBLE.md 3.1, 3.21, 3.23 and 3.25",
+        "note": "Mid-decade (1993-96) default variant (ADR-083). Canonical beats: Nika dates the print, the order book names 'Vogrin I.', Drago's wallet print, the Block 13 contact sheet, Frame 37 under the 16.2. date board, the Glas photo desk, the torn strip with the seventh person and Albin, Albin's response by Kiosk 67 outcome, the punched ticket and Nika's closing line. New: order number 0217, fleet number K 07, the collector Ernest Pavlič and the terrace regular Boris, the custody receipt. The 1990-92 and 1997-99 variants are not implemented."
+      }
+    },
+    {
+      "id": "nika_frame_37",
+      "name": {
+        "en": "Thirty-Six Exposures — Frame 37",
+        "sl": "Šestintrideset posnetkov — posnetek 37"
+      },
+      "category": "side_story",
+      "offer_target": "nika_vidmar",
+      "story_family": "Foto Vidmar",
+      "requires_completed": [
+        "nika_then_and_now"
+      ],
+      "summary": {
+        "en": "Nika is clearing her father's scrap tin: fogged ends of film he cut off rolls and never threw away. One of them is a whole frame, the 37th of a 36-exposure roll, and almost nothing is on it.",
+        "sl": "Nika prazni očetovo pločevinko z odrezki: osvetljene konce filmov, ki jih je odrezal in jih nikoli ni zavrgel. Eden od njih je cel posnetek, 37. s filma za 36, in na njem ni skoraj ničesar."
+      },
+      "start_items": [],
+      "questions": [
+        {
+          "id": "what_is_on_it",
+          "text": {
+            "en": "What is under the fog on Frame 37?",
+            "sl": "Kaj je pod meglo na posnetku 37?"
+          },
+          "answer": {
+            "en": "A Kainach truck, K 07, being unloaded under a date board chalked 16.2.",
+            "sl": "Tovornjak Kainach, K 07, ki ga raztovarjajo pod tablo z datumom 16.2."
+          },
+          "answered_by": "nika_prints"
+        },
+        {
+          "id": "where_was_it",
+          "text": {
+            "en": "Where was it taken?",
+            "sl": "Kje je nastal?"
+          },
+          "answer": {
+            "en": "The Raeda transport yard in Melje: you matched the date board by photograph.",
+            "sl": "Na transportnem dvorišču Raede v Meljah: tablo z datumom si potrdil s fotografijo."
+          },
+          "answered_by": "find_the_yard"
+        },
+        {
+          "id": "whose_roll",
+          "text": {
+            "en": "Whose roll was it?",
+            "sl": "Čigav je bil film?"
+          },
+          "answer": {
+            "en": "",
+            "sl": ""
+          }
+        }
+      ],
+      "stages": [
+        {
+          "id": "under_the_loupe",
+          "objective_text": {
+            "en": "Look at the fogged frame on Nika's light table through the loupe.",
+            "sl": "Osvetljeni posnetek na Nikini svetlobni mizi poglej skozi lupo."
+          },
+          "complete_target": "foto_vidmar_light_table",
+          "action": {
+            "en": "Use the loupe",
+            "sl": "Uporabi lupo"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "'0217' is scratched into the rebate. Under the fog: a man's back and cap close to the lens, and behind him the corner of something tall and square, and a board on posts.",
+            "sl": "V rob je vpraskano '0217'. Pod meglo: moški hrbet in kapa blizu objektiva, za njim vogal nečesa visokega in oglatega ter tabla na stebrih."
+          }
+        },
+        {
+          "id": "what_matters",
+          "objective_text": {
+            "en": "Decide what in Frame 37 can actually be checked.",
+            "sl": "Odloči, kaj na posnetku 37 je dejansko mogoče preveriti."
+          },
+          "complete_target": "foto_vidmar_light_table",
+          "action": {
+            "en": "Study the frame",
+            "sl": "Preuči posnetek"
+          },
+          "objective": {
+            "type": "choice"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "",
+            "sl": ""
+          },
+          "choices": [
+            {
+              "id": "the_man",
+              "correct": false,
+              "label": {
+                "en": "The man in the foreground: find out who he is.",
+                "sl": "Moški v ospredju: ugotovi, kdo je."
+              },
+              "money_delta": 0,
+              "skill_xp": {},
+              "completion_text": {
+                "en": "You stare at a back and a cap until the loupe mists over. Nobody could be picked out of a bus queue from that. Look again.",
+                "sl": "Buljiš v hrbet in kapo, dokler se lupa ne orosi. Po tem nikogar ne bi prepoznal niti v vrsti na postaji. Poglej še enkrat."
+              }
+            },
+            {
+              "id": "the_light_leak",
+              "correct": false,
+              "label": {
+                "en": "The fog itself: a light leak dates the camera.",
+                "sl": "Sama megla: puščanje svetlobe datira fotoaparat."
+              },
+              "money_delta": 0,
+              "skill_xp": {},
+              "completion_text": {
+                "en": "Nika, without looking up: 'A light leak dates nothing but a tired seal.' Look again.",
+                "sl": "Nika, ne da bi dvignila pogled: 'Puščanje svetlobe ne datira ničesar razen utrujenega tesnila.' Poglej še enkrat."
+              }
+            },
+            {
+              "id": "the_place",
+              "label": {
+                "en": "The tall shape and the board: find the place, not the person.",
+                "sl": "Visoka oblika in tabla: poišči kraj, ne osebe."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "photography": 10
+              },
+              "outcome": "place_not_person",
+              "completion_text": {
+                "en": "Nika nods. 'A person can lie about where he was. A loading bay cannot.' She dodges the print by hand under the enlarger to pull the background out of the fog.",
+                "sl": "Nika pokima. 'Človek lahko laže, kje je bil. Nakladalna rampa ne more.' Ozadje pod povečevalnikom ročno zasenči, da ga izvleče iz megle."
+              }
+            }
+          ]
+        },
+        {
+          "id": "nika_prints",
+          "objective_text": {
+            "en": "Collect Nika's print of Frame 37.",
+            "sl": "Prevzemi Nikino fotografijo posnetka 37."
+          },
+          "complete_target": "nika_vidmar",
+          "action": {
+            "en": "Collect the print",
+            "sl": "Prevzemi fotografijo"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "grant_items": [
+            {
+              "id": "frame_37_print",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "Wet from the fixer: a cab-over truck with an oval 'A' plate, fleet number K 07 on the door, being unloaded under a board on two posts. On the board, in chalk, '16.2.'",
+            "sl": "Še mokra od fiksirja: tovornjak s kabino nad motorjem, z ovalno tablico 'A' in garažno številko K 07 na vratih, ki ga raztovarjajo pod tablo na dveh stebrih. Na tabli s kredo '16.2.'"
+          }
+        },
+        {
+          "id": "find_the_yard",
+          "objective_text": {
+            "en": "Find where Frame 37 was taken: a transport yard east of the centre with a date board on two posts by the loading bay. Stand where the photographer stood and press [P].",
+            "sl": "Poišči, kje je nastal posnetek 37: transportno dvorišče vzhodno od središča s tablo z datumom na dveh stebrih ob nakladalni rampi. Stopi tja, kjer je stal fotograf, in pritisni [P]."
+          },
+          "complete_target": "melje_date_board_view",
+          "action": {
+            "en": "Photograph the board",
+            "sl": "Fotografiraj tablo"
+          },
+          "objective": {
+            "type": "photograph"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Through the viewfinder the posts, the bracket and the bay line up with the print. The slot on the board has been empty for years. Six years ago somebody chalked 16.2. into it.",
+            "sl": "Skozi iskalo se stebra, nosilec in rampa poravnajo s fotografijo. Reža na tabli je že leta prazna. Pred šestimi leti je nekdo vanjo s kredo napisal 16.2."
+          }
+        },
+        {
+          "id": "bring_back",
+          "objective_text": {
+            "en": "Show Nika your photograph of the yard beside her print.",
+            "sl": "Niki pokaži svojo fotografijo dvorišča ob njeni povečavi."
+          },
+          "complete_target": "nika_vidmar",
+          "action": {
+            "en": "Show Nika the yard",
+            "sl": "Pokaži Niki dvorišče"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "required_items": [
+            {
+              "id": "frame_37_print",
+              "quantity": 1
+            },
+            {
+              "id": "photo_melje_date_board",
+              "quantity": 1
+            }
+          ],
+          "final": false,
+          "completion_text": {
+            "en": "'Melje. Raeda's yard.' Nika puts the two side by side. 'So it is real, and it is a place. Whose roll it was, the scrap cannot say on its own; only the roll's own record can.'",
+            "sl": "'Melje. Dvorišče Raede.' Nika ju položi drugo ob drugo. 'Torej je resnično in je kraj. Čigav je bil film, odrezek sam ne more povedati; to lahko pove le zapis o filmu.'"
+          }
+        },
+        {
+          "id": "keep_scrap",
+          "objective_text": {
+            "en": "Nika asks how you want to finish the print.",
+            "sl": "Nika te vpraša, kako želiš dokončati fotografijo."
+          },
+          "complete_target": "nika_vidmar",
+          "action": {
+            "en": "Decide about the print",
+            "sl": "Odloči o fotografiji"
+          },
+          "objective": {
+            "type": "choice"
+          },
+          "final": true,
+          "completion_text": {
+            "en": "",
+            "sl": ""
+          },
+          "choices": [
+            {
+              "id": "lab_safe",
+              "label": {
+                "en": "Log the scrap in her father's book and lock it in the lab safe.",
+                "sl": "Odrezek vpiši v očetovo knjigo in ga zakleni v laboratorijski sef."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "reputation": 15
+              },
+              "outcome": "scrap_in_lab",
+              "completion_text": {
+                "en": "Nika logs the scrap under order 0217 and locks it away. 'A negative nobody can lose is worth ten prints.'",
+                "sl": "Nika odrezek vpiše pod naročilo 0217 in ga zaklene. 'Negativ, ki ga nihče ne more izgubiti, je vreden deset fotografij.'"
+              }
+            },
+            {
+              "id": "second_print",
+              "label": {
+                "en": "Make a second print yourself under her eye.",
+                "sl": "Pod njenim nadzorom sam izdelaj drugo fotografijo."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "photography": 30
+              },
+              "outcome": "printed_yourself",
+              "completion_text": {
+                "en": "Your print is a stop too dark and the K 07 a shade softer than hers. Nika locks the scrap in the safe either way.",
+                "sl": "Tvoja fotografija je za zaslonko pretemna in K 07 za odtenek mehkejši kot na njeni. Nika odrezek vseeno zaklene v sef."
+              }
+            }
+          ]
+        }
+      ],
+      "reward_money": 0,
+      "journal_entry": {
+        "id": "foto_vidmar_frame_37",
+        "title": {
+          "en": "Foto Vidmar — Frame 37",
+          "sl": "Foto Vidmar — posnetek 37"
+        },
+        "text": {
+          "en": "A fogged end-of-roll scrap from Nika's father's tin, scratched '0217', holds a 37th frame: Kainach truck K 07 being unloaded in the Raeda yard at Melje under a date board reading 16.2. You looked for the place rather than the person, and matched it by photograph. The scrap cannot say whose roll it was; only the roll's own record can.",
+          "sl": "Osvetljen odrezek s konca filma iz pločevinke Nikinega očeta, z vpraskanim '0217', hrani 37. posnetek: tovornjak Kainach K 07, ki ga raztovarjajo na dvorišču Raede v Meljah pod tablo z datumom 16.2. Iskal si kraj, ne osebe, in ga potrdil s fotografijo. Čigav je bil film, odrezek ne more povedati; to lahko pove le zapis o filmu."
+        }
+      },
+      "provenance": {
+        "source": "original Marburgum docs/SIDE_STORY_BIBLE.md 3.23 'Thirty-Six Exposures — Frame 37'",
+        "note": "Canonical: Nika develops an old 36-exposure roll, an unexpected badly exposed extra frame, careful inspection reveals a loading yard and a distinctive vehicle, the player searches for the location rather than the person (ADR-083). New: the scrap tin, the order number scratched in the rebate, the deduction at the light table. Shares frame_37_print and the Melje date-board photograph with Chapter VI; neither is handed out twice."
+      }
     }
   ],
   "photography": {
@@ -5553,6 +7082,85 @@
         "provenance": {
           "source": "original Marburgum docs/MAIN_STORYLINE.md timeline (Aug 1990 sign) and SIDE_STORY_BIBLE.md 3.10; beside melje_yard_gate",
           "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
+        }
+      },
+      {
+        "id": "foto_vidmar_order_book_page",
+        "name": {
+          "en": "Foto Vidmar order book, February 1990",
+          "sl": "Knjiga naročil Foto Vidmar, februar 1990"
+        },
+        "godot_position_m": [
+          -18.9,
+          11.48,
+          -168.3
+        ],
+        "anchor": "foto_vidmar_order_book",
+        "aim_height_m": 1.0,
+        "within_m": 3.5,
+        "cone_degrees": 24.0,
+        "xp": 10,
+        "item": "photo_foto_vidmar_order_book",
+        "note": {
+          "en": "Order 0217: 'Vogrin I., 36 posn., 20.2.1990'.",
+          "sl": "Naročilo 0217: 'Vogrin I., 36 posn., 20. 2. 1990'."
+        },
+        "provenance": {
+          "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI",
+          "note": "ADR-083: a document photographed on its prop (anchor), not a building."
+        }
+      },
+      {
+        "id": "zupan_contact_sheet_copy",
+        "name": {
+          "en": "The Zupan contact sheet on the light table",
+          "sl": "Kontaktna kopija Zupanovih na svetlobni mizi"
+        },
+        "godot_position_m": [
+          -18.9,
+          11.48,
+          -165.5
+        ],
+        "anchor": "foto_vidmar_light_table",
+        "requires_item": "zupan_contact_sheet",
+        "aim_height_m": 0.95,
+        "within_m": 3.5,
+        "cone_degrees": 24.0,
+        "xp": 20,
+        "item": "photo_zupan_contact_sheet",
+        "note": {
+          "en": "Frames 34 to 37 of order 0217, lit from below.",
+          "sl": "Posnetki 34 do 37 naročila 0217, osvetljeni od spodaj."
+        },
+        "provenance": {
+          "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('photograph the contact sheet under proper light')",
+          "note": "ADR-083: only with the contact sheet in hand (requires_item); the light table is the anchor."
+        }
+      },
+      {
+        "id": "melje_date_board_view",
+        "name": {
+          "en": "Date board at the Melje yard",
+          "sl": "Tabla z datumom na dvorišču v Meljah"
+        },
+        "godot_position_m": [
+          1418.0,
+          1.1,
+          -66.0
+        ],
+        "anchor": "melje_date_board",
+        "aim_height_m": 1.9,
+        "within_m": 14.0,
+        "cone_degrees": 12.0,
+        "xp": 25,
+        "item": "photo_melje_date_board",
+        "note": {
+          "en": "The dispatch date board of the Raeda yard, where Frame 37 was taken.",
+          "sl": "Tabla z datumom odpreme na dvorišču Raede, kjer je nastal posnetek 37."
+        },
+        "provenance": {
+          "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('match the date board')",
+          "note": "ADR-083. Temporary Melje floor (ADR-052)."
         }
       }
     ]

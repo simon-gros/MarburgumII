@@ -22,6 +22,9 @@
  * made once it ended another way: a decision taken earlier closes the door for good, without a refusal to explain.
  * A Photograph stage is completed by photographing its subject (the server's photograph path), never by talking.
  *
+ * A conditional stage (ADR-083) belongs to a character's route only when its gates hold (an earlier mission's recorded
+ * outcome); the mission passes over it otherwise. Unique items are handed over once however many missions grant them.
+ *
  * Work in hand comes before a new offer, so a character who reaches Petra Kralj while asking about the cashbox
  * address finishes that step before she offers Kiosk 67.
  */
@@ -78,7 +81,20 @@ namespace MarburgumII::Missions
     /** True when some mission's stage targets TargetId (an authored mission target, as opposed to scenery). */
     MARBURGUMIISHARED_API bool IsMissionTarget(const FString& TargetId);
 
-    /** The stage after Stage in Mission, or null at the end. */
+    /**
+     * Whether a conditional stage (ADR-083) is on this character's route: every gate's mission completed with one of its
+     * outcomes. An unconditional stage always is.
+     */
+    MARBURGUMIISHARED_API bool StageApplies(const Gameplay::FMissionStageDefinition& Stage, FFindProgress FindProgress);
+
+    /** The first stage of Mission on this character's route; null for a mission with none. */
+    MARBURGUMIISHARED_API const Gameplay::FMissionStageDefinition* FirstStage(const Gameplay::FMissionDefinition& Mission, FFindProgress FindProgress);
+
+    /** The stage after Stage in Mission on this character's route, passing over conditional stages that do not apply; null at the end. */
     MARBURGUMIISHARED_API const Gameplay::FMissionStageDefinition* NextStage(
-        const Gameplay::FMissionDefinition& Mission, const Gameplay::FMissionStageDefinition& Stage);
+        const Gameplay::FMissionDefinition& Mission, const Gameplay::FMissionStageDefinition& Stage, FFindProgress FindProgress);
+
+    /** The stage before Stage on this character's route (the one just done when Stage became current); null at the start. */
+    MARBURGUMIISHARED_API const Gameplay::FMissionStageDefinition* PreviousStage(
+        const Gameplay::FMissionDefinition& Mission, const Gameplay::FMissionStageDefinition& Stage, FFindProgress FindProgress);
 }

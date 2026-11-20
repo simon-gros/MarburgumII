@@ -12,10 +12,38 @@ namespace MarburgumII::Missions
         // Far below int64 limits, so no sum of rewards or XP can overflow.
         constexpr int64 MaxAmount = int64(1) << 50;
 
-        void AddItem(FMarburgumWorldRecord& Record, const FString& Character, const FString& Item, int32 Quantity)
+        /** Adds Quantity of Item, or for a unique item (ADR-083) one unless one is already held; returns how many were added. */
+        int32 AddItem(FMarburgumWorldRecord& Record, const FString& Character, const FString& Item, int32 Quantity)
         {
-            Record.Inventories.FindOrAdd(Character).FindOrAdd(Item) += Quantity;
+            const FItemDefinition* Definition = FindItem(Item);
+            int32& Held = Record.Inventories.FindOrAdd(Character).FindOrAdd(Item);
+            const int32 Added = Definition && Definition->bUnique ? FMath::Clamp(1 - Held, 0, FMath::Min(Quantity, 1)) : Quantity;
+            Held += Added;
+            if (Held <= 0)
+            {
+                Record.Inventories.FindOrAdd(Character).Remove(Item);
+            }
+            return Added;
         }
+
+        /** Grants, unique-aware, recorded in the decision only for what was actually handed over. */
+        void Grant(FMarburgumWorldRecord& Record, const FString& Character, const FItemQuantity* Grants, int32 Count,
+            FMarburgumMissionDecision& Decision)
+        {
+            for (int32 Index = 0; Index < Count; ++Index)
+            {
+                const FItemQuantity& Each = Grants[Index];
+                if (FindItem(Each.Id) && Each.Quantity > 0)
+                {
+                    if (const int32 Added = AddItem(Record, Character, Each.Id, Each.Quantity); Added > 0)
+                    {
+                        Decision.Granted.FindOrAdd(Each.Id) += Added;
+                    }
+                }
+            }
+        }
+
+        TMap<FString, FProgressView> Views(const FMarburgumWorldRecord& Current, const FString& Character);
 
         void RemoveItem(FMarburgumWorldRecord& Record, const FString& Character, const FString& Item, int32 Quantity)
         {
@@ -38,7 +66,9 @@ namespace MarburgumII::Missions
         void Finish(const FMissionDefinition& Mission, const FMissionStageDefinition& Stage, FMarburgumWorldRecord& Next,
             const FString& Character, FMarburgumStoredMission& State, FMarburgumMissionDecision& Decision)
         {
-            const FMissionStageDefinition* Following = NextStage(Mission, Stage);
+            // The next stage on this character's route (ADR-083): conditional stages for another outcome are passed over.
+            const TMap<FString, FProgressView> Progress = Views(Next, Character);
+            const FMissionStageDefinition* Following = NextStage(Mission, Stage, [&Progress](const FString& Id) { return Progress.Find(Id); });
             if (!Stage.bFinal && Following)
             {
                 State.Stage = Following->Id;
@@ -72,15 +102,7 @@ namespace MarburgumII::Missions
                 Decision.Item = Plan.ObjectiveItem;
                 Decision.Quantity = Quantity;
             }
-            for (int32 Index = 0; Index < Stage.GrantItemCount; ++Index)
-            {
-                const FItemQuantity& Grant = Stage.GrantItems[Index];
-                if (FindItem(Grant.Id) && Grant.Quantity > 0)
-                {
-                    AddItem(Next, Character, Grant.Id, Grant.Quantity);
-                    Decision.Granted.FindOrAdd(Grant.Id) += Grant.Quantity;
-                }
-            }
+            Grant(Next, Character, Stage.GrantItems, Stage.GrantItemCount, Decision);
             SetFlags(State, Stage.SetFlags, Stage.SetFlagCount);
             Finish(Mission, Stage, Next, Character, State, Decision);
             Decision.bApplied = true;
@@ -137,7 +159,7 @@ namespace MarburgumII::Missions
             OutNext = Current;
             ++OutNext.Revision;
             FMarburgumStoredMission& Started = OutNext.Missions.FindOrAdd(Character).Add(Mission.Id);
-            Started.Stage = Mission.Stages[0].Id;
+            Started.Stage = Plan.Stage->Id;
             Started.StartedRevision = OutNext.Revision;
             for (int32 Index = 0; Index < Mission.StartItemCount; ++Index)
             {
@@ -146,15 +168,19 @@ namespace MarburgumII::Missions
                 {
                     continue;
                 }
-                AddItem(OutNext, Character, Start.Id, Start.Quantity);
+                const int32 Added = AddItem(OutNext, Character, Start.Id, Start.Quantity);
+                if (Added <= 0)
+                {
+                    continue;
+                }
                 if (Decision.Item.IsEmpty())
                 {
                     Decision.Item = Start.Id;
-                    Decision.Quantity = Start.Quantity;
+                    Decision.Quantity = Added;
                 }
                 else
                 {
-                    Decision.Granted.FindOrAdd(Start.Id) += Start.Quantity;
+                    Decision.Granted.FindOrAdd(Start.Id) += Added;
                 }
             }
             Decision.bApplied = true;
@@ -205,6 +231,12 @@ namespace MarburgumII::Missions
             Decision.Reason = EMarburgumInteractionReason::UnknownChoice;
             return Decision;
         }
+        if (!Choice->bCorrect)
+        {
+            // A deduction's wrong answer (ADR-083): nothing is recorded, so the player looks again and answers again.
+            Decision.Reason = EMarburgumInteractionReason::WrongConclusion;
+            return Decision;
+        }
         const int64 Money = Current.Money.FindRef(Character);
         if (Money + Choice->MoneyDelta < 0)
         {
@@ -233,6 +265,9 @@ namespace MarburgumII::Missions
         State.Outcome = Choice->Outcome;
         SetFlags(State, Stage->SetFlags, Stage->SetFlagCount);
         SetFlags(State, Choice->SetFlags, Choice->SetFlagCount);
+        // What the stage and the decision hand over (ADR-083): the collector's stamp, whichever way it was got.
+        Grant(OutNext, Character, Stage->GrantItems, Stage->GrantItemCount, Decision);
+        Grant(OutNext, Character, Choice->GrantItems, Choice->GrantItemCount, Decision);
         Decision.Outcome = State.Outcome;
         Finish(*Mission, *Stage, OutNext, Character, State, Decision);
         // Zero-money entries are not kept: a character with none is absent from the record.
@@ -258,6 +293,13 @@ namespace MarburgumII::Missions
         if (!Owned || Owned->FindRef(CameraItem) <= 0)
         {
             Decision.Reason = EMarburgumInteractionReason::NoCamera;
+            return Decision;
+        }
+        if (*Subject->RequiresItem && Owned->FindRef(Subject->RequiresItem) <= 0)
+        {
+            // A document that is only there when you bring it (ADR-083): the contact sheet on the light table.
+            Decision.Reason = EMarburgumInteractionReason::RequirementNotMet;
+            Decision.Item = Subject->RequiresItem;
             return Decision;
         }
         const TArray<FString>* Documented = Current.Discoveries.Find(Character);

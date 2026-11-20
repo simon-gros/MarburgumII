@@ -35,34 +35,78 @@ namespace MarburgumII::Missions
         }
     }
 
-    const FMissionStageDefinition* NextStage(const FMissionDefinition& Mission, const FMissionStageDefinition& Stage)
+    namespace
+    {
+        /** Open, Waiting (the gated mission is unfinished; OutPrerequisite names it) or Closed, for a list of gates. */
+        EGate CheckGates(const FMissionOutcomeGate* Gates, int32 Count, FFindProgress FindProgress, FString& OutPrerequisite)
+        {
+            for (int32 Index = 0; Index < Count; ++Index)
+            {
+                const FMissionOutcomeGate& Gate = Gates[Index];
+                const FProgressView* Gated = FindProgress(Gate.Mission);
+                if (!Gated || !Gated->bCompleted)
+                {
+                    OutPrerequisite = Gate.Mission;
+                    return EGate::Waiting;
+                }
+                bool bMet = false;
+                for (int32 Outcome = 0; Outcome < Gate.AnyOfCount && !bMet; ++Outcome)
+                {
+                    bMet = Gated->Outcome == Gate.AnyOf[Outcome];
+                }
+                if (!bMet)
+                {
+                    return EGate::Closed;
+                }
+            }
+            return EGate::Open;
+        }
+
+        const FMissionStageDefinition* FirstApplicable(const FMissionDefinition& Mission, int32 From, FFindProgress FindProgress)
+        {
+            for (int32 Index = FMath::Max(From, 0); Index < Mission.StageCount; ++Index)
+            {
+                if (StageApplies(Mission.Stages[Index], FindProgress))
+                {
+                    return &Mission.Stages[Index];
+                }
+            }
+            return nullptr;
+        }
+    }
+
+    bool StageApplies(const FMissionStageDefinition& Stage, FFindProgress FindProgress)
+    {
+        FString Unused;
+        return CheckGates(Stage.When, Stage.WhenCount, FindProgress, Unused) == EGate::Open;
+    }
+
+    const FMissionStageDefinition* FirstStage(const FMissionDefinition& Mission, FFindProgress FindProgress)
+    {
+        return FirstApplicable(Mission, 0, FindProgress);
+    }
+
+    const FMissionStageDefinition* NextStage(const FMissionDefinition& Mission, const FMissionStageDefinition& Stage, FFindProgress FindProgress)
     {
         const int32 Index = static_cast<int32>(&Stage - Mission.Stages);
-        return Index >= 0 && Index + 1 < Mission.StageCount ? &Mission.Stages[Index + 1] : nullptr;
+        return Index >= 0 && Index < Mission.StageCount ? FirstApplicable(Mission, Index + 1, FindProgress) : nullptr;
+    }
+
+    const FMissionStageDefinition* PreviousStage(const FMissionDefinition& Mission, const FMissionStageDefinition& Stage, FFindProgress FindProgress)
+    {
+        for (int32 Index = static_cast<int32>(&Stage - Mission.Stages) - 1; Index >= 0 && Index < Mission.StageCount; --Index)
+        {
+            if (StageApplies(Mission.Stages[Index], FindProgress))
+            {
+                return &Mission.Stages[Index];
+            }
+        }
+        return nullptr;
     }
 
     EGate CheckOutcomeGates(const FMissionDefinition& Mission, FFindProgress FindProgress, FString& OutPrerequisite)
     {
-        for (int32 Index = 0; Index < Mission.RequiresOutcomeCount; ++Index)
-        {
-            const FMissionOutcomeGate& Gate = Mission.RequiresOutcomes[Index];
-            const FProgressView* Gated = FindProgress(Gate.Mission);
-            if (!Gated || !Gated->bCompleted)
-            {
-                OutPrerequisite = Gate.Mission;
-                return EGate::Waiting;
-            }
-            bool bMet = false;
-            for (int32 Outcome = 0; Outcome < Gate.AnyOfCount && !bMet; ++Outcome)
-            {
-                bMet = Gated->Outcome == Gate.AnyOf[Outcome];
-            }
-            if (!bMet)
-            {
-                return EGate::Closed;
-            }
-        }
-        return EGate::Open;
+        return CheckGates(Mission.RequiresOutcomes, Mission.RequiresOutcomeCount, FindProgress, OutPrerequisite);
     }
 
     bool IsMissionTarget(const FString& TargetId)
@@ -176,12 +220,13 @@ namespace MarburgumII::Missions
                     continue;
                 }
             }
-            if (Missing.IsEmpty())
+            const FMissionStageDefinition* First = Missing.IsEmpty() ? FirstStage(Mission, FindProgress) : nullptr;
+            if (First)
             {
                 FPlan Plan;
                 Plan.Action = EPlanAction::StartMission;
                 Plan.Mission = &Mission;
-                Plan.Stage = &Mission.Stages[0];
+                Plan.Stage = First;
                 return Plan;
             }
             if (Waiting.Action == EPlanAction::NothingToDo)

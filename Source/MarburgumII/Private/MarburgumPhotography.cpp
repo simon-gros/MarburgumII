@@ -3,7 +3,9 @@
 #include "CollisionQueryParams.h"
 #include "Engine/World.h"
 #include "MarburgumCombatContract.h"
+#include "EngineUtils.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumInteractable.h"
 #include "MarburgumWater.h"
 
 namespace MarburgumPhotographyRules
@@ -37,6 +39,27 @@ void UMarburgumPhotographySubsystem::Resolve() const
     {
         if (AimPoints.Contains(Subject.Id))
         {
+            continue;
+        }
+        if (*Subject.Anchor)
+        {
+            // A document on a prop (ADR-083): the ground under the server-placed interactable, which every machine sees
+            // in the same place. Until it has replicated there is nothing to aim at yet.
+            for (TActorIterator<AMarburgumInteractable> It(World); It; ++It)
+            {
+                if (It->GetCatalogueId() != FName(Subject.Anchor))
+                {
+                    continue;
+                }
+                FCollisionQueryParams Under(SCENE_QUERY_STAT(MarburgumPhotoAnchor), true, *It);
+                const FVector At = It->GetActorLocation();
+                FHitResult Hit;
+                if (World->LineTraceSingleByChannel(Hit, At + FVector(0.0, 0.0, 200.0), At - FVector(0.0, 0.0, 600.0), ECC_Visibility, Under))
+                {
+                    AimPoints.Add(Subject.Id, FVector(At.X, At.Y, Hit.ImpactPoint.Z + Subject.AimHeightCm));
+                }
+                break;
+            }
             continue;
         }
         const FVector Plan = MarburgumII::Combat::GodotPositionToUnreal(Subject.GodotPosition);

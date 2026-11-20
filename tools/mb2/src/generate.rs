@@ -66,7 +66,25 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
             "photo" => "Photo",
             other => return Err(format!("item {}: unknown kind {other}", str_of(item, "id")?)),
         };
-        writeln!(out, "        {{ {}, {}, EItemKind::{kind} }},", lit(str_of(item, "id")?), lit(en(item, "name")?)).unwrap();
+        // Evidence (ADR-083): a description, the class of evidence and uniqueness, written only where the catalogue has them.
+        let evidence = match item["evidence"].as_str() {
+            None => "None",
+            Some("original") => "Original",
+            Some("print") => "Print",
+            Some("copy") => "Copy",
+            Some("testimony") => "Testimony",
+            Some("note") => "Note",
+            Some("inference") => "Inference",
+            Some(other) => return Err(format!("item {}: unknown evidence class {other}", str_of(item, "id")?)),
+        };
+        let unique = item["unique"].as_bool().unwrap_or(false);
+        let description = item["description"]["en"].as_str().unwrap_or("");
+        let extra = if description.is_empty() && evidence == "None" && !unique {
+            String::new()
+        } else {
+            format!(", {}, EEvidenceClass::{evidence}, {unique}", lit(description))
+        };
+        writeln!(out, "        {{ {}, {}, EItemKind::{kind}{extra} }},", lit(str_of(item, "id")?), lit(en(item, "name")?)).unwrap();
     }
     out.push_str("    };\n\n");
 
@@ -105,7 +123,11 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
             return Err(format!("photo subject {id}: godot_position_m needs three numbers"));
         }
         let metres = |key: &str| -> Result<f64, String> { subject[key].as_f64().ok_or_else(|| format!("photo subject {id}: {key} is not a number")) };
-        writeln!(out, "        {{ {}, {}, {{ {}, {}, {} }}, {}, {}, {}, {}, {}, {} }},", lit(id), lit(en(subject, "name")?),
+        // Anchored subjects (ADR-083): a document on a prop, optionally only while an item is in hand.
+        let anchor = subject["anchor"].as_str().unwrap_or("");
+        let requires = subject["requires_item"].as_str().unwrap_or("");
+        let extra = if anchor.is_empty() && requires.is_empty() { String::new() } else { format!(", {}, {}", lit(anchor), lit(requires)) };
+        writeln!(out, "        {{ {}, {}, {{ {}, {}, {} }}, {}, {}, {}, {}, {}, {}{extra} }},", lit(id), lit(en(subject, "name")?),
             double(position[0]), double(position[1]), double(position[2]), float(metres("aim_height_m")? * 100.0),
             float(metres("within_m")? * 100.0), float(metres("cone_degrees")?), int(subject, "xp")?, lit(str_of(subject, "item")?),
             lit(subject["note"]["en"].as_str().unwrap_or(""))).unwrap();
@@ -159,7 +181,20 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
                 .filter(|c| !c.is_empty()).unwrap_or_else(|| "0.f, 0.f, 0.f".to_string())
         };
         let dialogue = entry["dialogue"]["en"].as_str().unwrap_or("");
-        writeln!(out, "        {{ {}, EInteractableKind::{kind}, {}, {}, {}, {{ {}, {}, {} }}, {}, EPlacement::{placement}, {{ {} }}, {{ {} }}, {} }},",
+        // Story furniture (ADR-083).
+        let prop = match entry["prop"].as_str() {
+            None => String::new(),
+            Some(name) => format!(", EPropKind::{}", match name {
+                "order_book" => "OrderBook",
+                "light_table" => "LightTable",
+                "storage_cage" => "StorageCage",
+                "date_board" => "DateBoard",
+                "truck" => "Truck",
+                "archive_desk" => "ArchiveDesk",
+                other => return Err(format!("interactable {}: unknown prop {other}", str_of(entry, "id")?)),
+            }),
+        };
+        writeln!(out, "        {{ {}, EInteractableKind::{kind}, {}, {}, {}, {{ {}, {}, {} }}, {}, EPlacement::{placement}, {{ {} }}, {{ {} }}, {}{prop} }},",
             lit(str_of(entry, "id")?), lit(en(entry, "display_name")?), lit(verb(entry["verb"].as_str().unwrap_or("inspect"))),
             lit(dialogue), double(position[0]), double(position[1]), double(position[2]), float(entry["range_cm"].as_f64().unwrap_or(300.0)),
             color("primary"), color("secondary"), span(&format!("Interactable{entry_index}Posts"), !array(entry, "day_posts")?.is_empty())).unwrap();
@@ -171,14 +206,15 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
     for (m, mission) in missions.iter().enumerate() {
         let prefix = format!("Mission{m}");
         string_array(&mut out, &format!("{prefix}Requires"), array(mission, "requires_completed")?.iter().filter_map(Value::as_str));
-        let gates = array(mission, "requires_outcomes")?;
-        for (g, gate) in gates.iter().enumerate() {
-            string_array(&mut out, &format!("{prefix}Gate{g}AnyOf"), array(gate, "any_of")?.iter().filter_map(Value::as_str));
-        }
-        if !gates.is_empty() {
-            writeln!(out, "    inline constexpr FMissionOutcomeGate {prefix}Gates[] = {{").unwrap();
-            for (g, gate) in gates.iter().enumerate() {
-                writeln!(out, "        {{ {}, {} }},", lit(str_of(gate, "mission")?), span(&format!("{prefix}Gate{g}AnyOf"), !array(gate, "any_of")?.is_empty())).unwrap();
+        outcome_gates(&mut out, &format!("{prefix}Gates"), &format!("{prefix}Gate"), array(mission, "requires_outcomes")?)?;
+        // Questions for the journal (ADR-083).
+        let questions = array(mission, "questions")?;
+        if !questions.is_empty() {
+            writeln!(out, "    inline constexpr FMissionQuestion {prefix}Questions[] = {{").unwrap();
+            for question in questions {
+                writeln!(out, "        {{ {}, {}, {}, {}, {} }},", lit(str_of(question, "id")?), lit(en(question, "text")?),
+                    lit(question["answer"]["en"].as_str().unwrap_or("")), lit(question["answered_by"].as_str().unwrap_or("")),
+                    lit(question["answered_by_item"].as_str().unwrap_or(""))).unwrap();
             }
             out.push_str("    };\n");
         }
@@ -190,17 +226,23 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
             quantities(&mut out, &format!("{sp}Required"), array(stage, "required_items")?)?;
             quantities(&mut out, &format!("{sp}Grants"), array(stage, "grant_items")?)?;
             flags(&mut out, &format!("{sp}Flags"), &stage["set_flags"]);
+            outcome_gates(&mut out, &format!("{sp}When"), &format!("{sp}When"), array(stage, "when")?)?;
             let choices = array(stage, "choices")?;
             for (c, choice) in choices.iter().enumerate() {
                 let cp = format!("{sp}Choice{c}");
                 skill_xp(&mut out, &format!("{cp}Xp"), &choice["skill_xp"])?;
                 flags(&mut out, &format!("{cp}Flags"), &choice["set_flags"]);
+                quantities(&mut out, &format!("{cp}Grants"), array(choice, "grant_items")?)?;
             }
             if !choices.is_empty() {
                 writeln!(out, "    inline constexpr FMissionChoiceDefinition {sp}Choices[] = {{").unwrap();
                 for (c, choice) in choices.iter().enumerate() {
                     let cp = format!("{sp}Choice{c}");
-                    writeln!(out, "        {{ {}, {}, {}, {}, {}, {}, {} }},", lit(str_of(choice, "id")?), lit(en(choice, "label")?),
+                    // A deduction's wrong answer and a decision's own grants (ADR-083), written only where present.
+                    let correct = choice["correct"].as_bool().unwrap_or(true);
+                    let grants = !array(choice, "grant_items")?.is_empty();
+                    let extra = if correct && !grants { String::new() } else { format!(", {correct}, {}", span(&format!("{cp}Grants"), grants)) };
+                    writeln!(out, "        {{ {}, {}, {}, {}, {}, {}, {}{extra} }},", lit(str_of(choice, "id")?), lit(en(choice, "label")?),
                         int(choice, "money_delta")?, span(&format!("{cp}Xp"), !object_empty(&choice["skill_xp"])),
                         lit(choice["outcome"].as_str().unwrap_or(str_of(choice, "id")?)), lit(choice["completion_text"]["en"].as_str().unwrap_or("")),
                         span(&format!("{cp}Flags"), !object_empty(&choice["set_flags"]))).unwrap();
@@ -220,7 +262,9 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
                 other => return Err(format!("mission {}: stage {}: unknown objective {other}", str_of(mission, "id")?, str_of(stage, "id")?)),
             };
             let items = array(objective, "items")?;
-            writeln!(out, "        {{ {}, {}, {}, {}, EObjectiveType::{kind}, {}, {}, {}, {}, {}, {}, {}, {}, {} }},",
+            let when = !array(stage, "when")?.is_empty();
+            let extra = if when { format!(", {}", span(&format!("{sp}When"), true)) } else { String::new() };
+            writeln!(out, "        {{ {}, {}, {}, {}, EObjectiveType::{kind}, {}, {}, {}, {}, {}, {}, {}, {}, {}{extra} }},",
                 lit(str_of(stage, "id")?), lit(en(stage, "objective_text")?), lit(str_of(stage, "complete_target")?), lit(en(stage, "action")?),
                 span(&format!("{sp}Items"), !items.is_empty()), objective["quantity"].as_i64().unwrap_or(1),
                 objective["consume"].as_bool().unwrap_or(false),
@@ -276,7 +320,8 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
     for (m, mission) in missions.iter().enumerate() {
         let prefix = format!("Mission{m}");
         let journal = &mission["journal_entry"];
-        writeln!(out, "        {{ {}, {}, {}, {}, {}, {}, {}, {}, {}Stages, UE_ARRAY_COUNT({}Stages), {}, {}, {}, {}, {} }},",
+        let questions = if array(mission, "questions")?.is_empty() { String::new() } else { format!(", {}", span(&format!("{prefix}Questions"), true)) };
+        writeln!(out, "        {{ {}, {}, {}, {}, {}, {}, {}, {}, {}Stages, UE_ARRAY_COUNT({}Stages), {}, {}, {}, {}, {}{questions} }},",
             lit(str_of(mission, "id")?), lit(en(mission, "name")?), lit(str_of(mission, "category")?), lit(str_of(mission, "offer_target")?),
             lit(en(mission, "summary")?), lit(mission["story_family"].as_str().unwrap_or("")),
             span(&format!("{prefix}Requires"), !array(mission, "requires_completed")?.is_empty()),
@@ -395,6 +440,21 @@ fn quantities(out: &mut String, name: &str, values: &[Value]) -> Result<(), Stri
         parts.push(format!("{{ {}, {} }}", lit(str_of(value, "id")?), int(value, "quantity")?));
     }
     writeln!(out, "    inline constexpr FItemQuantity {name}[] = {{ {} }};", parts.join(", ")).unwrap();
+    Ok(())
+}
+
+/// `FMissionOutcomeGate Name[]` with an `AnyOf` array per gate: a mission's outcome gates, or a stage's condition.
+fn outcome_gates(out: &mut String, name: &str, each: &str, gates: &[Value]) -> Result<(), String> {
+    for (g, gate) in gates.iter().enumerate() {
+        string_array(out, &format!("{each}{g}AnyOf"), array(gate, "any_of")?.iter().filter_map(Value::as_str));
+    }
+    if !gates.is_empty() {
+        writeln!(out, "    inline constexpr FMissionOutcomeGate {name}[] = {{").unwrap();
+        for (g, gate) in gates.iter().enumerate() {
+            writeln!(out, "        {{ {}, {} }},", lit(str_of(gate, "mission")?), span(&format!("{each}{g}AnyOf"), !array(gate, "any_of")?.is_empty())).unwrap();
+        }
+        out.push_str("    };\n");
+    }
     Ok(())
 }
 

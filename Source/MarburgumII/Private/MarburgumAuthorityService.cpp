@@ -49,6 +49,7 @@ namespace MarburgumII::Gameplay
         case EMarburgumInteractionReason::NoCamera: return TEXT("no_camera");
         case EMarburgumInteractionReason::NothingInFrame: return TEXT("nothing_in_frame");
         case EMarburgumInteractionReason::AlreadyPhotographed: return TEXT("already_photographed");
+        case EMarburgumInteractionReason::WrongConclusion: return TEXT("wrong_conclusion");
         }
         return TEXT("unknown");
     }

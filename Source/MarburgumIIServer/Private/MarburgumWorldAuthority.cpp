@@ -903,6 +903,7 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleMissionChoice(AMarb
     Stored.Outcome = Decision.Outcome;
     Stored.MoneyDelta = Decision.MoneyDelta;
     Stored.SkillXp = Decision.SkillXp;
+    Stored.Granted = Decision.Granted;
     if (!Commit(Receipt, Next, Stored))
     {
         return Finish(Receipt, Requester);
@@ -911,6 +912,7 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleMissionChoice(AMarb
 
     Receipt.Outcome = EMarburgumRequestOutcome::Applied;
     Receipt.Effect = Decision.Effect;
+    Receipt.ItemsGranted = ToStacks(Decision.Granted);
     Receipt.Choice = FName(*Decision.Choice);
     Receipt.ChoiceOutcome = FName(*Decision.Outcome);
     Receipt.MoneyDelta = Decision.MoneyDelta;
@@ -1547,7 +1549,8 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
                 UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=photo_unplaced id=%s reason=no_ground"), InteractLogPrefix, Subject.Id);
                 continue;
             }
-            const double Reach = FMath::Clamp(Subject.WithinCm * 0.4, 1200.0, 4000.0);
+            // A document on a prop (ADR-083) is photographed from a step or two away, not from across the street.
+            const double Reach = FMath::Min(FMath::Clamp(Subject.WithinCm * 0.4, 1200.0, 4000.0), Subject.WithinCm * 0.6);
             bool bPlaced = false;
             for (const double Scale : { 1.0, 0.6, 1.4 })
             {

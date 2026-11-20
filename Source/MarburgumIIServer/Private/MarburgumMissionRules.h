@@ -47,8 +47,9 @@ namespace MarburgumII::Missions
     /**
      * A decision at a choice stage (original MissionRules::Choose): the stage must be current and completed at
      * TargetId, the choice must exist there, and the character must afford its money. The choice's money, skill
-     * XP, outcome and flags are recorded with the stage's flags; a final decision completes the mission.
-     * Refusals: UnknownChoice, InsufficientMoney.
+     * XP, outcome and flags are recorded with the stage's flags and the stage's and the choice's grant items (ADR-083); a final
+     * decision completes the mission. A deduction's wrong answer records nothing (WrongConclusion).
+     * Refusals: UnknownChoice, WrongConclusion, InsufficientMoney.
      */
     FMarburgumMissionDecision DecideChoice(const FMarburgumWorldRecord& Current, const FString& Character,
         const FString& TargetId, const FString& MissionId, const FString& ChoiceId, FMarburgumWorldRecord& OutNext);
@@ -57,7 +58,8 @@ namespace MarburgumII::Missions
      * A photograph of a photo subject (ADR-081): the camera must be in custody. The print (unless one is already held),
      * the first photograph's Photography XP and the remembered subject, and the current Photograph stage that names the
      * subject, in one record. A subject already documented whose print is still held, with no stage to complete, is
-     * refused (AlreadyPhotographed). Refusals: UnknownTarget, NoCamera, AlreadyPhotographed. The view itself (range,
+     * refused (AlreadyPhotographed); a document on a prop that needs an item in hand is refused without it
+     * (RequirementNotMet, ADR-083). Refusals: UnknownTarget, NoCamera, RequirementNotMet, AlreadyPhotographed. The view itself (range,
      * aim, line of sight) is the caller's check.
      */
     FMarburgumMissionDecision DecidePhotograph(const FMarburgumWorldRecord& Current, const FString& Character, const FString& SubjectId,

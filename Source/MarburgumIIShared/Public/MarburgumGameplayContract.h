@@ -16,12 +16,25 @@ namespace MarburgumII::Gameplay
      */
     enum class EItemKind : uint8 { Tool, Fish, Clue, Goods, Photo };
 
+    /**
+     * What kind of evidence an item is (ADR-083), kept apart the way the original storyline keeps them apart: an Original
+     * document or object, a photographic Print from an original negative, a Copy of something whose original is kept
+     * elsewhere, Testimony (what someone said), a Note (information: the player's own record) and an Inference (a
+     * conclusion drawn from other evidence). None for things that are not evidence.
+     */
+    enum class EEvidenceClass : uint8 { None, Original, Print, Copy, Testimony, Note, Inference };
+
     /** One registered item definition (ontology `ItemDefinition`), ids and English names from the original items.json. */
     struct FItemDefinition
     {
         const TCHAR* Id;
         const TCHAR* DisplayName;
         EItemKind Kind;
+        /** What the item is and where it came from, for the inventory; may be empty (ADR-083). */
+        const TCHAR* Description = TEXT("");
+        EEvidenceClass Evidence = EEvidenceClass::None;
+        /** A one-of-a-kind thing: a character never holds more than one, however many missions hand it over (ADR-083). */
+        bool bUnique = false;
     };
 
     /** A skill (original skills.json). Progress is XP on the 0-1990 curve (MarburgumSkillCurve.h, ADR-047). */
@@ -71,9 +84,23 @@ namespace MarburgumII::Gameplay
         const TCHAR* Item;
         /** What the photograph shows, for the notification and the journal. */
         const TCHAR* Note;
+        /**
+         * A document or small object on a prop (ADR-083): the aim point is AimHeightCm above the ground under that
+         * interactable instead of above the street round GodotPosition. Empty for buildings and views.
+         */
+        const TCHAR* Anchor = TEXT("");
+        /** Only photographable while the character holds this (a contact sheet laid on the light table); empty for none. */
+        const TCHAR* RequiresItem = TEXT("");
     };
 
     enum class EInteractableKind : uint8 { Npc, FishingSpot, Clue, Location };
+
+    /**
+     * What an authored place looks like (ADR-083). None is the plain marker; the others are small pieces of furniture
+     * every machine builds from engine primitives (and the Kainach truck from the project's truck mesh), so a story
+     * place reads as what it is.
+     */
+    enum class EPropKind : uint8 { None, OrderBook, LightTable, StorageCage, DateBoard, Truck, ArchiveDesk };
 
     /**
      * Where an authored interactable stands. Map: the map commandlet places it (the angler). Original: the server
@@ -130,6 +157,7 @@ namespace MarburgumII::Gameplay
         /** The person's day (ADR-081); none for places and for people who keep one spot. */
         const FDayPost* Posts;
         int32 PostCount;
+        EPropKind Prop = EPropKind::None;
     };
 
     struct FItemQuantity
@@ -162,6 +190,14 @@ namespace MarburgumII::Gameplay
         const TCHAR* CompletionText;
         const FMissionFlag* SetFlags;
         int32 SetFlagCount;
+        /**
+         * A deduction's wrong answer (ADR-083): refused with nothing recorded, and CompletionText is the reply that sends
+         * the player back to look again. A wrong answer carries no money, XP, outcome, flags or items.
+         */
+        bool bCorrect = true;
+        /** Handed over with the decision (ADR-083), on top of the stage's own grant items. */
+        const FItemQuantity* GrantItems = nullptr;
+        int32 GrantItemCount = 0;
     };
 
     /**
@@ -212,6 +248,27 @@ namespace MarburgumII::Gameplay
         int32 ChoiceCount;
         bool bFinal;
         const TCHAR* CompletionText;
+        /**
+         * A conditional stage (ADR-083): it is part of the mission only for a character for whom every gate holds (the
+         * named mission completed with one of the outcomes). Otherwise the mission passes over it. A mission's first
+         * stage is never conditional, and the gated missions are prerequisites, so the route is fixed when it starts.
+         */
+        const FMissionOutcomeGate* When = nullptr;
+        int32 WhenCount = 0;
+    };
+
+    /**
+     * Something a mission leaves the player wondering (ADR-083), for the journal: open until the stage AnsweredBy is
+     * done or the character holds AnsweredByItem; a question with neither stays open past the mission's end, for a
+     * later chapter.
+     */
+    struct FMissionQuestion
+    {
+        const TCHAR* Id;
+        const TCHAR* Text;
+        const TCHAR* Answer;
+        const TCHAR* AnsweredBy;
+        const TCHAR* AnsweredByItem;
     };
 
     /** One line on a counter (original shops.json): the shop's price, what it pays back, its starting shelf. */
@@ -274,6 +331,8 @@ namespace MarburgumII::Gameplay
         /** Every gate must be met: the named mission completed with one of its outcomes. */
         const FMissionOutcomeGate* RequiresOutcomes;
         int32 RequiresOutcomeCount;
+        const FMissionQuestion* Questions = nullptr;
+        int32 QuestionCount = 0;
     };
 }
 
