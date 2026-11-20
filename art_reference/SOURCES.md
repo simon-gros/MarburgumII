@@ -2,6 +2,19 @@
 
 This file is the acquisition map for the Marburgum art-reference archive. Sources are ranked by how directly they can answer questions about 1990s Maribor.
 
+## 20 November 2026 — additional verified archival leads
+
+The Marburgum II follow-up added **10 item-level historical/art research records** (catalogue **246**) and **3 collection-level cartographic leads** (historical imagery catalogue **6**), with rights and unverified fields retained. Priority institutional sources:
+
+- [Mariborska knjižnica / Pokrajinski arhiv Maribor: 1992 Otrok in umetnost opening photograph](https://www.kamra.si/mm-elementi/otvoritev-30-festivala-otrok-in-umetnost/), official [1992 invitation/programme](https://www.kamra.si/mm-elementi/vabilo-s-programom/) and [1995–96 invitation/programme](https://www.kamra.si/mm-elementi/vabilo-s-programom-2/). The photographic source identifies **Dvorana Union** and archival fond; the invitation records are evidence of event and printed design, not comprehensive venue geometry.
+- [Pokrajinski arhiv Maribor: Večer and Delo notices on Jeklotehna/Merkur, January 1993](https://www.kamra.si/mm-elementi/clanki-vecer-delo/). They establish dated retail plans, not the completion or appearance of any planned works.
+- [Mariborska knjižnica / JSKD Maribor: sixth Odprta Plesna Scena on 21 November 1997](https://www.kamra.si/mm-elementi/plesna-skupina-magra-pred-nastopom-copy-5-copy-copy-copy-copy-copy-copy-2-copy-copy-copy-copy-copy-copy-copy-copy-copy-copy-copy/), recording the II. gimnazija venue and dance programme.
+- [Univerzitetna knjižnica Maribor: Bogomir Čerin's 5 April 1992 Orehova vas motorsport image](https://www.kamra.si/mm-elementi/bogo-cerin-dirka/) for regional sport, motorcycles, clothing and crowds. Orehova vas is not central Maribor.
+- [Mariborska knjižnica's bibliography](https://www.kamra.si/digitalne-zbirke/viri-in-literatura-48/) identifies 1998 and 1999 architectural research/publications about earlier Maribor built heritage. These are **bibliographic leads** only and cannot establish 1990s facade changes.
+- [Official GURS remote-sensing account](https://www.e-prostor.gov.si/podrocja/drzavni-topografski-sistem/daljinsko-zaznavanje/) identifies CAS historical aerial surveys and early 1994–95 DOF5 production; [Arhiv Republike Slovenije's public catalogue](https://podatki.gov.si/dataset/digitalizirano-arhivsko-gradivo-starih-katastrov-si-as-176-si-as-177-si-as-178-si-as-179-si-as-180-s?resource_id=ce4d9292-6adf-46ec-bffd-25bc2ef6fa3e) identifies the **SI AS 177** Franciscan cadastre of Styria (1823–1869). Individual Maribor sheets, scan permissions and modern control-point accuracy remain unverified; the 19th-century maps are not 1990s ground truth.
+
+All item-linked protected media remain reference-only. None of these additions is a new licensed game texture, downloaded raster, georeferenced historical overlay or approved UE world modification.
+
 ## Tier A — primary Maribor / Slovenian institutional sources
 
 ### Kamra — regional cultural heritage portal
