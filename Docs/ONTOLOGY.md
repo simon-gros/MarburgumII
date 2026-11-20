@@ -56,7 +56,7 @@ A `Character` may belong to or interact with several `Organization` records: emp
 
 ### 3.3 Skills and progress
 
-The **original project's registered data catalogue** contained **five** definitions: `fishing`, `photography`, `housing`, `trading` and `reputation`. Its **longer-term design roster** named **fifteen** skills: Fishing, Trading, Photography, Housing, Reputation, Cooking, Electronics, Music, Chemistry, Logistics, Athletics, Research, Mechanics, Medicine and Occult. These two statuses must not be confused. **MarburgumII currently has no implemented skill gameplay.**
+The **original project's registered data catalogue** contained **five** definitions: `fishing`, `photography`, `housing`, `trading` and `reputation`. Its **longer-term design roster** named **fifteen** skills: Fishing, Trading, Photography, Housing, Reputation, Cooking, Electronics, Music, Chemistry, Logistics, Athletics, Research, Mechanics, Medicine and Occult. These two statuses must not be confused. **Implemented in MarburgumII:** Fishing (ADR-047/048), Reputation (mission decisions), Trading (Kiosk 67, ADR-060) and Photography (ADR-081: a camera tool, `PhotoSubject` definitions, server-judged photographs, first-photograph XP once per subject per character, recorded as world-store `discoveries`); Housing is registered without an activity; the other ten design skills are not registered.
 
 A `SkillDefinition` specifies an activity domain, a rule for earning experience and potential unlocks. A `SkillState` belongs to a character, references a definition and records progression. Ordinary learned skills are **nondecreasing by default**. `ReputationState` is a deliberate exception: current public standing may rise or fall while history/peak values remain inspectable. The previous project's shared **level 0–1990** model and XP curve are **legacy design references requiring renewed balance/acceptance**, not an automatically implemented MarburgumII numerical contract. **Occult** has an approved name in the old design roster but no authorized supernatural mechanics or detailed rule set; do not invent either.
 
@@ -67,6 +67,8 @@ A `SkillDefinition` specifies an activity domain, a rule for earning experience 
 `Evidence` can be an item, witness statement, photograph, record or observation, with provenance and discoverability distinct from its interpretation. `Choice` affects mission outcomes, trust, reputation, economy or the world when its effects are authoritatively committed. Scarce job openings and fairness protections are **future design candidates**; critical authored narrative routes must remain reachable.
 
 An activity such as fishing or photography can exist independently of a mission. A mission may require an activity but does not own the definition or the activity's core mechanics.
+
+**Implemented relations (ADR-081).** A `MissionDefinition` may be gated by another mission's recorded outcome (`requires_outcomes`): the offer waits while that mission is unfinished and is closed for good after another outcome. A `Photograph` objective is completed only by a photograph of a named `PhotoSubject`; the print it yields is an item of kind `photo`, and the subject is a `Discovery` of the character (first-photograph XP is paid once). Evidence items carry their mission provenance; the Chapter IV and Brane flags (`canteen_tape_place_melje`, `prehod_spacing_error_documented`) are the first evidence categories for the planned Chapter X deduction.
 
 ### 3.5 Inventory and economy
 
