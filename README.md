@@ -48,7 +48,7 @@ A real editor pedestrian traversed **283 metres across Stari most and back**. Th
 
 ## Historical research and art references
 
-Marburgum II now carries the original game's **236-record 1990s art-reference catalogue**, **five evidence-derived art/world-state rules**, and **three historical orthophoto/cadastral-map leads**. Source provenance, permissions and uncertainty remain explicit; the source images and rasters themselves were **not imported**. These catalogues are design evidence, not a claim that period-specific scenery is already implemented.
+Marburgum II now carries the historical **246-record art-reference catalogue** (236 original + 10 newly researched), **five evidence-derived art/world-state rules**, and **six historical imagery/cartography leads** (three original + three new). Source provenance, permissions and uncertainty remain explicit; the source images and rasters themselves were **not imported**. These catalogues are design evidence, not a claim that period-specific scenery is already implemented.
 
 [Browse the art-reference catalogue](art_reference/README.md) · [Historical archives and rights policy](Docs/HISTORICAL_ARCHIVES.md) · [Source directory](art_reference/SOURCES.md)
 
