@@ -1293,3 +1293,27 @@ Simon asked to encrypt the traffic. This also closes the server half of QA **AR1
 **Rejected.** Enhanced Input migration in this change (larger than the slice; the legacy axis mappings already carry WASD); client-side answer filtering (the server judges every answer, as before); highlighting the focused answer in an accent colour (reads as a clue).
 
 **Evidence.** [INPUT_INVESTIGATION_EVIDENCE.md](INPUT_INVESTIGATION_EVIDENCE.md). Owner playtest: **not yet**.
+
+## ADR-088 — Encrypted packets are replay-checked; a stolen hello ticket no longer locks the player out (accepted 2026-11-21)
+
+The evening review of 20 November listed two open P0 security points on ADR-083: replay of encrypted packets, and an on-path attacker burning the cleartext hello ticket.
+
+- **Replay window.** `FMarburgumStrictAESGCM` reads the sender's 64-bit packet counter from the GCM nonce (bytes 1–8, as `FAESGCMHandlerComponent::Outgoing` writes it). It keeps a 1,024-packet window and drops an authentic packet whose counter it has already accepted, or one older than the window (`MB2CRYPTO event=replay_dropped`).
+  - The counter enters the window only after the packet authenticates. GCM covers the nonce, so a forged counter cannot move the window.
+  - The comparison is modulo 2^64, because the sender starts its counter at a random value and lets it wrap.
+  - Why it is needed: the engine's own 14-bit packet sequence wraps after 16,384 packets, so in a long session a recorded packet could otherwise come back as new.
+  - Reordering within 1,024 packets is still accepted.
+- **Hello token.** The ticket is in the clear in `NMT_Hello`. Before this change, whoever sent it first spent it: a thief without the key admitted nobody, but the player's own join then failed. Now the ticket's own server may redeem it up to `REDEEMS_PER_TICKET` = 3 times within its minute.
+  - Admission still needs the connection key, which never crosses the wire.
+  - The game server still refuses a character already in the world, and signing out or a password reset still ends every outstanding ticket.
+  - A ticket is no longer single-use as a string. It is single-character, key-bound and short-lived.
+- **Remaining.**
+  - Each direction uses the same key with an independent random 12-byte nonce prefix. The chance of a nonce collision across directions is about 2^-32 × (packets / 2^64), which is negligible; per-direction keys would remove it entirely.
+  - Metadata stays visible.
+  - Keys are not rotated during a session.
+  - A thief can still redeem the ticket three times first and exhaust it; the player then asks for a new ticket.
+- **Evidence.**
+  - `Marburgum.Net.ReplayWindow`: duplicates, gaps filled late, a jump ahead, the window edge, slot reuse, a counter that starts just below the 64-bit wrap.
+  - `Marburgum.Net.StrictEncryption`: a replayed packet dropped, reordering taken, a packet replayed 1,100 packets later refused.
+  - Service tests: 38.
+  - Editor account smoke PASS (`Saved/AccountSmoke/20261120T233811Z`). A thief redeems the player's ticket first with a wrong key and admits nobody. The player is then admitted once, through the recording relay, with that same ticket. The ticket replayed while the character is in the world is refused as already in the world.
