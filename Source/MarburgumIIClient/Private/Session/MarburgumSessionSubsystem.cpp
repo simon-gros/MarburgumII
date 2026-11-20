@@ -114,11 +114,9 @@ void UMarburgumSessionSubsystem::Initialize(FSubsystemCollectionBase& Collection
         TravelFailureHandle = GEngine->OnTravelFailure().AddUObject(this, &UMarburgumSessionSubsystem::HandleTravelFailure);
     }
     PendingConnectionHandle = FNetDelegates::OnPendingNetGameConnectionCreated.AddUObject(this, &UMarburgumSessionSubsystem::HandlePendingConnection);
-    // One handler per process (the engine's delegate is single-cast); a client game instance owns it.
-    if (!FNetDelegates::OnReceivedNetworkEncryptionAck.IsBound())
-    {
-        FNetDelegates::OnReceivedNetworkEncryptionAck.BindUObject(this, &UMarburgumSessionSubsystem::HandleEncryptionAck);
-    }
+    // The engine's delegate is single-cast, and UGameInstance::Init has just bound a placeholder that refuses every
+    // ack ("not implemented"): replace it (ADR-083).
+    FNetDelegates::OnReceivedNetworkEncryptionAck.BindUObject(this, &UMarburgumSessionSubsystem::HandleEncryptionAck);
     TickerHandle = FTSTicker::GetCoreTicker().AddTicker(
         FTickerDelegate::CreateUObject(this, &UMarburgumSessionSubsystem::Tick), TickIntervalSeconds);
 }
