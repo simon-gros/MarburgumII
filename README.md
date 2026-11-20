@@ -165,7 +165,7 @@ The server owns meaningful gameplay mutations, NPC destinations, combat resoluti
 | Area | Documents |
 | --- | --- |
 | **Game design** | [Vision](Docs/VISION.md) · [Ontology](Docs/ONTOLOGY.md) · [Original-game parity](Docs/LEGACY_PARITY.md) |
-| **Roadmaps and status** | [Milestones](Docs/ROADMAP.md) · [UI/HUD](Docs/UI_HUD_ROADMAP.md) · [Graphics](Docs/GRAPHICS_ROADMAP.md) · [24-hour review](Docs/DEVELOPMENT_REVIEW_2026-11-20_EVENING.md) · [Research proposals](Docs/GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) |
+| **Roadmaps and status** | [Milestones](Docs/ROADMAP.md) · [Legacy RPG systems and character progression](Docs/LEGACY_RPG_SYSTEMS_IMPORT_ROADMAP.md) · [UI/HUD](Docs/UI_HUD_ROADMAP.md) · [Graphics](Docs/GRAPHICS_ROADMAP.md) · [24-hour review](Docs/DEVELOPMENT_REVIEW_2026-11-20_EVENING.md) · [Research proposals](Docs/GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) |
 | **Engineering** | [Development](Docs/DEVELOPMENT.md) · [Architecture](Docs/ARCHITECTURE.md) · [Networking/security](Docs/NETWORK_ARCHITECTURE.md) · [P0 packaged evidence](Docs/P0_PACKAGED_EVIDENCE_2026-11-20.md) · [Playtest freshness](Docs/PLAYTEST_FRESHNESS.md) |
 | **Player experience** | [First launch](Docs/FIRST_LAUNCH_ONTOLOGY.md) · [UI/HUD design](Docs/UI_HUD_DESIGN.md) · [UI captures/evidence](Docs/UI_OVERHAUL_EVIDENCE.md) · [Story and Photography](Docs/STORY_EXPANSION.md) · [Chat](Docs/CHAT.md) |
 | **Art and world** | [Visual backlog](Docs/VISUAL_QUALITY_BACKLOG.md) · [Interiors](Docs/INTERIORS.md) · [Historical archives](Docs/HISTORICAL_ARCHIVES.md) · [TRELLIS](Docs/ASSET_GENERATION_TRELLIS.md) · [GFX baseline](Docs/GFX00_BASELINE.md) |
