@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "note": "Metadata-only historical orthophoto/map products; imported into Marburgum II from the original Marburgum's unmerged PR #329 on 20 November 2026. Unknown values remain null or 'unknown'. These records do not establish rights or period-specific imagery. Raw rasters are not included. See Docs/HISTORICAL_ARCHIVES.md.",
+  "note": "Metadata-only historical orthophoto/map products; imported into Marburgum II from the original Marburgum's unmerged PR #329 on 20 November 2026. Unknown values remain null or 'unknown'. These records do not establish rights or period-specific imagery. Raw rasters are not included. See Docs/HISTORICAL_ARCHIVES.md. Expanded 20 November 2026 using GURS and Archives of Slovenia official metadata. Added collection-level leads are unverified for individual Maribor sheets, licensing and georeferencing; neither source age nor nationwide coverage certifies 1990s state at a particular location.",
   "game_period": {
     "start_year": 1990,
     "end_year": 1999
@@ -21,9 +21,11 @@
       "license": "unknown",
       "known_distortions": "unknown",
       "absence_presence_reliability": "unknown",
-      "access": "Announced as available on geo-portal.si (2025-01-16); exact access route and terms not yet verified",
+      "access": "Announced as available on geo-portal.si (2025-01-16); exact access route and terms not yet verified Additional checks: GURS confirms the first national full black-and-white orthophoto coverage in 2001; PISO shows an archival 1997 image example. Neither statement establishes which year or sheet covers Maribor. Map sheet retrieval remains pending.",
       "source_urls": [
-        "https://www.geo-portal.si/"
+        "https://www.geo-portal.si/",
+        "https://www.e-prostor.gov.si/podrocja/drzavni-topografski-sistem/daljinsko-zaznavanje/",
+        "https://geoprostor.net/PisoPortal/novost-%C4%8Db-letalski-posnetki.aspx"
       ],
       "verified": false
     },
@@ -37,14 +39,15 @@
         "end": "2006"
       },
       "georeference_accuracy_m": null,
-      "coverage": "national series; Maribor coverage expected but unverified",
+      "coverage": "GURS confirms nationwide colour coverage in 2006; includes the territory of Maribor but individual sheet/year/rights inspection remains pending",
       "resolution_m": null,
       "license": "unknown",
       "known_distortions": "unknown",
       "absence_presence_reliability": "unknown",
       "access": "Announced as available on geo-portal.si (2025-01-16); exact access route and terms not yet verified. Postdates the game period, so absence claims are only indirect evidence for 1990-1999.",
       "source_urls": [
-        "https://www.geo-portal.si/"
+        "https://www.geo-portal.si/",
+        "https://www.e-prostor.gov.si/podrocja/drzavni-topografski-sistem/daljinsko-zaznavanje/"
       ],
       "verified": false
     },
@@ -66,6 +69,72 @@
       "access": "Franciscan and later cadastral plans viewable via eZKN; download terms unverified",
       "source_urls": [
         "https://geohub.gov.si/ghapp/ezkn/"
+      ],
+      "verified": false
+    },
+    {
+      "id": "gurs-cas-1975-2005-historical-air-photos",
+      "title": "GURS Ciklično aerofotografiranje Slovenije (CAS) historical aerial photographs",
+      "kind": "aerial_photo",
+      "publisher": "Geodetska uprava Republike Slovenije (GURS)",
+      "date_range": {
+        "start": "1975",
+        "end": "2005"
+      },
+      "georeference_accuracy_m": null,
+      "coverage": "Periodic nationwide airborne photography since 1975; 1985 onward three-year cycles and 1997–1999 surveys documented. Maribor source flight strips, dates, orientation files and actual coverage not yet checked",
+      "resolution_m": null,
+      "license": "unknown",
+      "known_distortions": "Film-camera perspective and historical orientation/georeferencing may require reconstruction; project-specific residuals unmeasured",
+      "absence_presence_reliability": "unknown",
+      "access": "GURS historical aerial archive, with Geodetski inštitut Slovenije authorized to distribute historical photography. Digital scans with absolute orientation reported for parts of 1998 and 1999; obtain flight/block inventory and per-image conditions before site claims",
+      "source_urls": [
+        "https://www.e-prostor.gov.si/podrocja/drzavni-topografski-sistem/daljinsko-zaznavanje/",
+        "https://www.e-prostor.gov.si/podrocja/drzavni-topografski-sistem/drugo/razno/pogosta-vprasanja/",
+        "https://iaps.zrc-sazu.si/sl/programi-in-projekti/georeferenciranje-arhiva-aerofotografij"
+      ],
+      "verified": false
+    },
+    {
+      "id": "gurs-dof5-initial-1994-1995",
+      "title": "Early Slovenian DOF5 digital orthophoto production (1994–1995 initial series)",
+      "kind": "orthophoto",
+      "publisher": "Geodetska uprava Republike Slovenije (GURS)",
+      "date_range": {
+        "start": "1994",
+        "end": "1995"
+      },
+      "georeference_accuracy_m": null,
+      "coverage": "Early national production: GURS records 74 DOF5 sheets and 14 DOF25 sheets made in 1994; since 1995 issued DOF5 only. Maribor coverage in those particular years has not been verified",
+      "resolution_m": null,
+      "license": "unknown",
+      "known_distortions": "unknown",
+      "absence_presence_reliability": "unknown",
+      "access": "Research the original 1994–1995 DOF5 index and issue dates via GURS. The historical source is not necessarily downloadable in current GURS public distribution. No sheet acquired",
+      "source_urls": [
+        "https://www.e-prostor.gov.si/podrocja/drzavni-topografski-sistem/daljinsko-zaznavanje/",
+        "https://www.gov.si/assets/ministrstva/MNVP/Javni-pozivi/2025/evidenca_stavbnih_zemljisc/Priloga2_Tehnicna-pravila-ESZ_v1_5.pdf"
+      ],
+      "verified": false
+    },
+    {
+      "id": "si-as-177-styrian-franciscan-cadastral-1823-1869",
+      "title": "Archives of Slovenia SI AS 177 Franciscan cadastre for Styria",
+      "kind": "cadastral_map",
+      "publisher": "Arhiv Republike Slovenije (Archives of the Republic of Slovenia)",
+      "date_range": {
+        "start": "1823",
+        "end": "1869"
+      },
+      "georeference_accuracy_m": null,
+      "coverage": "Historic cadastral municipalities in Styria; Maribor-target parcel/sheet list not yet inspected in VAČ",
+      "resolution_m": null,
+      "license": "unknown",
+      "known_distortions": "Historic Austrian cadastral geometry; scanned high-quality copy and contemporary EPSG:3794 georeferencing not undertaken",
+      "absence_presence_reliability": "No evidence of 1990–1999 presence or absence; use only to research durable earlier geometry and cadastral settlement pattern with independent continuity evidence",
+      "access": "SI AS 177 fonds enumerated in national public-data portal; viewer copies are available through VAČ; high-resolution archival copies require reading-room process. Distinct archival provenance from GURS eZKN viewer and not evidence of the game's period",
+      "source_urls": [
+        "https://podatki.gov.si/dataset/digitalizirano-arhivsko-gradivo-starih-katastrov-si-as-176-si-as-177-si-as-178-si-as-179-si-as-180-s?resource_id=ce4d9292-6adf-46ec-bffd-25bc2ef6fa3e"
       ],
       "verified": false
     }
