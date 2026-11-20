@@ -1,6 +1,6 @@
 # MarburgumII — Early graphical UI & HUD design contract
 
-**Status:** Approved design direction. The §3 tokens and the §4.4 connection shell have a first UMG implementation awaiting owner playtest ([evidence](STAGE0C_UI_EVIDENCE.md)). Of the exploration HUD, the chat panel, the nearby interaction prompt, receipt notifications, the location banner, the pinned objective and the condition card exist ([Gate 1](STAGE1_GATE1_EVIDENCE.md), [Lent](STAGE1_LENT_EVIDENCE.md), [condition](STAGE1_CONDITION_EVIDENCE.md)). Of the management screens, first Inventory, Journal, Character and **Skills (K)** views exist. **Settings remains unimplemented**. Subsequent first-launch/character-creator 3D preview is editor-tested; see [UI roadmap](UI_HUD_ROADMAP.md) and [19 November review](DEVELOPMENT_REVIEW_2026-11-19.md).  
+**Status:** Approved design direction. **Design system v2 and a full first pass of every player-facing surface are implemented on `feat/ui-hud-major-overhaul` (November 2026) and await the owner's playtest** — see §3A and the [overhaul evidence](UI_OVERHAUL_EVIDENCE.md): the exploration HUD (title-card banner, key-cap prompt, objective tracker, toasts and subtitles, vitals, vehicle readout), one management shell for Character, Skills, Inventory, Journal and a working **Settings** screen, the decision and counter cards, chat, the Escape menu, and the title, account and creator screens, in English and Slovene. Earlier first implementations: [Stage 0C](STAGE0C_UI_EVIDENCE.md), [Gate 1](STAGE1_GATE1_EVIDENCE.md), [Lent](STAGE1_LENT_EVIDENCE.md), [condition](STAGE1_CONDITION_EVIDENCE.md). Nothing here is owner-approved until it has been played; see [UI roadmap](UI_HUD_ROADMAP.md).  
 **Priority:** P0 presentation architecture; begin alongside Stage 0B networking and deliver a polished first playable presentation in Stage 1.  
 **Engine:** Unreal Engine **5.8.3**; client presentation belongs to `MarburgumIIClient`.  
 **Ontology and development ownership:** [UI/HUD semantic ontology](UI_HUD_ONTOLOGY.md), [machine-readable component registry](../Data/Ontology/ui_hud.v0.1.json), and [phased acceptance roadmap](UI_HUD_ROADMAP.md). Stable module IDs, signal authority, contexts and layout policies are controlled there. This file controls visual intent and identity; neither file proves runtime implementation.  
@@ -50,6 +50,39 @@ Direction: **restrained, premium documentary/urban identity with subtle 1990s in
 - Motion: short fades/slides with easing; global reduced-motion path, no gratuitous effects or animation that makes important text unreadable.
 
 A **visual reference board and actual UMG screenshots** should demonstrate login, empty exploration, interaction, mission state, Skills, Inventory, Journal and a network failure. Mockups are useful for art direction but cannot substitute for running gameplay screenshots.
+
+## 3A. Implemented design system v2 (feat/ui-hud-major-overhaul, 2026-11-20)
+
+What exists in `MarburgumIIClient` code, not a mock-up. All of it is C++ UMG/Slate built through `MarburgumUI::FBuilder`;
+there are no Widget Blueprints and no new framework (Common UI was not adopted).
+
+| Layer | Implementation | Where |
+| --- | --- | --- |
+| Type | Fira Sans (body, labels), Fira Sans Condensed SemiBold (overlines, key caps), Noto Serif (place names, titles, journal, quotes); OFL, licences bundled, staged as files. Full Slovene coverage (č š ž Č Š Ž). Engine Roboto stands in only if the files are missing. | `Content/Marburgum/Fonts`, `MarburgumUITheme` |
+| Colour | Charcoal/slate surfaces, warm off-white text, copper accent, desaturated teal for wayfinding; success/warning/danger never by colour alone (glyph + word). Every text colour ≥ 4.5:1 on every opaque surface, standard and high-contrast (`Marburgum.Client.UIContrast`). | `MarburgumUITheme.cpp` |
+| Scale | A project DPI curve (720p 80 %, 1080p 100 %, 1440p 133 %, 4K 200 %) times the player's interface scale (80–200 %) and text size (100/112/125 %). | `Config/DefaultEngine.ini`, `UMarburgumUISettings` |
+| Glyphs | 46 line icons stroked by Slate at draw time (talk, inspect, fish, car, door, item, coin, skill, mission, journal, chat, heart, breath, swim, clock, pin, warning, lock, shop, trade, …): sharp at 4K, no licensed or generated art. | `SMarburgumGlyph` |
+| Shades | Soft scrims behind HUD text over the street, drawn from one 64 × 64 bilinear alpha mask per shape (band, soft band, fades), so they have no edges or banding at any size. | `SMarburgumScrim` |
+| Components | Surfaces, buttons (primary/secondary/quiet), focusable rows/tabs with their own copper focus ring (`SMarburgumSelectable`), meters with segments and a ghost, key caps and key hints, chips, pills, section titles, toasts, state cards, bounded widths, the survey plate. | `MarburgumUIBuilder`, `MarburgumUIWidgets` |
+| Motion | Short eased fades and settles; none under Reduce motion. A fully faded widget is hidden, not drawn at zero alpha. | `FBuilder::Fade` |
+| Language | English and Slovene interface text (657 strings, `Config/Localization/Game.ini`, `Content/Localization/Game`), switched live from Settings; dates from the language's own calendar names, 24-hour time. Gameplay content (NPC, mission, item and weather names) is still English data. | `scripts/localize-linux.sh` |
+
+**Surfaces.** The exploration HUD keeps the street clear: a short-lived serif title card for a new district or street
+with clock and weather; one key-cap prompt for the single eligible target (verb glyph, key, name, one detail line);
+the pinned objective (kind, mission, one actionable line, a "new" chip on change); iconised toasts with server
+receipts distinguished from refusals; NPC speech as serif subtitles; vitals and stamina only when they change or matter
+(swimming, winded, injured, down), or always by preference; the vehicle readout only in a car. Character (C), Skills
+(K), Inventory (I), Journal (J) and Settings (O) share one shell: a dimmed, blurred street, the character's name and
+street, tabs with their keys, Q/E to switch, the HUD hidden and input owned by the screen until Esc. The Escape menu
+(Back to the street, Settings, Leave the world, Quit the game, each Leave/Quit confirmed) never pauses the world. The
+decision and counter cards number their options on key caps with consequence chips. The title, sign-in, registration
+and credentials screens stand over a vector survey plate of the Drava at Lent (Stari most, Glavni most, graticule);
+the creator splits into a card and a framed 3D stage whose widths are divided at run time, so they cannot overlap
+(QA U9, verified at 1280 × 1024 and 150 %).
+
+**Known gaps (not claimed):** controller-only use of the decision and counter cards (number keys only), key
+rebinding, separate music/effects volumes, resolution switching from Settings (display facts are read-only), and
+translated gameplay content.
 
 ## 4. Layout and states (first playable slice)
 
