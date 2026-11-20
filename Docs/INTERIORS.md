@@ -53,6 +53,10 @@ Regenerate `interior_floors.json` (`-run=MarburgumInteriorAudit -WriteFloors`) a
 | Level | `MarburgumInteriorAudit`: for all 932 footprints in the real level, the capsule through the door as built and as if cut, what stands inside each room, a capsule walk through every room and back out, every leaf shut and open | `Saved/Interiors/audit/<run>/` |
 | Game | `scripts/door-smoke-linux.sh [editor\|staged] [id]`: a dedicated server and three clients; a walker, a rival and a late joiner, then a server restart | `Saved/DoorSmoke/<run>/` |
 
+## Packaged and rollout gates — 20 November morning
+
+A Client/Server package compiled after staged UFS data correction, **but there is no recorded passing staged three-client door smoke**. Test `scripts/door-smoke-linux.sh staged`, with two different occupied buildings, denial/out-of-reach, obstructed closing, late joins, server restart, stream out/in and actual network lag; stamp footprint, measured floor, cut façade and cooked asset revisions. Only **five of 586 eligible** buildings are physically open; the remaining **581** require incremental audited cuts and rollback, not a blanket acceptance. Explicitly handle the 346 named geometry/access exceptions. Owner playtest remains mandatory before an interior phase is approved. [Detailed priorities](DEVELOPMENT_REVIEW_2026-11-20_MORNING.md).
+
 ## What is not done
 
-See the backlog in the audit report. In short: 581 shells still to rebuild, bare rooms with no furniture, skirting or window reveals, no stair to upper floors, no navigation for the street people indoors, no packaged run and no owner playtest.
+See the backlog in the audit report. In short: 581 shells still to rebuild, bare rooms with no furniture, skirting or window reveals, no stair to upper floors, no navigation for the street people indoors, no passing staged packaged three-client door smoke and no owner playtest.

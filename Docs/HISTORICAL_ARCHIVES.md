@@ -56,6 +56,12 @@ GitHub Actions [historical-archives.yml](../.github/workflows/historical-archive
 
 The optional [reference downloader](../tools/fetch_art_reference.py) only processes explicitly `auto_fetch=yes` manifest records and writes to `~/marburgum-data/art-reference/licensed/` by default, outside Git. Downloading does not approve an image for inclusion in commercial builds. Restricted media and archival rasters are never included automatically.
 
+## Integration and research-completeness warning, 20 November morning
+
+The latest [historical archive workflow](https://github.com/simon-gros/MarburgumII/actions/runs/44680469864) **passed**, while [whole-repository source CI](https://github.com/simon-gros/MarburgumII/actions/runs/44680469847) **failed** at `mb2 validate all`. Imported Python validators/tests and Python CI contradict ADR-018's enforced Python-free rule; see [ADR-077](DECISIONS.md). The commands above describe current implementation, **not accepted tooling compliance**. Restore same-revision full CI and archive-schema coverage without disabling either check.
+
+**P1 curation gate:** All **246 art records** and **six unverified imagery/cartographic leads** require triage by depicted/publication date, exact geographic coverage, source licence, derivative permission and historical inferences. Prioritize Lent/bridge/river/shopfront/1990s street assets. Distinguish 2026 survey photos, nineteenth-century cadastral maps and 2006 orthoimagery from 1990s evidence. Do not use archive media as TRELLIS prompts or shipped textures without explicit asset-specific rights and owner approval. Produce evidence-linked, reviewable world-state overrides rather than bulk unreviewed image imports.
+
 ## Next production actions
 
 - Curate the highest-value evidence for Lent's shopfronts, bridge details, architecture, night lighting, clothing and 1990s signage.

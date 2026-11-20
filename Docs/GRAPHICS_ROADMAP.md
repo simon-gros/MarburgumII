@@ -40,6 +40,10 @@ Current code already includes a dynamic sun/moon, skylight, sky atmosphere, heig
 
 **Delivery order:** GFX-00 → GFX-01, then GFX-02/03/04 small prototypes **on the same scene** → GFX-05 → GFX-06 → GFX-07 → GFX-08. GFX-09 runs isolated in research only. **The main roadmap's P0 crowd/packaging/account/UI and owner-approval work still takes precedence**; graphics milestones do not reclassify unfinished game systems.
 
+## Morning dependencies and evidence controls
+
+The 20 November expansion brought the [historical archive](HISTORICAL_ARCHIVES.md) to **246 art records, six unverified map/imagery leads and five research rules**. These remain metadata and rights-gated evidence, not approved historical scene materials. General source CI is failing following the Python tool import (ADR-077). ADR-076 provides five real cut ground-floor entrances with editor walking proof, but 581 eligible shells remain closed and no staged three-client door acceptance exists. Benchmark a **real** current-head cooked Client+Server scene containing one of those five interiors, NPCs, HUD and weather before global Lumen/Nanite/DLSS plugin changes. Do not batch rebuild all city facades during experimental rendering.
+
 ## Showcase reference route and work packages
 
 The single most valuable reference is a short third-person walk beside the **Drava in Lent**, along the **Stari most approach** to a recognizably 1990s old-town frontage, with a separately tested ground-floor door/interior. Establish matching cameras at ground height, bridge deck, riverbank and elevated roof view; include NPC, vehicle and readable Slovene signage. Record any unavailable point rather than staging a fake feature.

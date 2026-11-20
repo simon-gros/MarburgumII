@@ -1,5 +1,7 @@
 # Architecture — initial baseline
 
+**Morning integration warning:** Source CI fails after the imported Python archive tooling contradicts accepted ADR-018; archive-only CI passes. Owner decision is pending in [ADR-077](DECISIONS.md). Only five ADR-076 shell doors have editor walks; a packaged build is not yet staged door acceptance. See [morning review](DEVELOPMENT_REVIEW_2026-11-20_MORNING.md).
+
 ## Engine invariant
 
 **Unreal Engine 5.8.3 is required.** `.unreal-engine-version` pins the exact patch. The portable `EngineAssociation` in `MarburgumII.uproject` uses `5.8` because official engine associations may be major/minor identifiers; source-built engines can use machine-specific GUIDs. Neither proves patch level. Verify `Engine/Build/Build.version` before each Unreal build.

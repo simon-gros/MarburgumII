@@ -1112,3 +1112,15 @@ The account smoke also asked for both admission tickets before four client start
 **Evidence.** Rules, mesher-cut and mesher tests pass. In the level, all 586 eligible buildings pass the walk with the door cut, 0 rooms have anything inside and 0 leaves are blocked. Five shells are rebuilt, and the door smoke passed on Hotel Lent (twice) and the vine museum in the editor build. Captures in `Docs/Captures/interiors-2026-11-20/`.
 
 **Not in this decision.** Rebuilding the other 581 shells (one command, on main), furniture, skirting, window reveals, stairs, upper floors, locks, saved door state, navigation for the street people indoors, a packaged build and the owner playtest.
+
+## ADR-077 — Historical archives conflict with Python-free tooling (recorded 2026-11-20; owner decision OPEN)
+
+The migration [`659e28f`](https://github.com/simon-gros/MarburgumII/commit/659e28f6d87757892011f3e7c0b7fce385977e03) and research extension [`8fd4aaf`](https://github.com/simon-gros/MarburgumII/commit/8fd4aaff1daad50d3e2bc8dd3f06677ed5e93efe) now catalogue **246 historical/art references**, **six unverified map/imagery leads**, and five source-derived rules. No copyrighted images, raster maps, Unreal historical overrides or owner-approved art were imported.
+
+**Observed policy violation:** ADR-018 prohibits Python sources and Python CI; `tools/mb2/src/validate/python_free.rs` explicitly rejects both. The new tools, tests and `historical-archives.yml` violate that rule. At head `8fd4aaf`, [source CI](https://github.com/simon-gros/MarburgumII/actions/runs/44680469847) **failed** whereas [archive CI](https://github.com/simon-gros/MarburgumII/actions/runs/44680469864) **passed**. The expected validator conflict is source-proven; review full CI job logs for any additional error.
+
+**P0 decision required:** Prefer migrating archive validators, regression tests and licensed-source fetch controls to Rust `mb2`, retaining unique IDs, rights flags, source references, unverified geography and exclusion of raw media. Alternatively, the owner can explicitly approve a narrowly scoped *non-runtime archival research* Python exception and change ADR-018, the source guard, workflow/dependencies and relevant docs consistently. Never merely hide Python files or disable CI. Same-SHA source+archive passes are required before calling the import integrated.
+
+## ADR-078 — Graphics modernization remains an evidence-gated plan (proposed 2026-11-20; approval OPEN)
+
+[GRAPHICS_ROADMAP.md](GRAPHICS_ROADMAP.md) defines GFX-00–09 as a proposed sequence, beginning with actual cooked Client/Server GPU/CPU/VRAM measurement and deterministic Lent/Drava/enterable-interior shots. Subsequent period content, materials, lighting, water and LOD experiments are reversible, rights-cleared and owner-reviewed. Linux TSR must remain available; NVIDIA and unofficial DLSS 5 research is optional and cannot be a gameplay/server dependency. The failed crowd gate, staged door gate and current UI/CI issues outrank speculative renderer improvements. UE remains **5.8.3**.

@@ -2,7 +2,7 @@
 
 The ground floors and doors of ADR-076 ([INTERIORS.md](INTERIORS.md)), audited in the real level and in the running game. They had not been entered by anybody before this audit. Branch `qa/interiors-audit-2026-11-19`, Unreal Engine 5.8.3, Linux, RTX 5080.
 
-**Status: qualified in the editor build, not production-ready.** Five buildings are open and walked through in a server and client run of the editor build. No packaged build was cooked or run, and the owner has not playtested it.
+**Status: qualified in the editor build, not production-ready.** Five buildings are open and walked through in a server and client run of the editor build. After the UFS correction a packaged Client/Server compiled, but **no passing staged multi-client door smoke was recorded** and the owner has not playtested it.
 
 ## What was checked, and at which level
 
@@ -12,7 +12,7 @@ The ground floors and doors of ADR-076 ([INTERIORS.md](INTERIORS.md)), audited i
 | Automated rules | `Marburgum.Gameplay.Interiors`, `Marburgum.Editor.InteriorDoorCuts`, `Marburgum.Editor.BuildingMesher` (`Saved/Interiors/automation-3.log`; `automation-4.log` after the rebase); `mb2 validate all` | 3/3 pass; validate passes |
 | Level audit, all 932 footprints | `MarburgumInteriorAudit` against the level's collision (`Saved/Interiors/audit/{before-cuts,floors-measured-2,sample-cut}`) | Table below |
 | Game, editor build | `scripts/door-smoke-linux.sh editor` on Hotel Lent (`Saved/DoorSmoke/20261120T002213Z`, `…T002743Z`, and `…T004127Z` after the rebase onto ADR-074) and the vine museum (`…T003240Z`) | Pass, 4 of 4 |
-| Packaged build | Not run | — |
+| Packaged build | Client/Server compiled after UFS correction | Staged door smoke still unverified |
 | Owner playtest | Not run | — |
 
 ## Coverage of the city

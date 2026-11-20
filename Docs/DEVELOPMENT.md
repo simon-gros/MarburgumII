@@ -1,5 +1,7 @@
 # Development environment
 
+**Current preflight (20 November):** [Source CI](https://github.com/simon-gros/MarburgumII/actions/runs/44680469847) fails at `mb2 validate all`, although [historical archive CI](https://github.com/simon-gros/MarburgumII/actions/runs/44680469864) passes. Python archival tools conflict with ADR-018 (see [ADR-077](DECISIONS.md)). No packaged staged door smoke, post-merge UI matrix or owner acceptance is established. [Morning review](DEVELOPMENT_REVIEW_2026-11-20_MORNING.md).
+
 ## Required toolchains
 
 Unreal Engine **5.8.3 exactly**, its corresponding platform-native C++ toolchain, Git and Git LFS, .NET SDK 10 (pinned by `global.json`) and Rust stable. Python is not used (ADR-018).

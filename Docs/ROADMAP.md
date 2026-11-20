@@ -8,6 +8,18 @@
 
 **Controlling rule:** MarburgumII preserves the majority of original Marburgum world/gameplay requirements but reimplements them in fresh Unreal Engine **5.8.3** C++ code. Dedicated authoritative client/server must be present in the **first running milestone**. “Solo-friendly” describes game experience, **not client authority or an offline-only code path**. See [NETWORK_ARCHITECTURE.md](NETWORK_ARCHITECTURE.md), [ONTOLOGY.md](ONTOLOGY.md), [UI_HUD_ONTOLOGY.md](UI_HUD_ONTOLOGY.md), [UI_HUD_ROADMAP.md](UI_HUD_ROADMAP.md) and [LEGACY_PARITY.md](LEGACY_PARITY.md).
 
+## Morning 20 November 2026 — newly identified blockers and priorities
+
+**P0: Restore green CI and resolve ADR-018 conflict.** After the research expansion to **246 art references, six unverified imagery/map leads and five source-linked rules**, [source validation](https://github.com/simon-gros/MarburgumII/actions/runs/44680469847) failed at `mb2 validate all` while the [historical archive workflow](https://github.com/simon-gros/MarburgumII/actions/runs/44680469864) passed. The archive adds Python tooling/tests and a Python-invoking workflow, prohibited by accepted ADR-018 and `tools/mb2/src/validate/python_free.rs`. Inspect full job diagnostics, then preferably port archival validation/tests/approved-source fetch to Rust, or formally approve a limited non-runtime exception by updating the ADR, validator, dependency policy and CI together. Both workflows must pass on the **same revision**; no silent check exemptions.
+
+**P0: Preserve hard gameplay failures.** Clean staged opposite-bank population settled only **11/28** (editor 14/28); fix the pavement-node candidate issue without inflating budgets or timeouts. Repeat full editor/staged day/night strict matrices, shared-crowd and 48-cap controls. Produce a fresh clean UE 5.8.3 Client+Server package with code/asset hashes and run the integrated account/mission/shop/vehicle/combat/swim/weather/chat/street suite, including AR1 ticket-audience and AR13 join-URL privacy fixes.
+
+**P0: Qualify actual interiors and merged UI.** ADR-076: **586 eligible**, **346 exceptions**, only **five cut and editor-walked** buildings, **581 still sealed**. Packaging built after UFS staging, **not** the same as a passing three-client `door-smoke-linux.sh staged`. Check door/collision/reach/obstruction, two buildings, late join, reconnect, server restart, stream out/in and source/mirror/cooked data parity; owner acceptance before bulk façade cuts. UI v2, working Settings, 657 localized UI strings and 37/37 automation exist, but packaged fonts/ICU, translated gameplay text, post-merge resolution/scale/controller/focus/Slate-cost matrix and personal owner approval are missing.
+
+**P1: Historical correctness and measurable visuals.** The 246 references and six image/map leads remain rights-gated metadata, not released textures or historic in-game geometry. Review exact period, place, source permissions and world-state evidence; add versioned approved overrides. GFX-00 must obtain packaged GPU/CPU p50/p95/p99, VRAM and visual A/B evidence on playable Lent/Drava, crowd and one of the five real interiors **before** renderer changes. Rebuild the other 581 eligible shells incrementally with rollback, then period-appropriate furnishing/landmarks/vegetation.
+
+**Order:** CI/policy → strict staged population and door pilot → complete current-head security/UI/regression → explicit owner acceptance → historic/graphics and city-scale expansion. [Detailed morning review](DEVELOPMENT_REVIEW_2026-11-20_MORNING.md). No listed unmet gate is promoted to completed status by documentation alone.
+
 ## Stage 0A — Native engine and role separation
 
 Initially delivered as source, then **built and qualified on Linux**: `MarburgumII.uproject`, core/shared/client/server module descriptors, Client/Server/Editor/Game build targets, engine version pin, a server-owned GameMode and replicated GameState contract marker, .NET source-manifest verifier, Rust crate and baseline CI.
@@ -82,7 +94,7 @@ Current owner-selected original Unreal Lent launch world `/Game/World/lent` (a f
 
 **Fishing and the opening mission (2026-11-11): qualified in the editor, awaiting a packaged run and the owner playtest.** The original skill curve, Drava fishing and the Lent missions are carried over ([ADR-047](DECISIONS.md), [ADR-048](DECISIONS.md), [ADR-049](DECISIONS.md)). A cast on the Lent bank uses the original wait, bite and species weights. Showing the catch continues "Something in the Water" through the cashbox, Petra Kralj, the service room and Vera Horvat, then Kiosk 67's decision. Money, Fishing and Reputation XP, the choice and the clues survive a restart. Editor automation is 11/11. Vera's follow-up, the late parcel, Hall Three and the sign under the paint are played in the same editor smoke (ADR-050, ADR-051), and so are the Melje and Tabor missions, on temporary floors until those windows are built (ADR-052): all eight of the original's missions. Still open: a packaged run, fishing animation and sound, the Melje and Tabor ground itself, and the owner playtest.
 
-## Stage 1 integrated readiness — updated 20 November 2026, through ADR-075
+## Stage 1 integrated readiness — updated 20 November 2026, through ADR-076 and morning reconciliation
 
 This is an **engineering evidence register**, not an assertion of completed packaged approval. The [20 November review](DEVELOPMENT_REVIEW_2026-11-20.md) supersedes previous dates for current status; earlier reviews remain historical.
 

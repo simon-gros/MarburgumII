@@ -31,7 +31,7 @@ The current world is a **1,536 × 1,536 m nine-window development map** centered
 
 ## Latest development · 20 November 2026
 
-The overnight development push brought together a broad **quality-assurance audit** and improvements through **ADR-075**. Accounts, persistence, input, scrolling screens, notifications and packaged-build verification were hardened; pedestrian crowds now follow each player's district, share local budgets and navigate a repaired bridge graph.
+The overnight development push brought together a broad **quality-assurance audit** and improvements through **ADR-076**. Accounts, persistence, input, scrolling screens, notifications and packaged-build verification were hardened; pedestrian crowds now follow each player's district, share local budgets and navigate a repaired bridge graph.
 
 A real editor pedestrian traversed **283 metres across Stari most and back**. The new multi-client crowd matrix shows **18 pedestrians shared by two players** on a shopping street (not 36), a nighttime pair sharing **2**, and three old-town players reaching the **48-person cap**.
 
@@ -45,6 +45,10 @@ A real editor pedestrian traversed **283 metres across Stari most and back**. Th
 </table><sub>Actual in-engine development captures. Not final release art.</sub></div>
 
 [20 November review](Docs/DEVELOPMENT_REVIEW_2026-11-20.md) · [QA audit](Docs/QA_AUDIT_2026-11-19.md) · [Visual backlog](Docs/VISUAL_QUALITY_BACKLOG.md) · [AI evidence](Docs/AI_GAMEPLAY.md)
+
+The merged **UI/HUD redesign** now includes a consolidated Character/Skills/Inventory/Journal shell, functioning Settings, revised HUD/creator/Escape/chat screens, **657 English/Slovene interface strings**, 5:4/150% creator-fit and contrast checks (**37/37 editor automation**). Packaged localization/fonts, full live resolution/controller input checks and personal owner approval are still open. **ADR-076 interiors** provide 586 eligible deterministic ground floors, but only **five shells have actual cut doors** and editor walking evidence; **581 remain sealed**. A Client/Server package compiled after data staging fixes, yet no staged multi-client door acceptance is recorded.
+
+The new [graphics roadmap](Docs/GRAPHICS_ROADMAP.md) is a **proposal** for measured visual improvements, not implemented rendering upgrades. **Source-validation CI is currently failing** after import and expansion of historical research tools, while the archive-specific workflow passes: tracked Python validators and their workflow contradict the binding Python-free ADR-018. See the [morning review](Docs/DEVELOPMENT_REVIEW_2026-11-20_MORNING.md) for corrective priorities.
 
 ## Historical research and art references
 
@@ -64,7 +68,8 @@ The table distinguishes **recorded engineering implementation** from **release a
 | **Living streets** | Server-owned district/hour visitors and 239 places; shared crowds, bridge repairs and real 2–3-client packaged scenarios | **Opposite-bank crowd timeout: 11/28 staged**; complete settled matrix, incident regression and owner test |
 | **Life and progression** | Fishing, persistent 0–1990 skill progression, Inventory, Journal, Skills, Kiosk 67 and all eight original mission flows | Integrated packaged mission/trade contention and restart cases, additional professions and authored remote terrain |
 | **Movement and vehicles** | Third-person character, persisted condition, swimming, unarmed combat, five-car catalogue and authoritative vehicle seats/driving | Owner retest of the previously reported long-drive defect; current packaged passenger/combat regressions |
-| **Presentation and chat** | UMG chat, HUD and management screens; new Escape/resume/leave/quit, scroll, wrapping and input fixes | Settings, 150%+/5:4 creator overlap, controller, localization, contrast and owner UX approval |
+| **Presentation and chat** | Merged UI v2, HUD/management/Settings/chat/creator, 657 localized interface strings, creator-fit and contrast editor checks | Fresh packaged UI/ICU/fonts, 720p–4K/80–200% and controller/focus, gameplay translation, owner acceptance |
+| **Interiors** | 586 eligible procedural ground floors, five physical shell door openings with editor three-client proof | Full staged door smoke, 581 remaining sealed candidates, 346 exceptions, furnishing and owner acceptance |
 
 **Current status: pre-alpha.** The clean packaged multi-client crowd test is **partially passing**; the daytime matrix exits nonzero. No release build, full-city completion, production-scale MMO capacity or personal owner acceptance is claimed.
 
@@ -161,9 +166,9 @@ The server owns meaningful gameplay mutations, NPC destinations, combat resoluti
 
 ## What's next
 
-**P0:** Resolve the reproducible opposite-bank crowd timeout without weakening settlement checks; rerun the entire day/night matrix on clean matched Client/Server builds. Then close full account/mission/vehicle regressions, secure admission-ticket audience design, test the revised UI at varied resolutions and obtain a personal owner playtest.
+**P0:** Restore passing whole-repository CI and resolve the Python-free archival tooling conflict; fix the strict opposite-bank crowd timeout; stage and verify the five working interiors and merged UI in current matched Client/Server packages. Close full mission/account/vehicle regressions and ticket audience/privacy gaps before owner playtesting.
 
-**P1:** Follow the [graphics and rendering roadmap](Docs/GRAPHICS_ROADMAP.md) and [visual-quality backlog](Docs/VISUAL_QUALITY_BACKLOG.md) for original Marburgum trees, street furniture, period signage, mission props and landmark art. **Microsoft TRELLIS remains the selected image-to-3D workflow (ADR-071), not Hunyuan3D.**
+**P1:** Qualify audited batches of the 581 remaining sealed interior shells, rights/date/place-check the 246 references and six map leads, and measure a real packaged visual baseline. Follow the [graphics and rendering roadmap](Docs/GRAPHICS_ROADMAP.md) and [visual-quality backlog](Docs/VISUAL_QUALITY_BACKLOG.md) for original Marburgum trees, street furniture, period signage, mission props and landmark art. **Microsoft TRELLIS remains the selected image-to-3D workflow (ADR-071), not Hunyuan3D.**
 
 [Full roadmap](Docs/ROADMAP.md) · [20 November review](Docs/DEVELOPMENT_REVIEW_2026-11-20.md) · [AI backlog](Docs/AI_GAMEPLAY.md)
 
