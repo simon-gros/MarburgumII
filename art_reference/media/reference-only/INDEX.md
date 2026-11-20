@@ -2,7 +2,7 @@
 
 This is the browsable material directory for catalogue records that are **not mirrored as repository media**. It is generated from `../../CATALOG.csv` and intentionally points to the authoritative source rather than copying restricted files.
 
-Current coverage: **236 catalogue records**, of which **230 remain reference-only / collection-level / review-only**.
+Current coverage: **246 catalogue records**, of which **240 remain reference-only / collection-level / review-only**.
 
 ## P0
 
@@ -282,6 +282,23 @@ Current coverage: **236 catalogue records**, of which **230 remain reference-onl
 | Ref | Date | Area | Medium | Source / rights | Production use |
 |---|---|---|---|---|---|
 | `MAR-1997-GEOGRAPHICAL-SOCIETY-001` | 1997 | citywide/context | article/report | [Geografsko društvo Maribor v prvi polovici leta 1997](https://dlib.si/details/URN%3ANBN%3ASI%3ADOC-YAZVQ37L)<br>copyrighted-reference-only | narrative; characters; institutional; district_context |
+
+## 20 November 2026 research expansion — additional source-linked records
+
+The following ten catalogued references were added after the original 236-record import. All remain reference-only; the dated programme, image and institution records do not establish distribution rights or precise spatial fidelity. This section is derived from the same canonical `CATALOG.csv` metadata.
+
+| Ref | Date | Area | Medium | Source / rights | Production use |
+|---|---|---|---|---|---|
+| `MAR-1992-UNION-OTROK-OPENING-001` | 1992 | Center / Union Hall | documentary photograph | [Opening of the 30th Otrok in umetnost festival at Union Hall](https://www.kamra.si/mm-elementi/otvoritev-30-festivala-otrok-in-umetnost/)<br>CC-BY-NC | interiors; props; characters; clothing; crowds; lighting; narrative |
+| `MAR-1992-OTROK-FESTIVAL-PROGRAM-001` | 1992 | citywide / children's culture | printed invitation / event programme | [Official invitation and programme for the 30th Otrok in umetnost festival](https://www.kamra.si/mm-elementi/vabilo-s-programom/)<br>CC-BY-NC | graphic_design; signage; props; narrative |
+| `MAR-1992-OTROK-KRAMBERGER-001` | 1992 | citywide / libraries and children's culture | archival photograph | [Darja Kramberger, first editor of Otrok in knjiga, in 1992 festival archive](https://www.kamra.si/mm-elementi/darja-kramberger/)<br>CC-BY-NC | characters; clothing; props; narrative |
+| `MAR-1995-96-OTROK-FESTIVAL-PROGRAM-001` | 1995–1996 | citywide / children's culture | printed invitation / event programme | [Programme for 32nd Otrok in umetnost event (1995–1996)](https://www.kamra.si/mm-elementi/vabilo-s-programom-2/)<br>CC-BY-NC | graphic_design; props; signage; narrative |
+| `MAR-1993-JEKLOTEHNA-MERKUR-PRESS-001` | 1993-01-19–1993-01-26 | Center / commercial retail | newspaper articles / press clippings | [Večer and Delo articles on Jeklotehna's Merkur plans, January 1993](https://www.kamra.si/mm-elementi/clanki-vecer-delo/)<br>CC-BY-NC | retail; signage; narrative; props; world_state |
+| `MAR-1997-ODPRTA-PLESNA-SCENA-006` | 1997-11-21 | Tabor / II. gimnazija; cultural performance | event documentation / programme image | [Sixth Odprta Plesna Scena, II. gimnazija Maribor](https://www.kamra.si/mm-elementi/plesna-skupina-magra-pred-nastopom-copy-5-copy-copy-copy-copy-copy-copy-2-copy-copy-copy-copy-copy-copy-copy-copy-copy-copy-copy-copy/)<br>CC-BY-NC | interiors; lighting; characters; clothing; props; narrative |
+| `MAR-1992-OREHOVA-VAS-DIRKA-001` | 1992-04-05 | Maribor regional context / Orehova vas | black-and-white documentary photograph | [Bogomir Čerin: motorcycle race start at Orehova vas, 5 April 1992](https://www.kamra.si/mm-elementi/bogo-cerin-dirka/)<br>CC-BY-NC | vehicles; clothing; crowds; props; narrative |
+| `MAR-1998-FRIEDRIGER-SCHOOL-STUDY-001` | 1998 | citywide / historic architecture | architectural research report / bibliography | [Onemogočeni arhitekt Fritz Friedriger: Maribor secondary-school research, 1998](https://www.kamra.si/digitalne-zbirke/viri-in-literatura-48/)<br>copyrighted-reference-only | architecture; facades; interiors; narrative |
+| `MAR-1999-FRIEDRIGER-UGM-EXHIBITION-001` | 1999 | Center / cultural heritage | exhibition publication / architectural bibliography | [Fritz Friedriger in Maribor (1894–1920): UGM exhibition publication, 1999](https://www.kamra.si/digitalne-zbirke/viri-in-literatura-48/)<br>copyrighted-reference-only | architecture; facades; narrative; props |
+| `MAR-1994-CERNIGOJ-MUSEUM-EXHIBITION-001` | 1994-09-16–1994-10-10 | Center / museum and gallery culture | exhibition chronology / institutional record | [Avgust Černigoj exhibition at Maribor Museum Information Centre, 1994](https://www.kamra.si/digitalne-zbirke/razstave-2/)<br>copyrighted-reference-only | narrative; cultural_reference; signage; props |
 
 ## Working rule
 
