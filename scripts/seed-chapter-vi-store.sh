@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Writes a world store (schema 6) for an owner playtest of Chapter VI, The Negative (ADR-083): one character per given
+# Writes a world store (schema 6) for an owner playtest of Chapter VI, The Negative (ADR-084): one character per given
 # Kiosk 67 outcome, each having finished the Prologue to Chapter III, Nika's Then and Now (the camera) and Kiosk 67 with
 # that outcome, holding the papers those missions leave in custody and 120 money. Chapters IV and V are not played.
 #

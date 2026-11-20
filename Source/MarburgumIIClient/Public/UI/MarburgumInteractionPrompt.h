@@ -50,7 +50,7 @@ private:
     /** With a camera in custody and nothing else in reach: what [P] would photograph (ADR-081). False when nothing. */
     /**
      * The [P] card for what the camera points at. With an interaction Target in reach it shows only for a document on that
-     * very prop which a mission step is asking to be photographed (ADR-083), so the counter's [E] does not hide it.
+     * very prop which a mission step is asking to be photographed (ADR-084), so the counter's [E] does not hide it.
      */
     bool RefreshPhoto(const AMarburgumPlayerController& Controller, const AMarburgumInteractable* Target = nullptr);
     void Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone, bool bKeyActive,

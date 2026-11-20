@@ -377,7 +377,7 @@ void UMarburgumMissionSmokeSubsystem::TickStep(double Now)
         return;
     case 1:
         if (!R) return;
-        // A step can also be expected to be refused (ADR-083): refused:<reason>, with nothing changed.
+        // A step can also be expected to be refused (ADR-084): refused:<reason>, with nothing changed.
         Expect(ExpectEffect.ToString().StartsWith(TEXT("refused:"))
                 ? R->Outcome == EMarburgumRequestOutcome::Rejected && ExpectEffect == FName(*FString::Printf(TEXT("refused:%s"), ToString(R->Reason)))
                 : R->Outcome == EMarburgumRequestOutcome::Applied && ExpectEffect == FName(ToString(R->Effect)),
@@ -548,7 +548,7 @@ void UMarburgumMissionSmokeSubsystem::TickChoice(double Now)
         }
         const FMarburgumMissionState* Saved = State->FindMission(MissionId);
         // A decision part-way through a mission (stage_completed) or a deduction's wrong answer (refused:wrong_conclusion,
-        // ADR-083): the receipt says which, and nothing else has to have finished.
+        // ADR-084): the receipt says which, and nothing else has to have finished.
         if (!ExpectEffect.IsNone())
         {
             if (!R) return;

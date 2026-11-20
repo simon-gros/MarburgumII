@@ -112,13 +112,13 @@ void UMarburgumChoicePanel::Rebuild()
     }
     Stage = FName(Current->Id);
     MissionLabel->SetText(FText::FromString(MarburgumII::Gameplay::Localized(Definition->Name)));
-    // A deduction (ADR-083): some answers are wrong. What each would earn is not shown, or it would give the answer away.
+    // A deduction (ADR-084): some answers are wrong. What each would earn is not shown, or it would give the answer away.
     bool bDeduction = false;
     for (int32 Index = 0; Index < Current->ChoiceCount; ++Index)
     {
         bDeduction |= !Current->Choices[Index].bCorrect;
     }
-    // A deduction's wrong answer is not recorded (ADR-083): the footer must not say every answer is final.
+    // A deduction's wrong answer is not recorded (ADR-084): the footer must not say every answer is final.
     HintLabel->SetText(bDeduction
         ? LOCTEXT("DeductionHint", "Press a number to answer. Only the right conclusion is recorded; a wrong one changes nothing.")
         : LOCTEXT("Hint", "Press a number to decide. The server records your choice; it cannot be taken back."));

@@ -10,7 +10,7 @@
 
 #include "Misc/AutomationTest.h"
 
-// Chapter VI, The Negative, and the Frame 37 side story (ADR-083).
+// Chapter VI, The Negative, and the Frame 37 side story (ADR-084).
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumNegativePrerequisitesTest,
     "Marburgum.Server.Story.Negative.Prerequisites",

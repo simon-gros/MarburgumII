@@ -7,7 +7,7 @@
 class AMarburgumPlayerState;
 
 /**
- * How the interface names kinds of evidence (ADR-083), kept apart the way the original storyline keeps them apart, and
+ * How the interface names kinds of evidence (ADR-084), kept apart the way the original storyline keeps them apart, and
  * the replicated progress views the shared mission rules read on the client.
  */
 namespace MarburgumUI

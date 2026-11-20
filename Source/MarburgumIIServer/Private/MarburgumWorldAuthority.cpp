@@ -1549,7 +1549,7 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
                 UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=photo_unplaced id=%s reason=no_ground"), InteractLogPrefix, Subject.Id);
                 continue;
             }
-            // A document on a prop (ADR-083) is photographed from a step or two away, not from across the street.
+            // A document on a prop (ADR-084) is photographed from a step or two away, not from across the street.
             const double Reach = FMath::Min(FMath::Clamp(Subject.WithinCm * 0.4, 1200.0, 4000.0), Subject.WithinCm * 0.6);
             bool bPlaced = false;
             for (const double Scale : { 1.0, 0.6, 1.4 })

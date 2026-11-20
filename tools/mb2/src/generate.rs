@@ -66,7 +66,7 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
             "photo" => "Photo",
             other => return Err(format!("item {}: unknown kind {other}", str_of(item, "id")?)),
         };
-        // Evidence (ADR-083): a description, the class of evidence and uniqueness, written only where the catalogue has them.
+        // Evidence (ADR-084): a description, the class of evidence and uniqueness, written only where the catalogue has them.
         let evidence = match item["evidence"].as_str() {
             None => "None",
             Some("original") => "Original",
@@ -123,7 +123,7 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
             return Err(format!("photo subject {id}: godot_position_m needs three numbers"));
         }
         let metres = |key: &str| -> Result<f64, String> { subject[key].as_f64().ok_or_else(|| format!("photo subject {id}: {key} is not a number")) };
-        // Anchored subjects (ADR-083): a document on a prop, optionally only while an item is in hand.
+        // Anchored subjects (ADR-084): a document on a prop, optionally only while an item is in hand.
         let anchor = subject["anchor"].as_str().unwrap_or("");
         let requires = subject["requires_item"].as_str().unwrap_or("");
         let extra = if anchor.is_empty() && requires.is_empty() { String::new() } else { format!(", {}, {}", lit(anchor), lit(requires)) };
@@ -181,7 +181,7 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
                 .filter(|c| !c.is_empty()).unwrap_or_else(|| "0.f, 0.f, 0.f".to_string())
         };
         let dialogue = entry["dialogue"]["en"].as_str().unwrap_or("");
-        // Story furniture (ADR-083).
+        // Story furniture (ADR-084).
         let prop = match entry["prop"].as_str() {
             None => String::new(),
             Some(name) => format!(", EPropKind::{}", match name {
@@ -207,7 +207,7 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
         let prefix = format!("Mission{m}");
         string_array(&mut out, &format!("{prefix}Requires"), array(mission, "requires_completed")?.iter().filter_map(Value::as_str));
         outcome_gates(&mut out, &format!("{prefix}Gates"), &format!("{prefix}Gate"), array(mission, "requires_outcomes")?)?;
-        // Questions for the journal (ADR-083).
+        // Questions for the journal (ADR-084).
         let questions = array(mission, "questions")?;
         if !questions.is_empty() {
             writeln!(out, "    inline constexpr FMissionQuestion {prefix}Questions[] = {{").unwrap();
@@ -238,7 +238,7 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
                 writeln!(out, "    inline constexpr FMissionChoiceDefinition {sp}Choices[] = {{").unwrap();
                 for (c, choice) in choices.iter().enumerate() {
                     let cp = format!("{sp}Choice{c}");
-                    // A deduction's wrong answer and a decision's own grants (ADR-083), written only where present.
+                    // A deduction's wrong answer and a decision's own grants (ADR-084), written only where present.
                     let correct = choice["correct"].as_bool().unwrap_or(true);
                     let grants = !array(choice, "grant_items")?.is_empty();
                     let extra = if correct && !grants { String::new() } else { format!(", {correct}, {}", span(&format!("{cp}Grants"), grants)) };

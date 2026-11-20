@@ -323,13 +323,13 @@ void UMarburgumJournalPanel::ShowDossier(FName MissionId)
         FBuilder::Stack(Dossier, Objective, T.Space.XL);
     }
 
-    // This character's route through the mission (ADR-083): stages for another outcome were never part of it.
+    // This character's route through the mission (ADR-084): stages for another outcome were never part of it.
     const TMap<FString, MarburgumII::Missions::FProgressView> Views = MarburgumUI::ProgressViews(State);
     const auto OnRoute = [&Views](const FMissionStageDefinition& Stage)
     {
         return MarburgumII::Missions::StageApplies(Stage, [&Views](const FString& Id) { return Views.Find(Id); });
     };
-    // Questions the mission leaves open, and what has been established (ADR-083): unresolved first, then settled.
+    // Questions the mission leaves open, and what has been established (ADR-084): unresolved first, then settled.
     if (Mission && Mission->QuestionCount > 0)
     {
         TArray<const FMissionQuestion*> Open;
@@ -414,7 +414,7 @@ void UMarburgumJournalPanel::ShowDossier(FName MissionId)
             {
                 FText Line = Stack->Quantity > 1 ? FText::Format(LOCTEXT("HeldMany", "{0}  ×{1}"), FText::FromString(MarburgumII::Gameplay::Localized(Item->DisplayName)),
                     FText::AsNumber(Stack->Quantity)) : FText::FromString(MarburgumII::Gameplay::Localized(Item->DisplayName));
-                // Original, print, copy, testimony, information or inference (ADR-083): never one mistaken for another.
+                // Original, print, copy, testimony, information or inference (ADR-084): never one mistaken for another.
                 if (Item->Evidence != EEvidenceClass::None)
                 {
                     Line = FText::Format(LOCTEXT("HeldClass", "{0}  ·  {1}"), Caps(MarburgumUI::EvidenceClassName(Item->Evidence)), Line);

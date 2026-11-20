@@ -7,7 +7,7 @@
 | Prop survey (`visual-survey-linux.sh editor ch6-props`, 18 fixed cameras round the new furniture) | editor | `64ba57e` | 18/18 views, 0 skipped packages, no asset warnings (`Saved/VisualSurvey/ch6-props`) |
 # Story, NPC and progression expansion (ADR-081)
 
-**Status:** Chapter IV and the people and Photography pass (ADR-081) are on `main`; **Chapter VI *The Negative* and the Frame 37 side story (ADR-083) are on branch `feat/story-chapter-vi`**. Both **await the owner's in-game playtest and approval** (ADR-008). Nothing here is accepted release content. Test results are in [§8](#8-tests-and-evidence) and [§10.7](#107-tests-and-evidence-chapter-vi); what is not done is in [§9](#9-not-done-limits-and-blockers) and [§10.8](#108-not-done-limits-and-provisional-parts-chapter-vi).
+**Status:** Chapter IV and the people and Photography pass (ADR-081) are on `main`; **Chapter VI *The Negative* and the Frame 37 side story (ADR-084) are on branch `feat/story-chapter-vi`**. Both **await the owner's in-game playtest and approval** (ADR-008). Nothing here is accepted release content. Test results are in [§8](#8-tests-and-evidence) and [§10.7](#107-tests-and-evidence-chapter-vi); what is not done is in [§9](#9-not-done-limits-and-blockers) and [§10.8](#108-not-done-limits-and-provisional-parts-chapter-vi).
 **Sources:** original [`MAIN_STORYLINE.md`](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/MAIN_STORYLINE.md), [`NARRATIVE_BIBLE.md`](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/NARRATIVE_BIBLE.md), [`SIDE_STORY_BIBLE.md`](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/SIDE_STORY_BIBLE.md), [`SKILLING_ROADMAP.md`](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/SKILLING_ROADMAP.md) and `project/data/{missions,npcs,interactions,skills}.json`, compared with `Data/Gameplay/gameplay.v0.1.json`, the [parity register](LEGACY_PARITY.md) and the [roadmap](ROADMAP.md).
 
 This pass adds one main-story chapter, its branch, two side missions, Photography as a working skill, recognisable animated people in place of every geometric mission contact, and a visible fishing activity for the angler and the player. It is deliberately small: each piece works end to end on the server, persists and is tested, rather than a wider set of half-wired content.
@@ -27,7 +27,7 @@ Legend: **Implemented** (in the catalogue and runtime, editor/packaged-tested wh
 | **IV — Voices on Tape** | `raeda_voices_on_tape` | **Implemented, this pass** | Recorder in Tabor → Drago → Tone's taxi mixtape → Andrej's overwritten tape → Vera places the room → the Tone decision. Mid-decade (1993–96) variant. |
 | IV (Maja branch) | `raeda_mentor_folder` | **Implemented, this pass** | Separate follow-up, offered only after `maja_informed` (Chapter I). |
 | V — Busy Signal | `raeda_busy_signal` (proposed) | Blocked | Needs a Magdalena dispatch office, the floppy route that reads `milan_trusted`, and the fax-log race that reads Chapter VIII. |
-| **VI — The Negative** | `raeda_the_negative` | **Implemented, ADR-083** (branch) | Mid-decade (1993–96) variant: the order book, Drago's print, the Block 13 contact sheet, Frame 37, the Glas strip, Albin by Kiosk 67 outcome (all five), the ticket. See [§10](#10-chapter-vi--the-negative-adr-083). The 1990–92 and 1997–99 variants are not built. |
+| **VI — The Negative** | `raeda_the_negative` | **Implemented, ADR-084** (branch) | Mid-decade (1993–96) variant: the order book, Drago's print, the Block 13 contact sheet, Frame 37, the Glas strip, Albin by Kiosk 67 outcome (all five), the ticket. See [§10](#10-chapter-vi--the-negative-adr-083). The 1990–92 and 1997–99 variants are not built. |
 | VII — Registered | `raeda_registered` (proposed) | Blocked | Inspector Ana Ribič and the Block 13 storage cage are not in the world; the "open it before a witness" rule needs a witness-presence check. |
 | VIII — Static | `raeda_static` (proposed) | Blocked | Rok Kovačič, Radio Mesto and the workers' club basement are not in the world. |
 | IX — The Empty Room | `raeda_empty_room` | Blocked | Needs "any three of IV–VIII" gating and the Tabor headquarters basement. |
@@ -38,14 +38,14 @@ Legend: **Implemented** (in the catalogue and runtime, editor/packaged-tested wh
 
 | Story | Status | Notes |
 | --- | --- | --- |
-| 3.1 Kiosk 67 | Implemented (ADR-049) | Its outcome now chooses Albin's route in Chapter VI (ADR-083). |
+| 3.1 Kiosk 67 | Implemented (ADR-049) | Its outcome now chooses Albin's route in Chapter VI (ADR-084). |
 | 3.2 Last Shift — Keys to Hall Three | Implemented (ADR-049) | |
 | 3.3 Under the Paint | Implemented (ADR-049) | |
 | **3.10 The Sign Painter — Old Letters** | **Implemented, this pass** (`brane_old_letters`) | Three photographs; the Prehod sign at the Melje yard carries the spacing error (Chapter X typography). |
 | 3.5 The Blue Golf, 3.6 Night Bus, 3.9 Closing Time | Missing; NPCs exist | Franc Kos, Lara Mlinar, Milena Ferk and Tine Kolar are catalogued but **unplaced**: Tabor is not built and they have no temporary floor yet. |
-| **3.23 Thirty-Six Exposures — Frame 37** | **Implemented, ADR-083** (`nika_frame_37`, branch) | The scrap tin, the loupe, a deduction, the Melje date board found and photographed. Shares the Frame 37 print and the date-board photograph with Chapter VI. |
-| 3.21 Block 13 — The Spare Room | Partial (ADR-083) | Ivana Zupan and her storage cage are placed (Tabor temporary floor) for Chapter VI; the household story itself (the student, the telephone) is not built. |
-| 3.25 Purple Saturday — The Scarf | Partial (ADR-083) | Boris, an ordinary terrace regular, vouches for you to Albin (`left_alone`); the scarf story, Ljudski vrt and the match-day event are not built. |
+| **3.23 Thirty-Six Exposures — Frame 37** | **Implemented, ADR-084** (`nika_frame_37`, branch) | The scrap tin, the loupe, a deduction, the Melje date board found and photographed. Shares the Frame 37 print and the date-board photograph with Chapter VI. |
+| 3.21 Block 13 — The Spare Room | Partial (ADR-084) | Ivana Zupan and her storage cage are placed (Tabor temporary floor) for Chapter VI; the household story itself (the student, the telephone) is not built. |
+| 3.25 Purple Saturday — The Scarf | Partial (ADR-084) | Boris, an ordinary terrace regular, vouches for you to Albin (`left_alone`); the scarf story, Ljudski vrt and the match-day event are not built. |
 | 3.4, 3.7, 3.8, 3.11–3.20, 3.22, 3.24, 3.26–3.42 | Missing | Each needs a district, a person or a system not yet in the world (radio, telephones, computers, housing). |
 | Late Delivery (missions roadmap) | Implemented (ADR-049) | |
 | **Then and Now — Three Prints** | **New extension, this pass** (`nika_then_and_now`) | Newly authored introduction to Photography, built on Nika's role in the Bible. |
@@ -58,11 +58,11 @@ Legend: **Implemented** (in the catalogue and runtime, editor/packaged-tested wh
 | **Tone Vogrin** | Irena's husband; Drago's night driver | **Added and placed** beside Drago's workshop (canonical character, new position) |
 | **Andrej Mlakar** | Computer technician | **Added and placed** on the Lent row (canonical character, new position) |
 | **Jožica Rozman** | The canon's unnamed "Tabor household" | **New name**; on the Tabor temporary floor |
-| **Ivana Zupan** | Stefan Zupan's widow, Block 13 | **Placed (ADR-083)** on the Tabor temporary floor beside the storage cage (provisional; canonical Block 13 is about 170 m south-west) |
+| **Ivana Zupan** | Stefan Zupan's widow, Block 13 | **Placed (ADR-084)** on the Tabor temporary floor beside the storage cage (provisional; canonical Block 13 is about 170 m south-west) |
 | Sara Vidic, Tine Kolar, Franc Kos, Milena Ferk, Lara Mlinar | Tabor contacts | Catalogued, unplaced (Tabor not built) |
-| **Ernest Pavlič**, **Boris** | The canon's unnamed collector; an ordinary terrace regular (3.25) | **New names (ADR-083)**, placed on Lent |
+| **Ernest Pavlič**, **Boris** | The canon's unnamed collector; an ordinary terrace regular (3.25) | **New names (ADR-084)**, placed on Lent |
 | Alenka Pahor | Hospital contact | Placed (dialogue only) |
-| Albin Rojko | The Kiosk 67 customer (A.R.) | `kiosk_67_customer`; **named by Chapter VI** (the Glas strip), his testimony depends on the Kiosk 67 outcome (ADR-083) |
+| Albin Rojko | The Kiosk 67 customer (A.R.) | `kiosk_67_customer`; **named by Chapter VI** (the Glas strip), his testimony depends on the Kiosk 67 outcome (ADR-084) |
 | Oskar Lorber, Inspector Ana Ribič, Rok Kovačič | Antagonist, police, radio | Missing (Chapters VII–XI) |
 | Stefan Zupan | Died 1994 | Not a person in the world (canon) |
 
@@ -176,7 +176,7 @@ Captures: [the angler's grip](Captures/story-npc/angler-grip.jpg), [on the bank]
 - **Chapters V–XI** remain blocked as in §1.1.
 - **Tabor and Melje are temporary floors**: Jožica Rozman and the Prehod sign stand on the ADR-052 pads, and the guidance line says so.
 
-## 10. Chapter VI — *The Negative* (ADR-083)
+## 10. Chapter VI — *The Negative* (ADR-084)
 
 **Status:** implemented on branch `feat/story-chapter-vi`, **awaiting the owner's playtest** (ADR-008). Default mid-decade (1993–96) variant only.
 **Narrative authority:** original `MAIN_STORYLINE.md` Chapter VI, §3 (the pencilled initials, Stefan Zupan behind the camera), §7 (16 February 1990), and `SIDE_STORY_BIBLE.md` 3.1, 3.21, 3.23 and 3.25.
@@ -225,7 +225,7 @@ Every evidence item carries a class shown in the Inventory and the Journal: **Or
 
 ### 10.5 The world
 
-| Place | Look (ADR-083 prop) | Where | Status |
+| Place | Look (ADR-084 prop) | Where | Status |
 | --- | --- | --- | --- |
 | Foto Vidmar order book | Wooden counter, the order book open, earlier years stacked | Beside Nika's original spot on Glavni trg | Provisional: Foto Vidmar has no interior; the lab's counter stands outside |
 | Foto Vidmar light table | Steel desk, opal glass glowing, loupe, lamp | Beside Nika | Provisional, as above |

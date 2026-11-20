@@ -22,7 +22,7 @@
  * made once it ended another way: a decision taken earlier closes the door for good, without a refusal to explain.
  * A Photograph stage is completed by photographing its subject (the server's photograph path), never by talking.
  *
- * A conditional stage (ADR-083) belongs to a character's route only when its gates hold (an earlier mission's recorded
+ * A conditional stage (ADR-084) belongs to a character's route only when its gates hold (an earlier mission's recorded
  * outcome); the mission passes over it otherwise. Unique items are handed over once however many missions grant them.
  *
  * Work in hand comes before a new offer, so a character who reaches Petra Kralj while asking about the cashbox
@@ -82,7 +82,7 @@ namespace MarburgumII::Missions
     MARBURGUMIISHARED_API bool IsMissionTarget(const FString& TargetId);
 
     /**
-     * Whether a conditional stage (ADR-083) is on this character's route: every gate's mission completed with one of its
+     * Whether a conditional stage (ADR-084) is on this character's route: every gate's mission completed with one of its
      * outcomes. An unconditional stage always is.
      */
     MARBURGUMIISHARED_API bool StageApplies(const Gameplay::FMissionStageDefinition& Stage, FFindProgress FindProgress);

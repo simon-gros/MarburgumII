@@ -124,7 +124,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
             item.get("provenance").is_some(),
             format!("item without provenance: {id}"),
         );
-        // Evidence (ADR-083): a known class, and only things a mission hands over can be evidence.
+        // Evidence (ADR-084): a known class, and only things a mission hands over can be evidence.
         if let Some(class) = item.get("evidence") {
             problems.expect(
                 matches!(
@@ -305,7 +305,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
                 .any(|i| i["id"] == item && i["kind"] == "photo"),
             format!("photo subject {id}: {item} is not a registered photograph"),
         );
-        // A document on a prop (ADR-083): the anchor is a placed place, the item in hand a registered one.
+        // A document on a prop (ADR-084): the anchor is a placed place, the item in hand a registered one.
         if let Some(anchor) = subject.get("anchor") {
             problems.expect(
                 list(&catalogue, "interactables").iter().any(|e| {
@@ -490,7 +490,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
                 choice == !list(stage, "choices").is_empty(),
                 format!("mission {id}: stage {stage_id}: choices and objective disagree"),
             );
-            // Conditional stages (ADR-083): never the first, gated only on a prerequisite's recorded outcomes, so the
+            // Conditional stages (ADR-084): never the first, gated only on a prerequisite's recorded outcomes, so the
             // route is decided before the mission starts.
             for gate in list(stage, "when") {
                 let gated = text(&gate["mission"]);
@@ -509,7 +509,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
                     format!("mission {id}: stage {stage_id} names an outcome {gated} never records"),
                 );
             }
-            // A deduction (ADR-083): at least one right answer; a wrong one changes nothing but says why.
+            // A deduction (ADR-084): at least one right answer; a wrong one changes nothing but says why.
             if choice {
                 problems.expect(
                     list(stage, "choices").iter().any(|c| c["correct"] != false),
@@ -552,7 +552,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
             format!("mission {id}: only the last stage may be final"),
         );
         // Every outcome of a mission a stage is conditional on leads somewhere: for each recorded outcome, some
-        // conditional stage of that gate applies, so no route through the mission is silently empty (ADR-083).
+        // conditional stage of that gate applies, so no route through the mission is silently empty (ADR-084).
         let mut gated: Vec<&str> = stages
             .iter()
             .flat_map(|s| list(s, "when"))

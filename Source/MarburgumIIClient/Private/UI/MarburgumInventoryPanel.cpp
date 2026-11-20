@@ -362,7 +362,7 @@ void UMarburgumInventoryPanel::ShowDetail(FName ItemId)
     UTextBlock* Name = B.Text(Definition ? FText::FromString(MarburgumII::Gameplay::Localized(Definition->DisplayName)) : FText::FromName(ItemId), ETypeRole::Title);
     Name->SetAutoWrapText(true);
     FBuilder::Stack(DetailBox, Name, T.Space.M);
-    // What kind of evidence it is and what it says (ADR-083): an original, a print, a copy, testimony, information or an
+    // What kind of evidence it is and what it says (ADR-084): an original, a print, a copy, testimony, information or an
     // inference are never shown as the same thing.
     if (Definition && Definition->Evidence != MarburgumII::Gameplay::EEvidenceClass::None)
     {

@@ -1012,7 +1012,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
     if (bApplied && (Receipt.Effect == EMarburgumInteractionEffect::StageCompleted || Receipt.Effect == EMarburgumInteractionEffect::MissionCompleted))
     {
         // The stage just done is the one before the new current stage on this character's route (conditional stages for
-        // another outcome are not it, ADR-083), or the last one on completion.
+        // another outcome are not it, ADR-084), or the last one on completion.
         const FMissionStageDefinition* Done = nullptr;
         if (Mission)
         {
@@ -1088,7 +1088,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         const FText Needed = RequiredItemsText(Receipt.MissionId, Receipt.MissionStage);
         if (const FPhotoSubjectDefinition* Photo = Receipt.MissionId.IsNone() ? FindPhotoSubject(Receipt.InteractableId.ToString()) : nullptr)
         {
-            // A document only there when you bring it (ADR-083): the contact sheet on the light table.
+            // A document only there when you bring it (ADR-084): the contact sheet on the light table.
             Message = FText::Format(LOCTEXT("PhotoNeedsItem", "Nothing to photograph yet: {1} is only there once you bring {0}. Nothing was changed."),
                 ItemName, FText::FromString(MarburgumII::Gameplay::Localized(Photo->DisplayName)));
         }
@@ -1103,7 +1103,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
     }
     case EMarburgumInteractionReason::WrongConclusion:
     {
-        // A deduction's wrong answer (ADR-083): the reply that sends the player back to look again; nothing changed.
+        // A deduction's wrong answer (ADR-084): the reply that sends the player back to look again; nothing changed.
         const FMissionStageDefinition* At = Mission ? FindStage(*Mission, Receipt.MissionStage.ToString()) : nullptr;
         const FMissionChoiceDefinition* Answer = At && !Receipt.Choice.IsNone() ? FindChoice(*At, Receipt.Choice.ToString()) : nullptr;
         Feed->Push(Key, LOCTEXT("LookAgainKind", "LOOK AGAIN"),

@@ -1205,7 +1205,7 @@ Closes QA 2026-11-19 **AR1** and mitigates **AR13** at Simon's request ("address
 
 **Not decided here.** Lumen quality levels per graphics preset (GFX-07), MegaLights, virtual shadow maps and Nanite (GFX-06), and whether hardware Lumen ships enabled by default.
 
-## ADR-083 — Chapter VI *The Negative* and Frame 37: conditional stages, deductions, unique evidence and story furniture (implemented 2026-11-20; owner approval OPEN)
+## ADR-084 — Chapter VI *The Negative* and Frame 37: conditional stages, deductions, unique evidence and story furniture (implemented 2026-11-20; owner approval OPEN)
 
 **Context.** After ADR-081 the next canonical chapter, VI *The Negative*, was feasible: Nika and Photography existed and the Kiosk 67 outcome was recorded. But the canon asks for things the mission framework could not express: Albin Rojko's testimony takes a different route for each of five Kiosk 67 outcomes inside one chapter; Frame 37 is meant to be found by reasoning, not by walking up to a marker; the same unique piece of evidence can come from two missions; and the storyline insists on telling originals, prints, copies, testimony, information and inference apart. The places (Foto Vidmar, the Block 13 cage, the Melje date board) were grey cubes or did not exist.
 

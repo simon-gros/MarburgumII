@@ -428,7 +428,7 @@ fn check_story(doc: &Value, key: &str) -> u8 {
 }
 
 
-/// Chapter VI and Frame 37 (scripts/negative-smoke-linux.sh, ADR-083), after phase 1 on a store seeded with Chapters
+/// Chapter VI and Frame 37 (scripts/negative-smoke-linux.sh, ADR-084), after phase 1 on a store seeded with Chapters
 /// I-III, Then and Now and Kiosk 67 ended in `outcome` for `key`; `other` only started the chapter and dated the print.
 /// Prints "<money> <photography> <trading> <discoveries>".
 pub fn negative(store: &str, key: &str, other: &str, outcome: &str) -> u8 {

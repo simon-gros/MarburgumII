@@ -43,7 +43,7 @@ void UMarburgumPhotographySubsystem::Resolve() const
         }
         if (*Subject.Anchor)
         {
-            // A document on a prop (ADR-083): the ground under the server-placed interactable, which every machine sees
+            // A document on a prop (ADR-084): the ground under the server-placed interactable, which every machine sees
             // in the same place. Until it has replicated there is nothing to aim at yet.
             for (TActorIterator<AMarburgumInteractable> It(World); It; ++It)
             {

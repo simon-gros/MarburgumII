@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chapter VI, The Negative, and the Frame 37 side story (ADR-083), played on /Game/World/lent against a real dedicated
+# Chapter VI, The Negative, and the Frame 37 side story (ADR-084), played on /Game/World/lent against a real dedicated
 # server through the same RPCs the E and P keys and the choice panel use.
 #
 # The world store is seeded (schema 6) with two characters who have finished the Prologue to Chapter III, Nika's Then

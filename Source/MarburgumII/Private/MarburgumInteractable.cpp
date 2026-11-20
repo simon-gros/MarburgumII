@@ -26,7 +26,7 @@ AMarburgumInteractable::AMarburgumInteractable()
     Mesh->SetCollisionProfileName(TEXT("BlockAll"));
     Mesh->SetMobility(EComponentMobility::Static);
 
-    // Story furniture (ADR-083) is full size whatever the marker's scale.
+    // Story furniture (ADR-084) is full size whatever the marker's scale.
     PropRoot = CreateDefaultSubobject<USceneComponent>(TEXT("PropRoot"));
     PropRoot->SetupAttachment(Mesh);
     PropRoot->SetUsingAbsoluteScale(true);

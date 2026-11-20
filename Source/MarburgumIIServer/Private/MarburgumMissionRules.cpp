@@ -12,7 +12,7 @@ namespace MarburgumII::Missions
         // Far below int64 limits, so no sum of rewards or XP can overflow.
         constexpr int64 MaxAmount = int64(1) << 50;
 
-        /** Adds Quantity of Item, or for a unique item (ADR-083) one unless one is already held; returns how many were added. */
+        /** Adds Quantity of Item, or for a unique item (ADR-084) one unless one is already held; returns how many were added. */
         int32 AddItem(FMarburgumWorldRecord& Record, const FString& Character, const FString& Item, int32 Quantity)
         {
             const FItemDefinition* Definition = FindItem(Item);
@@ -66,7 +66,7 @@ namespace MarburgumII::Missions
         void Finish(const FMissionDefinition& Mission, const FMissionStageDefinition& Stage, FMarburgumWorldRecord& Next,
             const FString& Character, FMarburgumStoredMission& State, FMarburgumMissionDecision& Decision)
         {
-            // The next stage on this character's route (ADR-083): conditional stages for another outcome are passed over.
+            // The next stage on this character's route (ADR-084): conditional stages for another outcome are passed over.
             const TMap<FString, FProgressView> Progress = Views(Next, Character);
             const FMissionStageDefinition* Following = NextStage(Mission, Stage, [&Progress](const FString& Id) { return Progress.Find(Id); });
             if (!Stage.bFinal && Following)
@@ -233,7 +233,7 @@ namespace MarburgumII::Missions
         }
         if (!Choice->bCorrect)
         {
-            // A deduction's wrong answer (ADR-083): nothing is recorded, so the player looks again and answers again.
+            // A deduction's wrong answer (ADR-084): nothing is recorded, so the player looks again and answers again.
             Decision.Reason = EMarburgumInteractionReason::WrongConclusion;
             return Decision;
         }
@@ -265,7 +265,7 @@ namespace MarburgumII::Missions
         State.Outcome = Choice->Outcome;
         SetFlags(State, Stage->SetFlags, Stage->SetFlagCount);
         SetFlags(State, Choice->SetFlags, Choice->SetFlagCount);
-        // What the stage and the decision hand over (ADR-083): the collector's stamp, whichever way it was got.
+        // What the stage and the decision hand over (ADR-084): the collector's stamp, whichever way it was got.
         Grant(OutNext, Character, Stage->GrantItems, Stage->GrantItemCount, Decision);
         Grant(OutNext, Character, Choice->GrantItems, Choice->GrantItemCount, Decision);
         Decision.Outcome = State.Outcome;
@@ -297,7 +297,7 @@ namespace MarburgumII::Missions
         }
         if (*Subject->RequiresItem && Owned->FindRef(Subject->RequiresItem) <= 0)
         {
-            // A document that is only there when you bring it (ADR-083): the contact sheet on the light table.
+            // A document that is only there when you bring it (ADR-084): the contact sheet on the light table.
             Decision.Reason = EMarburgumInteractionReason::RequirementNotMet;
             Decision.Item = Subject->RequiresItem;
             return Decision;

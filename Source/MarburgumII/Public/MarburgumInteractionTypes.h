@@ -38,7 +38,7 @@ enum class EMarburgumInteractionReason : uint8
     NoCamera,             // Photography needs a camera in the character's custody (ADR-081).
     NothingInFrame,       // No photo subject close enough, in the middle of the frame and in plain view.
     AlreadyPhotographed,  // That subject is documented and its print is still held: nothing would change.
-    WrongConclusion       // A deduction answered wrongly (ADR-083): nothing recorded; the reply says why, and the player can look again.
+    WrongConclusion       // A deduction answered wrongly (ADR-084): nothing recorded; the reply says why, and the player can look again.
 };
 
 /** What a committed interaction did. Replays (Duplicate) report the original effect. */

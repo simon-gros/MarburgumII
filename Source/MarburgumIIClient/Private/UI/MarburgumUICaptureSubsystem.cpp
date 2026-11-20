@@ -282,7 +282,7 @@ bool UMarburgumUICaptureSubsystem::BeginTourStep(const FString& Step)
     if (Step == TEXT("character")) return UI->ToggleCharacter();
     if (Step == TEXT("skills")) return UI->ToggleSkills();
     if (Step == TEXT("inventory")) return UI->ToggleInventory();
-    // `inventory:<item>`: the Inventory on one item's card (evidence classes and descriptions, ADR-083).
+    // `inventory:<item>`: the Inventory on one item's card (evidence classes and descriptions, ADR-084).
     if (Step.StartsWith(TEXT("inventory:"))) return UI->ShowInventoryItem(FName(*Step.RightChop(10)));
     if (Step == TEXT("journal")) return UI->ToggleJournal();
     if (Step == TEXT("settings")) return UI->ToggleSettings();

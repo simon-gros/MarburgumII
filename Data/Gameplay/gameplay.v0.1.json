@@ -775,7 +775,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('The lab order book reads: Vogrin I., 36 posn., 20.2.1990')",
-        "note": "Chapter VI (ADR-083); the order number 0217 is new."
+        "note": "Chapter VI (ADR-084); the order number 0217 is new."
       }
     },
     {
@@ -793,7 +793,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI beat 2 ('Drago's old wallet photo: him at 25 beside a new truck') and §3 (Stefan Zupan took the photograph with Irena's camera)",
-        "note": "Chapter VI (ADR-083)."
+        "note": "Chapter VI (ADR-084)."
       }
     },
     {
@@ -811,7 +811,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('Proposed evidence: zupan_contact_sheet'; 'The contact sheet shows frames 34–37')",
-        "note": "Chapter VI (ADR-083)."
+        "note": "Chapter VI (ADR-084)."
       }
     },
     {
@@ -829,7 +829,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('photograph the contact sheet under proper light ... document chain of custody (original, print, copy)')",
-        "note": "Chapter VI (ADR-083)."
+        "note": "Chapter VI (ADR-084)."
       }
     },
     {
@@ -847,7 +847,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/SIDE_STORY_BIBLE.md 3.23 and docs/MAIN_STORYLINE.md Chapter VI ('Proposed evidence: frame_37_print')",
-        "note": "Shared by Chapter VI and the Frame 37 side story; granted only by the side story (ADR-083). The scrap negative kept in the lab is new."
+        "note": "Shared by Chapter VI and the Frame 37 side story; granted only by the side story (ADR-084). The scrap negative kept in the lab is new."
       }
     },
     {
@@ -865,7 +865,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('match the date board')",
-        "note": "ADR-083."
+        "note": "ADR-084."
       }
     },
     {
@@ -883,7 +883,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI beat 3 and §7 (16 Feb 1990)",
-        "note": "ADR-083."
+        "note": "ADR-084."
       }
     },
     {
@@ -901,7 +901,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI beats 2 and 4 ('the Glas photo desk'; 'Proposed evidence: torn_strip_print')",
-        "note": "ADR-083."
+        "note": "ADR-084."
       }
     },
     {
@@ -919,7 +919,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('The object he sold was his old machine-hall council stamp. It must be bought back from a collector')",
-        "note": "ADR-083."
+        "note": "ADR-084."
       }
     },
     {
@@ -937,7 +937,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/SIDE_STORY_BIBLE.md 3.25 Purple Saturday (the scarf, the match-day circle) and docs/MAIN_STORYLINE.md Chapter VI (left_alone)",
-        "note": "ADR-083. A token of the side story's circle; the match-day event itself is not built."
+        "note": "ADR-084. A token of the side story's circle; the match-day event itself is not built."
       }
     },
     {
@@ -955,7 +955,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('Proposed evidence: albin_testimony')",
-        "note": "ADR-083."
+        "note": "ADR-084."
       }
     },
     {
@@ -972,7 +972,7 @@
         "sl": "Nikino potrdilo z datumom in žigom: izvirna kontaktna kopija je v sefu Foto Vidmar na ime Ivane Zupan, prejeta od tebe, nedotaknjena, odkar je zapustila kletno shrambo v Bloku 13."
       },
       "provenance": {
-        "source": "Marburgum II extension (ADR-083) of Chapter VI's 'document chain of custody (original, print, copy)'",
+        "source": "Marburgum II extension (ADR-084) of Chapter VI's 'document chain of custody (original, print, copy)'",
         "note": "New."
       }
     }
@@ -2195,7 +2195,7 @@
       "provenance": {
         "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
         "source_version": 3,
-        "note": "Chapter VI (ADR-083): Block 13 is not built. Ivana stands on the temporary Tabor floor (ADR-052) beside her storage cage until the Tabor window exists; the canon's Block 13 lies about 170 m south-west of this spot."
+        "note": "Chapter VI (ADR-084): Block 13 is not built. Ivana stands on the temporary Tabor floor (ADR-052) beside her storage cage until the Tabor window exists; the canon's Block 13 lies about 170 m south-west of this spot."
       }
     },
     {
@@ -2890,7 +2890,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('The lab order book reads ...')",
-        "note": "Chapter VI (ADR-083): the lab's counter set out beside Nika at her original spot; Foto Vidmar has no interior yet."
+        "note": "Chapter VI (ADR-084): the lab's counter set out beside Nika at her original spot; Foto Vidmar has no interior yet."
       }
     },
     {
@@ -2915,7 +2915,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('Photography integration: photograph the contact sheet under proper light') and docs/SIDE_STORY_BIBLE.md 3.23 ('With careful inspection')",
-        "note": "Chapter VI (ADR-083): beside Nika at her original spot; Foto Vidmar has no interior yet."
+        "note": "Chapter VI (ADR-084): beside Nika at her original spot; Foto Vidmar has no interior yet."
       }
     },
     {
@@ -2940,7 +2940,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('the Block 13 storage cage') and docs/SIDE_STORY_BIBLE.md 3.21",
-        "note": "Chapter VI (ADR-083). Provisional: stands on the temporary Tabor floor (ADR-052) beside Ivana Zupan until Tabor and its block cellars are built."
+        "note": "Chapter VI (ADR-084). Provisional: stands on the temporary Tabor floor (ADR-052) beside Ivana Zupan until Tabor and its block cellars are built."
       }
     },
     {
@@ -2965,7 +2965,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('under the yard's own date board reading 16.2.')",
-        "note": "Chapter VI (ADR-083). On the temporary Melje floor (ADR-052) between the Kainach trucks and the vehicle-log shelf."
+        "note": "Chapter VI (ADR-084). On the temporary Melje floor (ADR-052) between the Kainach trucks and the vehicle-log shelf."
       }
     },
     {
@@ -3001,7 +3001,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('It must be bought back from a collector (Trading)')",
-        "note": "The collector is unnamed in the canon; named here (ADR-083). Stands on Lent near the Glas archive desk."
+        "note": "The collector is unnamed in the canon; named here (ADR-084). Stands on Lent near the Glas archive desk."
       }
     },
     {
@@ -3037,7 +3037,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/SIDE_STORY_BIBLE.md 3.25 Purple Saturday ('an ordinary terrace regular'; 'one former Raeda employee is only reliably found among the same match-day group')",
-        "note": "New name (ADR-083). An ordinary supporter, not a gang member (3.25). Stands by the Kiosk 67 café; Ljudski vrt and the match-day event are not built."
+        "note": "New name (ADR-084). An ordinary supporter, not a gang member (3.25). Stands by the Kiosk 67 café; Ljudski vrt and the match-day event are not built."
       }
     }
   ],
@@ -6562,7 +6562,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI 'The Negative' (proposed id raeda_the_negative), with SIDE_STORY_BIBLE.md 3.1, 3.21, 3.23 and 3.25",
-        "note": "Mid-decade (1993-96) default variant (ADR-083). Canonical beats: Nika dates the print, the order book names 'Vogrin I.', Drago's wallet print, the Block 13 contact sheet, Frame 37 under the 16.2. date board, the Glas photo desk, the torn strip with the seventh person and Albin, Albin's response by Kiosk 67 outcome, the punched ticket and Nika's closing line. New: order number 0217, fleet number K 07, the collector Ernest Pavlič and the terrace regular Boris, the custody receipt. The 1990-92 and 1997-99 variants are not implemented."
+        "note": "Mid-decade (1993-96) default variant (ADR-084). Canonical beats: Nika dates the print, the order book names 'Vogrin I.', Drago's wallet print, the Block 13 contact sheet, Frame 37 under the 16.2. date board, the Glas photo desk, the torn strip with the seventh person and Albin, Albin's response by Kiosk 67 outcome, the punched ticket and Nika's closing line. New: order number 0217, fleet number K 07, the collector Ernest Pavlič and the terrace regular Boris, the custody receipt. The 1990-92 and 1997-99 variants are not implemented."
       }
     },
     {
@@ -6851,7 +6851,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/SIDE_STORY_BIBLE.md 3.23 'Thirty-Six Exposures — Frame 37'",
-        "note": "Canonical: Nika develops an old 36-exposure roll, an unexpected badly exposed extra frame, careful inspection reveals a loading yard and a distinctive vehicle, the player searches for the location rather than the person (ADR-083). New: the scrap tin, the order number scratched in the rebate, the deduction at the light table. Shares frame_37_print and the Melje date-board photograph with Chapter VI; neither is handed out twice."
+        "note": "Canonical: Nika develops an old 36-exposure roll, an unexpected badly exposed extra frame, careful inspection reveals a loading yard and a distinctive vehicle, the player searches for the location rather than the person (ADR-084). New: the scrap tin, the order number scratched in the rebate, the deduction at the light table. Shares frame_37_print and the Melje date-board photograph with Chapter VI; neither is handed out twice."
       }
     }
   ],
@@ -7107,7 +7107,7 @@
         },
         "provenance": {
           "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI",
-          "note": "ADR-083: a document photographed on its prop (anchor), not a building."
+          "note": "ADR-084: a document photographed on its prop (anchor), not a building."
         }
       },
       {
@@ -7134,7 +7134,7 @@
         },
         "provenance": {
           "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('photograph the contact sheet under proper light')",
-          "note": "ADR-083: only with the contact sheet in hand (requires_item); the light table is the anchor."
+          "note": "ADR-084: only with the contact sheet in hand (requires_item); the light table is the anchor."
         }
       },
       {
@@ -7160,7 +7160,7 @@
         },
         "provenance": {
           "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter VI ('match the date board')",
-          "note": "ADR-083. Temporary Melje floor (ADR-052)."
+          "note": "ADR-084. Temporary Melje floor (ADR-052)."
         }
       }
     ]

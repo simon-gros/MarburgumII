@@ -9,7 +9,7 @@ class UStaticMesh;
 class UMaterialInterface;
 
 /**
- * Story furniture (ADR-083): what an authored place looks like when the catalogue gives it a prop, built at runtime on
+ * Story furniture (ADR-084): what an authored place looks like when the catalogue gives it a prop, built at runtime on
  * every machine from engine primitives (and the Kainach trucks from the project's lorry mesh), so the server traces the
  * same shapes the clients draw. No imported or generated art: dimensions are period furniture's, colours are flat.
  *

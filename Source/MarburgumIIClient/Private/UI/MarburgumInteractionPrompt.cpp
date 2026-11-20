@@ -492,7 +492,7 @@ bool UMarburgumInteractionPrompt::RefreshPhoto(const AMarburgumPlayerController&
     if (Target)
     {
         // Something to talk to or inspect is in reach: [E] wins, unless the camera is on a document lying on that very
-        // prop and a step of a mission under way asks for exactly this photograph (ADR-083).
+        // prop and a step of a mission under way asks for exactly this photograph (ADR-084).
         bool bAsked = false;
         for (const FMarburgumMissionState& Progress : State->GetMissions())
         {
@@ -506,7 +506,7 @@ bool UMarburgumInteractionPrompt::RefreshPhoto(const AMarburgumPlayerController&
         }
     }
     const bool bHeld = State->CountItem(FName(Frame.Subject->Item)) > 0;
-    // A document that is only there once you bring it (ADR-083): say what to bring instead of promising a photograph.
+    // A document that is only there once you bring it (ADR-084): say what to bring instead of promising a photograph.
     const bool bMissing = *Frame.Subject->RequiresItem && State->CountItem(FName(Frame.Subject->RequiresItem)) <= 0;
     if (bMissing)
     {

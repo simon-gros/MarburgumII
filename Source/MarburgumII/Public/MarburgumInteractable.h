@@ -111,7 +111,7 @@ protected:
     TObjectPtr<UStaticMeshComponent> Mesh;
 
     /**
-     * Where story furniture hangs (ADR-083): at the marker, in the place's facing, at full scale whatever the marker's.
+     * Where story furniture hangs (ADR-084): at the marker, in the place's facing, at full scale whatever the marker's.
      */
     UPROPERTY(VisibleAnywhere, Category = "Marburgum|Interaction")
     TObjectPtr<USceneComponent> PropRoot;
@@ -132,7 +132,7 @@ private:
     FName ShopId;
     FDelegateHandle CultureHandle;
 
-    /** Builds the catalogue's prop once the actor is in play (ADR-083); a marker with none keeps its plain look. */
+    /** Builds the catalogue's prop once the actor is in play (ADR-084); a marker with none keeps its plain look. */
     void EnsureProp();
     bool bPropBuilt = false;
 
