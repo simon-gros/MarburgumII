@@ -283,6 +283,7 @@ bool UMarburgumUICaptureSubsystem::BeginTourStep(const FString& Step)
     if (Step == TEXT("skills")) return UI->ToggleSkills();
     if (Step == TEXT("inventory")) return UI->ToggleInventory();
     if (Step == TEXT("journal")) return UI->ToggleJournal();
+    if (Step == TEXT("settings")) return UI->ToggleSettings();
     if (Step == TEXT("chat"))
     {
         Controller->SendGeneralChat(TEXT("Dober dan from the tour: one general line, as every player on this server sees it."));
@@ -308,12 +309,13 @@ void UMarburgumUICaptureSubsystem::EndTourStep(const FString& Step)
         return;
     }
     if (Step == TEXT("character") || Step == TEXT("skills") || Step == TEXT("inventory") || Step == TEXT("journal")
-        || Step == TEXT("menu"))
+        || Step == TEXT("settings") || Step == TEXT("menu"))
     {
         UI->Back(); // Escape closes what the step opened.
     }
     else if (Step == TEXT("chat"))
     {
+        UI->LeaveChat();
         Controller->SetInputMode(FInputModeGameOnly());
         Controller->SetShowMouseCursor(false);
         if (FSlateApplication::IsInitialized())

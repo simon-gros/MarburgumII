@@ -120,7 +120,8 @@ start_server() {
 run_world_client() {
     local name="$1" width="$2" height="$3" scale="$4" steps="$5"
     shift 5
-    local url="127.0.0.1:$port?MB2Start=angler?MB2Character=mb2ui-$name-t$(date +%s)$RANDOM"
+    # A character key allows a-z, 0-9, - and _ (no dots from the scale), at most 40 characters.
+    local url="127.0.0.1:$port?MB2Start=angler?MB2Character=mb2ui-$(date +%s)-$RANDOM"
     local log="$out_dir/client-$name.log" code=0 attempt
     for attempt in 0 1 2; do
         if [[ "$attempt" -gt 0 ]]; then

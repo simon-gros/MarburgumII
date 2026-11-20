@@ -27,6 +27,9 @@
 #include "UI/MarburgumChoicePanel.h"
 #include "UI/MarburgumShopPanel.h"
 #include "UI/MarburgumSkillsPanel.h"
+#include "UI/MarburgumSettingsPanel.h"
+#include "UI/MarburgumUISettings.h"
+#include "Components/Overlay.h"
 #include "UI/MarburgumSystemMenu.h"
 #include "UI/MarburgumLocationBanner.h"
 #include "UI/MarburgumPinnedObjective.h"
@@ -57,11 +60,8 @@ void UMarburgumUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
     bGalleryMode = FParse::Param(CommandLine, TEXT("MB2UIGallery"));
     bDiagnostics = MarburgumUI::ShowsDiagnostics();
 #endif
-    float Scale = 1.f;
-    if (FParse::Value(CommandLine, TEXT("MB2UIScale="), Scale))
-    {
-        SetInterfaceScale(Scale);
-    }
+    // The player's saved preferences (interface scale, theme options, volume); -MB2UIScale still wins for one run.
+    UMarburgumUISettings::Get().ApplyToRuntime(nullptr);
 
     Session = Collection.InitializeDependency<UMarburgumSessionSubsystem>();
     if (UMarburgumSessionSubsystem* SessionSubsystem = Session.Get())
@@ -145,6 +145,10 @@ void UMarburgumUISubsystem::TearDown()
     SkillsPanel = nullptr;
     ChoicePanel = nullptr;
     ShopPanel = nullptr;
+    SystemMenu = nullptr;
+    Shell = nullptr;
+    SettingsPanel = nullptr;
+    bSettingsFromMenu = false;
 }
 
 void UMarburgumUISubsystem::MountChat(APlayerController* Player)
@@ -184,6 +188,14 @@ void UMarburgumUISubsystem::FocusChat()
     if (Chat && LastPhase == EPhase::Ready)
     {
         Chat->FocusComposer();
+    }
+}
+
+void UMarburgumUISubsystem::LeaveChat()
+{
+    if (Chat)
+    {
+        Chat->LeaveComposer();
     }
 }
 
@@ -239,6 +251,8 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
     Release(ChoicePanel);
     Release(ShopPanel);
     Release(SystemMenu);
+    Release(Shell);
+    Release(SettingsPanel);
     if (!Banner)
     {
         Banner = CreateWidget<UMarburgumLocationBanner>(Player, UMarburgumLocationBanner::StaticClass());
@@ -264,25 +278,40 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
         Prompt = CreateWidget<UMarburgumInteractionPrompt>(Player, UMarburgumInteractionPrompt::StaticClass());
         Root->AddToLayer(EMarburgumUILayer::Hud, Prompt);
     }
-    if (!Inventory)
+    if (!Shell)
     {
-        Inventory = CreateWidget<UMarburgumInventoryPanel>(Player, UMarburgumInventoryPanel::StaticClass());
-        Root->AddToLayer(EMarburgumUILayer::Screens, Inventory);
+        Shell = CreateWidget<UMarburgumManagementShell>(Player, UMarburgumManagementShell::StaticClass());
+        Root->AddToLayer(EMarburgumUILayer::Screens, Shell);
+        Shell->OnScreenRequested.BindWeakLambda(this, [this](EMarburgumScreen Screen) { ToggleScreen(Screen); });
+        Shell->OnCloseRequested.BindUObject(this, &UMarburgumUISubsystem::CloseScreens);
+        Shell->OnScrollRequested.BindWeakLambda(this, [this](float Lines) { ScrollOpenScreen(Lines); });
     }
-    if (!Journal)
-    {
-        Journal = CreateWidget<UMarburgumJournalPanel>(Player, UMarburgumJournalPanel::StaticClass());
-        Root->AddToLayer(EMarburgumUILayer::Screens, Journal);
-    }
+    // The management screens are pages of the shell (UI-04): one frame, one tab bar, one owner of the keys.
     if (!CharacterPanel)
     {
         CharacterPanel = CreateWidget<UMarburgumCharacterPanel>(Player, UMarburgumCharacterPanel::StaticClass());
-        Root->AddToLayer(EMarburgumUILayer::Screens, CharacterPanel);
+        Shell->AddPage(EMarburgumScreen::Character, CharacterPanel);
     }
     if (!SkillsPanel)
     {
         SkillsPanel = CreateWidget<UMarburgumSkillsPanel>(Player, UMarburgumSkillsPanel::StaticClass());
-        Root->AddToLayer(EMarburgumUILayer::Screens, SkillsPanel);
+        Shell->AddPage(EMarburgumScreen::Skills, SkillsPanel);
+    }
+    if (!Inventory)
+    {
+        Inventory = CreateWidget<UMarburgumInventoryPanel>(Player, UMarburgumInventoryPanel::StaticClass());
+        Shell->AddPage(EMarburgumScreen::Inventory, Inventory);
+    }
+    if (!Journal)
+    {
+        Journal = CreateWidget<UMarburgumJournalPanel>(Player, UMarburgumJournalPanel::StaticClass());
+        Shell->AddPage(EMarburgumScreen::Journal, Journal);
+    }
+    if (!SettingsPanel)
+    {
+        SettingsPanel = CreateWidget<UMarburgumSettingsPanel>(Player, UMarburgumSettingsPanel::StaticClass());
+        Shell->AddPage(EMarburgumScreen::Settings, SettingsPanel);
+        SettingsPanel->OnPresentationChanged.BindUObject(this, &UMarburgumUISubsystem::RebuildPresentation);
     }
     if (!ChoicePanel)
     {
@@ -299,6 +328,12 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
         SystemMenu = CreateWidget<UMarburgumSystemMenu>(Player, UMarburgumSystemMenu::StaticClass());
         Root->AddToLayer(EMarburgumUILayer::Modal, SystemMenu);
         SystemMenu->OnResume.BindUObject(this, &UMarburgumUISubsystem::SetSystemMenuOpen, false);
+        SystemMenu->OnSettings.BindWeakLambda(this, [this]()
+        {
+            SetSystemMenuOpen(false);
+            OpenScreen(EMarburgumScreen::Settings);
+            bSettingsFromMenu = true;
+        });
         SystemMenu->OnLeave.BindWeakLambda(this, [this]()
         {
             SetSystemMenuOpen(false);
@@ -316,6 +351,7 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
             UKismetSystemLibrary::QuitGame(World, World ? World->GetFirstPlayerController() : nullptr, EQuitPreference::Quit, false);
         });
     }
+    SetHudHidden(Shell->IsOpen() || SystemMenu->IsOpen());
 }
 
 void UMarburgumUISubsystem::Back()
@@ -329,8 +365,12 @@ void UMarburgumUISubsystem::Back()
         SetSystemMenuOpen(false);
         return;
     }
-    const bool bScreenOpen = IsInventoryOpen() || IsJournalOpen() || IsCharacterOpen() || IsSkillsOpen() || IsChoiceOpen() || IsShopOpen();
-    if (bScreenOpen)
+    if (Shell && Shell->IsOpen())
+    {
+        CloseScreens();
+        return;
+    }
+    if (IsChoiceOpen() || IsShopOpen())
     {
         CloseScreensExcept(nullptr);
         return;
@@ -352,42 +392,31 @@ void UMarburgumUISubsystem::SetSystemMenuOpen(bool bOpen)
     }
     if (bOpen)
     {
-        SystemMenu->Open();
-        FInputModeUIOnly Mode;
-        if (UWidget* Focus = SystemMenu->GetPreferredFocus())
+        if (Shell && Shell->IsOpen())
         {
-            Mode.SetWidgetToFocus(Focus->TakeWidget());
+            CloseScreens();
         }
-        Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-        Controller->SetInputMode(Mode);
-        Controller->SetShowMouseCursor(true);
+        SystemMenu->Open();
+        SetHudHidden(true);
+        GiveInputTo(SystemMenu->GetPreferredFocus(), SystemMenu);
     }
     else
     {
         SystemMenu->Close();
-        Controller->SetInputMode(FInputModeGameOnly());
-        Controller->SetShowMouseCursor(false);
+        if (!Shell || !Shell->IsOpen())
+        {
+            SetHudHidden(false);
+            ReturnInputToWorld();
+        }
     }
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=system_menu open=%d"), MarburgumII::Session::UiLogPrefix, bOpen ? 1 : 0);
 }
 
 bool UMarburgumUISubsystem::ToggleSkills()
 {
-    if (!SkillsPanel || LastPhase != EPhase::Ready)
-    {
-        return false;
-    }
-    CloseScreensExcept(SkillsPanel);
-    SkillsPanel->Toggle();
-    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=skills_panel open=%d"),
-        MarburgumII::Session::UiLogPrefix, SkillsPanel->IsOpen() ? 1 : 0);
-    return true;
+    return ToggleScreen(EMarburgumScreen::Skills);
 }
 
-bool UMarburgumUISubsystem::IsSkillsOpen() const
-{
-    return SkillsPanel && SkillsPanel->IsOpen();
-}
 
 bool UMarburgumUISubsystem::ToggleChoice(AMarburgumInteractable* Target, FName MissionId)
 {
@@ -462,7 +491,7 @@ void UMarburgumUISubsystem::HandleFishingChanged(AMarburgumPlayerState* State)
     const FMarburgumFishingStatus& Fishing = State->GetFishing();
     if (Fishing.Phase == EMarburgumFishingPhase::Bite)
     {
-        Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"), LOCTEXT("Bite", "A bite! Press [E] to strike."), MarburgumUI::ETone::Accent);
+        Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"), LOCTEXT("Bite", "A bite! Press [E] to strike."), MarburgumUI::ETone::Accent, false, EMarburgumGlyph::Fish);
         return;
     }
     // A cast that ended on its own: the receipt already told the catch and the too-early strike.
@@ -473,114 +502,54 @@ void UMarburgumUISubsystem::HandleFishingChanged(AMarburgumPlayerState* State)
         if (Fishing.LastEnd == EMarburgumFishingEnd::Escaped)
         {
             Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"), LOCTEXT("Escaped", "It got away. Strike sooner after the bite."),
-                MarburgumUI::ETone::Warning);
+                MarburgumUI::ETone::Warning, false, EMarburgumGlyph::Fish);
         }
         else if (Fishing.LastEnd == EMarburgumFishingEnd::Cancelled)
         {
             Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"), LOCTEXT("Cancelled", "You reeled in. Fishing needs you to stand still on the bank."),
-                MarburgumUI::ETone::Neutral);
+                MarburgumUI::ETone::Neutral, false, EMarburgumGlyph::Fish);
         }
     }
 }
 
 bool UMarburgumUISubsystem::ToggleInventory()
 {
-    if (!Inventory || LastPhase != EPhase::Ready)
-    {
-        return false;
-    }
-    CloseScreensExcept(Inventory);
-    Inventory->Toggle();
-    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=inventory_view open=%d"),
-        MarburgumII::Session::UiLogPrefix, Inventory->IsOpen() ? 1 : 0);
-    return true;
+    return ToggleScreen(EMarburgumScreen::Inventory);
 }
 
-bool UMarburgumUISubsystem::IsInventoryOpen() const
-{
-    return Inventory && Inventory->IsOpen();
-}
 
 bool UMarburgumUISubsystem::ToggleJournal()
 {
-    if (!Journal || LastPhase != EPhase::Ready)
-    {
-        return false;
-    }
-    CloseScreensExcept(Journal);
-    Journal->Toggle();
-    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=journal_view open=%d"),
-        MarburgumII::Session::UiLogPrefix, Journal->IsOpen() ? 1 : 0);
-    return true;
+    return ToggleScreen(EMarburgumScreen::Journal);
 }
 
-bool UMarburgumUISubsystem::IsJournalOpen() const
-{
-    return Journal && Journal->IsOpen();
-}
 
 bool UMarburgumUISubsystem::ToggleCharacter()
 {
-    if (!CharacterPanel || LastPhase != EPhase::Ready)
-    {
-        return false;
-    }
-    CloseScreensExcept(CharacterPanel);
-    CharacterPanel->Toggle();
-    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=character_view open=%d"),
-        MarburgumII::Session::UiLogPrefix, CharacterPanel->IsOpen() ? 1 : 0);
-    return true;
+    return ToggleScreen(EMarburgumScreen::Character);
 }
 
-bool UMarburgumUISubsystem::IsCharacterOpen() const
-{
-    return CharacterPanel && CharacterPanel->IsOpen();
-}
 
 bool UMarburgumUISubsystem::ScrollOpenScreen(float Lines)
 {
-    // One management screen is open at a time (CloseScreensExcept).
-    if (IsInventoryOpen())
+    switch (GetOpenScreen())
     {
-        Inventory->Scroll(Lines);
+    case EMarburgumScreen::Inventory: Inventory->Scroll(Lines); return true;
+    case EMarburgumScreen::Journal: Journal->Scroll(Lines); return true;
+    case EMarburgumScreen::Character: CharacterPanel->Scroll(Lines); return true;
+    case EMarburgumScreen::Skills: SkillsPanel->Scroll(Lines); return true;
+    case EMarburgumScreen::Settings: SettingsPanel->Scroll(Lines); return true;
+    default: return false;
     }
-    else if (IsJournalOpen())
-    {
-        Journal->Scroll(Lines);
-    }
-    else if (IsCharacterOpen())
-    {
-        CharacterPanel->Scroll(Lines);
-    }
-    else if (IsSkillsOpen())
-    {
-        SkillsPanel->Scroll(Lines);
-    }
-    else
-    {
-        return false;
-    }
-    return true;
 }
 
 void UMarburgumUISubsystem::CloseScreensExcept(const UObject* Keep)
 {
-    // One management screen at a time.
-    if (Inventory && Inventory.Get() != Keep && Inventory->IsOpen())
+    // One screen at a time: the shell's pages, a decision or a counter.
+    if (Shell && Shell.Get() != Keep && Shell->IsOpen())
     {
-        Inventory->Toggle();
-    }
-    if (Journal && Journal.Get() != Keep && Journal->IsOpen())
-    {
-        Journal->Toggle();
-    }
-    if (CharacterPanel && CharacterPanel.Get() != Keep && CharacterPanel->IsOpen())
-    {
-        CharacterPanel->Toggle();
-    }
-    if (SkillsPanel && SkillsPanel.Get() != Keep && SkillsPanel->IsOpen())
-    {
-        SkillsPanel->Toggle();
+        bSettingsFromMenu = false;
+        CloseScreens();
     }
     if (ChoicePanel && ChoicePanel.Get() != Keep && ChoicePanel->IsOpen())
     {
@@ -589,6 +558,222 @@ void UMarburgumUISubsystem::CloseScreensExcept(const UObject* Keep)
     if (ShopPanel && ShopPanel.Get() != Keep && ShopPanel->IsOpen())
     {
         ShopPanel->Close();
+    }
+}
+
+bool UMarburgumUISubsystem::IsInventoryOpen() const { return GetOpenScreen() == EMarburgumScreen::Inventory; }
+bool UMarburgumUISubsystem::IsJournalOpen() const { return GetOpenScreen() == EMarburgumScreen::Journal; }
+bool UMarburgumUISubsystem::IsCharacterOpen() const { return GetOpenScreen() == EMarburgumScreen::Character; }
+bool UMarburgumUISubsystem::IsSkillsOpen() const { return GetOpenScreen() == EMarburgumScreen::Skills; }
+bool UMarburgumUISubsystem::IsSettingsOpen() const { return GetOpenScreen() == EMarburgumScreen::Settings; }
+
+bool UMarburgumUISubsystem::ToggleSettings()
+{
+    return ToggleScreen(EMarburgumScreen::Settings);
+}
+
+bool UMarburgumUISubsystem::ToggleScreen(EMarburgumScreen Screen)
+{
+    if (!Shell || LastPhase != EPhase::Ready || Screen == EMarburgumScreen::None)
+    {
+        return false;
+    }
+    if (Shell->GetShown() == Screen)
+    {
+        CloseScreens();
+    }
+    else
+    {
+        OpenScreen(Screen);
+    }
+    return true;
+}
+
+bool UMarburgumUISubsystem::OpenScreen(EMarburgumScreen Screen)
+{
+    if (!Shell || LastPhase != EPhase::Ready || Screen == EMarburgumScreen::None)
+    {
+        return false;
+    }
+    bSettingsFromMenu = false;
+    if (SystemMenu && SystemMenu->IsOpen())
+    {
+        SystemMenu->Close();
+    }
+    if (ChoicePanel && ChoicePanel->IsOpen())
+    {
+        ChoicePanel->Close();
+    }
+    if (ShopPanel && ShopPanel->IsOpen())
+    {
+        ShopPanel->Close();
+    }
+    if (Chat)
+    {
+        Chat->LeaveComposer();
+    }
+    CharacterPanel->SetOpen(Screen == EMarburgumScreen::Character);
+    SkillsPanel->SetOpen(Screen == EMarburgumScreen::Skills);
+    Inventory->SetOpen(Screen == EMarburgumScreen::Inventory);
+    Journal->SetOpen(Screen == EMarburgumScreen::Journal);
+    SettingsPanel->SetOpen(Screen == EMarburgumScreen::Settings);
+    Shell->Show(Screen);
+    SetHudHidden(true);
+    // Toasts and subtitles would sit muddied under the screen's shade; they come back, if still current, on close.
+    if (UOverlay* Notices = Root ? Root->GetLayer(EMarburgumUILayer::Notifications) : nullptr)
+    {
+        Notices->SetVisibility(ESlateVisibility::Collapsed);
+    }
+    UWidget* Focus = nullptr;
+    switch (Screen)
+    {
+    case EMarburgumScreen::Character: Focus = CharacterPanel->GetPreferredFocus(); break;
+    case EMarburgumScreen::Skills: Focus = SkillsPanel->GetPreferredFocus(); break;
+    case EMarburgumScreen::Inventory: Focus = Inventory->GetPreferredFocus(); break;
+    case EMarburgumScreen::Journal: Focus = Journal->GetPreferredFocus(); break;
+    case EMarburgumScreen::Settings: Focus = SettingsPanel->GetPreferredFocus(); break;
+    default: break;
+    }
+    GiveInputTo(Focus, Shell);
+    LogScreen(Screen);
+    return true;
+}
+
+void UMarburgumUISubsystem::CloseScreens()
+{
+    if (!Shell || !Shell->IsOpen())
+    {
+        return;
+    }
+    const EMarburgumScreen Was = Shell->GetShown();
+    const bool bBackToMenu = bSettingsFromMenu && Was == EMarburgumScreen::Settings;
+    bSettingsFromMenu = false;
+    CharacterPanel->SetOpen(false);
+    SkillsPanel->SetOpen(false);
+    Inventory->SetOpen(false);
+    Journal->SetOpen(false);
+    SettingsPanel->SetOpen(false);
+    Shell->Hide();
+    if (UOverlay* Notices = Root ? Root->GetLayer(EMarburgumUILayer::Notifications) : nullptr)
+    {
+        Notices->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+    }
+    LogScreen(Was);
+    if (bBackToMenu)
+    {
+        SetSystemMenuOpen(true);
+        return;
+    }
+    SetHudHidden(false);
+    ReturnInputToWorld();
+}
+
+void UMarburgumUISubsystem::LogScreen(EMarburgumScreen Screen) const
+{
+    const TCHAR* Event = Screen == EMarburgumScreen::Inventory ? TEXT("inventory_view")
+        : Screen == EMarburgumScreen::Journal ? TEXT("journal_view")
+        : Screen == EMarburgumScreen::Character ? TEXT("character_view")
+        : Screen == EMarburgumScreen::Skills ? TEXT("skills_panel")
+        : TEXT("settings_view");
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=%s open=%d"), MarburgumII::Session::UiLogPrefix, Event,
+        GetOpenScreen() == Screen ? 1 : 0);
+}
+
+void UMarburgumUISubsystem::SetHudHidden(bool bHidden)
+{
+    if (UOverlay* Hud = Root ? Root->GetLayer(EMarburgumUILayer::Hud) : nullptr)
+    {
+        Hud->SetVisibility(bHidden ? ESlateVisibility::Collapsed : ESlateVisibility::SelfHitTestInvisible);
+        Hud->SetRenderOpacity(UMarburgumUISettings::Get().HudOpacity);
+    }
+}
+
+void UMarburgumUISubsystem::GiveInputTo(UWidget* Focus, UWidget* Fallback)
+{
+    const UGameInstance* GameInstance = GetGameInstance();
+    const UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
+    APlayerController* Controller = World ? World->GetFirstPlayerController() : nullptr;
+    if (!Controller || !Controller->IsLocalController())
+    {
+        return;
+    }
+    if (AMarburgumPlayerController* Marburgum = Cast<AMarburgumPlayerController>(Controller))
+    {
+        Marburgum->SetTyping(false);
+    }
+    FInputModeUIOnly Mode;
+    if (UWidget* Target = Focus ? Focus : Fallback)
+    {
+        Mode.SetWidgetToFocus(Target->TakeWidget());
+    }
+    Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+    Controller->SetInputMode(Mode);
+    Controller->SetShowMouseCursor(true);
+    // Keys held when the screen opened must not keep walking or driving underneath it.
+    Controller->FlushPressedKeys();
+}
+
+void UMarburgumUISubsystem::ReturnInputToWorld()
+{
+    const UGameInstance* GameInstance = GetGameInstance();
+    const UWorld* World = GameInstance ? GameInstance->GetWorld() : nullptr;
+    APlayerController* Controller = World ? World->GetFirstPlayerController() : nullptr;
+    if (!Controller || !Controller->IsLocalController())
+    {
+        return;
+    }
+    Controller->SetInputMode(FInputModeGameOnly());
+    Controller->SetShowMouseCursor(false);
+    if (FSlateApplication::IsInitialized())
+    {
+        FSlateApplication::Get().SetAllUserFocusToGameViewport();
+    }
+}
+
+void UMarburgumUISubsystem::RebuildPresentation()
+{
+    const EMarburgumScreen Open = GetOpenScreen();
+    const bool bFromMenu = bSettingsFromMenu;
+    const int32 Row = SettingsPanel ? SettingsPanel->GetFocusedRow() : 0;
+    APlayerController* Player = Shell ? Shell->GetOwningPlayer() : nullptr;
+    if (!Root || !Player)
+    {
+        return;
+    }
+    auto Drop = [](auto& Widget)
+    {
+        if (Widget)
+        {
+            Widget->RemoveFromParent();
+            Widget = nullptr;
+        }
+    };
+    Drop(Banner);
+    Drop(Objective);
+    Drop(Condition);
+    Drop(VehicleStatus);
+    Drop(Prompt);
+    Drop(CharacterPanel);
+    Drop(SkillsPanel);
+    Drop(Inventory);
+    Drop(Journal);
+    Drop(SettingsPanel);
+    Drop(Shell);
+    Drop(ChoicePanel);
+    Drop(ShopPanel);
+    Drop(SystemMenu);
+    Drop(Chat);
+    MountChat(Player);
+    MountGameplayHud(Player);
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=presentation_rebuilt reopen=%d"), MarburgumII::Session::UiLogPrefix,
+        static_cast<int32>(Open));
+    if (Open != EMarburgumScreen::None && OpenScreen(Open))
+    {
+        bSettingsFromMenu = bFromMenu;
+        if (Open == EMarburgumScreen::Settings && SettingsPanel)
+        {
+            SettingsPanel->RestoreFocus(Row);
+        }
     }
 }
 
@@ -684,7 +869,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         if (!Parts.IsEmpty())
         {
             Feed->Push(FName(*(Key.ToString() + TEXT(".granted"))), LOCTEXT("ItemsKind", "ITEMS RECEIVED"),
-                FText::FromString(FString::Join(Parts, TEXT(", "))), MarburgumUI::ETone::Success);
+                FText::FromString(FString::Join(Parts, TEXT(", "))), MarburgumUI::ETone::Success, false, EMarburgumGlyph::Item);
         }
     };
     auto PushRewards = [&]()
@@ -694,27 +879,27 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
             Feed->Push(FName(*(Key.ToString() + TEXT(".money"))), LOCTEXT("MoneyKind", "MONEY"),
                 Receipt.MoneyDelta > 0 ? FText::Format(LOCTEXT("MoneyPaid", "+{0}. Saved by the server."), FText::AsNumber(Receipt.MoneyDelta))
                                        : FText::Format(LOCTEXT("MoneySpent", "\u2212{0}. Saved by the server."), FText::AsNumber(-Receipt.MoneyDelta)),
-                MarburgumUI::ETone::Success);
+                MarburgumUI::ETone::Success, false, EMarburgumGlyph::Coin);
         }
         for (const FMarburgumSkillProgress& Award : Receipt.SkillXp)
         {
             const FSkillDefinition* Skill = FindSkill(Award.SkillId.ToString());
             Feed->Push(FName(*(Key.ToString() + TEXT(".xp.") + Award.SkillId.ToString())), LOCTEXT("XpKind", "SKILL"),
                 FText::Format(LOCTEXT("XpGained", "{0} +{1} XP. [K] Skills."), FText::FromString(Skill ? Skill->DisplayName : Award.SkillId.ToString()),
-                    FText::AsNumber(Award.Xp)), MarburgumUI::ETone::Accent);
+                    FText::AsNumber(Award.Xp)), MarburgumUI::ETone::Accent, false, EMarburgumGlyph::Skill);
         }
     };
 
     if (bApplied && Receipt.Effect == EMarburgumInteractionEffect::FishingCast)
     {
         Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"),
-            LOCTEXT("Cast", "Line in the water. Wait for a bite, then press [E] to strike."), MarburgumUI::ETone::Info);
+            LOCTEXT("Cast", "Line in the water. Wait for a bite, then press [E] to strike."), MarburgumUI::ETone::Info, false, EMarburgumGlyph::Fish);
         return;
     }
     if (bApplied && Receipt.Effect == EMarburgumInteractionEffect::FishCaught)
     {
         Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"),
-            FText::Format(LOCTEXT("Caught", "You landed a {0}. Saved by the server."), ItemName), MarburgumUI::ETone::Success);
+            FText::Format(LOCTEXT("Caught", "You landed a {0}. Saved by the server."), ItemName), MarburgumUI::ETone::Success, false, EMarburgumGlyph::Fish);
         PushRewards();
         return;
     }
@@ -726,7 +911,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         {
             Feed->Push(Key, LOCTEXT("ReceiptKind", "SERVER RECEIPT"),
                 FText::Format(LOCTEXT("TradeDuplicate", "Already done: {0} ×{1}. The server ignored the repeat; nothing changed hands twice."),
-                    ItemName, FText::AsNumber(Receipt.Quantity)), MarburgumUI::ETone::Info);
+                    ItemName, FText::AsNumber(Receipt.Quantity)), MarburgumUI::ETone::Info, false, EMarburgumGlyph::Info);
             return;
         }
         Feed->Push(Key, bBought ? LOCTEXT("BoughtKind", "BOUGHT") : LOCTEXT("SoldKind", "SOLD"),
@@ -734,13 +919,13 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
                           ItemName, FText::AsNumber(Receipt.Quantity), FText::AsNumber(-Receipt.MoneyDelta))
                     : FText::Format(LOCTEXT("Sold", "Petra counts out the coins and takes {0} ×{1} back. +{2} money, saved by the server."),
                           ItemName, FText::AsNumber(Receipt.Quantity), FText::AsNumber(Receipt.MoneyDelta)),
-            MarburgumUI::ETone::Success);
+            MarburgumUI::ETone::Success, false, EMarburgumGlyph::Trade);
         for (const FMarburgumSkillProgress& Award : Receipt.SkillXp)
         {
             const FSkillDefinition* Skill = FindSkill(Award.SkillId.ToString());
             Feed->Push(FName(*(Key.ToString() + TEXT(".xp.") + Award.SkillId.ToString())), LOCTEXT("XpKind", "SKILL"),
                 FText::Format(LOCTEXT("FirstPurchaseXp", "First purchase here: {0} +{1} XP. [K] Skills."),
-                    FText::FromString(Skill ? Skill->DisplayName : Award.SkillId.ToString()), FText::AsNumber(Award.Xp)), MarburgumUI::ETone::Accent);
+                    FText::FromString(Skill ? Skill->DisplayName : Award.SkillId.ToString()), FText::AsNumber(Award.Xp)), MarburgumUI::ETone::Accent, false, EMarburgumGlyph::Skill);
         }
         return;
     }
@@ -750,12 +935,12 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         PushSaid();
         Feed->Push(Key, LOCTEXT("MissionStartedKind", "MISSION STARTED"),
             FText::Format(LOCTEXT("MissionStarted", "{0}. Saved by the server; your objective is pinned, and [J] opens the journal."),
-                MissionDisplayName(Receipt.MissionId)), MarburgumUI::ETone::Accent);
+                MissionDisplayName(Receipt.MissionId)), MarburgumUI::ETone::Accent, false, EMarburgumGlyph::Mission);
         if (!Receipt.ItemId.IsNone())
         {
             Feed->Push(FName(*(Key.ToString() + TEXT(".item"))), LOCTEXT("ItemKind", "ITEM RECEIVED"),
                 FText::Format(LOCTEXT("MissionItem", "{0} \u00D7{1}, handed over for the mission."), ItemName, FText::AsNumber(Receipt.Quantity)),
-                MarburgumUI::ETone::Success);
+                MarburgumUI::ETone::Success, false, EMarburgumGlyph::Item);
         }
         PushGranted();
         return;
@@ -787,7 +972,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
                     ? FText::Format(LOCTEXT("MissionCompletedEntry", "{0}. Journal entry added: {1}."), MissionDisplayName(Receipt.MissionId),
                         FText::FromString(Mission->JournalEntryTitle))
                     : FText::Format(LOCTEXT("MissionCompleted", "{0}. Saved by the server."), MissionDisplayName(Receipt.MissionId)),
-                MarburgumUI::ETone::Success);
+                MarburgumUI::ETone::Success, false, EMarburgumGlyph::Check);
         }
         else
         {
@@ -806,7 +991,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
     {
         Feed->Push(Key, LOCTEXT("ReceiptKind", "SERVER RECEIPT"),
             FText::Format(LOCTEXT("MissionDuplicate", "Already done: {0}. The server ignored the repeat; nothing changed twice."),
-                MissionDisplayName(Receipt.MissionId)), MarburgumUI::ETone::Info);
+                MissionDisplayName(Receipt.MissionId)), MarburgumUI::ETone::Info, false, EMarburgumGlyph::Info);
         return;
     }
 
@@ -814,14 +999,14 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
     {
         Feed->Push(Key, LOCTEXT("ItemKind", "ITEM RECEIVED"),
             FText::Format(LOCTEXT("ItemApplied", "{0} \u00D7{1} added to your inventory. Confirmed and saved by the server."),
-                ItemName, FText::AsNumber(Receipt.Quantity)), MarburgumUI::ETone::Success);
+                ItemName, FText::AsNumber(Receipt.Quantity)), MarburgumUI::ETone::Success, false, EMarburgumGlyph::Item);
         return;
     }
     if (Receipt.Outcome == EMarburgumRequestOutcome::Duplicate)
     {
         Feed->Push(Key, LOCTEXT("ReceiptKind", "SERVER RECEIPT"),
             FText::Format(LOCTEXT("ItemDuplicate", "Already received: {0}. The server ignored the repeat; nothing was added twice."), ItemName),
-            MarburgumUI::ETone::Info);
+            MarburgumUI::ETone::Info, false, EMarburgumGlyph::Info);
         return;
     }
 
@@ -878,7 +1063,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         break;
     case EMarburgumInteractionReason::TooEarly:
         Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"),
-            LOCTEXT("TooEarly", "You struck too early. Whatever was there is gone; cast again."), MarburgumUI::ETone::Warning);
+            LOCTEXT("TooEarly", "You struck too early. Whatever was there is gone; cast again."), MarburgumUI::ETone::Warning, false, EMarburgumGlyph::Fish);
         return;
     case EMarburgumInteractionReason::OutOfStock:
         Message = Subject && !Subject->GetShopId().IsNone()
@@ -934,7 +1119,8 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         break;
     }
     // A mission step that is not possible yet is guidance, not an error.
-    Feed->Push(Key, Tone == MarburgumUI::ETone::Info ? LOCTEXT("NotYetKind", "NOT YET") : LOCTEXT("RefusedKind", "REFUSED"), Message, Tone);
+    Feed->Push(Key, Tone == MarburgumUI::ETone::Info ? LOCTEXT("NotYetKind", "NOT YET") : LOCTEXT("RefusedKind", "REFUSED"), Message, Tone, false,
+        Tone == MarburgumUI::ETone::Info ? EMarburgumGlyph::Info : EMarburgumGlyph::Warning);
 }
 
 void UMarburgumUISubsystem::HandleCombatResult(const FMarburgumCombatResult& Result)
@@ -951,15 +1137,15 @@ void UMarburgumUISubsystem::HandleCombatResult(const FMarburgumCombatResult& Res
     {
         if (Result.Reason == ErrorExhausted)
         {
-            Feed->Push(Key, Kind, LOCTEXT("FightExhausted", "Not enough breath."), MarburgumUI::ETone::Warning);
+            Feed->Push(Key, Kind, LOCTEXT("FightExhausted", "Not enough breath."), MarburgumUI::ETone::Warning, false, EMarburgumGlyph::Impact);
         }
         else if (Result.Reason == ErrorSeated)
         {
-            Feed->Push(Key, Kind, LOCTEXT("FightSeated", "Get out before you swing."), MarburgumUI::ETone::Warning);
+            Feed->Push(Key, Kind, LOCTEXT("FightSeated", "Get out before you swing."), MarburgumUI::ETone::Warning, false, EMarburgumGlyph::Impact);
         }
         else if (Result.Reason == ErrorIncapacitated)
         {
-            Feed->Push(Key, Kind, LOCTEXT("FightDown", "You cannot swing from the ground."), MarburgumUI::ETone::Warning);
+            Feed->Push(Key, Kind, LOCTEXT("FightDown", "You cannot swing from the ground."), MarburgumUI::ETone::Warning, false, EMarburgumGlyph::Impact);
         }
         // Too soon is the rhythm of a fight, not news; the original says nothing.
         return;
@@ -968,20 +1154,20 @@ void UMarburgumUISubsystem::HandleCombatResult(const FMarburgumCombatResult& Res
     if (Result.Outcome == OutcomeMiss)
     {
         Feed->Push(Key, Kind, Result.bHeavy ? LOCTEXT("FightHeavyMissed", "The heavy blow missed.") : LOCTEXT("FightJabMissed", "The jab missed."),
-            MarburgumUI::ETone::Neutral);
+            MarburgumUI::ETone::Neutral, false, EMarburgumGlyph::Impact);
     }
     else if (Result.Outcome == OutcomeBlocked)
     {
-        Feed->Push(Key, Kind, FText::Format(LOCTEXT("FightBlocked", "{0} kept their hands up."), Name), MarburgumUI::ETone::Info);
+        Feed->Push(Key, Kind, FText::Format(LOCTEXT("FightBlocked", "{0} kept their hands up."), Name), MarburgumUI::ETone::Info, false, EMarburgumGlyph::Impact);
     }
     else if (Result.TargetVitality == 0)
     {
-        Feed->Push(Key, Kind, FText::Format(LOCTEXT("FightFloored", "{0} goes down."), Name), MarburgumUI::ETone::Warning);
+        Feed->Push(Key, Kind, FText::Format(LOCTEXT("FightFloored", "{0} goes down."), Name), MarburgumUI::ETone::Warning, false, EMarburgumGlyph::Impact);
     }
     else
     {
         Feed->Push(Key, Kind, FText::Format(LOCTEXT("FightHit", "{0}. {1}."), Name, FText::AsNumber(FMath::RoundToInt(Result.Damage))),
-            MarburgumUI::ETone::Accent);
+            MarburgumUI::ETone::Accent, false, EMarburgumGlyph::Impact);
     }
 }
 
@@ -996,13 +1182,13 @@ void UMarburgumUISubsystem::HandleRequestResult(const FGuid& OperationId, EMarbu
     switch (Outcome)
     {
     case EMarburgumRequestOutcome::Applied:
-        Feed->Push(Key, LOCTEXT("ReceiptKind", "SERVER RECEIPT"), LOCTEXT("ReceiptApplied", "Request applied by the server."), MarburgumUI::ETone::Success);
+        Feed->Push(Key, LOCTEXT("ReceiptKind", "SERVER RECEIPT"), LOCTEXT("ReceiptApplied", "Request applied by the server."), MarburgumUI::ETone::Success, false, EMarburgumGlyph::Info);
         break;
     case EMarburgumRequestOutcome::Duplicate:
-        Feed->Push(Key, LOCTEXT("ReceiptKind", "SERVER RECEIPT"), LOCTEXT("ReceiptDuplicate", "Already applied. The server ignored the repeat; nothing changed twice."), MarburgumUI::ETone::Info);
+        Feed->Push(Key, LOCTEXT("ReceiptKind", "SERVER RECEIPT"), LOCTEXT("ReceiptDuplicate", "Already applied. The server ignored the repeat; nothing changed twice."), MarburgumUI::ETone::Info, false, EMarburgumGlyph::Info);
         break;
     case EMarburgumRequestOutcome::Rejected:
-        Feed->Push(Key, LOCTEXT("RefusedKind", "REFUSED"), LOCTEXT("ReceiptRejected", "The server declined this request. Nothing was changed."), MarburgumUI::ETone::Danger);
+        Feed->Push(Key, LOCTEXT("RefusedKind", "REFUSED"), LOCTEXT("ReceiptRejected", "The server declined this request. Nothing was changed."), MarburgumUI::ETone::Danger, false, EMarburgumGlyph::Warning);
         break;
     }
 }
@@ -1102,7 +1288,7 @@ void UMarburgumUISubsystem::HandleSessionChanged(const FMarburgumSessionView& Vi
                 bRecoveredFromLoss ? LOCTEXT("Reconnected", "Reconnected to {0}  ·  network contract v{1}")
                                    : LOCTEXT("Connected", "Connected to {0}  ·  network contract v{1}"),
                 FText::FromString(View.Address), FText::AsNumber(MarburgumII::Network::ContractVersion));
-        Feed->Push(TEXT("session.admitted"), LOCTEXT("ConnectionKind", "CONNECTION"), Message, MarburgumUI::ETone::Success);
+        Feed->Push(TEXT("session.admitted"), LOCTEXT("ConnectionKind", "CONNECTION"), Message, MarburgumUI::ETone::Success, false, EMarburgumGlyph::Signal);
         bRecoveredFromLoss = false;
     }
 }

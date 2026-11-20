@@ -5,15 +5,20 @@
 #include "MarburgumInventoryPanel.generated.h"
 
 class AMarburgumPlayerState;
+class UHorizontalBox;
+class UMarburgumSelectable;
 class UTextBlock;
 class UScrollBox;
 class UVerticalBox;
+class UWrapBox;
 
 /**
- * First UI-04 `inventory_view` shell: the local character's server-confirmed custody, from the
- * owner-only replicated inventory. Distinct designed states for waiting (not yet received), no
- * character, empty and filled; it never lists an item the server has not committed. Updated by the
- * inventory-changed event, not polled. Toggled with I; it does not take input focus yet.
+ * UI-04 `inventory_view`, a page of the management shell (I): what the server has confirmed and saved for this
+ * character, as a grid of item tiles that can be filtered by kind (tools, fish, evidence, goods), and a detail pane for
+ * the focused item: its kind and quantity, the missions that ask for it or gave it, and the counters that buy it back.
+ * Actions are shown only as they exist: an item is sold at a counter (B at its keeper) or handed over when a mission
+ * asks; there is no use-from-inventory action in this build, and the pane says so rather than offer a dead button.
+ * Rebuilt on the inventory-changed event; nothing here changes custody.
  */
 UCLASS()
 class MARBURGUMIICLIENT_API UMarburgumInventoryPanel : public UUserWidget
@@ -21,10 +26,11 @@ class MARBURGUMIICLIENT_API UMarburgumInventoryPanel : public UUserWidget
     GENERATED_BODY()
 
 public:
-    void Toggle();
+    void SetOpen(bool bOpen);
     bool IsOpen() const;
-    /** Scrolls the content by Lines lines (mouse wheel, Page Up/Down while open); taller than the screen, it scrolls. */
+    /** Scrolls the grid by Lines lines (mouse wheel, Page Up/Down). */
     void Scroll(float Lines);
+    UWidget* GetPreferredFocus() const;
 
 protected:
     virtual void NativeOnInitialized() override;
@@ -34,11 +40,21 @@ protected:
 private:
     void HandleInventoryChanged(AMarburgumPlayerState* State);
     void Rebuild();
+    void ShowDetail(FName ItemId);
+    void SetFilter(int32 Filter);
 
-    UPROPERTY(Transient) TObjectPtr<UVerticalBox> Rows;
+    UPROPERTY(Transient) TObjectPtr<UWrapBox> Grid;
+    UPROPERTY(Transient) TObjectPtr<UHorizontalBox> Filters;
     UPROPERTY(Transient) TObjectPtr<UScrollBox> Scroller;
-    UPROPERTY(Transient) TObjectPtr<UTextBlock> CharacterLabel;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> SummaryLabel;
+    UPROPERTY(Transient) TObjectPtr<UVerticalBox> DetailBox;
+    UPROPERTY(Transient) TObjectPtr<UVerticalBox> StateBox;
+    UPROPERTY(Transient) TArray<TObjectPtr<UMarburgumSelectable>> FilterWidgets;
+    UPROPERTY(Transient) TArray<TObjectPtr<UMarburgumSelectable>> TileWidgets;
 
+    TArray<FName> TileItems;
+    FName SelectedItem;
+    /** 0 all, then EItemKind + 1. */
+    int32 Filter = 0;
     FDelegateHandle InventoryHandle;
 };

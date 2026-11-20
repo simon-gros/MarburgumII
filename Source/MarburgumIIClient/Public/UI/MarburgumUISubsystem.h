@@ -5,6 +5,7 @@
 #include "MarburgumInteractionTypes.h"
 #include "Session/MarburgumSessionSubsystem.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "UI/MarburgumManagementShell.h"
 #include "MarburgumUISubsystem.generated.h"
 
 class APlayerController;
@@ -48,6 +49,8 @@ public:
     void MountChat(APlayerController* Player);
     /** Give keyboard focus to the chat composer when the session is admitted. */
     void FocusChat();
+    /** Close the chat composer, keeping its draft (the caller decides where the keys go next). */
+    void LeaveChat();
 
     /** Show or hide the inventory_view for the admitted local player (I key). False if not mounted yet. */
     bool ToggleInventory();
@@ -75,6 +78,20 @@ public:
     bool ToggleSkills();
     bool IsSkillsOpen() const;
 
+    /** Show or hide the settings_screen (O in a screen, Settings in the Escape menu). */
+    bool ToggleSettings();
+    bool IsSettingsOpen() const;
+
+    /**
+     * The management shell: open Screen in it (closing a decision, a counter or the Escape menu), or close it when
+     * Screen is already showing. While it is open the HUD layer is hidden and the shell owns the keys (UI-only input);
+     * closing hands mouse and keys back to the street.
+     */
+    bool ToggleScreen(EMarburgumScreen Screen);
+    bool OpenScreen(EMarburgumScreen Screen);
+    void CloseScreens();
+    EMarburgumScreen GetOpenScreen() const { return Shell ? Shell->GetShown() : EMarburgumScreen::None; }
+
     /** Open the decision for Mission at Target, or close it when it is already open there (ADR-049). */
     bool ToggleChoice(class AMarburgumInteractable* Target, FName MissionId);
     /** Pick option Number in the open decision; false when none is open or it cannot be chosen. */
@@ -96,6 +113,8 @@ public:
     const class UMarburgumSkillsPanel* GetSkillsPanel() const { return SkillsPanel; }
     const class UMarburgumChoicePanel* GetChoicePanel() const { return ChoicePanel; }
     const class UMarburgumShopPanel* GetShopPanel() const { return ShopPanel; }
+    class UMarburgumSettingsPanel* GetSettingsPanel() const { return SettingsPanel; }
+    const UMarburgumManagementShell* GetShell() const { return Shell; }
 
     /** Independent UI scale on top of DPI scaling (0.5 - 3.0). */
     static void SetInterfaceScale(float Scale);
@@ -120,6 +139,14 @@ private:
     /** Closes every open management screen except Keep (nullptr closes all). */
     void CloseScreensExcept(const UObject* Keep);
     void SetSystemMenuOpen(bool bOpen);
+    /** Collapses the exploration HUD under a screen or the Escape menu; shown again it takes the HUD opacity preference. */
+    void SetHudHidden(bool bHidden);
+    /** UI-only input focused on Focus (or Fallback), with the cursor; or the street's game-only input. */
+    void GiveInputTo(UWidget* Focus, UWidget* Fallback);
+    void ReturnInputToWorld();
+    void LogScreen(EMarburgumScreen Screen) const;
+    /** After a settings change that alters the theme tokens: rebuild every HUD and screen widget, re-open what was open. */
+    void RebuildPresentation();
 
     UPROPERTY(Transient) TObjectPtr<UMarburgumUIRoot> Root;
     UPROPERTY(Transient) TObjectPtr<UMarburgumConnectionScreen> ConnectionScreen;
@@ -138,6 +165,10 @@ private:
     UPROPERTY(Transient) TObjectPtr<class UMarburgumChoicePanel> ChoicePanel;
     UPROPERTY(Transient) TObjectPtr<class UMarburgumShopPanel> ShopPanel;
     UPROPERTY(Transient) TObjectPtr<class UMarburgumSystemMenu> SystemMenu;
+    UPROPERTY(Transient) TObjectPtr<UMarburgumManagementShell> Shell;
+    UPROPERTY(Transient) TObjectPtr<class UMarburgumSettingsPanel> SettingsPanel;
+    /** Settings was opened from the Escape menu, so closing it goes back there. */
+    bool bSettingsFromMenu = false;
     FDelegateHandle FishingHandle;
     int32 LastFishingAttempt = 0;
     EMarburgumFishingEnd LastFishingEnd = EMarburgumFishingEnd::None;

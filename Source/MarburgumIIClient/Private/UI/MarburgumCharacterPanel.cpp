@@ -4,19 +4,22 @@
 #include "Components/Border.h"
 #include "Components/HorizontalBox.h"
 #include "Components/Image.h"
-#include "Components/SafeZone.h"
 #include "Components/ScrollBox.h"
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
+#include "Components/VerticalBoxSlot.h"
 #include "Engine/GameInstance.h"
+#include "MarburgumAccountContract.h"
 #include "MarburgumGameplayContract.h"
-#include "MarburgumPlaces.h"
-#include "MarburgumWorldClock.h"
 #include "MarburgumGameState.h"
+#include "MarburgumPlaces.h"
 #include "MarburgumPlayerState.h"
+#include "MarburgumSkillCurve.h"
+#include "MarburgumWorldClock.h"
 #include "Session/MarburgumSessionSubsystem.h"
 #include "UI/MarburgumUIBuilder.h"
+#include "UI/MarburgumUISubsystem.h"
 
 #define LOCTEXT_NAMESPACE "MarburgumCharacterPanel"
 
@@ -24,20 +27,32 @@ using namespace MarburgumUI;
 
 namespace
 {
-    constexpr float PanelWidth = 520.f;
-
     UVerticalBox* Section(const FBuilder& B, UVerticalBox* Parent, const FText& Title)
     {
         const FTokens& T = Tokens();
-        FBuilder::Stack(Parent, B.Text(Title, ETypeRole::Overline, T.Color.TextSecondary), T.Space.S);
+        FBuilder::Stack(Parent, B.SectionTitle(Title, T.Color.Accent), T.Space.M);
         UVerticalBox* Body = B.Column();
-        FBuilder::Stack(Parent, Body, T.Space.L);
+        FBuilder::Stack(Parent, Body, T.Space.XL);
         return Body;
     }
 
     FText Points(int32 Value, int32 Max)
     {
         return FText::Format(LOCTEXT("Points", "{0} / {1}"), FText::AsNumber(Value), FText::AsNumber(Max));
+    }
+
+    FText Initials(const FString& First, const FString& Last)
+    {
+        FString Out;
+        if (!First.IsEmpty())
+        {
+            Out.AppendChar(First[0]);
+        }
+        if (!Last.IsEmpty())
+        {
+            Out.AppendChar(Last[0]);
+        }
+        return Caps(Out.IsEmpty() ? FString(TEXT("?")) : Out);
     }
 }
 
@@ -47,69 +62,48 @@ void UMarburgumCharacterPanel::NativeOnInitialized()
     const FTokens& T = Tokens();
     FBuilder B(*WidgetTree);
 
-    UVerticalBox* Column = B.Column();
-    UHorizontalBox* Header = B.Row();
-    UVerticalBox* Titles = B.Column();
-    FBuilder::Stack(Titles, B.Text(LOCTEXT("Overline", "CHARACTER"), ETypeRole::Overline, T.Color.Accent), T.Space.XXS);
-    NameLabel = B.Text(FText::GetEmpty(), ETypeRole::Title);
-    // Development keys can be long; they wrap rather than run under the close hint.
-    NameLabel->SetAutoWrapText(true);
-    NameLabel->SetWrappingPolicy(ETextWrappingPolicy::AllowPerCharacterWrapping);
-    FBuilder::Stack(Titles, NameLabel, 0.f);
-    FBuilder::Inline(Header, Titles, T.Space.M, true);
-    FBuilder::Inline(Header, B.Text(LOCTEXT("Close", "[C] Close"), ETypeRole::Caption, T.Color.TextMuted), 0.f, false, false);
-    FBuilder::Stack(Column, Header, T.Space.S);
-
-    IdentityLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption);
-    IdentityLabel->SetAutoWrapText(true);
-    FBuilder::Stack(Column, IdentityLabel, T.Space.M);
-    FBuilder::Stack(Column, B.Rule(T.Color.Border, 1.f), T.Space.L);
+    UHorizontalBox* Columns = B.Row();
+    IdentityBox = B.Column();
+    UBorder* IdentityCard = B.Surface(ESurfaceKind::Panel, Pad(T.Space.XL), IdentityBox);
+    FBuilder::InlineTop(Columns, B.Bounded(IdentityCard, 440.f, 320.f), T.Space.XXL);
 
     Sections = B.Column();
     Scroller = B.Scroll(Sections);
-    FBuilder::Stack(Column, Scroller, 0.f, true);
+    FBuilder::Inline(Columns, B.Bounded(Scroller, 900.f, 420.f), 0.f, true, false);
 
-    UBorder* Panel = B.Surface(ESurfaceKind::Panel, Pad(T.Space.XL), Column);
-    USizeBox* Width = WidgetTree->ConstructWidget<USizeBox>();
-    Width->SetWidthOverride(PanelWidth);
-    Width->SetContent(Panel);
-
-    UBorder* Anchor = B.Surface(ESurfaceKind::Base, FMargin(0.f), Width, false);
-    Anchor->SetBrushColor(FLinearColor::Transparent);
-    FBuilder::Align(Anchor, HAlign_Center, VAlign_Center);
-
-    USafeZone* Safe = WidgetTree->ConstructWidget<USafeZone>();
-    Safe->SetContent(Anchor);
-    WidgetTree->RootWidget = Safe;
+    WidgetTree->RootWidget = Columns;
     SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UMarburgumCharacterPanel::NativeConstruct()
 {
     Super::NativeConstruct();
-    for (FMarburgumPlayerStateChanged* Event : { &AMarburgumPlayerState::OnConditionChanged(), &AMarburgumPlayerState::OnAreaChanged(),
-             &AMarburgumPlayerState::OnMissionsChanged() })
+    for (FMarburgumPlayerStateChanged* Event : { &AMarburgumPlayerState::OnAreaChanged(), &AMarburgumPlayerState::OnMissionsChanged(),
+             &AMarburgumPlayerState::OnInventoryChanged(), &AMarburgumPlayerState::OnProgressChanged(), &AMarburgumPlayerState::OnIdentityChanged() })
     {
         Handles.Add(Event->AddUObject(this, &UMarburgumCharacterPanel::HandleStateChanged));
     }
-    Handles.Add(AMarburgumPlayerState::OnInventoryChanged().AddUObject(this, &UMarburgumCharacterPanel::HandleStateChanged));
+    ConditionHandle = AMarburgumPlayerState::OnConditionChanged().AddUObject(this, &UMarburgumCharacterPanel::HandleConditionChanged);
     Rebuild();
 }
 
 void UMarburgumCharacterPanel::NativeDestruct()
 {
-    AMarburgumPlayerState::OnConditionChanged().Remove(Handles[0]);
-    AMarburgumPlayerState::OnAreaChanged().Remove(Handles[1]);
-    AMarburgumPlayerState::OnMissionsChanged().Remove(Handles[2]);
-    AMarburgumPlayerState::OnInventoryChanged().Remove(Handles[3]);
+    FMarburgumPlayerStateChanged* Events[] = { &AMarburgumPlayerState::OnAreaChanged(), &AMarburgumPlayerState::OnMissionsChanged(),
+        &AMarburgumPlayerState::OnInventoryChanged(), &AMarburgumPlayerState::OnProgressChanged(), &AMarburgumPlayerState::OnIdentityChanged() };
+    for (int32 Index = 0; Index < Handles.Num() && Index < UE_ARRAY_COUNT(Events); ++Index)
+    {
+        Events[Index]->Remove(Handles[Index]);
+    }
     Handles.Reset();
+    AMarburgumPlayerState::OnConditionChanged().Remove(ConditionHandle);
     Super::NativeDestruct();
 }
 
-void UMarburgumCharacterPanel::Toggle()
+void UMarburgumCharacterPanel::SetOpen(bool bOpen)
 {
-    SetVisibility(IsOpen() ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
-    if (IsOpen())
+    SetVisibility(bOpen ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed);
+    if (bOpen)
     {
         Rebuild();
         if (Scroller)
@@ -129,6 +123,11 @@ void UMarburgumCharacterPanel::Scroll(float Lines)
     FBuilder::ScrollBy(Scroller, Lines);
 }
 
+UWidget* UMarburgumCharacterPanel::GetPreferredFocus() const
+{
+    return FirstLink;
+}
+
 FText UMarburgumCharacterPanel::GetShownStaminaText() const
 {
     return IsOpen() && StaminaValue ? StaminaValue->GetText() : FText::GetEmpty();
@@ -139,8 +138,58 @@ void UMarburgumCharacterPanel::HandleStateChanged(AMarburgumPlayerState* State)
     const APlayerController* Owner = GetOwningPlayer();
     if (IsOpen() && Owner && State == Owner->PlayerState)
     {
+        const bool bHadFocus = HasFocusedDescendants();
         Rebuild();
+        if (bHadFocus && FirstLink)
+        {
+            FirstLink->SetFocus();
+        }
     }
+}
+
+void UMarburgumCharacterPanel::HandleConditionChanged(AMarburgumPlayerState* State)
+{
+    const APlayerController* Owner = GetOwningPlayer();
+    if (IsOpen() && Owner && State == Owner->PlayerState)
+    {
+        if (StaminaMeter)
+        {
+            UpdateCondition();
+        }
+        else
+        {
+            Rebuild(); // The condition just became known.
+        }
+    }
+}
+
+void UMarburgumCharacterPanel::UpdateCondition()
+{
+    const APlayerController* Owner = GetOwningPlayer();
+    const AMarburgumPlayerState* State = Owner ? Owner->GetPlayerState<AMarburgumPlayerState>() : nullptr;
+    if (!State || !State->IsConditionKnown() || !StaminaMeter)
+    {
+        return;
+    }
+    using namespace MarburgumII::Gameplay;
+    const FTokens& T = Tokens();
+    const FMarburgumCondition& Condition = State->GetCondition();
+    VitalityMeter->SetPercent(Condition.MaxVitality > 0 ? static_cast<float>(Condition.Vitality) / Condition.MaxVitality : 0.f);
+    VitalityMeter->SetFillColor(Condition.Vitality * 4 <= Condition.MaxVitality ? T.Color.Danger : T.Color.Success);
+    VitalityValue->SetText(Points(Condition.Vitality, Condition.MaxVitality));
+    StaminaMeter->SetPercent(Condition.MaxStamina > 0 ? static_cast<float>(Condition.Stamina) / Condition.MaxStamina : 0.f);
+    StaminaMeter->SetFillColor(Condition.bWinded ? T.Color.Warning : T.Color.Info);
+    StaminaValue->SetText(Points(Condition.Stamina, Condition.MaxStamina));
+    const FText Breath = Condition.Vitality == 0
+        ? FText::Format(LOCTEXT("Down", "Down: back on your feet in {0} s"), FText::AsNumber(Condition.RecoverySeconds))
+        : Condition.bSubmerged ? LOCTEXT("Submerged", "Under water")
+        : Condition.bSwimming ? LOCTEXT("Swimming", "Swimming")
+        : Condition.bWinded
+            ? FText::Format(LOCTEXT("Winded", "Winded: walking until stamina is back to {0}"), FText::AsNumber(FMath::RoundToInt(RunResumeStamina)))
+        : Condition.bRunning ? LOCTEXT("Running", "Running")
+        : Condition.Stamina < Condition.MaxStamina ? LOCTEXT("Recovering", "Getting breath back")
+        : LOCTEXT("Rested", "Rested");
+    BreathValue->SetText(Breath);
 }
 
 void UMarburgumCharacterPanel::Rebuild()
@@ -153,26 +202,84 @@ void UMarburgumCharacterPanel::Rebuild()
     const FTokens& T = Tokens();
     FBuilder B(*WidgetTree);
     Sections->ClearChildren();
+    IdentityBox->ClearChildren();
     StaminaValue = nullptr;
+    VitalityValue = nullptr;
+    StaminaMeter = nullptr;
+    VitalityMeter = nullptr;
+    BreathValue = nullptr;
+    FirstLink = nullptr;
 
     const APlayerController* Owner = GetOwningPlayer();
     const AMarburgumPlayerState* State = Owner ? Owner->GetPlayerState<AMarburgumPlayerState>() : nullptr;
     const UGameInstance* GameInstance = GetGameInstance();
     const UMarburgumSessionSubsystem* Session = GameInstance ? GameInstance->GetSubsystem<UMarburgumSessionSubsystem>() : nullptr;
     const FString Key = Session ? Session->GetCharacterKey() : FString();
-    if (State && State->HasIdentity())
+
+    // Identity card: monogram, name, body, and where the character is kept.
+    const bool bNamed = State && State->HasIdentity();
+    UBorder* Monogram = B.Surface(ESurfaceKind::Sunken, Pad(T.Space.M),
+        B.Text(bNamed ? Initials(State->GetFirstName(), State->GetLastName()) : FText::FromString(TEXT("—")), ETypeRole::Display, T.Color.Accent), false);
+    Monogram->SetBrush(RoundedBrush(T.Color.Sunken, 48.f, T.Color.Hairline, T.BorderWidth));
+    FBuilder::Align(Monogram, HAlign_Center, VAlign_Center);
+    USizeBox* MonogramSize = WidgetTree->ConstructWidget<USizeBox>();
+    MonogramSize->SetWidthOverride(96.f);
+    MonogramSize->SetHeightOverride(96.f);
+    MonogramSize->SetContent(Monogram);
+    FBuilder::Stack(IdentityBox, MonogramSize, T.Space.L);
+    if (UVerticalBoxSlot* MonogramSlot = Cast<UVerticalBoxSlot>(IdentityBox->GetSlots().Last()))
     {
-        // A signed-in character (ADR-055): its own name, never the connection's development key.
-        NameLabel->SetText(FText::Format(LOCTEXT("FullName", "{0} {1}"), FText::FromString(State->GetFirstName()),
-            FText::FromString(State->GetLastName())));
-        IdentityLabel->SetText(LOCTEXT("SignedIn", "Your character  ·  kept with your account"));
+        MonogramSlot->SetHorizontalAlignment(HAlign_Left);
+    }
+    FBuilder::Stack(IdentityBox, B.Text(LOCTEXT("Overline", "CHARACTER"), ETypeRole::Overline, T.Color.Accent), T.Space.XXS);
+    UTextBlock* Name = B.Text(bNamed
+        ? FText::Format(LOCTEXT("FullName", "{0} {1}"), FText::FromString(State->GetFirstName()), FText::FromString(State->GetLastName()))
+        : LOCTEXT("Unnamed", "Development character"), ETypeRole::PlaceTitle, T.Color.TextPrimary);
+    Name->SetAutoWrapText(true);
+    FBuilder::Stack(IdentityBox, Name, T.Space.S);
+    if (bNamed)
+    {
+        const MarburgumII::Accounts::FCharacterModel* Model = MarburgumII::Accounts::FindModel(State->GetModel());
+        FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Body", "Body"), Model ? FText::FromString(Model->NameEn) : FText::FromName(State->GetModel())),
+            T.Space.XS);
+        FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Kept", "Kept"), LOCTEXT("WithAccount", "With your account")), T.Space.L);
     }
     else
     {
-        NameLabel->SetText(Key.IsEmpty() ? LOCTEXT("Nameless", "No character") : FText::FromString(Key));
-        IdentityLabel->SetText(Key.IsEmpty()
-            ? LOCTEXT("NoKey", "No development character on this connection")
-            : LOCTEXT("Key", "Development character  ·  a test identity, not an account."));
+        UTextBlock* Dev = B.Text(Key.IsEmpty() ? LOCTEXT("NoKey", "No character on this connection.")
+            : LOCTEXT("DevKey", "A test identity for development, not an account."), ETypeRole::Caption, T.Color.TextSecondary);
+        Dev->SetAutoWrapText(true);
+        FBuilder::Stack(IdentityBox, Dev, T.Space.L);
+    }
+
+    FBuilder::Stack(IdentityBox, B.SectionTitle(LOCTEXT("PlaceTitle", "WHEREABOUTS"), T.Color.Accent), T.Space.M);
+    if (!State || !State->IsLocationKnown())
+    {
+        FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Area", "Area"), LOCTEXT("AreaUnknown", "Not yet known")), 0.f);
+    }
+    else
+    {
+        const MarburgumII::Places::FDistrict* District = State->GetPlace().District.IsEmpty() ? nullptr
+            : MarburgumII::Places::Get().FindDistrictById(State->GetPlace().District);
+        if (District)
+        {
+            FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Quarter", "Quarter"), FText::FromString(District->DisplayName)), T.Space.XS);
+        }
+        if (!State->GetPlace().Street.IsEmpty())
+        {
+            FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Street", "Street"), FText::FromString(State->GetPlace().Street)), T.Space.XS);
+        }
+        const FAreaDefinition* Area = State->GetAreaId().IsNone() ? nullptr : FindArea(State->GetAreaId().ToString());
+        const FText AreaName = Area ? FText::FromString(Area->DisplayName)
+            : State->GetAreaId().IsNone() ? FText::FromString(OutsideAreaName) : FText::FromName(State->GetAreaId());
+        FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Area", "Area"), AreaName), T.Space.XS);
+    }
+    FDateTime Utc;
+    if (AMarburgumGameState::WorldUtc(GetWorld(), Utc))
+    {
+        const MarburgumII::Clock::FCivil Now = MarburgumII::Clock::MarburgumAt(Utc);
+        FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Date", "Date"), FText::FromString(MarburgumII::Clock::DateLabel(Now))), T.Space.XS);
+        FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Time", "Time"), FText::FromString(MarburgumII::Clock::TimeLabel(Now))), 0.f);
     }
 
     // Condition: the body as the server simulates it.
@@ -184,58 +291,35 @@ void UMarburgumCharacterPanel::Rebuild()
     }
     else
     {
-        const FMarburgumCondition& Condition = State->GetCondition();
-        FBuilder::Stack(Body, B.Field(LOCTEXT("Vitality", "Vitality"), Points(Condition.Vitality, Condition.MaxVitality)), T.Space.XS);
+        auto MeterLine = [&](EMarburgumGlyph Icon, const FText& Label, UMarburgumMeter*& OutMeter, UTextBlock*& OutValue)
+        {
+            UHorizontalBox* Head = B.Row();
+            FBuilder::Inline(Head, B.GlyphText(Icon, Label, ETypeRole::Label, T.Color.TextPrimary), T.Space.M, true);
+            OutValue = B.Text(FText::GetEmpty(), ETypeRole::Numeric, T.Color.TextPrimary);
+            FBuilder::Inline(Head, OutValue, 0.f);
+            FBuilder::Stack(Body, Head, T.Space.XS);
+            OutMeter = B.Bar(ETone::Success, 1.f, 10.f, 10);
+            FBuilder::Stack(Body, OutMeter, T.Space.L);
+        };
+        UMarburgumMeter* Meter = nullptr;
         UTextBlock* Value = nullptr;
-        FBuilder::Stack(Body, B.Field(LOCTEXT("Stamina", "Stamina"), Points(Condition.Stamina, Condition.MaxStamina), &Value), T.Space.XS);
+        MeterLine(EMarburgumGlyph::Heart, LOCTEXT("Vitality", "Vitality"), Meter, Value);
+        VitalityMeter = Meter;
+        VitalityValue = Value;
+        MeterLine(EMarburgumGlyph::Breath, LOCTEXT("Stamina", "Stamina"), Meter, Value);
+        StaminaMeter = Meter;
         StaminaValue = Value;
-        const FText Breath = Condition.bWinded
-            ? FText::Format(LOCTEXT("Winded", "Winded: walking until stamina is back to {0}"), FText::AsNumber(FMath::RoundToInt(RunResumeStamina)))
-            : Condition.bRunning ? LOCTEXT("Running", "Running")
-            : Condition.Stamina < Condition.MaxStamina ? LOCTEXT("Recovering", "Getting breath back")
-            : LOCTEXT("Rested", "Rested");
-        FBuilder::Stack(Body, B.Field(LOCTEXT("Breath", "Breath"), Breath), T.Space.S);
+        UTextBlock* Breath = nullptr;
+        FBuilder::Stack(Body, B.Field(LOCTEXT("Breath", "State"), FText::GetEmpty(), &Breath), T.Space.S);
+        BreathValue = Breath;
         UTextBlock* Note = B.Text(LOCTEXT("ConditionNote",
-            "Saved by the server when you leave. Vitality comes back in full when you get up after going down."),
-            ETypeRole::Caption, T.Color.TextMuted);
+            "Saved by the server when you leave. Vitality comes back in full when you get up after going down."), ETypeRole::Caption, T.Color.TextMuted);
         Note->SetAutoWrapText(true);
         FBuilder::Stack(Body, Note, 0.f);
+        UpdateCondition();
     }
 
-    // Whereabouts: the area the server placed the pawn in.
-    UVerticalBox* Place = Section(B, Sections, LOCTEXT("PlaceTitle", "WHEREABOUTS"));
-    if (!State || !State->IsLocationKnown())
-    {
-        FBuilder::Stack(Place, B.Field(LOCTEXT("Area", "Area"), LOCTEXT("AreaUnknown", "Not yet known")), 0.f);
-    }
-    else
-    {
-        const FAreaDefinition* Area = State->GetAreaId().IsNone() ? nullptr : FindArea(State->GetAreaId().ToString());
-        const FText Name = Area ? FText::FromString(Area->DisplayName)
-            : State->GetAreaId().IsNone() ? FText::FromString(OutsideAreaName) : FText::FromName(State->GetAreaId());
-        FBuilder::Stack(Place, B.Field(LOCTEXT("Area", "Area"), Name), 0.f);
-        // The register quarter or village and the street (ADR-063); none inside a named area or off every street.
-        const MarburgumII::Places::FDistrict* District = State->GetPlace().District.IsEmpty() ? nullptr
-            : MarburgumII::Places::Get().FindDistrictById(State->GetPlace().District);
-        if (District)
-        {
-            FBuilder::Stack(Place, B.Field(LOCTEXT("Quarter", "Quarter"), FText::FromString(District->DisplayName)), 0.f);
-        }
-        if (!State->GetPlace().Street.IsEmpty())
-        {
-            FBuilder::Stack(Place, B.Field(LOCTEXT("Street", "Street"), FText::FromString(State->GetPlace().Street)), 0.f);
-        }
-    }
-    // The world clock's 1990s date and time (ADR-064), as the panel was opened.
-    FDateTime Utc;
-    if (AMarburgumGameState::WorldUtc(GetWorld(), Utc))
-    {
-        const MarburgumII::Clock::FCivil Now = MarburgumII::Clock::MarburgumAt(Utc);
-        FBuilder::Stack(Place, B.Field(LOCTEXT("Date", "Date"), FText::FromString(MarburgumII::Clock::DateLabel(Now))), 0.f);
-        FBuilder::Stack(Place, B.Field(LOCTEXT("Time", "Time"), FText::FromString(MarburgumII::Clock::TimeLabel(Now))), 0.f);
-    }
-
-    // Custody and missions: summaries; the Inventory (I) and Journal (J) hold the details.
+    // The saved record in brief, each line a way to the screen that holds the details.
     UVerticalBox* Record = Section(B, Sections, LOCTEXT("RecordTitle", "SAVED RECORD"));
     if (!State || !State->IsInventoryKnown() || !State->AreMissionsKnown())
     {
@@ -244,7 +328,7 @@ void UMarburgumCharacterPanel::Rebuild()
     else if (!State->HasCharacter())
     {
         FBuilder::Stack(Record, B.StateCard(LOCTEXT("NoCharacterTitle", "Nothing is saved"),
-            LOCTEXT("NoCharacterBody", "Join with a development character key to hold items and take missions."), ETone::Warning), 0.f);
+            LOCTEXT("NoCharacterBody", "Join with a character to hold items and take missions."), ETone::Warning), 0.f);
     }
     else
     {
@@ -253,14 +337,59 @@ void UMarburgumCharacterPanel::Rebuild()
         {
             Carried += Stack.Quantity;
         }
-        FBuilder::Stack(Record, B.Field(LOCTEXT("Carried", "Carried  ·  [I]"), FText::Format(
-            LOCTEXT("ItemCount", "{0} {0}|plural(one=item,other=items)"), FText::AsNumber(Carried))), T.Space.XS);
-        FBuilder::Stack(Record, B.Field(LOCTEXT("Missions", "Missions under way  ·  [J]"), FText::AsNumber(State->GetMissions().Num())), 0.f);
+        int32 Open = 0;
+        for (const FMarburgumMissionState& Mission : State->GetMissions())
+        {
+            Open += Mission.bCompleted ? 0 : 1;
+        }
+        UMarburgumUISubsystem* UI = GameInstance ? GameInstance->GetSubsystem<UMarburgumUISubsystem>() : nullptr;
+        auto Link = [&](EMarburgumGlyph Icon, const FText& Label, const FText& Value, const TCHAR* KeyName, TFunction<void()> Open)
+        {
+            UHorizontalBox* Line = B.Row();
+            FBuilder::Inline(Line, B.GlyphText(Icon, Label, ETypeRole::Label, T.Color.TextPrimary), T.Space.M, true);
+            FBuilder::Inline(Line, B.Text(Value, ETypeRole::Numeric, T.Color.TextPrimary), T.Space.L);
+            FBuilder::Inline(Line, B.KeyCap(FText::FromString(KeyName), false), 0.f);
+            UMarburgumSelectable* Row = B.Selectable(Line, FMargin(T.Space.L, T.Space.M));
+            Row->OnActivated.BindLambda(MoveTemp(Open));
+            FBuilder::Stack(Record, Row, T.Space.XS);
+            if (!FirstLink)
+            {
+                FirstLink = Row;
+            }
+        };
+        TWeakObjectPtr<UMarburgumUISubsystem> WeakUI = UI;
+        Link(EMarburgumGlyph::Inventory, LOCTEXT("Carried", "Carried"),
+            FText::Format(LOCTEXT("ItemCount", "{0} {0}|plural(one=item,other=items)"), FText::AsNumber(Carried)), TEXT("I"),
+            [WeakUI]() { if (WeakUI.IsValid()) { WeakUI->ToggleInventory(); } });
+        Link(EMarburgumGlyph::Journal, LOCTEXT("Missions", "Missions under way"), FText::AsNumber(Open), TEXT("J"),
+            [WeakUI]() { if (WeakUI.IsValid()) { WeakUI->ToggleJournal(); } });
+        if (State->IsProgressKnown())
+        {
+            Link(EMarburgumGlyph::Coin, LOCTEXT("Money", "Money"), FText::AsNumber(State->GetMoney()), TEXT("K"),
+                [WeakUI]() { if (WeakUI.IsValid()) { WeakUI->ToggleSkills(); } });
+        }
+    }
+
+    if (State && State->IsProgressKnown() && State->HasCharacter())
+    {
+        UVerticalBox* SkillBox = Section(B, Sections, LOCTEXT("SkillsTitle", "SKILLS"));
+        UHorizontalBox* Line = B.Row();
+        for (const FSkillDefinition& Skill : MarburgumII::Gameplay::Skills)
+        {
+            const int64 Level = MarburgumII::SkillCurve::LevelForXp(State->GetSkillXp(FName(Skill.Id)));
+            UVerticalBox* Cell = B.Column();
+            FBuilder::Stack(Cell, B.Text(FText::AsNumber(Level), ETypeRole::NumericLarge, Level > 0 ? T.Color.TextPrimary : T.Color.TextMuted), 0.f);
+            FBuilder::Stack(Cell, B.Text(Caps(FString(Skill.DisplayName)), ETypeRole::Overline, T.Color.TextSecondary), 0.f);
+            FBuilder::Inline(Line, Cell, T.Space.XL);
+        }
+        FBuilder::Stack(SkillBox, Line, 0.f);
     }
 
     UVerticalBox* Gear = Section(B, Sections, LOCTEXT("EquipmentTitle", "EQUIPMENT"));
-    FBuilder::Stack(Gear, B.StateCard(LOCTEXT("EquipmentNone", "Not part of this build"),
-        LOCTEXT("EquipmentBody", "Clothing and tools in hand arrive with the systems that use them."), ETone::Neutral), 0.f);
+    UTextBlock* GearNote = B.Text(LOCTEXT("EquipmentBody", "Clothing and tools in hand arrive with the systems that use them; nothing is worn or held "
+        "in this build."), ETypeRole::Caption, T.Color.TextMuted);
+    GearNote->SetAutoWrapText(true);
+    FBuilder::Stack(Gear, GearNote, 0.f);
 }
 
 #undef LOCTEXT_NAMESPACE
