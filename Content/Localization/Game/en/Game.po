@@ -1,0 +1,4614 @@
+﻿# Game English translation.
+# Fill out your copyright notice in the Description page of Project Settings.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: Game\n"
+"POT-Creation-Date: 2026-11-20 01:53\n"
+"PO-Revision-Date: 2026-11-20 01:53\n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Key:	Talk
+#. SourceLocation:	Source/MarburgumII/Private/MarburgumNpc.cpp(59)
+#: Source/MarburgumII/Private/MarburgumNpc.cpp(59)
+msgctxt "MarburgumNpc,Talk"
+msgid "Talk"
+msgstr "Talk"
+
+#. Key:	ChatHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(101)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(101)
+msgctxt "MarburgumChat,ChatHint"
+msgid "Chat"
+msgstr "Chat"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(128)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(128)
+msgctxt "MarburgumChat,Overline"
+msgid "CHAT"
+msgstr "CHAT"
+
+#. Key:	ComposerHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(153)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(153)
+msgctxt "MarburgumChat,ComposerHint"
+msgid "Say something"
+msgstr "Say something"
+
+#. Key:	Send
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(158)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(158)
+msgctxt "MarburgumChat,Send"
+msgid "Send"
+msgstr "Send"
+
+#. Key:	Channel
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(159)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(159)
+msgctxt "MarburgumChat,Channel"
+msgid "General / Private"
+msgstr "General / Private"
+
+#. Key:	Leave
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(160)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(160)
+msgctxt "MarburgumChat,Leave"
+msgid "Close"
+msgstr "Close"
+
+#. Key:	PlayerNumber
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(198)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(198)
+msgctxt "MarburgumChat,PlayerNumber"
+msgid "Player {0}"
+msgstr "Player {0}"
+
+#. Key:	Unread
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(267)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(267)
+msgctxt "MarburgumChat,Unread"
+msgid "{0} new  ·  Enter"
+msgstr "{0} new  ·  Enter"
+
+#. Key:	NoticeHeading
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(276)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(276)
+msgctxt "MarburgumChat,NoticeHeading"
+msgid "Chat"
+msgstr "Chat"
+
+#. Key:	Server
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(293)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(293)
+msgctxt "MarburgumChat,Server"
+msgid "Server"
+msgstr "Server"
+
+#. Key:	PrivateTo
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(300)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(300)
+msgctxt "MarburgumChat,PrivateTo"
+msgid "To {0}"
+msgstr "To {0}"
+
+#. Key:	PrivateFrom
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(301)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(301)
+msgctxt "MarburgumChat,PrivateFrom"
+msgid "From {0}"
+msgstr "From {0}"
+
+#. Key:	Usage
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(395)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(395)
+msgctxt "MarburgumChat,Usage"
+msgid "Private lines: /w <player number> <message>, or choose someone under Online."
+msgstr "Private lines: /w <player number> <message>, or choose someone under Online."
+
+#. Key:	BadId
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(401)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(401)
+msgctxt "MarburgumChat,BadId"
+msgid "Choose the number of a player who is online now."
+msgstr "Choose the number of a player who is online now."
+
+#. Key:	NoTarget
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(414)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(414)
+msgctxt "MarburgumChat,NoTarget"
+msgid "Choose someone under Online first, or write /w <player number> <message>."
+msgstr "Choose someone under Online first, or write /w <player number> <message>."
+
+#. Key:	Online
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(481)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(481)
+msgctxt "MarburgumChat,Online"
+msgid "{0} online"
+msgstr "{0} online"
+
+#. Key:	PrivateNone
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(514)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(514)
+msgctxt "MarburgumChat,PrivateNone"
+msgid "Private"
+msgstr "Private"
+
+#. Key:	PrivateTarget
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(515)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(515)
+msgctxt "MarburgumChat,PrivateTarget"
+msgid "To {0}"
+msgstr "To {0}"
+
+#. Key:	General
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(520)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(520)
+msgctxt "MarburgumChat,General"
+msgid "General"
+msgstr "General"
+
+#. Key:	NoList
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(550)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(550)
+msgctxt "MarburgumChat,NoList"
+msgid "Who is online is not known yet."
+msgstr "Who is online is not known yet."
+
+#. Key:	OnlineNote
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(553)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(553)
+msgctxt "MarburgumChat,OnlineNote"
+msgid "Numbers belong to this session only, not to accounts."
+msgstr "Numbers belong to this session only, not to accounts."
+
+#. Key:	Number
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(566)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(566)
+msgctxt "MarburgumChat,Number"
+msgid "#{0}"
+msgstr "#{0}"
+
+#. Key:	You
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(566)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(566)
+msgctxt "MarburgumChat,You"
+msgid "you"
+msgstr "you"
+
+#. Key:	ServerTrouble
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(107)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(107)
+msgctxt "MarburgumAccount,ServerTrouble"
+msgid "The account service is having trouble. Try again in a minute."
+msgstr "The account service is having trouble. Try again in a minute."
+
+#. Key:	Unknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(108)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(108)
+msgctxt "MarburgumAccount,Unknown"
+msgid "The account service could not do that. Try again in a minute."
+msgstr "The account service could not do that. Try again in a minute."
+
+#. Key:	CodeSent
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(254)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(254)
+msgctxt "MarburgumAccount,CodeSent"
+msgid "We sent a message to {0}. Type the eight-character code from it below."
+msgstr "We sent a message to {0}. Type the eight-character code from it below."
+
+#. Key:	Confirmed
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(285)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(285)
+msgctxt "MarburgumAccount,Confirmed"
+msgid "Email confirmed. Choose the username and password you will sign in with."
+msgstr "Email confirmed. Choose the username and password you will sign in with."
+
+#. Key:	ResetSent
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(338)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(338)
+msgctxt "MarburgumAccount,ResetSent"
+msgid "If {0} has an account, a reset code is on its way, with your username."
+msgstr "If {0} has an account, a reset code is on its way, with your username."
+
+#. Key:	ResetDone
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(360)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(360)
+msgctxt "MarburgumAccount,ResetDone"
+msgid "Password changed. Every other session was signed out. Sign in with the new password."
+msgstr "Password changed. Every other session was signed out. Sign in with the new password."
+
+#. Key:	Created
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(388)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(388)
+msgctxt "MarburgumAccount,Created"
+msgid "{0} {1} is ready. Enter the world when you are."
+msgstr "{0} {1} is ready. Enter the world when you are."
+
+#. Key:	SignInFirst
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(422)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(422)
+msgctxt "MarburgumAccount,SignInFirst"
+msgid "Sign in and create your character first."
+msgstr "Sign in and create your character first."
+
+#. Key:	EmailInvalid
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(69)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(69)
+msgctxt "MarburgumAccount,EmailInvalid"
+msgid "That does not look like an email address."
+msgstr "That does not look like an email address."
+
+#. Key:	ResendTooSoon
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(70)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(70)
+msgctxt "MarburgumAccount,ResendTooSoon"
+msgid "A code was sent a moment ago. Wait a minute before asking for another."
+msgstr "A code was sent a moment ago. Wait a minute before asking for another."
+
+#. Key:	CodeInvalid
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(71)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(71)
+msgctxt "MarburgumAccount,CodeInvalid"
+msgid "That code is wrong, used or expired. Check the email, or ask for a new code."
+msgstr "That code is wrong, used or expired. Check the email, or ask for a new code."
+
+#. Key:	SetupExpired
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(72)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(72)
+msgctxt "MarburgumAccount,SetupExpired"
+msgid "This confirmation has expired. Start again with your email address."
+msgstr "This confirmation has expired. Start again with your email address."
+
+#. Key:	UsernameLength
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(73)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(73)
+msgctxt "MarburgumAccount,UsernameLength"
+msgid "A username is 3 to 20 characters."
+msgstr "A username is 3 to 20 characters."
+
+#. Key:	UsernameCharacters
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(74)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(74)
+msgctxt "MarburgumAccount,UsernameCharacters"
+msgid "Use letters a–z, digits, dots, dashes or underscores, starting with a letter or digit."
+msgstr "Use letters a–z, digits, dots, dashes or underscores, starting with a letter or digit."
+
+#. Key:	UsernameReserved
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(75)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(75)
+msgctxt "MarburgumAccount,UsernameReserved"
+msgid "That username is reserved. Choose another."
+msgstr "That username is reserved. Choose another."
+
+#. Key:	UsernameTaken
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(76)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(76)
+msgctxt "MarburgumAccount,UsernameTaken"
+msgid "That username is taken. Choose another."
+msgstr "That username is taken. Choose another."
+
+#. Key:	PasswordLength
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(77)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(77)
+msgctxt "MarburgumAccount,PasswordLength"
+msgid "A password is 10 to 128 characters."
+msgstr "A password is 10 to 128 characters."
+
+#. Key:	PasswordUsername
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(78)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(78)
+msgctxt "MarburgumAccount,PasswordUsername"
+msgid "The password must not contain your username or be your email address."
+msgstr "The password must not contain your username or be your email address."
+
+#. Key:	CredentialsInvalid
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(79)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(79)
+msgctxt "MarburgumAccount,CredentialsInvalid"
+msgid "That username and password do not match."
+msgstr "That username and password do not match."
+
+#. Key:	TooMany
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(80)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(80)
+msgctxt "MarburgumAccount,TooMany"
+msgid "Too many wrong passwords. Wait fifteen minutes, or reset the password."
+msgstr "Too many wrong passwords. Wait fifteen minutes, or reset the password."
+
+#. Key:	SessionInvalid
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(81)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(81)
+msgctxt "MarburgumAccount,SessionInvalid"
+msgid "You have been signed out. Sign in again."
+msgstr "You have been signed out. Sign in again."
+
+#. Key:	FirstLength
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(82)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(82)
+msgctxt "MarburgumAccount,FirstLength"
+msgid "A first name is 2 to 24 characters."
+msgstr "A first name is 2 to 24 characters."
+
+#. Key:	FirstCharacters
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(83)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(83)
+msgctxt "MarburgumAccount,FirstCharacters"
+msgid "A first name uses letters, with single spaces, hyphens or apostrophes between them."
+msgstr "A first name uses letters, with single spaces, hyphens or apostrophes between them."
+
+#. Key:	FirstReserved
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(84)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(84)
+msgctxt "MarburgumAccount,FirstReserved"
+msgid "That first name is reserved. Choose another."
+msgstr "That first name is reserved. Choose another."
+
+#. Key:	LastLength
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(85)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(85)
+msgctxt "MarburgumAccount,LastLength"
+msgid "A last name is 2 to 24 characters."
+msgstr "A last name is 2 to 24 characters."
+
+#. Key:	LastCharacters
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(86)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(86)
+msgctxt "MarburgumAccount,LastCharacters"
+msgid "A last name uses letters, with single spaces, hyphens or apostrophes between them."
+msgstr "A last name uses letters, with single spaces, hyphens or apostrophes between them."
+
+#. Key:	LastReserved
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(87)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(87)
+msgctxt "MarburgumAccount,LastReserved"
+msgid "That last name is reserved. Choose another."
+msgstr "That last name is reserved. Choose another."
+
+#. Key:	ModelUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(88)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(88)
+msgctxt "MarburgumAccount,ModelUnknown"
+msgid "Choose one of the bodies shown."
+msgstr "Choose one of the bodies shown."
+
+#. Key:	CharacterExists
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(89)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(89)
+msgctxt "MarburgumAccount,CharacterExists"
+msgid "This account already has its character."
+msgstr "This account already has its character."
+
+#. Key:	NoCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(90)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(90)
+msgctxt "MarburgumAccount,NoCharacter"
+msgid "Create your character first."
+msgstr "Create your character first."
+
+#. Key:	StoreUnavailable
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(91)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(91)
+msgctxt "MarburgumAccount,StoreUnavailable"
+msgid "The account service could not save. Nothing changed; try again."
+msgstr "The account service could not save. Nothing changed; try again."
+
+#. Key:	MailUnavailable
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(92)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(92)
+msgctxt "MarburgumAccount,MailUnavailable"
+msgid "The email could not be sent. Try again in a minute."
+msgstr "The email could not be sent. Try again in a minute."
+
+#. Key:	Unreachable
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(93)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(93)
+msgctxt "MarburgumAccount,Unreachable"
+msgid "The account service cannot be reached. Check your connection and try again."
+msgstr "The account service cannot be reached. Check your connection and try again."
+
+#. Key:	TooManyRequests
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(95)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(95)
+msgctxt "MarburgumAccount,TooManyRequests"
+msgid "Too many requests from this connection. Wait a minute and try again."
+msgstr "Too many requests from this connection. Wait a minute and try again."
+
+#. Key:	ServiceBusy
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(96)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(96)
+msgctxt "MarburgumAccount,ServiceBusy"
+msgid "The account service is busy. Try again in a moment."
+msgstr "The account service is busy. Try again in a moment."
+
+#. Key:	RequestInvalid
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(97)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(97)
+msgctxt "MarburgumAccount,RequestInvalid"
+msgid "The account service did not understand the request. Update the game and try again."
+msgstr "The account service did not understand the request. Update the game and try again."
+
+#. Key:	NotFound
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(98)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(98)
+msgctxt "MarburgumAccount,NotFound"
+msgid "The account service did not understand the request. Update the game and try again."
+msgstr "The account service did not understand the request. Update the game and try again."
+
+#. Key:	MethodNotAllowed
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(99)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(99)
+msgctxt "MarburgumAccount,MethodNotAllowed"
+msgid "The account service did not understand the request. Update the game and try again."
+msgstr "The account service did not understand the request. Update the game and try again."
+
+#. Key:	Footer
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(119)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(119)
+msgctxt "MarburgumAccountScreen,Footer"
+msgid "Development preview  ·  account service: email codes are written to the service's outbox folder until a mail sender is chosen"
+msgstr "Development preview  ·  account service: email codes are written to the service's outbox folder until a mail sender is chosen"
+
+#. Key:	Series
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(195)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(195)
+msgctxt "MarburgumAccountScreen,Series"
+msgid "MAGNA RAEDARUM"
+msgstr "MAGNA RAEDARUM"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(196)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(196)
+msgctxt "MarburgumAccountScreen,Title"
+msgid "MARBURGUM II"
+msgstr "MARBURGUM II"
+
+#. Key:	Tagline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(200)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(200)
+msgctxt "MarburgumAccountScreen,Tagline"
+msgid "A persistent urban role-playing game  ·  Maribor, the 1990s"
+msgstr "A persistent urban role-playing game  ·  Maribor, the 1990s"
+
+#. Key:	Username
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(253)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(253)
+msgctxt "MarburgumAccountScreen,Username"
+msgid "USERNAME"
+msgstr "USERNAME"
+
+#. Key:	UsernameHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(253)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(253)
+msgctxt "MarburgumAccountScreen,UsernameHint"
+msgid "your username"
+msgstr "your username"
+
+#. Key:	Password
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(254)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(254)
+msgctxt "MarburgumAccountScreen,Password"
+msgid "PASSWORD"
+msgstr "PASSWORD"
+
+#. Key:	SignIn
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(256)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(256)
+msgctxt "MarburgumAccountScreen,SignIn"
+msgid "Sign in"
+msgstr "Sign in"
+
+#. Key:	CreateAccount
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(257)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(257)
+msgctxt "MarburgumAccountScreen,CreateAccount"
+msgid "Create account"
+msgstr "Create account"
+
+#. Key:	Forgot
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(258)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(258)
+msgctxt "MarburgumAccountScreen,Forgot"
+msgid "Forgot password"
+msgstr "Forgot password"
+
+#. Key:	Email
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(263)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(263)
+msgctxt "MarburgumAccountScreen,Email"
+msgid "EMAIL"
+msgstr "EMAIL"
+
+#. Key:	EmailHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(263)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(263)
+msgctxt "MarburgumAccountScreen,EmailHint"
+msgid "you@example.com"
+msgstr "you@example.com"
+
+#. Key:	SendCode
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(265)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(265)
+msgctxt "MarburgumAccountScreen,SendCode"
+msgid "Send code"
+msgstr "Send code"
+
+#. Key:	Back
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(266)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(266)
+msgctxt "MarburgumAccountScreen,Back"
+msgid "Back"
+msgstr "Back"
+
+#. Key:	Code
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(271)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(271)
+msgctxt "MarburgumAccountScreen,Code"
+msgid "CODE"
+msgstr "CODE"
+
+#. Key:	CodeHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(271)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(271)
+msgctxt "MarburgumAccountScreen,CodeHint"
+msgid "eight characters from the email"
+msgstr "eight characters from the email"
+
+#. Key:	Confirm
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(273)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(273)
+msgctxt "MarburgumAccountScreen,Confirm"
+msgid "Confirm"
+msgstr "Confirm"
+
+#. Key:	Resend
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(274)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(274)
+msgctxt "MarburgumAccountScreen,Resend"
+msgid "Send a new code"
+msgstr "Send a new code"
+
+#. Key:	ChangeEmail
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(275)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(275)
+msgctxt "MarburgumAccountScreen,ChangeEmail"
+msgid "Change email"
+msgstr "Change email"
+
+#. Key:	ChooseUsername
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(280)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(280)
+msgctxt "MarburgumAccountScreen,ChooseUsername"
+msgid "USERNAME"
+msgstr "USERNAME"
+
+#. Key:	ChooseUsernameHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(280)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(280)
+msgctxt "MarburgumAccountScreen,ChooseUsernameHint"
+msgid "3–20: a–z, 0–9, . _ -"
+msgstr "3–20: a–z, 0–9, . _ -"
+
+#. Key:	ChoosePassword
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(281)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(281)
+msgctxt "MarburgumAccountScreen,ChoosePassword"
+msgid "PASSWORD"
+msgstr "PASSWORD"
+
+#. Key:	ChoosePasswordHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(281)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(281)
+msgctxt "MarburgumAccountScreen,ChoosePasswordHint"
+msgid "at least 10 characters"
+msgstr "at least 10 characters"
+
+#. Key:	RepeatPassword
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(282)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(282)
+msgctxt "MarburgumAccountScreen,RepeatPassword"
+msgid "PASSWORD AGAIN"
+msgstr "PASSWORD AGAIN"
+
+#. Key:	Finish
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(284)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(284)
+msgctxt "MarburgumAccountScreen,Finish"
+msgid "Create account"
+msgstr "Create account"
+
+#. Key:	ForgotEmail
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(289)
+msgctxt "MarburgumAccountScreen,ForgotEmail"
+msgid "EMAIL"
+msgstr "EMAIL"
+
+#. Key:	ForgotEmailHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(289)
+msgctxt "MarburgumAccountScreen,ForgotEmailHint"
+msgid "the address of your account"
+msgstr "the address of your account"
+
+#. Key:	SendReset
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(291)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(291)
+msgctxt "MarburgumAccountScreen,SendReset"
+msgid "Send reset code"
+msgstr "Send reset code"
+
+#. Key:	Back2
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(292)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(292)
+msgctxt "MarburgumAccountScreen,Back2"
+msgid "Back"
+msgstr "Back"
+
+#. Key:	ResetCode
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(297)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(297)
+msgctxt "MarburgumAccountScreen,ResetCode"
+msgid "CODE"
+msgstr "CODE"
+
+#. Key:	ResetCodeHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(297)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(297)
+msgctxt "MarburgumAccountScreen,ResetCodeHint"
+msgid "eight characters from the email"
+msgstr "eight characters from the email"
+
+#. Key:	NewPassword
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(298)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(298)
+msgctxt "MarburgumAccountScreen,NewPassword"
+msgid "NEW PASSWORD"
+msgstr "NEW PASSWORD"
+
+#. Key:	NewPasswordHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(298)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(298)
+msgctxt "MarburgumAccountScreen,NewPasswordHint"
+msgid "at least 10 characters"
+msgstr "at least 10 characters"
+
+#. Key:	NewPasswordAgain
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(299)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(299)
+msgctxt "MarburgumAccountScreen,NewPasswordAgain"
+msgid "NEW PASSWORD AGAIN"
+msgstr "NEW PASSWORD AGAIN"
+
+#. Key:	SetPassword
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(301)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(301)
+msgctxt "MarburgumAccountScreen,SetPassword"
+msgid "Set password"
+msgstr "Set password"
+
+#. Key:	Back3
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(302)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(302)
+msgctxt "MarburgumAccountScreen,Back3"
+msgid "Back"
+msgstr "Back"
+
+#. Key:	FirstName
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(311)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(311)
+msgctxt "MarburgumAccountScreen,FirstName"
+msgid "FIRST NAME"
+msgstr "FIRST NAME"
+
+#. Key:	FirstNameHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(311)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(311)
+msgctxt "MarburgumAccountScreen,FirstNameHint"
+msgid "e.g. Špela"
+msgstr "e.g. Špela"
+
+#. Key:	LastName
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(312)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(312)
+msgctxt "MarburgumAccountScreen,LastName"
+msgid "LAST NAME"
+msgstr "LAST NAME"
+
+#. Key:	LastNameHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(312)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(312)
+msgctxt "MarburgumAccountScreen,LastNameHint"
+msgid "e.g. Novak"
+msgstr "e.g. Novak"
+
+#. Key:	Body
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(316)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(316)
+msgctxt "MarburgumAccountScreen,Body"
+msgid "BODY"
+msgstr "BODY"
+
+#. Key:	CreateCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(331)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(331)
+msgctxt "MarburgumAccountScreen,CreateCharacter"
+msgid "Create character"
+msgstr "Create character"
+
+#. Key:	SignOut
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(332)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(332)
+msgctxt "MarburgumAccountScreen,SignOut"
+msgid "Sign out"
+msgstr "Sign out"
+
+#. Key:	Busy
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(338)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(338)
+msgctxt "MarburgumAccountScreen,Busy"
+msgid "Working…"
+msgstr "Working…"
+
+#. Key:	IntroCharacterNamed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(379)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(379)
+msgctxt "MarburgumAccountScreen,IntroCharacterNamed"
+msgid "Signed in as {0}. {1}"
+msgstr "Signed in as {0}. {1}"
+
+#. Key:	TitleSignIn
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(40)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(40)
+msgctxt "MarburgumAccountScreen,TitleSignIn"
+msgid "Sign in"
+msgstr "Sign in"
+
+#. Key:	TitleRegister
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(41)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(41)
+msgctxt "MarburgumAccountScreen,TitleRegister"
+msgid "Create an account"
+msgstr "Create an account"
+
+#. Key:	TitleConfirm
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(42)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(42)
+msgctxt "MarburgumAccountScreen,TitleConfirm"
+msgid "Confirm your email"
+msgstr "Confirm your email"
+
+#. Key:	TitleCredentials
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(43)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(43)
+msgctxt "MarburgumAccountScreen,TitleCredentials"
+msgid "Choose how you sign in"
+msgstr "Choose how you sign in"
+
+#. Key:	TitleForgot
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(44)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(44)
+msgctxt "MarburgumAccountScreen,TitleForgot"
+msgid "Forgotten password"
+msgstr "Forgotten password"
+
+#. Key:	TitleReset
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(45)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(45)
+msgctxt "MarburgumAccountScreen,TitleReset"
+msgid "Set a new password"
+msgstr "Set a new password"
+
+#. Key:	TitleCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(46)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(46)
+msgctxt "MarburgumAccountScreen,TitleCharacter"
+msgid "Your character"
+msgstr "Your character"
+
+#. Key:	IntroSignIn
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(55)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(55)
+msgctxt "MarburgumAccountScreen,IntroSignIn"
+msgid "Sign in with your Marburgum II username and password."
+msgstr "Sign in with your Marburgum II username and password."
+
+#. Key:	IntroRegister
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(56)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(56)
+msgctxt "MarburgumAccountScreen,IntroRegister"
+msgid "Start with an email address. We send it a code; the account exists once you confirm it."
+msgstr "Start with an email address. We send it a code; the account exists once you confirm it."
+
+#. Key:	PasswordsDiffer
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(561)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(561)
+msgctxt "MarburgumAccountScreen,PasswordsDiffer"
+msgid "The two passwords are not the same."
+msgstr "The two passwords are not the same."
+
+#. Key:	PasswordsDiffer2
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(583)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(583)
+msgctxt "MarburgumAccountScreen,PasswordsDiffer2"
+msgid "The two passwords are not the same."
+msgstr "The two passwords are not the same."
+
+#. Key:	IntroForgot
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(59)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(59)
+msgctxt "MarburgumAccountScreen,IntroForgot"
+msgid "Type the email address of your account. We send it a reset code and your username."
+msgstr "Type the email address of your account. We send it a reset code and your username."
+
+#. Key:	IntroCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(61)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(61)
+msgctxt "MarburgumAccountScreen,IntroCharacter"
+msgid "Who you are in Maribor. Your first and last name are what other players see; they are not your username and need not be your own. You choose once."
+msgstr "Who you are in Maribor. Your first and last name are what other players see; they are not your username and need not be your own. You choose once."
+
+#. Key:	Down
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(184)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(184)
+msgctxt "MarburgumCharacterPanel,Down"
+msgid "Down: back on your feet in {0} s"
+msgstr "Down: back on your feet in {0} s"
+
+#. Key:	Submerged
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(185)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(185)
+msgctxt "MarburgumCharacterPanel,Submerged"
+msgid "Under water"
+msgstr "Under water"
+
+#. Key:	Swimming
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(186)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(186)
+msgctxt "MarburgumCharacterPanel,Swimming"
+msgid "Swimming"
+msgstr "Swimming"
+
+#. Key:	Winded
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(188)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(188)
+msgctxt "MarburgumCharacterPanel,Winded"
+msgid "Winded: walking until stamina is back to {0}"
+msgstr "Winded: walking until stamina is back to {0}"
+
+#. Key:	Running
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(189)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(189)
+msgctxt "MarburgumCharacterPanel,Running"
+msgid "Running"
+msgstr "Running"
+
+#. Key:	Recovering
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(190)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(190)
+msgctxt "MarburgumCharacterPanel,Recovering"
+msgid "Getting breath back"
+msgstr "Getting breath back"
+
+#. Key:	Rested
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(191)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(191)
+msgctxt "MarburgumCharacterPanel,Rested"
+msgid "Rested"
+msgstr "Rested"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(234)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(234)
+msgctxt "MarburgumCharacterPanel,Overline"
+msgid "CHARACTER"
+msgstr "CHARACTER"
+
+#. Key:	FullName
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(236)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(236)
+msgctxt "MarburgumCharacterPanel,FullName"
+msgid "{0} {1}"
+msgstr "{0} {1}"
+
+#. Key:	Unnamed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(237)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(237)
+msgctxt "MarburgumCharacterPanel,Unnamed"
+msgid "Development character"
+msgstr "Development character"
+
+#. Key:	Body
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(243)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(243)
+msgctxt "MarburgumCharacterPanel,Body"
+msgid "Body"
+msgstr "Body"
+
+#. Key:	Kept
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(245)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(245)
+msgctxt "MarburgumCharacterPanel,Kept"
+msgid "Kept"
+msgstr "Kept"
+
+#. Key:	WithAccount
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(245)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(245)
+msgctxt "MarburgumCharacterPanel,WithAccount"
+msgid "With your account"
+msgstr "With your account"
+
+#. Key:	NoKey
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(249)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(249)
+msgctxt "MarburgumCharacterPanel,NoKey"
+msgid "No character on this connection."
+msgstr "No character on this connection."
+
+#. Key:	DevKey
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(250)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(250)
+msgctxt "MarburgumCharacterPanel,DevKey"
+msgid "A test identity for development, not an account."
+msgstr "A test identity for development, not an account."
+
+#. Key:	PlaceTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(255)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(255)
+msgctxt "MarburgumCharacterPanel,PlaceTitle"
+msgid "WHEREABOUTS"
+msgstr "WHEREABOUTS"
+
+#. Key:	Area
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(258)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(258)
+msgctxt "MarburgumCharacterPanel,Area"
+msgid "Area"
+msgstr "Area"
+
+#. Key:	AreaUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(258)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(258)
+msgctxt "MarburgumCharacterPanel,AreaUnknown"
+msgid "Not yet known"
+msgstr "Not yet known"
+
+#. Key:	Quarter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(266)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(266)
+msgctxt "MarburgumCharacterPanel,Quarter"
+msgid "Quarter"
+msgstr "Quarter"
+
+#. Key:	Street
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(270)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(270)
+msgctxt "MarburgumCharacterPanel,Street"
+msgid "Street"
+msgstr "Street"
+
+#. Key:	Date
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(281)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(281)
+msgctxt "MarburgumCharacterPanel,Date"
+msgid "Date"
+msgstr "Date"
+
+#. Key:	Time
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(282)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(282)
+msgctxt "MarburgumCharacterPanel,Time"
+msgid "Time"
+msgstr "Time"
+
+#. Key:	ConditionTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(286)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(286)
+msgctxt "MarburgumCharacterPanel,ConditionTitle"
+msgid "CONDITION"
+msgstr "CONDITION"
+
+#. Key:	WaitingTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(289)
+msgctxt "MarburgumCharacterPanel,WaitingTitle"
+msgid "Waiting for the server"
+msgstr "Waiting for the server"
+
+#. Key:	WaitingBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(290)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(290)
+msgctxt "MarburgumCharacterPanel,WaitingBody"
+msgid "Condition appears once the server has restored this character."
+msgstr "Condition appears once the server has restored this character."
+
+#. Key:	Vitality
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(306)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(306)
+msgctxt "MarburgumCharacterPanel,Vitality"
+msgid "Vitality"
+msgstr "Vitality"
+
+#. Key:	Stamina
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(309)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(309)
+msgctxt "MarburgumCharacterPanel,Stamina"
+msgid "Stamina"
+msgstr "Stamina"
+
+#. Key:	Breath
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(313)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(313)
+msgctxt "MarburgumCharacterPanel,Breath"
+msgid "State"
+msgstr "State"
+
+#. Key:	ConditionNote
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(315)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(315)
+msgctxt "MarburgumCharacterPanel,ConditionNote"
+msgid "Saved by the server when you leave. Vitality comes back in full when you get up after going down."
+msgstr "Saved by the server when you leave. Vitality comes back in full when you get up after going down."
+
+#. Key:	RecordTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(323)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(323)
+msgctxt "MarburgumCharacterPanel,RecordTitle"
+msgid "SAVED RECORD"
+msgstr "SAVED RECORD"
+
+#. Key:	Record
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(326)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(326)
+msgctxt "MarburgumCharacterPanel,Record"
+msgid "Items and missions"
+msgstr "Items and missions"
+
+#. Key:	RecordWaiting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(326)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(326)
+msgctxt "MarburgumCharacterPanel,RecordWaiting"
+msgid "Waiting for the server"
+msgstr "Waiting for the server"
+
+#. Key:	NoCharacterTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(330)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(330)
+msgctxt "MarburgumCharacterPanel,NoCharacterTitle"
+msgid "Nothing is saved"
+msgstr "Nothing is saved"
+
+#. Key:	NoCharacterBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(331)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(331)
+msgctxt "MarburgumCharacterPanel,NoCharacterBody"
+msgid "Join with a character to hold items and take missions."
+msgstr "Join with a character to hold items and take missions."
+
+#. Key:	Carried
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(361)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(361)
+msgctxt "MarburgumCharacterPanel,Carried"
+msgid "Carried"
+msgstr "Carried"
+
+#. Key:	ItemCount
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(362)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(362)
+msgctxt "MarburgumCharacterPanel,ItemCount"
+msgid "{0} {0}|plural(one=item,other=items)"
+msgstr "{0} {0}|plural(one=item,other=items)"
+
+#. Key:	Missions
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(364)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(364)
+msgctxt "MarburgumCharacterPanel,Missions"
+msgid "Missions under way"
+msgstr "Missions under way"
+
+#. Key:	Money
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(368)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(368)
+msgctxt "MarburgumCharacterPanel,Money"
+msgid "Money"
+msgstr "Money"
+
+#. Key:	SkillsTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(375)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(375)
+msgctxt "MarburgumCharacterPanel,SkillsTitle"
+msgid "SKILLS"
+msgstr "SKILLS"
+
+#. Key:	EquipmentTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(388)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(388)
+msgctxt "MarburgumCharacterPanel,EquipmentTitle"
+msgid "EQUIPMENT"
+msgstr "EQUIPMENT"
+
+#. Key:	EquipmentBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(389)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(389)
+msgctxt "MarburgumCharacterPanel,EquipmentBody"
+msgid "Clothing and tools in hand arrive with the systems that use them; nothing is worn or held in this build."
+msgstr "Clothing and tools in hand arrive with the systems that use them; nothing is worn or held in this build."
+
+#. Key:	Points
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(41)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(41)
+msgctxt "MarburgumCharacterPanel,Points"
+msgid "{0} / {1}"
+msgstr "{0} / {1}"
+
+#. Key:	DragHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPreview.cpp(267)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPreview.cpp(267)
+msgctxt "MarburgumCharacterPreview,DragHint"
+msgid "Drag to turn  ·  scroll to look closer"
+msgstr "Drag to turn  ·  scroll to look closer"
+
+#. Key:	Selected
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPreview.cpp(446)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPreview.cpp(446)
+msgctxt "MarburgumCharacterPreview,Selected"
+msgid "SELECTED"
+msgstr "SELECTED"
+
+#. Key:	Gain
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(134)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(134)
+msgctxt "MarburgumChoicePanel,Gain"
+msgid "+{0} money"
+msgstr "+{0} money"
+
+#. Key:	Cost
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(135)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(135)
+msgctxt "MarburgumChoicePanel,Cost"
+msgid "−{0} money"
+msgstr "−{0} money"
+
+#. Key:	Xp
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(141)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(141)
+msgctxt "MarburgumChoicePanel,Xp"
+msgid "{0} +{1} XP"
+msgstr "{0} +{1} XP"
+
+#. Key:	Short
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(146)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(146)
+msgctxt "MarburgumChoicePanel,Short"
+msgid "Not enough money"
+msgstr "Not enough money"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(38)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(38)
+msgctxt "MarburgumChoicePanel,Overline"
+msgid "DECISION"
+msgstr "DECISION"
+
+#. Key:	Close
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(40)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(40)
+msgctxt "MarburgumChoicePanel,Close"
+msgid "Not now"
+msgstr "Not now"
+
+#. Key:	Answers
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(49)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(49)
+msgctxt "MarburgumChoicePanel,Answers"
+msgid "YOUR ANSWER"
+msgstr "YOUR ANSWER"
+
+#. Key:	Hint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(54)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(54)
+msgctxt "MarburgumChoicePanel,Hint"
+msgid "Press a number to decide. The server records your choice; it cannot be taken back."
+msgstr "Press a number to decide. The server records your choice; it cannot be taken back."
+
+#. Key:	GuideAddress
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(120)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(120)
+msgctxt "MarburgumConnection,GuideAddress"
+msgid "Use host:port, for example 127.0.0.1:7777."
+msgstr "Use host:port, for example 127.0.0.1:7777."
+
+#. Key:	GuideTimeout
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(121)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(121)
+msgctxt "MarburgumConnection,GuideTimeout"
+msgid "Check that the server is running and reachable, then retry."
+msgstr "Check that the server is running and reachable, then retry."
+
+#. Key:	GuideRefused
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(122)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(122)
+msgctxt "MarburgumConnection,GuideRefused"
+msgid "The server answered but did not admit this client."
+msgstr "The server answered but did not admit this client."
+
+#. Key:	GuideContract
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(123)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(123)
+msgctxt "MarburgumConnection,GuideContract"
+msgid "Update the client or connect to a server built from the same version."
+msgstr "Update the client or connect to a server built from the same version."
+
+#. Key:	GuideLost
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(124)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(124)
+msgctxt "MarburgumConnection,GuideLost"
+msgid "Automatic reconnection did not succeed. You can retry."
+msgstr "Automatic reconnection did not succeed. You can retry."
+
+#. Key:	GuideTravel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(125)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(125)
+msgctxt "MarburgumConnection,GuideTravel"
+msgid "The client could not load the world the server named."
+msgstr "The client could not load the world the server named."
+
+#. Key:	Series
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(195)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(195)
+msgctxt "MarburgumConnection,Series"
+msgid "MAGNA RAEDARUM"
+msgstr "MAGNA RAEDARUM"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(196)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(196)
+msgctxt "MarburgumConnection,Title"
+msgid "MARBURGUM II"
+msgstr "MARBURGUM II"
+
+#. Key:	Tagline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(200)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(200)
+msgctxt "MarburgumConnection,Tagline"
+msgid "A persistent urban role-playing game  ·  Maribor, the 1990s"
+msgstr "A persistent urban role-playing game  ·  Maribor, the 1990s"
+
+#. Key:	SignOut
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(216)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(216)
+msgctxt "MarburgumConnection,SignOut"
+msgid "Sign out"
+msgstr "Sign out"
+
+#. Key:	ServerHeading
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(222)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(222)
+msgctxt "MarburgumConnection,ServerHeading"
+msgid "SERVER"
+msgstr "SERVER"
+
+#. Key:	AddressHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(225)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(225)
+msgctxt "MarburgumConnection,AddressHint"
+msgid "host:port"
+msgstr "host:port"
+
+#. Key:	Connect
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(228)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(228)
+msgctxt "MarburgumConnection,Connect"
+msgid "Connect"
+msgstr "Connect"
+
+#. Key:	StepConnect
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(252)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(252)
+msgctxt "MarburgumConnection,StepConnect"
+msgid "HANDSHAKE"
+msgstr "HANDSHAKE"
+
+#. Key:	StepJoin
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(252)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(252)
+msgctxt "MarburgumConnection,StepJoin"
+msgid "JOIN"
+msgstr "JOIN"
+
+#. Key:	StepAdmit
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(253)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(253)
+msgctxt "MarburgumConnection,StepAdmit"
+msgid "ADMITTED"
+msgstr "ADMITTED"
+
+#. Key:	StepLoad
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(253)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(253)
+msgctxt "MarburgumConnection,StepLoad"
+msgid "WORLD"
+msgstr "WORLD"
+
+#. Key:	Retry
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(271)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(271)
+msgctxt "MarburgumConnection,Retry"
+msgid "Retry"
+msgstr "Retry"
+
+#. Key:	Cancel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(274)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(274)
+msgctxt "MarburgumConnection,Cancel"
+msgid "Cancel"
+msgstr "Cancel"
+
+#. Key:	Quit
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(278)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(278)
+msgctxt "MarburgumConnection,Quit"
+msgid "Quit"
+msgstr "Quit"
+
+#. Key:	PlayerFooter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(303)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(303)
+msgctxt "MarburgumConnection,PlayerFooter"
+msgid "Marburgum II  ·  {0}"
+msgstr "Marburgum II  ·  {0}"
+
+#. Key:	AccountsOff
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(306)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(306)
+msgctxt "MarburgumConnection,AccountsOff"
+msgid "development key, no account service"
+msgstr "development key, no account service"
+
+#. Key:	AccountsOn
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(306)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(306)
+msgctxt "MarburgumConnection,AccountsOn"
+msgid "signed-in entry"
+msgstr "signed-in entry"
+
+#. Key:	Footer
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(308)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(308)
+msgctxt "MarburgumConnection,Footer"
+msgid "Development preview  ·  client {0}  ·  network contract v{1}  ·  UI tokens v{2}  ·  {3}"
+msgstr "Development preview  ·  client {0}  ·  network contract v{1}  ·  UI tokens v{2}  ·  {3}"
+
+#. Key:	HeadStarting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(333)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(333)
+msgctxt "MarburgumConnection,HeadStarting"
+msgid "Starting"
+msgstr "Starting"
+
+#. Key:	HeadIdle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(336)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(336)
+msgctxt "MarburgumConnection,HeadIdle"
+msgid "Not connected"
+msgstr "Not connected"
+
+#. Key:	DetailIdle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(337)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(337)
+msgctxt "MarburgumConnection,DetailIdle"
+msgid "Enter the address of an authoritative server. While offline, this client runs no gameplay."
+msgstr "Enter the address of an authoritative server. While offline, this client runs no gameplay."
+
+#. Key:	HeadConnecting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(340)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(340)
+msgctxt "MarburgumConnection,HeadConnecting"
+msgid "Contacting the server"
+msgstr "Contacting the server"
+
+#. Key:	DetailConnecting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(341)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(341)
+msgctxt "MarburgumConnection,DetailConnecting"
+msgid "Network handshake with {0}."
+msgstr "Network handshake with {0}."
+
+#. Key:	HeadJoining
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(344)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(344)
+msgctxt "MarburgumConnection,HeadJoining"
+msgid "Server accepted the handshake"
+msgstr "Server accepted the handshake"
+
+#. Key:	DetailJoining
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(345)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(345)
+msgctxt "MarburgumConnection,DetailJoining"
+msgid "Receiving the world assignment."
+msgstr "Receiving the world assignment."
+
+#. Key:	HeadLoading
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(348)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(348)
+msgctxt "MarburgumConnection,HeadLoading"
+msgid "Loading the server's world"
+msgstr "Loading the server's world"
+
+#. Key:	DetailLoading
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(349)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(349)
+msgctxt "MarburgumConnection,DetailLoading"
+msgid "Admission is confirmed when the replicated world state arrives."
+msgstr "Admission is confirmed when the replicated world state arrives."
+
+#. Key:	HeadReady
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(352)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(352)
+msgctxt "MarburgumConnection,HeadReady"
+msgid "Admitted to {0}"
+msgstr "Admitted to {0}"
+
+#. Key:	HeadReconnecting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(355)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(355)
+msgctxt "MarburgumConnection,HeadReconnecting"
+msgid "Connection lost  ·  attempt {0} of {1}"
+msgstr "Connection lost  ·  attempt {0} of {1}"
+
+#. Key:	DetailReconnecting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(357)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(357)
+msgctxt "MarburgumConnection,DetailReconnecting"
+msgid "Reconnecting to {0}. No game rules run on this client while it waits."
+msgstr "Reconnecting to {0}. No game rules run on this client while it waits."
+
+#. Key:	DetailError
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(363)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(363)
+msgctxt "MarburgumConnection,DetailError"
+msgid "{0}\nDetail: {1}"
+msgstr "{0}\nDetail: {1}"
+
+#. Key:	Elapsed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(439)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(439)
+msgctxt "MarburgumConnection,Elapsed"
+msgid "{0} s"
+msgstr "{0} s"
+
+#. Key:	SignedInAs
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(510)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(510)
+msgctxt "MarburgumConnection,SignedInAs"
+msgid "{0} {1}\nsigned in as {2}"
+msgstr "{0} {1}\nsigned in as {2}"
+
+#. Key:	PhaseStarting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(69)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(69)
+msgctxt "MarburgumConnection,PhaseStarting"
+msgid "STARTING"
+msgstr "STARTING"
+
+#. Key:	PhaseIdle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(70)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(70)
+msgctxt "MarburgumConnection,PhaseIdle"
+msgid "OFFLINE"
+msgstr "OFFLINE"
+
+#. Key:	PhaseConnecting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(71)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(71)
+msgctxt "MarburgumConnection,PhaseConnecting"
+msgid "CONNECTING"
+msgstr "CONNECTING"
+
+#. Key:	PhaseJoining
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(72)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(72)
+msgctxt "MarburgumConnection,PhaseJoining"
+msgid "JOINING"
+msgstr "JOINING"
+
+#. Key:	PhaseLoading
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(73)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(73)
+msgctxt "MarburgumConnection,PhaseLoading"
+msgid "LOADING WORLD"
+msgstr "LOADING WORLD"
+
+#. Key:	PhaseReady
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(74)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(74)
+msgctxt "MarburgumConnection,PhaseReady"
+msgid "CONNECTED"
+msgstr "CONNECTED"
+
+#. Key:	PhaseReconnecting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(75)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(75)
+msgctxt "MarburgumConnection,PhaseReconnecting"
+msgid "RECONNECTING"
+msgstr "RECONNECTING"
+
+#. Key:	PhaseError
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(76)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(76)
+msgctxt "MarburgumConnection,PhaseError"
+msgid "NOT CONNECTED"
+msgstr "NOT CONNECTED"
+
+#. Key:	FaultAddress
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(85)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(85)
+msgctxt "MarburgumConnection,FaultAddress"
+msgid "That server address is not valid"
+msgstr "That server address is not valid"
+
+#. Key:	FaultTimeout
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(86)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(86)
+msgctxt "MarburgumConnection,FaultTimeout"
+msgid "The server did not respond in time"
+msgstr "The server did not respond in time"
+
+#. Key:	FaultRefused
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(87)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(87)
+msgctxt "MarburgumConnection,FaultRefused"
+msgid "The server refused the connection"
+msgstr "The server refused the connection"
+
+#. Key:	FaultContract
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(88)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(88)
+msgctxt "MarburgumConnection,FaultContract"
+msgid "Client and server versions do not match"
+msgstr "Client and server versions do not match"
+
+#. Key:	FaultLost
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(89)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(89)
+msgctxt "MarburgumConnection,FaultLost"
+msgid "The connection to the server was lost"
+msgstr "The connection to the server was lost"
+
+#. Key:	FaultTravel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(90)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(90)
+msgctxt "MarburgumConnection,FaultTravel"
+msgid "Could not reach the server's world"
+msgstr "Could not reach the server's world"
+
+#. Key:	FaultUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(93)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(93)
+msgctxt "MarburgumConnection,FaultUnknown"
+msgid "Not connected"
+msgstr "Not connected"
+
+#. Key:	DefaultVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(208)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(208)
+msgctxt "MarburgumInteractionPrompt,DefaultVerb"
+msgid "Use"
+msgstr "Use"
+
+#. Key:	Stock
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(215)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(215)
+msgctxt "MarburgumInteractionPrompt,Stock"
+msgid "{0} left  ·  shared by everyone on this server"
+msgstr "{0} left  ·  shared by everyone on this server"
+
+#. Key:	WaitingVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(218)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(218)
+msgctxt "MarburgumInteractionPrompt,WaitingVerb"
+msgid "Waiting for the server"
+msgstr "Waiting for the server"
+
+#. Key:	Waiting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(219)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(219)
+msgctxt "MarburgumInteractionPrompt,Waiting"
+msgid "Request sent. Nothing changes until the server confirms it."
+msgstr "Request sent. Nothing changes until the server confirms it."
+
+#. Key:	EmptyVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(224)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(224)
+msgctxt "MarburgumInteractionPrompt,EmptyVerb"
+msgid "Empty"
+msgstr "Empty"
+
+#. Key:	Empty
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(225)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(225)
+msgctxt "MarburgumInteractionPrompt,Empty"
+msgid "Nothing left to take. The server keeps this count for every player."
+msgstr "Nothing left to take. The server keeps this count for every player."
+
+#. Key:	Unknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(230)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(230)
+msgctxt "MarburgumInteractionPrompt,Unknown"
+msgid "Waiting for the server's count."
+msgstr "Waiting for the server's count."
+
+#. Key:	NoCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(235)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(235)
+msgctxt "MarburgumInteractionPrompt,NoCharacter"
+msgid "No character selected for this connection; the server will refuse."
+msgstr "No character selected for this connection; the server will refuse."
+
+#. Key:	InspectVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(271)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(271)
+msgctxt "MarburgumInteractionPrompt,InspectVerb"
+msgid "Inspect"
+msgstr "Inspect"
+
+#. Key:	TalkVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(271)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(271)
+msgctxt "MarburgumInteractionPrompt,TalkVerb"
+msgid "Talk"
+msgstr "Talk"
+
+#. Key:	NpcNoCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(289)
+msgctxt "MarburgumInteractionPrompt,NpcNoCharacter"
+msgid "No character selected for this connection; the server will refuse."
+msgstr "No character selected for this connection; the server will refuse."
+
+#. Key:	NpcUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(293)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(293)
+msgctxt "MarburgumInteractionPrompt,NpcUnknown"
+msgid "Waiting for the server's record of your missions."
+msgstr "Waiting for the server's record of your missions."
+
+#. Key:	Offer
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(301)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(301)
+msgctxt "MarburgumInteractionPrompt,Offer"
+msgid "Has a job for you  ·  {0}"
+msgstr "Has a job for you  ·  {0}"
+
+#. Key:	StageReady
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(305)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(305)
+msgctxt "MarburgumInteractionPrompt,StageReady"
+msgid "{0}  ·  next step"
+msgstr "{0}  ·  next step"
+
+#. Key:	ChoiceDue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(309)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(309)
+msgctxt "MarburgumInteractionPrompt,ChoiceDue"
+msgid "{0}  ·  a decision is yours to make"
+msgstr "{0}  ·  a decision is yours to make"
+
+#. Key:	NeedsAny
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(314)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(314)
+msgctxt "MarburgumInteractionPrompt,NeedsAny"
+msgid "Bring {0} first."
+msgstr "Bring {0} first."
+
+#. Key:	Needs
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(315)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(315)
+msgctxt "MarburgumInteractionPrompt,Needs"
+msgid "You need {0} for this."
+msgstr "You need {0} for this."
+
+#. Key:	Later
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(322)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(322)
+msgctxt "MarburgumInteractionPrompt,Later"
+msgid "Not yet. Finish “{0}” first."
+msgstr "Not yet. Finish “{0}” first."
+
+#. Key:	Idle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(328)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(328)
+msgctxt "MarburgumInteractionPrompt,Idle"
+msgid "Nothing more to discuss for now."
+msgstr "Nothing more to discuss for now."
+
+#. Key:	IdlePlace
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(328)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(328)
+msgctxt "MarburgumInteractionPrompt,IdlePlace"
+msgid "Nothing more to find here for now."
+msgstr "Nothing more to find here for now."
+
+#. Key:	CounterUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(337)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(337)
+msgctxt "MarburgumInteractionPrompt,CounterUnknown"
+msgid "[B] Counter"
+msgstr "[B] Counter"
+
+#. Key:	CounterOpen
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(338)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(338)
+msgctxt "MarburgumInteractionPrompt,CounterOpen"
+msgid "[B] Counter, open"
+msgstr "[B] Counter, open"
+
+#. Key:	CounterClosed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(339)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(339)
+msgctxt "MarburgumInteractionPrompt,CounterClosed"
+msgid "[B] Counter, closed"
+msgstr "[B] Counter, closed"
+
+#. Key:	WithCounter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(340)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(340)
+msgctxt "MarburgumInteractionPrompt,WithCounter"
+msgid "{0}  ·  {1}"
+msgstr "{0}  ·  {1}"
+
+#. Key:	StrikeVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(373)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(373)
+msgctxt "MarburgumInteractionPrompt,StrikeVerb"
+msgid "Strike!"
+msgstr "Strike!"
+
+#. Key:	Bite
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(374)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(374)
+msgctxt "MarburgumInteractionPrompt,Bite"
+msgid "Something has taken the bait. Strike now."
+msgstr "Something has taken the bait. Strike now."
+
+#. Key:	WaitVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(379)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(379)
+msgctxt "MarburgumInteractionPrompt,WaitVerb"
+msgid "Wait for a bite"
+msgstr "Wait for a bite"
+
+#. Key:	LineIn
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(380)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(380)
+msgctxt "MarburgumInteractionPrompt,LineIn"
+msgid "Line in the water. Striking before a bite loses the cast; walking off ends it."
+msgstr "Line in the water. Striking before a bite loses the cast; walking off ends it."
+
+#. Key:	FishVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(385)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(385)
+msgctxt "MarburgumInteractionPrompt,FishVerb"
+msgid "Fish"
+msgstr "Fish"
+
+#. Key:	NoRod
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(386)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(386)
+msgctxt "MarburgumInteractionPrompt,NoRod"
+msgid "You need a fishing rod."
+msgstr "You need a fishing rod."
+
+#. Key:	CastVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(392)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(392)
+msgctxt "MarburgumInteractionPrompt,CastVerb"
+msgid "Cast"
+msgstr "Cast"
+
+#. Key:	Cast
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(393)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(393)
+msgctxt "MarburgumInteractionPrompt,Cast"
+msgid "Cast your line and wait for a bite, then strike."
+msgstr "Cast your line and wait for a bite, then strike."
+
+#. Key:	VehicleWaiting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(416)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(416)
+msgctxt "MarburgumInteractionPrompt,VehicleWaiting"
+msgid "Request sent. You move only when the server confirms it."
+msgstr "Request sent. You move only when the server confirms it."
+
+#. Key:	ExitVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(422)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(422)
+msgctxt "MarburgumInteractionPrompt,ExitVerb"
+msgid "Get out"
+msgstr "Get out"
+
+#. Key:	Driving
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(424)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(424)
+msgctxt "MarburgumInteractionPrompt,Driving"
+msgid "[W] Throttle  ·  [S] Brake / reverse  ·  [A][D] Steer  ·  [Shift] Handbrake"
+msgstr "[W] Throttle  ·  [S] Brake / reverse  ·  [A][D] Steer  ·  [Shift] Handbrake"
+
+#. Key:	Riding
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(425)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(425)
+msgctxt "MarburgumInteractionPrompt,Riding"
+msgid "Riding as a passenger. The driver has the wheel."
+msgstr "Riding as a passenger. The driver has the wheel."
+
+#. Key:	DriveVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(430)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(430)
+msgctxt "MarburgumInteractionPrompt,DriveVerb"
+msgid "Drive"
+msgstr "Drive"
+
+#. Key:	RideVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(430)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(430)
+msgctxt "MarburgumInteractionPrompt,RideVerb"
+msgid "Get in"
+msgstr "Get in"
+
+#. Key:	DriverSeat
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(431)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(431)
+msgctxt "MarburgumInteractionPrompt,DriverSeat"
+msgid "Driver's seat"
+msgstr "Driver's seat"
+
+#. Key:	PassengerSeat
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(431)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(431)
+msgctxt "MarburgumInteractionPrompt,PassengerSeat"
+msgid "Passenger seat"
+msgstr "Passenger seat"
+
+#. Key:	Key
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(46)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(46)
+msgctxt "MarburgumInteractionPrompt,Key"
+msgid "E"
+msgstr "E"
+
+#. Key:	Fixture
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(60)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(60)
+msgctxt "MarburgumInteractionPrompt,Fixture"
+msgid "TEST FIXTURE"
+msgstr "TEST FIXTURE"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(108)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(108)
+msgctxt "MarburgumInventoryPanel,Overline"
+msgid "INVENTORY"
+msgstr "INVENTORY"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(109)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(109)
+msgctxt "MarburgumInventoryPanel,Title"
+msgid "What you carry"
+msgstr "What you carry"
+
+#. Key:	WaitingTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(248)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(248)
+msgctxt "MarburgumInventoryPanel,WaitingTitle"
+msgid "Waiting for the server"
+msgstr "Waiting for the server"
+
+#. Key:	WaitingBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(249)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(249)
+msgctxt "MarburgumInventoryPanel,WaitingBody"
+msgid "The inventory appears once the server has loaded this character's saved record."
+msgstr "The inventory appears once the server has loaded this character's saved record."
+
+#. Key:	NoCharacterTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(254)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(254)
+msgctxt "MarburgumInventoryPanel,NoCharacterTitle"
+msgid "No character selected"
+msgstr "No character selected"
+
+#. Key:	NoCharacterBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(255)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(255)
+msgctxt "MarburgumInventoryPanel,NoCharacterBody"
+msgid "Join with a character to hold items. Interactions are refused without one."
+msgstr "Join with a character to hold items. Interactions are refused without one."
+
+#. Key:	EmptyTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(261)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(261)
+msgctxt "MarburgumInventoryPanel,EmptyTitle"
+msgid "Nothing carried yet"
+msgstr "Nothing carried yet"
+
+#. Key:	EmptyBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(262)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(262)
+msgctxt "MarburgumInventoryPanel,EmptyBody"
+msgid "Items appear here only after the server has confirmed and saved them."
+msgstr "Items appear here only after the server has confirmed and saved them."
+
+#. Key:	Quantity
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(279)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(279)
+msgctxt "MarburgumInventoryPanel,Quantity"
+msgid "×{0}"
+msgstr "×{0}"
+
+#. Key:	Summary
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(299)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(299)
+msgctxt "MarburgumInventoryPanel,Summary"
+msgid "{0} {0}|plural(one=item,other=items)  ·  {1} {1}|plural(one=kind,other=kinds)"
+msgstr "{0} {0}|plural(one=item,other=items)  ·  {1} {1}|plural(one=kind,other=kinds)"
+
+#. Key:	FilterEmptyTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(303)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(303)
+msgctxt "MarburgumInventoryPanel,FilterEmptyTitle"
+msgid "Nothing of this kind"
+msgstr "Nothing of this kind"
+
+#. Key:	FilterEmptyBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(304)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(304)
+msgctxt "MarburgumInventoryPanel,FilterEmptyBody"
+msgid "Choose All to see everything you carry."
+msgstr "Choose All to see everything you carry."
+
+#. Key:	Carried
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(356)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(356)
+msgctxt "MarburgumInventoryPanel,Carried"
+msgid "Carried"
+msgstr "Carried"
+
+#. Key:	Confirmed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(357)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(357)
+msgctxt "MarburgumInventoryPanel,Confirmed"
+msgid "Confirmed and saved by the server"
+msgstr "Confirmed and saved by the server"
+
+#. Key:	Custody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(357)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(357)
+msgctxt "MarburgumInventoryPanel,Custody"
+msgid "Custody"
+msgstr "Custody"
+
+#. Key:	Missions
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(362)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(362)
+msgctxt "MarburgumInventoryPanel,Missions"
+msgid "MISSIONS"
+msgstr "MISSIONS"
+
+#. Key:	Actions
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(371)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(371)
+msgctxt "MarburgumInventoryPanel,Actions"
+msgid "WHAT YOU CAN DO"
+msgstr "WHAT YOU CAN DO"
+
+#. Key:	Sell
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(381)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(381)
+msgctxt "MarburgumInventoryPanel,Sell"
+msgid "Sell at {0} for {1} each"
+msgstr "Sell at {0} for {1} each"
+
+#. Key:	CounterNote
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(390)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(390)
+msgctxt "MarburgumInventoryPanel,CounterNote"
+msgid "Selling happens at the counter itself: stand at its keeper and press B. The server confirms every sale."
+msgstr "Selling happens at the counter itself: stand at its keeper and press B. The server confirms every sale."
+
+#. Key:	ClueNote
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(392)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(392)
+msgctxt "MarburgumInventoryPanel,ClueNote"
+msgid "Evidence is handed over when a mission asks for it; talk to the person who needs it."
+msgstr "Evidence is handed over when a mission asks for it; talk to the person who needs it."
+
+#. Key:	NoAction
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(393)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(393)
+msgctxt "MarburgumInventoryPanel,NoAction"
+msgid "Nothing to do with it from here. Missions and counters that want it will ask."
+msgstr "Nothing to do with it from here. Missions and counters that want it will ask."
+
+#. Key:	Tool
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(46)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(46)
+msgctxt "MarburgumInventoryPanel,Tool"
+msgid "Tool"
+msgstr "Tool"
+
+#. Key:	Fish
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(47)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(47)
+msgctxt "MarburgumInventoryPanel,Fish"
+msgid "Fish"
+msgstr "Fish"
+
+#. Key:	Clue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(48)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(48)
+msgctxt "MarburgumInventoryPanel,Clue"
+msgid "Evidence"
+msgstr "Evidence"
+
+#. Key:	Goods
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(49)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(49)
+msgctxt "MarburgumInventoryPanel,Goods"
+msgid "Goods"
+msgstr "Goods"
+
+#. Key:	Item
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(50)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(50)
+msgctxt "MarburgumInventoryPanel,Item"
+msgid "Item"
+msgstr "Item"
+
+#. Key:	All
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(56)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(56)
+msgctxt "MarburgumInventoryPanel,All"
+msgid "All"
+msgstr "All"
+
+#. Key:	EmptyDossier
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(183)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(183)
+msgctxt "MarburgumJournalPanel,EmptyDossier"
+msgid "The archive is empty. A dossier opens here for every mission you take on."
+msgstr "The archive is empty. A dossier opens here for every mission you take on."
+
+#. Key:	WaitingTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(188)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(188)
+msgctxt "MarburgumJournalPanel,WaitingTitle"
+msgid "Waiting for the server"
+msgstr "Waiting for the server"
+
+#. Key:	WaitingBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(189)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(189)
+msgctxt "MarburgumJournalPanel,WaitingBody"
+msgid "Missions appear once the server has loaded this character's saved record."
+msgstr "Missions appear once the server has loaded this character's saved record."
+
+#. Key:	NoCharacterTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(194)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(194)
+msgctxt "MarburgumJournalPanel,NoCharacterTitle"
+msgid "No character selected"
+msgstr "No character selected"
+
+#. Key:	NoCharacterBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(195)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(195)
+msgctxt "MarburgumJournalPanel,NoCharacterBody"
+msgid "Join with a character to take on missions. People will not trust a stranger without a name."
+msgstr "Join with a character to take on missions. People will not trust a stranger without a name."
+
+#. Key:	EmptyTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(200)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(200)
+msgctxt "MarburgumJournalPanel,EmptyTitle"
+msgid "No missions yet"
+msgstr "No missions yet"
+
+#. Key:	EmptyBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(201)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(201)
+msgctxt "MarburgumJournalPanel,EmptyBody"
+msgid "People around the city may ask for help. A mission appears here only after the server has saved it."
+msgstr "People around the city may ask for help. A mission appears here only after the server has saved it."
+
+#. Key:	UnderWay
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(219)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(219)
+msgctxt "MarburgumJournalPanel,UnderWay"
+msgid "UNDER WAY"
+msgstr "UNDER WAY"
+
+#. Key:	NoneActive
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(228)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(228)
+msgctxt "MarburgumJournalPanel,NoneActive"
+msgid "Nothing under way."
+msgstr "Nothing under way."
+
+#. Key:	Closed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(234)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(234)
+msgctxt "MarburgumJournalPanel,Closed"
+msgid "CLOSED"
+msgstr "CLOSED"
+
+#. Key:	ErrandOverline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(243)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(243)
+msgctxt "MarburgumJournalPanel,ErrandOverline"
+msgid "ERRAND"
+msgstr "ERRAND"
+
+#. Key:	StoryOverline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(243)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(243)
+msgctxt "MarburgumJournalPanel,StoryOverline"
+msgid "STORY"
+msgstr "STORY"
+
+#. Key:	Pinned
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(250)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(250)
+msgctxt "MarburgumJournalPanel,Pinned"
+msgid "PINNED"
+msgstr "PINNED"
+
+#. Key:	Summary
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(260)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(260)
+msgctxt "MarburgumJournalPanel,Summary"
+msgid "{0} under way  ·  {1} closed  ·  saved by the server"
+msgstr "{0} under way  ·  {1} closed  ·  saved by the server"
+
+#. Key:	DossierErrand
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(298)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(298)
+msgctxt "MarburgumJournalPanel,DossierErrand"
+msgid "DOSSIER  ·  ERRAND"
+msgstr "DOSSIER  ·  ERRAND"
+
+#. Key:	DossierStory
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(298)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(298)
+msgctxt "MarburgumJournalPanel,DossierStory"
+msgid "DOSSIER  ·  STORY"
+msgstr "DOSSIER  ·  STORY"
+
+#. Key:	Open
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(301)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(301)
+msgctxt "MarburgumJournalPanel,Open"
+msgid "UNDER WAY"
+msgstr "UNDER WAY"
+
+#. Key:	Current
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(316)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(316)
+msgctxt "MarburgumJournalPanel,Current"
+msgid "CURRENT OBJECTIVE"
+msgstr "CURRENT OBJECTIVE"
+
+#. Key:	UnknownStage
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(319)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(319)
+msgctxt "MarburgumJournalPanel,UnknownStage"
+msgid "The next step is not known to this client version."
+msgstr "The next step is not known to this client version."
+
+#. Key:	Steps
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(327)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(327)
+msgctxt "MarburgumJournalPanel,Steps"
+msgid "STEPS TAKEN"
+msgstr "STEPS TAKEN"
+
+#. Key:	Ahead
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(338)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(338)
+msgctxt "MarburgumJournalPanel,Ahead"
+msgid "Later steps are revealed as you go."
+msgstr "Later steps are revealed as you go."
+
+#. Key:	HeldMany
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(354)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(354)
+msgctxt "MarburgumJournalPanel,HeldMany"
+msgid "{0}  ×{1}"
+msgstr "{0}  ×{1}"
+
+#. Key:	Evidence
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(360)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(360)
+msgctxt "MarburgumJournalPanel,Evidence"
+msgid "IN YOUR POSSESSION"
+msgstr "IN YOUR POSSESSION"
+
+#. Key:	Decision
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(380)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(380)
+msgctxt "MarburgumJournalPanel,Decision"
+msgid "YOUR DECISION"
+msgstr "YOUR DECISION"
+
+#. Key:	Reward
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(390)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(390)
+msgctxt "MarburgumJournalPanel,Reward"
+msgid "Paid {0} money on completion"
+msgstr "Paid {0} money on completion"
+
+#. Key:	Saved
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(394)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(394)
+msgctxt "MarburgumJournalPanel,Saved"
+msgid "Kept by the server  ·  survives a restart"
+msgstr "Kept by the server  ·  survives a restart"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(86)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(86)
+msgctxt "MarburgumJournalPanel,Overline"
+msgid "JOURNAL"
+msgstr "JOURNAL"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(87)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(87)
+msgctxt "MarburgumJournalPanel,Title"
+msgid "Cases and errands"
+msgstr "Cases and errands"
+
+#. Key:	District
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(279)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(279)
+msgctxt "MarburgumLocationBanner,District"
+msgid "DISTRICT"
+msgstr "DISTRICT"
+
+#. Key:	Period
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(281)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(281)
+msgctxt "MarburgumLocationBanner,Period"
+msgid "Maribor  ·  1990s"
+msgstr "Maribor  ·  1990s"
+
+#. Key:	Unknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(286)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(286)
+msgctxt "MarburgumLocationBanner,Unknown"
+msgid "PLACE"
+msgstr "PLACE"
+
+#. Key:	Unregistered
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(288)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(288)
+msgctxt "MarburgumLocationBanner,Unregistered"
+msgid "Not registered in this client version"
+msgstr "Not registered in this client version"
+
+#. Key:	Quarter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(294)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(294)
+msgctxt "MarburgumLocationBanner,Quarter"
+msgid "QUARTER"
+msgstr "QUARTER"
+
+#. Key:	LocalCommunity
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(295)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(295)
+msgctxt "MarburgumLocationBanner,LocalCommunity"
+msgid "LOCAL COMMUNITY"
+msgstr "LOCAL COMMUNITY"
+
+#. Key:	Settlement
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(295)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(295)
+msgctxt "MarburgumLocationBanner,Settlement"
+msgid "SETTLEMENT"
+msgstr "SETTLEMENT"
+
+#. Key:	Municipality
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(297)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(297)
+msgctxt "MarburgumLocationBanner,Municipality"
+msgid "Municipality of Maribor  ·  1990s"
+msgstr "Municipality of Maribor  ·  1990s"
+
+#. Key:	City
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(307)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(307)
+msgctxt "MarburgumLocationBanner,City"
+msgid "CITY"
+msgstr "CITY"
+
+#. Key:	Outside
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(309)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(309)
+msgctxt "MarburgumLocationBanner,Outside"
+msgid "Outside the named districts"
+msgstr "Outside the named districts"
+
+#. Key:	Close
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(165)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(165)
+msgctxt "MarburgumManagementShell,Close"
+msgid "Close"
+msgstr "Close"
+
+#. Key:	SwitchScreen
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(181)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(181)
+msgctxt "MarburgumManagementShell,SwitchScreen"
+msgid "Switch screen"
+msgstr "Switch screen"
+
+#. Key:	Move
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(182)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(182)
+msgctxt "MarburgumManagementShell,Move"
+msgid "Move"
+msgstr "Move"
+
+#. Key:	Select
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(183)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(183)
+msgctxt "MarburgumManagementShell,Select"
+msgid "Select"
+msgstr "Select"
+
+#. Key:	Back
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(184)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(184)
+msgctxt "MarburgumManagementShell,Back"
+msgid "Back to the street"
+msgstr "Back to the street"
+
+#. Key:	FullName
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(236)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(236)
+msgctxt "MarburgumManagementShell,FullName"
+msgid "{0} {1}"
+msgstr "{0} {1}"
+
+#. Key:	Unnamed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(241)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(241)
+msgctxt "MarburgumManagementShell,Unnamed"
+msgid "Development character"
+msgstr "Development character"
+
+#. Key:	Maribor
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(243)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(243)
+msgctxt "MarburgumManagementShell,Maribor"
+msgid "Maribor"
+msgstr "Maribor"
+
+#. Key:	DistrictStreet
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(251)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(251)
+msgctxt "MarburgumManagementShell,DistrictStreet"
+msgid "{0}  ·  {1}"
+msgstr "{0}  ·  {1}"
+
+#. Key:	Character
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(59)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(59)
+msgctxt "MarburgumManagementShell,Character"
+msgid "Character"
+msgstr "Character"
+
+#. Key:	Skills
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(60)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(60)
+msgctxt "MarburgumManagementShell,Skills"
+msgid "Skills"
+msgstr "Skills"
+
+#. Key:	Inventory
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(61)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(61)
+msgctxt "MarburgumManagementShell,Inventory"
+msgid "Inventory"
+msgstr "Inventory"
+
+#. Key:	Journal
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(62)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(62)
+msgctxt "MarburgumManagementShell,Journal"
+msgid "Journal"
+msgstr "Journal"
+
+#. Key:	Settings
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(63)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(63)
+msgctxt "MarburgumManagementShell,Settings"
+msgid "Settings"
+msgstr "Settings"
+
+#. Key:	CompletedLine
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(189)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(189)
+msgctxt "MarburgumPinnedObjective,CompletedLine"
+msgid "Completed and saved by the server. [J] has the journal entry."
+msgstr "Completed and saved by the server. [J] has the journal entry."
+
+#. Key:	Completed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(193)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(193)
+msgctxt "MarburgumPinnedObjective,Completed"
+msgid "COMPLETED"
+msgstr "COMPLETED"
+
+#. Key:	Mission
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(220)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(220)
+msgctxt "MarburgumPinnedObjective,Mission"
+msgid "MISSION"
+msgstr "MISSION"
+
+#. Key:	Story
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(220)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(220)
+msgctxt "MarburgumPinnedObjective,Story"
+msgid "STORY MISSION"
+msgstr "STORY MISSION"
+
+#. Key:	UnknownStage
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(223)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(223)
+msgctxt "MarburgumPinnedObjective,UnknownStage"
+msgid "The next step is not known to this client version."
+msgstr "The next step is not known to this client version."
+
+#. Key:	Updated
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(230)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(230)
+msgctxt "MarburgumPinnedObjective,Updated"
+msgid "UPDATED"
+msgstr "UPDATED"
+
+#. Key:	New
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(234)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(234)
+msgctxt "MarburgumPinnedObjective,New"
+msgid "NEW"
+msgstr "NEW"
+
+#. Key:	Journal
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(66)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(66)
+msgctxt "MarburgumPinnedObjective,Journal"
+msgid "Journal"
+msgstr "Journal"
+
+#. Key:	JournalKey
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(66)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(66)
+msgctxt "MarburgumPinnedObjective,JournalKey"
+msgid "J"
+msgstr "J"
+
+#. Key:	Running
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(186)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(186)
+msgctxt "MarburgumPlayerCondition,Running"
+msgid "RUNNING"
+msgstr "RUNNING"
+
+#. Key:	Winded
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(191)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(191)
+msgctxt "MarburgumPlayerCondition,Winded"
+msgid "WINDED"
+msgstr "WINDED"
+
+#. Key:	Swimming
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(197)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(197)
+msgctxt "MarburgumPlayerCondition,Swimming"
+msgid "SWIMMING"
+msgstr "SWIMMING"
+
+#. Key:	HoldingBreath
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(202)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(202)
+msgctxt "MarburgumPlayerCondition,HoldingBreath"
+msgid "HOLDING BREATH"
+msgstr "HOLDING BREATH"
+
+#. Key:	KnockedDownChip
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(211)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(211)
+msgctxt "MarburgumPlayerCondition,KnockedDownChip"
+msgid "KNOCKED DOWN · {0} s"
+msgstr "KNOCKED DOWN · {0} s"
+
+#. Key:	DrownedChip
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(212)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(212)
+msgctxt "MarburgumPlayerCondition,DrownedChip"
+msgid "DROWNED · {0} s"
+msgstr "DROWNED · {0} s"
+
+#. Key:	DrownedTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(220)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(220)
+msgctxt "MarburgumPlayerCondition,DrownedTitle"
+msgid "Pulled from the water"
+msgstr "Pulled from the water"
+
+#. Key:	KnockedDownTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(220)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(220)
+msgctxt "MarburgumPlayerCondition,KnockedDownTitle"
+msgid "Knocked down"
+msgstr "Knocked down"
+
+#. Key:	Recovering
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(223)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(223)
+msgctxt "MarburgumPlayerCondition,Recovering"
+msgid "Back on your feet in {0} s. The server decides when."
+msgstr "Back on your feet in {0} s. The server decides when."
+
+#. Key:	Getting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(224)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(224)
+msgctxt "MarburgumPlayerCondition,Getting"
+msgid "Getting up…"
+msgstr "Getting up…"
+
+#. Key:	Waiting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(77)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(77)
+msgctxt "MarburgumPlayerCondition,Waiting"
+msgid "Waiting for the server to restore this character"
+msgstr "Waiting for the server to restore this character"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(108)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(108)
+msgctxt "MarburgumSettingsPanel,Overline"
+msgid "SETTINGS"
+msgstr "SETTINGS"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(109)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(109)
+msgctxt "MarburgumSettingsPanel,Title"
+msgid "How the game looks, sounds and answers"
+msgstr "How the game looks, sounds and answers"
+
+#. Key:	Interface
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(117)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(117)
+msgctxt "MarburgumSettingsPanel,Interface"
+msgid "INTERFACE"
+msgstr "INTERFACE"
+
+#. Key:	LanguageLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(118)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(118)
+msgctxt "MarburgumSettingsPanel,LanguageLabel"
+msgid "Language"
+msgstr "Language"
+
+#. Key:	LanguageDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(119)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(119)
+msgctxt "MarburgumSettingsPanel,LanguageDesc"
+msgid "The language of menus, screens and notices. Place names are always Slovene; what people in the city say, and mission texts, are still in English in this build."
+msgstr "The language of menus, screens and notices. Place names are always Slovene; what people in the city say, and mission texts, are still in English in this build."
+
+#. Key:	ScaleLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(120)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(120)
+msgctxt "MarburgumSettingsPanel,ScaleLabel"
+msgid "Interface scale"
+msgstr "Interface scale"
+
+#. Key:	ScaleFixed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(122)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(122)
+msgctxt "MarburgumSettingsPanel,ScaleFixed"
+msgid "The size of every panel and text on top of the display's own scaling. Fixed for this run by -MB2UIScale."
+msgstr "The size of every panel and text on top of the display's own scaling. Fixed for this run by -MB2UIScale."
+
+#. Key:	ScaleDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(123)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(123)
+msgctxt "MarburgumSettingsPanel,ScaleDesc"
+msgid "The size of every panel and text on top of the display's own scaling. 100 % suits most screens; raise it on a large television or a high-density laptop."
+msgstr "The size of every panel and text on top of the display's own scaling. 100 % suits most screens; raise it on a large television or a high-density laptop."
+
+#. Key:	TextLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(125)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(125)
+msgctxt "MarburgumSettingsPanel,TextLabel"
+msgid "Text size"
+msgstr "Text size"
+
+#. Key:	TextDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(126)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(126)
+msgctxt "MarburgumSettingsPanel,TextDesc"
+msgid "Larger reading text in panels, the journal, chat and subtitles, without enlarging the frames."
+msgstr "Larger reading text in panels, the journal, chat and subtitles, without enlarging the frames."
+
+#. Key:	ContrastLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(127)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(127)
+msgctxt "MarburgumSettingsPanel,ContrastLabel"
+msgid "High contrast"
+msgstr "High contrast"
+
+#. Key:	ContrastDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(128)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(128)
+msgctxt "MarburgumSettingsPanel,ContrastDesc"
+msgid "Opaque panels, brighter secondary text and stronger outlines that read over any street."
+msgstr "Opaque panels, brighter secondary text and stronger outlines that read over any street."
+
+#. Key:	MotionLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(129)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(129)
+msgctxt "MarburgumSettingsPanel,MotionLabel"
+msgid "Reduce motion"
+msgstr "Reduce motion"
+
+#. Key:	MotionDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(130)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(130)
+msgctxt "MarburgumSettingsPanel,MotionDesc"
+msgid "No slides, pulses or long fades: titles and notifications appear and leave at once."
+msgstr "No slides, pulses or long fades: titles and notifications appear and leave at once."
+
+#. Key:	HudLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(131)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(131)
+msgctxt "MarburgumSettingsPanel,HudLabel"
+msgid "HUD opacity"
+msgstr "HUD opacity"
+
+#. Key:	HudDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(132)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(132)
+msgctxt "MarburgumSettingsPanel,HudDesc"
+msgid "How strongly the exploration HUD is drawn over the street. Screens and warnings stay opaque."
+msgstr "How strongly the exploration HUD is drawn over the street. Screens and warnings stay opaque."
+
+#. Key:	ConditionLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(133)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(133)
+msgctxt "MarburgumSettingsPanel,ConditionLabel"
+msgid "Condition"
+msgstr "Condition"
+
+#. Key:	ConditionDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(134)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(134)
+msgctxt "MarburgumSettingsPanel,ConditionDesc"
+msgid "Show vitality and stamina only when they change or matter, or keep them on screen."
+msgstr "Show vitality and stamina only when they change or matter, or keep them on screen."
+
+#. Key:	NoticeLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(135)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(135)
+msgctxt "MarburgumSettingsPanel,NoticeLabel"
+msgid "Notification time"
+msgstr "Notification time"
+
+#. Key:	NoticeDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(136)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(136)
+msgctxt "MarburgumSettingsPanel,NoticeDesc"
+msgid "How long mission, item and server notices stay before they fade. Refusals always stay a little longer."
+msgstr "How long mission, item and server notices stay before they fade. Refusals always stay a little longer."
+
+#. Key:	StampLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(137)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(137)
+msgctxt "MarburgumSettingsPanel,StampLabel"
+msgid "Chat timestamps"
+msgstr "Chat timestamps"
+
+#. Key:	StampDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(138)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(138)
+msgctxt "MarburgumSettingsPanel,StampDesc"
+msgid "Each chat line carries the time this computer received it."
+msgstr "Each chat line carries the time this computer received it."
+
+#. Key:	Audio
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(140)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(140)
+msgctxt "MarburgumSettingsPanel,Audio"
+msgid "AUDIO"
+msgstr "AUDIO"
+
+#. Key:	VolumeLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(141)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(141)
+msgctxt "MarburgumSettingsPanel,VolumeLabel"
+msgid "Master volume"
+msgstr "Master volume"
+
+#. Key:	VolumeDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(142)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(142)
+msgctxt "MarburgumSettingsPanel,VolumeDesc"
+msgid "The loudness of everything the game plays. Separate music and effects levels arrive when the game has separate music and effects channels."
+msgstr "The loudness of everything the game plays. Separate music and effects levels arrive when the game has separate music and effects channels."
+
+#. Key:	Display
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(145)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(145)
+msgctxt "MarburgumSettingsPanel,Display"
+msgid "DISPLAY"
+msgstr "DISPLAY"
+
+#. Key:	ResolutionLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(146)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(146)
+msgctxt "MarburgumSettingsPanel,ResolutionLabel"
+msgid "Resolution"
+msgstr "Resolution"
+
+#. Key:	ResolutionDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(147)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(147)
+msgctxt "MarburgumSettingsPanel,ResolutionDesc"
+msgid "The size of the game's window. Changing it in game is not offered yet; start the client with -ResX and -ResY to choose."
+msgstr "The size of the game's window. Changing it in game is not offered yet; start the client with -ResX and -ResY to choose."
+
+#. Key:	WindowLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(149)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(149)
+msgctxt "MarburgumSettingsPanel,WindowLabel"
+msgid "Window mode"
+msgstr "Window mode"
+
+#. Key:	WindowDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(150)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(150)
+msgctxt "MarburgumSettingsPanel,WindowDesc"
+msgid "Full screen, borderless or windowed, as the client was started."
+msgstr "Full screen, borderless or windowed, as the client was started."
+
+#. Key:	DpiLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(151)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(151)
+msgctxt "MarburgumSettingsPanel,DpiLabel"
+msgid "Display scaling"
+msgstr "Display scaling"
+
+#. Key:	DpiDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(152)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(152)
+msgctxt "MarburgumSettingsPanel,DpiDesc"
+msgid "The interface is designed at 1080p and follows the window's height: 80 % at 720p, 133 % at 1440p and 200 % at 4K. Interface scale multiplies on top."
+msgstr "The interface is designed at 1080p and follows the window's height: 80 % at 720p, 133 % at 1440p and 200 % at 4K. Interface scale multiplies on top."
+
+#. Key:	VSyncLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(154)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(154)
+msgctxt "MarburgumSettingsPanel,VSyncLabel"
+msgid "Vertical sync"
+msgstr "Vertical sync"
+
+#. Key:	VSyncDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(155)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(155)
+msgctxt "MarburgumSettingsPanel,VSyncDesc"
+msgid "Waits for the display before showing each frame: no tearing, slightly more input delay."
+msgstr "Waits for the display before showing each frame: no tearing, slightly more input delay."
+
+#. Key:	FpsLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(156)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(156)
+msgctxt "MarburgumSettingsPanel,FpsLabel"
+msgid "Frame-rate limit"
+msgstr "Frame-rate limit"
+
+#. Key:	FpsDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(157)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(157)
+msgctxt "MarburgumSettingsPanel,FpsDesc"
+msgid "Caps how many frames the game draws per second, to keep a laptop cool and quiet."
+msgstr "Caps how many frames the game draws per second, to keep a laptop cool and quiet."
+
+#. Key:	Controls
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(159)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(159)
+msgctxt "MarburgumSettingsPanel,Controls"
+msgid "CONTROLS"
+msgstr "CONTROLS"
+
+#. Key:	Move
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(161)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(161)
+msgctxt "MarburgumSettingsPanel,Move"
+msgid "Walk"
+msgstr "Walk"
+
+#. Key:	Run
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(162)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(162)
+msgctxt "MarburgumSettingsPanel,Run"
+msgid "Run  ·  handbrake when driving"
+msgstr "Run  ·  handbrake when driving"
+
+#. Key:	Jump
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(163)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(163)
+msgctxt "MarburgumSettingsPanel,Jump"
+msgid "Jump"
+msgstr "Jump"
+
+#. Key:	Interact
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(164)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(164)
+msgctxt "MarburgumSettingsPanel,Interact"
+msgid "Talk, inspect, fish, enter or leave a car"
+msgstr "Talk, inspect, fish, enter or leave a car"
+
+#. Key:	Shop
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(165)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(165)
+msgctxt "MarburgumSettingsPanel,Shop"
+msgid "Open a shopkeeper's counter"
+msgstr "Open a shopkeeper's counter"
+
+#. Key:	Fight
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(166)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(166)
+msgctxt "MarburgumSettingsPanel,Fight"
+msgid "Jab  ·  heavy swing  ·  guard (hold)"
+msgstr "Jab  ·  heavy swing  ·  guard (hold)"
+
+#. Key:	Chat
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(167)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(167)
+msgctxt "MarburgumSettingsPanel,Chat"
+msgid "Chat"
+msgstr "Chat"
+
+#. Key:	Screens
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(168)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(168)
+msgctxt "MarburgumSettingsPanel,Screens"
+msgid "Character  ·  Skills  ·  Inventory  ·  Journal"
+msgstr "Character  ·  Skills  ·  Inventory  ·  Journal"
+
+#. Key:	Choose
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(169)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(169)
+msgctxt "MarburgumSettingsPanel,Choose"
+msgid "Pick an answer in a decision"
+msgstr "Pick an answer in a decision"
+
+#. Key:	Menu
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(170)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(170)
+msgctxt "MarburgumSettingsPanel,Menu"
+msgid "Close a screen  ·  game menu"
+msgstr "Close a screen  ·  game menu"
+
+#. Key:	Pad
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(171)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(171)
+msgctxt "MarburgumSettingsPanel,Pad"
+msgid "Gamepad in menus: move, select, back, switch screen"
+msgstr "Gamepad in menus: move, select, back, switch screen"
+
+#. Key:	Rebind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(172)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(172)
+msgctxt "MarburgumSettingsPanel,Rebind"
+msgid "Keys cannot be changed yet; rebinding arrives with the input-mapping design. Walking and driving with a gamepad are not part of this build."
+msgstr "Keys cannot be changed yet; rebinding arrives with the input-mapping design. Walking and driving with a gamepad are not part of this build."
+
+#. Key:	Restore
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(177)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(177)
+msgctxt "MarburgumSettingsPanel,Restore"
+msgid "RESTORE"
+msgstr "RESTORE"
+
+#. Key:	UndoLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(178)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(178)
+msgctxt "MarburgumSettingsPanel,UndoLabel"
+msgid "Undo changes"
+msgstr "Undo changes"
+
+#. Key:	UndoDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(179)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(179)
+msgctxt "MarburgumSettingsPanel,UndoDesc"
+msgid "Puts every setting back the way it was when this screen opened."
+msgstr "Puts every setting back the way it was when this screen opened."
+
+#. Key:	ResetLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(180)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(180)
+msgctxt "MarburgumSettingsPanel,ResetLabel"
+msgid "Reset to defaults"
+msgstr "Reset to defaults"
+
+#. Key:	ResetDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(181)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(181)
+msgctxt "MarburgumSettingsPanel,ResetDesc"
+msgid "Puts every interface, audio and display setting here back to the shipped values."
+msgstr "Puts every interface, audio and display setting here back to the shipped values."
+
+#. Key:	About
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(188)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(188)
+msgctxt "MarburgumSettingsPanel,About"
+msgid "ABOUT THIS SETTING"
+msgstr "ABOUT THIS SETTING"
+
+#. Key:	Current
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(196)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(196)
+msgctxt "MarburgumSettingsPanel,Current"
+msgid "Now"
+msgstr "Now"
+
+#. Key:	Default
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(199)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(199)
+msgctxt "MarburgumSettingsPanel,Default"
+msgid "Default"
+msgstr "Default"
+
+#. Key:	Local
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(202)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(202)
+msgctxt "MarburgumSettingsPanel,Local"
+msgid "Saved on this computer as soon as you change it. Nothing here is sent to the server or to your account."
+msgstr "Saved on this computer as soon as you change it. Nothing here is sent to the server or to your account."
+
+#. Key:	Change
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(206)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(206)
+msgctxt "MarburgumSettingsPanel,Change"
+msgid "Change value"
+msgstr "Change value"
+
+#. Key:	Next
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(207)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(207)
+msgctxt "MarburgumSettingsPanel,Next"
+msgid "Next value"
+msgstr "Next value"
+
+#. Key:	Large
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(308)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(308)
+msgctxt "MarburgumSettingsPanel,Large"
+msgid "Large"
+msgstr "Large"
+
+#. Key:	Larger
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(308)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(308)
+msgctxt "MarburgumSettingsPanel,Larger"
+msgid "Larger"
+msgstr "Larger"
+
+#. Key:	Standard
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(308)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(308)
+msgctxt "MarburgumSettingsPanel,Standard"
+msgid "Standard"
+msgstr "Standard"
+
+#. Key:	Always
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
+msgctxt "MarburgumSettingsPanel,Always"
+msgid "Always"
+msgstr "Always"
+
+#. Key:	WhenItMatters
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
+msgctxt "MarburgumSettingsPanel,WhenItMatters"
+msgid "When it matters"
+msgstr "When it matters"
+
+#. Key:	Long
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(314)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(314)
+msgctxt "MarburgumSettingsPanel,Long"
+msgid "Long"
+msgstr "Long"
+
+#. Key:	Short
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(314)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(314)
+msgctxt "MarburgumSettingsPanel,Short"
+msgid "Short"
+msgstr "Short"
+
+#. Key:	Unavailable
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(319)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(319)
+msgctxt "MarburgumSettingsPanel,Unavailable"
+msgid "Unavailable"
+msgstr "Unavailable"
+
+#. Key:	Unlimited
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(325)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(325)
+msgctxt "MarburgumSettingsPanel,Unlimited"
+msgid "Unlimited"
+msgstr "Unlimited"
+
+#. Key:	Fps
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(326)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(326)
+msgctxt "MarburgumSettingsPanel,Fps"
+msgid "{0} fps"
+msgstr "{0} fps"
+
+#. Key:	Size
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(330)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(330)
+msgctxt "MarburgumSettingsPanel,Size"
+msgid "{0} × {1}"
+msgstr "{0} × {1}"
+
+#. Key:	Fullscreen
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(340)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(340)
+msgctxt "MarburgumSettingsPanel,Fullscreen"
+msgid "Full screen"
+msgstr "Full screen"
+
+#. Key:	Borderless
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(341)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(341)
+msgctxt "MarburgumSettingsPanel,Borderless"
+msgid "Borderless"
+msgstr "Borderless"
+
+#. Key:	Windowed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(342)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(342)
+msgctxt "MarburgumSettingsPanel,Windowed"
+msgid "Windowed"
+msgstr "Windowed"
+
+#. Key:	SystemLanguage
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(501)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(501)
+msgctxt "MarburgumSettingsPanel,SystemLanguage"
+msgid "The system's"
+msgstr "The system's"
+
+#. Key:	NotApplicable
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(507)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(507)
+msgctxt "MarburgumSettingsPanel,NotApplicable"
+msgid "—"
+msgstr "—"
+
+#. Key:	Percent
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(55)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(55)
+msgctxt "MarburgumSettingsPanel,Percent"
+msgid "{0} %"
+msgstr "{0} %"
+
+#. Key:	Off
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(60)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(60)
+msgctxt "MarburgumSettingsPanel,Off"
+msgid "Off"
+msgstr "Off"
+
+#. Key:	On
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(60)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(60)
+msgctxt "MarburgumSettingsPanel,On"
+msgid "On"
+msgstr "On"
+
+#. Key:	Unknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(150)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(150)
+msgctxt "MarburgumShopPanel,Unknown"
+msgid "Petra is still counting the shelves."
+msgstr "Petra is still counting the shelves."
+
+#. Key:	Open
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(151)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(151)
+msgctxt "MarburgumShopPanel,Open"
+msgid "Petra looks up from the counter."
+msgstr "Petra looks up from the counter."
+
+#. Key:	Money
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(154)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(154)
+msgctxt "MarburgumShopPanel,Money"
+msgid "You have {0} money"
+msgstr "You have {0} money"
+
+#. Key:	Price
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(175)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(175)
+msgctxt "MarburgumShopPanel,Price"
+msgid "{0} money"
+msgstr "{0} money"
+
+#. Key:	TakesBack
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(179)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(179)
+msgctxt "MarburgumShopPanel,TakesBack"
+msgid "Takes back for {0}"
+msgstr "Takes back for {0}"
+
+#. Key:	ShelfUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(182)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(182)
+msgctxt "MarburgumShopPanel,ShelfUnknown"
+msgid "Shelf unknown"
+msgstr "Shelf unknown"
+
+#. Key:	SoldOut
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(183)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(183)
+msgctxt "MarburgumShopPanel,SoldOut"
+msgid "Sold out"
+msgstr "Sold out"
+
+#. Key:	OnShelf
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(184)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(184)
+msgctxt "MarburgumShopPanel,OnShelf"
+msgid "{0} on the shelf"
+msgstr "{0} on the shelf"
+
+#. Key:	Held
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(187)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(187)
+msgctxt "MarburgumShopPanel,Held"
+msgid "You hold {0}"
+msgstr "You hold {0}"
+
+#. Key:	Short
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(191)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(191)
+msgctxt "MarburgumShopPanel,Short"
+msgid "Not enough money"
+msgstr "Not enough money"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(44)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(44)
+msgctxt "MarburgumShopPanel,Overline"
+msgid "COUNTER"
+msgstr "COUNTER"
+
+#. Key:	Close
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(46)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(46)
+msgctxt "MarburgumShopPanel,Close"
+msgid "Leave the counter"
+msgstr "Leave the counter"
+
+#. Key:	Shelves
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(60)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(60)
+msgctxt "MarburgumShopPanel,Shelves"
+msgid "ON THE SHELVES"
+msgstr "ON THE SHELVES"
+
+#. Key:	Buy
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(64)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(64)
+msgctxt "MarburgumShopPanel,Buy"
+msgid "Buy one"
+msgstr "Buy one"
+
+#. Key:	Sell
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(65)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(65)
+msgctxt "MarburgumShopPanel,Sell"
+msgid "Sell one back"
+msgstr "Sell one back"
+
+#. Key:	Hint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(67)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(67)
+msgctxt "MarburgumShopPanel,Hint"
+msgid "The counter sets the prices. A trade counts once the server confirms it."
+msgstr "The counter sets the prices. A trade counts once the server confirms it."
+
+#. Key:	WaitingTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(192)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(192)
+msgctxt "MarburgumSkillsPanel,WaitingTitle"
+msgid "Waiting for the server"
+msgstr "Waiting for the server"
+
+#. Key:	WaitingBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(193)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(193)
+msgctxt "MarburgumSkillsPanel,WaitingBody"
+msgid "Skills appear once the server has loaded this character's saved record."
+msgstr "Skills appear once the server has loaded this character's saved record."
+
+#. Key:	NoCharacterTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(194)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(194)
+msgctxt "MarburgumSkillsPanel,NoCharacterTitle"
+msgid "No character selected"
+msgstr "No character selected"
+
+#. Key:	NoCharacterBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(195)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(195)
+msgctxt "MarburgumSkillsPanel,NoCharacterBody"
+msgid "A connection without a character learns nothing that lasts."
+msgstr "A connection without a character learns nothing that lasts."
+
+#. Key:	Progress
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(217)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(217)
+msgctxt "MarburgumSkillsPanel,Progress"
+msgid "{0} / {1} XP to level {2}"
+msgstr "{0} / {1} XP to level {2}"
+
+#. Key:	TopLevel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(219)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(219)
+msgctxt "MarburgumSkillsPanel,TopLevel"
+msgid "Top level reached"
+msgstr "Top level reached"
+
+#. Key:	LevelOverline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(224)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(224)
+msgctxt "MarburgumSkillsPanel,LevelOverline"
+msgid "LEVEL"
+msgstr "LEVEL"
+
+#. Key:	Shown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(242)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(242)
+msgctxt "MarburgumSkillsPanel,Shown"
+msgid "{0} {1}  ·  {2} / {3} XP to level {4}  ·  {5} XP in all"
+msgstr "{0} {1}  ·  {2} / {3} XP to level {4}  ·  {5} XP in all"
+
+#. Key:	ShownTop
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(244)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(244)
+msgctxt "MarburgumSkillsPanel,ShownTop"
+msgid "{0} {1}  ·  Top level  ·  {2} XP in all"
+msgstr "{0} {1}  ·  Top level  ·  {2} XP in all"
+
+#. Key:	Money
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(250)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(250)
+msgctxt "MarburgumSkillsPanel,Money"
+msgid "{0} money"
+msgstr "{0} money"
+
+#. Key:	Craft
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(281)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(281)
+msgctxt "MarburgumSkillsPanel,Craft"
+msgid "CRAFT"
+msgstr "CRAFT"
+
+#. Key:	Standing
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(281)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(281)
+msgctxt "MarburgumSkillsPanel,Standing"
+msgid "STANDING"
+msgstr "STANDING"
+
+#. Key:	OfMax
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(289)
+msgctxt "MarburgumSkillsPanel,OfMax"
+msgid "level, of {0}"
+msgstr "level, of {0}"
+
+#. Key:	ToNext
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(294)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(294)
+msgctxt "MarburgumSkillsPanel,ToNext"
+msgid "TO THE NEXT LEVEL"
+msgstr "TO THE NEXT LEVEL"
+
+#. Key:	Into
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(296)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(296)
+msgctxt "MarburgumSkillsPanel,Into"
+msgid "XP in this level"
+msgstr "XP in this level"
+
+#. Key:	IntoValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(297)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(297)
+msgctxt "MarburgumSkillsPanel,IntoValue"
+msgid "{0} of {1}"
+msgstr "{0} of {1}"
+
+#. Key:	TopValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(298)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(298)
+msgctxt "MarburgumSkillsPanel,TopValue"
+msgid "Top level"
+msgstr "Top level"
+
+#. Key:	Total
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(299)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(299)
+msgctxt "MarburgumSkillsPanel,Total"
+msgid "XP in all"
+msgstr "XP in all"
+
+#. Key:	Scale
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(301)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(301)
+msgctxt "MarburgumSkillsPanel,Scale"
+msgid "ON THE 0–1990 SCALE"
+msgstr "ON THE 0–1990 SCALE"
+
+#. Key:	Raises
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(304)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(304)
+msgctxt "MarburgumSkillsPanel,Raises"
+msgid "WHAT RAISES IT"
+msgstr "WHAT RAISES IT"
+
+#. Key:	FishingSource
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(36)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(36)
+msgctxt "MarburgumSkillsPanel,FishingSource"
+msgid "Landing a fish at a Drava fishing spot. Bigger species give more."
+msgstr "Landing a fish at a Drava fishing spot. Bigger species give more."
+
+#. Key:	TradingSource
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(37)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(37)
+msgctxt "MarburgumSkillsPanel,TradingSource"
+msgid "Your first purchase at each shopkeeper's counter, and some mission decisions."
+msgstr "Your first purchase at each shopkeeper's counter, and some mission decisions."
+
+#. Key:	ReputationSource
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(38)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(38)
+msgctxt "MarburgumSkillsPanel,ReputationSource"
+msgid "Decisions at the end of missions. Reputation can be lost as well as earned."
+msgstr "Decisions at the end of missions. Reputation can be lost as well as earned."
+
+#. Key:	NoSource
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(39)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(39)
+msgctxt "MarburgumSkillsPanel,NoSource"
+msgid "Nothing in this build raises it yet; it is kept for the systems that will."
+msgstr "Nothing in this build raises it yet; it is kept for the systems that will."
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(83)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(83)
+msgctxt "MarburgumSkillsPanel,Overline"
+msgid "SKILLS"
+msgstr "SKILLS"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(84)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(84)
+msgctxt "MarburgumSkillsPanel,Title"
+msgid "What you have learned"
+msgstr "What you have learned"
+
+#. Key:	Footnote
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(95)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(95)
+msgctxt "MarburgumSkillsPanel,Footnote"
+msgid "Levels run from 0 to 1990. Only the server awards XP and money; both are saved with your character."
+msgstr "Levels run from 0 to 1990. Only the server awards XP and money; both are saved with your character."
+
+#. Key:	Stay
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(110)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(110)
+msgctxt "MarburgumSystemMenu,Stay"
+msgid "Stay"
+msgstr "Stay"
+
+#. Key:	Note
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(118)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(118)
+msgctxt "MarburgumSystemMenu,Note"
+msgid "The city goes on while this is open: Marburgum is one shared world and never pauses."
+msgstr "The city goes on while this is open: Marburgum is one shared world and never pauses."
+
+#. Key:	Select
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(123)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(123)
+msgctxt "MarburgumSystemMenu,Select"
+msgid "Select"
+msgstr "Select"
+
+#. Key:	Back
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(124)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(124)
+msgctxt "MarburgumSystemMenu,Back"
+msgid "Back"
+msgstr "Back"
+
+#. Key:	LeaveTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(181)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(181)
+msgctxt "MarburgumSystemMenu,LeaveTitle"
+msgid "Leave the world?"
+msgstr "Leave the world?"
+
+#. Key:	QuitTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(181)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(181)
+msgctxt "MarburgumSystemMenu,QuitTitle"
+msgid "Quit Marburgum?"
+msgstr "Quit Marburgum?"
+
+#. Key:	QuitBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(183)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(183)
+msgctxt "MarburgumSystemMenu,QuitBody"
+msgid "The game closes. The server saves your character as you go; the city carries on without you."
+msgstr "The game closes. The server saves your character as you go; the city carries on without you."
+
+#. Key:	LeaveBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(184)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(184)
+msgctxt "MarburgumSystemMenu,LeaveBody"
+msgid "You return to the title screen. The server saves your character as you go, and you can come back."
+msgstr "You return to the title screen. The server saves your character as you go, and you can come back."
+
+#. Key:	LeaveConfirm
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(194)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(194)
+msgctxt "MarburgumSystemMenu,LeaveConfirm"
+msgid "Leave the world"
+msgstr "Leave the world"
+
+#. Key:	QuitConfirm
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(194)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(194)
+msgctxt "MarburgumSystemMenu,QuitConfirm"
+msgid "Quit the game"
+msgstr "Quit the game"
+
+#. Key:	Wordmark
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(73)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(73)
+msgctxt "MarburgumSystemMenu,Wordmark"
+msgid "Marburgum"
+msgstr "Marburgum"
+
+#. Key:	Resume
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(81)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(81)
+msgctxt "MarburgumSystemMenu,Resume"
+msgid "Back to the street"
+msgstr "Back to the street"
+
+#. Key:	Settings
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(84)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(84)
+msgctxt "MarburgumSystemMenu,Settings"
+msgid "Settings"
+msgstr "Settings"
+
+#. Key:	SettingsDetail
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(85)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(85)
+msgctxt "MarburgumSystemMenu,SettingsDetail"
+msgid "Interface, sound, display and keys"
+msgstr "Interface, sound, display and keys"
+
+#. Key:	Leave
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(88)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(88)
+msgctxt "MarburgumSystemMenu,Leave"
+msgid "Leave the world"
+msgstr "Leave the world"
+
+#. Key:	LeaveDetail
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(89)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(89)
+msgctxt "MarburgumSystemMenu,LeaveDetail"
+msgid "Back to the title screen. Your character is saved."
+msgstr "Back to the title screen. Your character is saved."
+
+#. Key:	Quit
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(92)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(92)
+msgctxt "MarburgumSystemMenu,Quit"
+msgid "Quit the game"
+msgstr "Quit the game"
+
+#. Key:	SampleData
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIBuilder.cpp(475)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIBuilder.cpp(475)
+msgctxt "MarburgumUI,SampleData"
+msgid "SAMPLE DATA · NOT LIVE GAMEPLAY"
+msgstr "SAMPLE DATA · NOT LIVE GAMEPLAY"
+
+#. Key:	TypeStrong
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(100)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(100)
+msgctxt "MarburgumGallery,TypeStrong"
+msgid "Strong body for action verbs"
+msgstr "Strong body for action verbs"
+
+#. Key:	TypeCaption
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(101)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(101)
+msgctxt "MarburgumGallery,TypeCaption"
+msgid "Caption  ·  secondary detail and metadata"
+msgstr "Caption  ·  secondary detail and metadata"
+
+#. Key:	TypeOverline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(102)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(102)
+msgctxt "MarburgumGallery,TypeOverline"
+msgid "OVERLINE  ·  PILLS AND KIND LABELS"
+msgstr "OVERLINE  ·  PILLS AND KIND LABELS"
+
+#. Key:	TypeNumeric
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(103)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(103)
+msgctxt "MarburgumGallery,TypeNumeric"
+msgid "1 990  ·  12 345 678  ·  07:45"
+msgstr "1 990  ·  12 345 678  ·  07:45"
+
+#. Key:	ColorTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(113)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(113)
+msgctxt "MarburgumGallery,ColorTitle"
+msgid "COLOUR ROLES"
+msgstr "COLOUR ROLES"
+
+#. Key:	SwBackdrop
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(117)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(117)
+msgctxt "MarburgumGallery,SwBackdrop"
+msgid "Backdrop"
+msgstr "Backdrop"
+
+#. Key:	SwPanel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(118)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(118)
+msgctxt "MarburgumGallery,SwPanel"
+msgid "Panel"
+msgstr "Panel"
+
+#. Key:	SwRaised
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(119)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(119)
+msgctxt "MarburgumGallery,SwRaised"
+msgid "Raised"
+msgstr "Raised"
+
+#. Key:	SwText
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(120)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(120)
+msgctxt "MarburgumGallery,SwText"
+msgid "Text primary"
+msgstr "Text primary"
+
+#. Key:	SwText2
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(121)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(121)
+msgctxt "MarburgumGallery,SwText2"
+msgid "Text secondary"
+msgstr "Text secondary"
+
+#. Key:	SwAccent
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(122)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(122)
+msgctxt "MarburgumGallery,SwAccent"
+msgid "Accent  ·  copper"
+msgstr "Accent  ·  copper"
+
+#. Key:	SwInfo
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(123)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(123)
+msgctxt "MarburgumGallery,SwInfo"
+msgid "Info  ·  teal"
+msgstr "Info  ·  teal"
+
+#. Key:	SwSuccess
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(124)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(124)
+msgctxt "MarburgumGallery,SwSuccess"
+msgid "Success"
+msgstr "Success"
+
+#. Key:	SwWarning
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(125)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(125)
+msgctxt "MarburgumGallery,SwWarning"
+msgid "Warning"
+msgstr "Warning"
+
+#. Key:	SwDanger
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(126)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(126)
+msgctxt "MarburgumGallery,SwDanger"
+msgid "Danger"
+msgstr "Danger"
+
+#. Key:	SwFocus
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(127)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(127)
+msgctxt "MarburgumGallery,SwFocus"
+msgid "Focus"
+msgstr "Focus"
+
+#. Key:	SwSample
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(128)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(128)
+msgctxt "MarburgumGallery,SwSample"
+msgid "Sample-data marker"
+msgstr "Sample-data marker"
+
+#. Key:	ControlsTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(147)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(147)
+msgctxt "MarburgumGallery,ControlsTitle"
+msgid "CONTROLS"
+msgstr "CONTROLS"
+
+#. Key:	BtnPrimary
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(150)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(150)
+msgctxt "MarburgumGallery,BtnPrimary"
+msgid "Primary"
+msgstr "Primary"
+
+#. Key:	BtnSecondary
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(151)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(151)
+msgctxt "MarburgumGallery,BtnSecondary"
+msgid "Secondary"
+msgstr "Secondary"
+
+#. Key:	BtnQuiet
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(152)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(152)
+msgctxt "MarburgumGallery,BtnQuiet"
+msgid "Quiet"
+msgstr "Quiet"
+
+#. Key:	BtnDisabled
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(156)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(156)
+msgctxt "MarburgumGallery,BtnDisabled"
+msgid "Disabled  ·  not yet available"
+msgstr "Disabled  ·  not yet available"
+
+#. Key:	FieldHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(161)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(161)
+msgctxt "MarburgumGallery,FieldHint"
+msgid "Search"
+msgstr "Search"
+
+#. Key:	FieldValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(161)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(161)
+msgctxt "MarburgumGallery,FieldValue"
+msgid "Glavni trg 1"
+msgstr "Glavni trg 1"
+
+#. Key:	PillNeutral
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(164)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(164)
+msgctxt "MarburgumGallery,PillNeutral"
+msgid "OFFLINE"
+msgstr "OFFLINE"
+
+#. Key:	PillInfo
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(165)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(165)
+msgctxt "MarburgumGallery,PillInfo"
+msgid "JOINING"
+msgstr "JOINING"
+
+#. Key:	PillSuccess
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(166)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(166)
+msgctxt "MarburgumGallery,PillSuccess"
+msgid "CONNECTED"
+msgstr "CONNECTED"
+
+#. Key:	PillWarning
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(170)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(170)
+msgctxt "MarburgumGallery,PillWarning"
+msgid "RECONNECTING"
+msgstr "RECONNECTING"
+
+#. Key:	PillDanger
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(171)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(171)
+msgctxt "MarburgumGallery,PillDanger"
+msgid "REFUSED"
+msgstr "REFUSED"
+
+#. Key:	PillAccent
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(172)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(172)
+msgctxt "MarburgumGallery,PillAccent"
+msgid "PINNED"
+msgstr "PINNED"
+
+#. Key:	MeterTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(176)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(176)
+msgctxt "MarburgumGallery,MeterTitle"
+msgid "METERS"
+msgstr "METERS"
+
+#. Key:	MeterVitality
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(177)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(177)
+msgctxt "MarburgumGallery,MeterVitality"
+msgid "Vitality (sample)"
+msgstr "Vitality (sample)"
+
+#. Key:	MeterVitalityValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(177)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(177)
+msgctxt "MarburgumGallery,MeterVitalityValue"
+msgid "72 / 100"
+msgstr "72 / 100"
+
+#. Key:	MeterStamina
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(182)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(182)
+msgctxt "MarburgumGallery,MeterStamina"
+msgid "Stamina (sample)"
+msgstr "Stamina (sample)"
+
+#. Key:	MeterStaminaValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(182)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(182)
+msgctxt "MarburgumGallery,MeterStaminaValue"
+msgid "38 / 100"
+msgstr "38 / 100"
+
+#. Key:	FeedbackTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(195)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(195)
+msgctxt "MarburgumGallery,FeedbackTitle"
+msgid "FEEDBACK & STATES"
+msgstr "FEEDBACK & STATES"
+
+#. Key:	ToastSkill
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(196)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(196)
+msgctxt "MarburgumGallery,ToastSkill"
+msgid "Fishing +40 XP"
+msgstr "Fishing +40 XP"
+
+#. Key:	ToastSkillKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(196)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(196)
+msgctxt "MarburgumGallery,ToastSkillKind"
+msgid "SKILL  ·  SAMPLE"
+msgstr "SKILL  ·  SAMPLE"
+
+#. Key:	ToastObj
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(197)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(197)
+msgctxt "MarburgumGallery,ToastObj"
+msgid "Ask the angler on the Drava bank about the missing boat"
+msgstr "Ask the angler on the Drava bank about the missing boat"
+
+#. Key:	ToastObjKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(197)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(197)
+msgctxt "MarburgumGallery,ToastObjKind"
+msgid "OBJECTIVE  ·  SAMPLE"
+msgstr "OBJECTIVE  ·  SAMPLE"
+
+#. Key:	ToastConn
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(198)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(198)
+msgctxt "MarburgumGallery,ToastConn"
+msgid "Reconnected to the server"
+msgstr "Reconnected to the server"
+
+#. Key:	ToastConnKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(198)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(198)
+msgctxt "MarburgumGallery,ToastConnKind"
+msgid "CONNECTION"
+msgstr "CONNECTION"
+
+#. Key:	ToastRefuse
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(199)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(199)
+msgctxt "MarburgumGallery,ToastRefuse"
+msgid "The server declined this action. Nothing was changed."
+msgstr "The server declined this action. Nothing was changed."
+
+#. Key:	ToastRefuseKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(199)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(199)
+msgctxt "MarburgumGallery,ToastRefuseKind"
+msgid "REFUSED"
+msgstr "REFUSED"
+
+#. Key:	EmptyTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(200)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(200)
+msgctxt "MarburgumGallery,EmptyTitle"
+msgid "Inventory is empty"
+msgstr "Inventory is empty"
+
+#. Key:	EmptyBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(201)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(201)
+msgctxt "MarburgumGallery,EmptyBody"
+msgid "Items appear here once the server confirms you have them."
+msgstr "Items appear here once the server confirms you have them."
+
+#. Key:	UnsupportedTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(202)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(202)
+msgctxt "MarburgumGallery,UnsupportedTitle"
+msgid "Skills are not available yet"
+msgstr "Skills are not available yet"
+
+#. Key:	UnsupportedBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(203)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(203)
+msgctxt "MarburgumGallery,UnsupportedBody"
+msgid "This build has no authoritative skill system, so nothing is shown."
+msgstr "This build has no authoritative skill system, so nothing is shown."
+
+#. Key:	DiagTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(214)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(214)
+msgctxt "MarburgumGallery,DiagTitle"
+msgid "DIAGNOSTIC  ·  LIVE REPLICATED STATE"
+msgstr "DIAGNOSTIC  ·  LIVE REPLICATED STATE"
+
+#. Key:	DiagServer
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(216)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(216)
+msgctxt "MarburgumGallery,DiagServer"
+msgid "Server"
+msgstr "Server"
+
+#. Key:	DiagContract
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(217)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(217)
+msgctxt "MarburgumGallery,DiagContract"
+msgid "Network contract"
+msgstr "Network contract"
+
+#. Key:	DiagHeartbeat
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(218)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(218)
+msgctxt "MarburgumGallery,DiagHeartbeat"
+msgid "Authority heartbeat"
+msgstr "Authority heartbeat"
+
+#. Key:	DiagPlayers
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(219)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(219)
+msgctxt "MarburgumGallery,DiagPlayers"
+msgid "Players in session"
+msgstr "Players in session"
+
+#. Key:	DiagOutcomes
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(220)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(220)
+msgctxt "MarburgumGallery,DiagOutcomes"
+msgid "Applied / refused"
+msgstr "Applied / refused"
+
+#. Key:	DiagUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(249)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(249)
+msgctxt "MarburgumGallery,DiagUnknown"
+msgid "—"
+msgstr "—"
+
+#. Key:	DiagNotAdmitted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(250)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(250)
+msgctxt "MarburgumGallery,DiagNotAdmitted"
+msgid "not admitted"
+msgstr "not admitted"
+
+#. Key:	DiagContractValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(258)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(258)
+msgctxt "MarburgumGallery,DiagContractValue"
+msgid "v{0}"
+msgstr "v{0}"
+
+#. Key:	DiagOutcomesValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(261)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(261)
+msgctxt "MarburgumGallery,DiagOutcomesValue"
+msgid "{0} / {1}"
+msgstr "{0} / {1}"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(59)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(59)
+msgctxt "MarburgumGallery,Overline"
+msgid "UI-01  ·  DESIGN SYSTEM"
+msgstr "UI-01  ·  DESIGN SYSTEM"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(60)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(60)
+msgctxt "MarburgumGallery,Title"
+msgid "Component gallery"
+msgstr "Component gallery"
+
+#. Key:	TypeTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(88)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(88)
+msgctxt "MarburgumGallery,TypeTitle"
+msgid "TYPOGRAPHY"
+msgstr "TYPOGRAPHY"
+
+#. Key:	TypeDisplay
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(90)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(90)
+msgctxt "MarburgumGallery,TypeDisplay"
+msgid "Marburgum"
+msgstr "Marburgum"
+
+#. Key:	TypeTitleSample
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(95)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(95)
+msgctxt "MarburgumGallery,TypeTitleSample"
+msgid "Lent ob Dravi"
+msgstr "Lent ob Dravi"
+
+#. Key:	TypeHeading
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(96)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(96)
+msgctxt "MarburgumGallery,TypeHeading"
+msgid "JOURNAL  ·  ACTIVE"
+msgstr "JOURNAL  ·  ACTIVE"
+
+#. Key:	TypeBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(97)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(97)
+msgctxt "MarburgumGallery,TypeBody"
+msgid "Body text carries Slovene diacritics cleanly: čevljar, šola, žaga, Tezno, Studenci, Šentilj."
+msgstr "Body text carries Slovene diacritics cleanly: čevljar, šola, žaga, Tezno, Studenci, Šentilj."
+
+#. Key:	ItemApplied
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1001)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1001)
+msgctxt "MarburgumUISubsystem,ItemApplied"
+msgid "{0} ×{1} added to your inventory. Confirmed and saved by the server."
+msgstr "{0} ×{1} added to your inventory. Confirmed and saved by the server."
+
+#. Key:	ItemDuplicate
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1008)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1008)
+msgctxt "MarburgumUISubsystem,ItemDuplicate"
+msgid "Already received: {0}. The server ignored the repeat; nothing was added twice."
+msgstr "Already received: {0}. The server ignored the repeat; nothing was added twice."
+
+#. Key:	Requirement
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1021)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1021)
+msgctxt "MarburgumUISubsystem,Requirement"
+msgid "{0} needs something you do not have yet. Nothing was changed."
+msgstr "{0} needs something you do not have yet. Nothing was changed."
+
+#. Key:	RequirementItems
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1022)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1022)
+msgctxt "MarburgumUISubsystem,RequirementItems"
+msgid "{0} wants to see one {1} first. You have none, so nothing was changed."
+msgstr "{0} wants to see one {1} first. You have none, so nothing was changed."
+
+#. Key:	NothingToDo
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1034)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1034)
+msgctxt "MarburgumUISubsystem,NothingToDo"
+msgid "{0} has nothing more for you right now. Nothing was changed."
+msgstr "{0} has nothing more for you right now. Nothing was changed."
+
+#. Key:	ChoiceRequired
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1038)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1038)
+msgctxt "MarburgumUISubsystem,ChoiceRequired"
+msgid "A decision is due here. Press [E] to see your choices."
+msgstr "A decision is due here. Press [E] to see your choices."
+
+#. Key:	UnknownChoice
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1042)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1042)
+msgctxt "MarburgumUISubsystem,UnknownChoice"
+msgid "That decision is not open here any more. Nothing was changed."
+msgstr "That decision is not open here any more. Nothing was changed."
+
+#. Key:	InsufficientMoney
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1045)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1045)
+msgctxt "MarburgumUISubsystem,InsufficientMoney"
+msgid "You cannot afford that. Nothing was changed."
+msgstr "You cannot afford that. Nothing was changed."
+
+#. Key:	Prerequisite
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1049)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1049)
+msgctxt "MarburgumUISubsystem,Prerequisite"
+msgid "{0} is not ready to ask more of you yet. Nothing was changed."
+msgstr "{0} is not ready to ask more of you yet. Nothing was changed."
+
+#. Key:	NoRod
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1053)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1053)
+msgctxt "MarburgumUISubsystem,NoRod"
+msgid "You need a fishing rod to fish here."
+msgstr "You need a fishing rod to fish here."
+
+#. Key:	TooSoon
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1057)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1057)
+msgctxt "MarburgumUISubsystem,TooSoon"
+msgid "Give the line a moment before casting again."
+msgstr "Give the line a moment before casting again."
+
+#. Key:	CannotFish
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1061)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1061)
+msgctxt "MarburgumUISubsystem,CannotFish"
+msgid "Fishing needs both feet on the bank."
+msgstr "Fishing needs both feet on the bank."
+
+#. Key:	TooEarly
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1066)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1066)
+msgctxt "MarburgumUISubsystem,TooEarly"
+msgid "You struck too early. Whatever was there is gone; cast again."
+msgstr "You struck too early. Whatever was there is gone; cast again."
+
+#. Key:	SoldOut
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1070)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1070)
+msgctxt "MarburgumUISubsystem,SoldOut"
+msgid "The last {0} has already gone. Nothing was changed."
+msgstr "The last {0} has already gone. Nothing was changed."
+
+#. Key:	OutOfStock
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1071)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1071)
+msgctxt "MarburgumUISubsystem,OutOfStock"
+msgid "Nothing left to take. Someone else got there first; nothing was changed."
+msgstr "Nothing left to take. Someone else got there first; nothing was changed."
+
+#. Key:	ShopClosed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1076)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1076)
+msgctxt "MarburgumUISubsystem,ShopClosed"
+msgid "The counter is closed. Nothing was changed."
+msgstr "The counter is closed. Nothing was changed."
+
+#. Key:	InvalidQuantity
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1081)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1081)
+msgctxt "MarburgumUISubsystem,InvalidQuantity"
+msgid "That quantity is not for sale. Nothing was changed."
+msgstr "That quantity is not for sale. Nothing was changed."
+
+#. Key:	NotOnCounter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1084)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1084)
+msgctxt "MarburgumUISubsystem,NotOnCounter"
+msgid "That is not on the counter. Nothing was changed."
+msgstr "That is not on the counter. Nothing was changed."
+
+#. Key:	ItemNotAccepted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1087)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1087)
+msgctxt "MarburgumUISubsystem,ItemNotAccepted"
+msgid "Petra will not take {0} back. Nothing was changed."
+msgstr "Petra will not take {0} back. Nothing was changed."
+
+#. Key:	InsufficientItems
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1091)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1091)
+msgctxt "MarburgumUISubsystem,InsufficientItems"
+msgid "You have no {0} to sell. Nothing was changed."
+msgstr "You have no {0} to sell. Nothing was changed."
+
+#. Key:	NoCounter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1095)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1095)
+msgctxt "MarburgumUISubsystem,NoCounter"
+msgid "{0} keeps no counter. Nothing was changed."
+msgstr "{0} keeps no counter. Nothing was changed."
+
+#. Key:	OutOfRange
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1098)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1098)
+msgctxt "MarburgumUISubsystem,OutOfRange"
+msgid "Too far away. Move closer and try again; nothing was changed."
+msgstr "Too far away. Move closer and try again; nothing was changed."
+
+#. Key:	Incapacitated
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1101)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1101)
+msgctxt "MarburgumUISubsystem,Incapacitated"
+msgid "Not from here: get out of the car, or back on your feet, first. Nothing was changed."
+msgstr "Not from here: get out of the car, or back on your feet, first. Nothing was changed."
+
+#. Key:	NoCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1105)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1105)
+msgctxt "MarburgumUISubsystem,NoCharacter"
+msgid "This connection has no character, so it cannot hold items or take on missions. Nothing was changed."
+msgstr "This connection has no character, so it cannot hold items or take on missions. Nothing was changed."
+
+#. Key:	StoreFailed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1109)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1109)
+msgctxt "MarburgumUISubsystem,StoreFailed"
+msgid "The server could not save the result, so it did not apply it. Nothing was changed."
+msgstr "The server could not save the result, so it did not apply it. Nothing was changed."
+
+#. Key:	NoAuthority
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1113)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1113)
+msgctxt "MarburgumUISubsystem,NoAuthority"
+msgid "No authoritative server handled this request. Nothing was changed."
+msgstr "No authoritative server handled this request. Nothing was changed."
+
+#. Key:	Refused
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1117)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1117)
+msgctxt "MarburgumUISubsystem,Refused"
+msgid "The server refused this request. Nothing was changed."
+msgstr "The server refused this request. Nothing was changed."
+
+#. Key:	NotYetKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1122)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1122)
+msgctxt "MarburgumUISubsystem,NotYetKind"
+msgid "NOT YET"
+msgstr "NOT YET"
+
+#. Key:	RefusedKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1122)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1122)
+msgctxt "MarburgumUISubsystem,RefusedKind"
+msgid "REFUSED"
+msgstr "REFUSED"
+
+#. Key:	FightKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1135)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1135)
+msgctxt "MarburgumUISubsystem,FightKind"
+msgid "FIGHT"
+msgstr "FIGHT"
+
+#. Key:	FightExhausted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1140)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1140)
+msgctxt "MarburgumUISubsystem,FightExhausted"
+msgid "Not enough breath."
+msgstr "Not enough breath."
+
+#. Key:	FightSeated
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1144)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1144)
+msgctxt "MarburgumUISubsystem,FightSeated"
+msgid "Get out before you swing."
+msgstr "Get out before you swing."
+
+#. Key:	FightDown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1148)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1148)
+msgctxt "MarburgumUISubsystem,FightDown"
+msgid "You cannot swing from the ground."
+msgstr "You cannot swing from the ground."
+
+#. Key:	FightSomeone
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1153)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1153)
+msgctxt "MarburgumUISubsystem,FightSomeone"
+msgid "Someone"
+msgstr "Someone"
+
+#. Key:	FightHeavyMissed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1156)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1156)
+msgctxt "MarburgumUISubsystem,FightHeavyMissed"
+msgid "The heavy blow missed."
+msgstr "The heavy blow missed."
+
+#. Key:	FightJabMissed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1156)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1156)
+msgctxt "MarburgumUISubsystem,FightJabMissed"
+msgid "The jab missed."
+msgstr "The jab missed."
+
+#. Key:	FightBlocked
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1161)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1161)
+msgctxt "MarburgumUISubsystem,FightBlocked"
+msgid "{0} kept their hands up."
+msgstr "{0} kept their hands up."
+
+#. Key:	FightFloored
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1165)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1165)
+msgctxt "MarburgumUISubsystem,FightFloored"
+msgid "{0} goes down."
+msgstr "{0} goes down."
+
+#. Key:	FightHit
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1169)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1169)
+msgctxt "MarburgumUISubsystem,FightHit"
+msgid "{0}. {1}."
+msgstr "{0}. {1}."
+
+#. Key:	ReceiptApplied
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1185)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1185)
+msgctxt "MarburgumUISubsystem,ReceiptApplied"
+msgid "Request applied by the server."
+msgstr "Request applied by the server."
+
+#. Key:	ReceiptDuplicate
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1188)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1188)
+msgctxt "MarburgumUISubsystem,ReceiptDuplicate"
+msgid "Already applied. The server ignored the repeat; nothing changed twice."
+msgstr "Already applied. The server ignored the repeat; nothing changed twice."
+
+#. Key:	ReceiptRejected
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1191)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1191)
+msgctxt "MarburgumUISubsystem,ReceiptRejected"
+msgid "The server declined this request. Nothing was changed."
+msgstr "The server declined this request. Nothing was changed."
+
+#. Key:	BackInWorld
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1286)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1286)
+msgctxt "MarburgumUISubsystem,BackInWorld"
+msgid "Back in Maribor."
+msgstr "Back in Maribor."
+
+#. Key:	InWorld
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1286)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1286)
+msgctxt "MarburgumUISubsystem,InWorld"
+msgid "You are in Maribor."
+msgstr "You are in Maribor."
+
+#. Key:	Reconnected
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1288)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1288)
+msgctxt "MarburgumUISubsystem,Reconnected"
+msgid "Reconnected to {0}  ·  network contract v{1}"
+msgstr "Reconnected to {0}  ·  network contract v{1}"
+
+#. Key:	Connected
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1289)
+msgctxt "MarburgumUISubsystem,Connected"
+msgid "Connected to {0}  ·  network contract v{1}"
+msgstr "Connected to {0}  ·  network contract v{1}"
+
+#. Key:	ConnectionKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1291)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1291)
+msgctxt "MarburgumUISubsystem,ConnectionKind"
+msgid "CONNECTION"
+msgstr "CONNECTION"
+
+#. Key:	Bite
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(494)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(494)
+msgctxt "MarburgumUISubsystem,Bite"
+msgid "A bite! Press [E] to strike."
+msgstr "A bite! Press [E] to strike."
+
+#. Key:	FishingKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(494)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(494)
+msgctxt "MarburgumUISubsystem,FishingKind"
+msgid "FISHING"
+msgstr "FISHING"
+
+#. Key:	Escaped
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(504)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(504)
+msgctxt "MarburgumUISubsystem,Escaped"
+msgid "It got away. Strike sooner after the bite."
+msgstr "It got away. Strike sooner after the bite."
+
+#. Key:	Cancelled
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(509)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(509)
+msgctxt "MarburgumUISubsystem,Cancelled"
+msgid "You reeled in. Fishing needs you to stand still on the bank."
+msgstr "You reeled in. Fishing needs you to stand still on the bank."
+
+#. Key:	Said
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(859)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(859)
+msgctxt "MarburgumUISubsystem,Said"
+msgid "“{0}”"
+msgstr "“{0}”"
+
+#. Key:	ItemsKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(871)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(871)
+msgctxt "MarburgumUISubsystem,ItemsKind"
+msgid "ITEMS RECEIVED"
+msgstr "ITEMS RECEIVED"
+
+#. Key:	MoneyKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(879)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(879)
+msgctxt "MarburgumUISubsystem,MoneyKind"
+msgid "MONEY"
+msgstr "MONEY"
+
+#. Key:	MoneyPaid
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(880)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(880)
+msgctxt "MarburgumUISubsystem,MoneyPaid"
+msgid "+{0}. Saved by the server."
+msgstr "+{0}. Saved by the server."
+
+#. Key:	MoneySpent
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(881)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(881)
+msgctxt "MarburgumUISubsystem,MoneySpent"
+msgid "−{0}. Saved by the server."
+msgstr "−{0}. Saved by the server."
+
+#. Key:	XpKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(887)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(887)
+msgctxt "MarburgumUISubsystem,XpKind"
+msgid "SKILL"
+msgstr "SKILL"
+
+#. Key:	XpGained
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(888)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(888)
+msgctxt "MarburgumUISubsystem,XpGained"
+msgid "{0} +{1} XP. [K] Skills."
+msgstr "{0} +{1} XP. [K] Skills."
+
+#. Key:	Cast
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(896)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(896)
+msgctxt "MarburgumUISubsystem,Cast"
+msgid "Line in the water. Wait for a bite, then press [E] to strike."
+msgstr "Line in the water. Wait for a bite, then press [E] to strike."
+
+#. Key:	Caught
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(902)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(902)
+msgctxt "MarburgumUISubsystem,Caught"
+msgid "You landed a {0}. Saved by the server."
+msgstr "You landed a {0}. Saved by the server."
+
+#. Key:	ReceiptKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(912)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(912)
+msgctxt "MarburgumUISubsystem,ReceiptKind"
+msgid "SERVER RECEIPT"
+msgstr "SERVER RECEIPT"
+
+#. Key:	TradeDuplicate
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(913)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(913)
+msgctxt "MarburgumUISubsystem,TradeDuplicate"
+msgid "Already done: {0} ×{1}. The server ignored the repeat; nothing changed hands twice."
+msgstr "Already done: {0} ×{1}. The server ignored the repeat; nothing changed hands twice."
+
+#. Key:	BoughtKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(917)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(917)
+msgctxt "MarburgumUISubsystem,BoughtKind"
+msgid "BOUGHT"
+msgstr "BOUGHT"
+
+#. Key:	SoldKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(917)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(917)
+msgctxt "MarburgumUISubsystem,SoldKind"
+msgid "SOLD"
+msgstr "SOLD"
+
+#. Key:	Bought
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(918)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(918)
+msgctxt "MarburgumUISubsystem,Bought"
+msgid "Petra takes the coins and slides {0} ×{1} across the counter. −{2} money, saved by the server."
+msgstr "Petra takes the coins and slides {0} ×{1} across the counter. −{2} money, saved by the server."
+
+#. Key:	Sold
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(920)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(920)
+msgctxt "MarburgumUISubsystem,Sold"
+msgid "Petra counts out the coins and takes {0} ×{1} back. +{2} money, saved by the server."
+msgstr "Petra counts out the coins and takes {0} ×{1} back. +{2} money, saved by the server."
+
+#. Key:	FirstPurchaseXp
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(927)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(927)
+msgctxt "MarburgumUISubsystem,FirstPurchaseXp"
+msgid "First purchase here: {0} +{1} XP. [K] Skills."
+msgstr "First purchase here: {0} +{1} XP. [K] Skills."
+
+#. Key:	MissionStartedKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(936)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(936)
+msgctxt "MarburgumUISubsystem,MissionStartedKind"
+msgid "MISSION STARTED"
+msgstr "MISSION STARTED"
+
+#. Key:	MissionStarted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(937)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(937)
+msgctxt "MarburgumUISubsystem,MissionStarted"
+msgid "{0}. Saved by the server; your objective is pinned, and [J] opens the journal."
+msgstr "{0}. Saved by the server; your objective is pinned, and [J] opens the journal."
+
+#. Key:	ItemKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(941)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(941)
+msgctxt "MarburgumUISubsystem,ItemKind"
+msgid "ITEM RECEIVED"
+msgstr "ITEM RECEIVED"
+
+#. Key:	MissionItem
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(942)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(942)
+msgctxt "MarburgumUISubsystem,MissionItem"
+msgid "{0} ×{1}, handed over for the mission."
+msgstr "{0} ×{1}, handed over for the mission."
+
+#. Key:	MissionCompletedKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(970)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(970)
+msgctxt "MarburgumUISubsystem,MissionCompletedKind"
+msgid "MISSION COMPLETED"
+msgstr "MISSION COMPLETED"
+
+#. Key:	MissionCompletedEntry
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(972)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(972)
+msgctxt "MarburgumUISubsystem,MissionCompletedEntry"
+msgid "{0}. Journal entry added: {1}."
+msgstr "{0}. Journal entry added: {1}."
+
+#. Key:	MissionCompleted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(974)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(974)
+msgctxt "MarburgumUISubsystem,MissionCompleted"
+msgid "{0}. Saved by the server."
+msgstr "{0}. Saved by the server."
+
+#. Key:	MissionUpdatedKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(979)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(979)
+msgctxt "MarburgumUISubsystem,MissionUpdatedKind"
+msgid "MISSION UPDATED"
+msgstr "MISSION UPDATED"
+
+#. Key:	StageDone
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(981)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(981)
+msgctxt "MarburgumUISubsystem,StageDone"
+msgid "{0}: step complete. Saved by the server."
+msgstr "{0}: step complete. Saved by the server."
+
+#. Key:	StageDoneItem
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(982)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(982)
+msgctxt "MarburgumUISubsystem,StageDoneItem"
+msgid "{0}: step complete; {1} ×{2} handed over. Saved by the server."
+msgstr "{0}: step complete; {1} ×{2} handed over. Saved by the server."
+
+#. Key:	MissionDuplicate
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(993)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(993)
+msgctxt "MarburgumUISubsystem,MissionDuplicate"
+msgid "Already done: {0}. The server ignored the repeat; nothing changed twice."
+msgstr "Already done: {0}. The server ignored the repeat; nothing changed twice."
+
+#. Key:	Driving
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(132)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(132)
+msgctxt "MarburgumVehicleStatus,Driving"
+msgid "Driver's seat"
+msgstr "Driver's seat"
+
+#. Key:	Passenger
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(132)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(132)
+msgctxt "MarburgumVehicleStatus,Passenger"
+msgid "Passenger seat"
+msgstr "Passenger seat"
+
+#. Key:	Forward
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(143)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(143)
+msgctxt "MarburgumVehicleStatus,Forward"
+msgid "DRIVE"
+msgstr "DRIVE"
+
+#. Key:	Reverse
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(143)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(143)
+msgctxt "MarburgumVehicleStatus,Reverse"
+msgid "REVERSE"
+msgstr "REVERSE"
+
+#. Key:	Stopped
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(143)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(143)
+msgctxt "MarburgumVehicleStatus,Stopped"
+msgid "STOPPED"
+msgstr "STOPPED"
+
+#. Key:	Unit
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(45)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(45)
+msgctxt "MarburgumVehicleStatus,Unit"
+msgid "KM/H"
+msgstr "KM/H"
+
+#. Key:	Drive
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(47)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(47)
+msgctxt "MarburgumVehicleStatus,Drive"
+msgid "DRIVE"
+msgstr "DRIVE"
+

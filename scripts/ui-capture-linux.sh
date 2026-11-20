@@ -18,6 +18,7 @@
 #   editor  uncooked UnrealEditor -server / -game processes (requires UE_ROOT)
 #   scenarios default to frontend,gallery,fail,recover; "all" adds tour and matrix.
 #   MB2_CAPTURE_MATRIX="1920x1080@1.0 1280x720@1.5 ..." narrows the matrix.
+#   MB2_CAPTURE_CULTURE=sl renders every client in Slovene (-culture=sl; QA U11), with "-sl" in the evidence folder.
 #   The live server's clock and weather are held (MB2_CAPTURE_CLOCK, default a June afternoon, clear_dry), so before
 #   and after captures compare the interface and not the hour they were taken.
 # Evidence (PNGs, logs, summary.txt) is written to Saved/UICapture/<UTC timestamp>/.
@@ -36,7 +37,10 @@ capture_clock="${MB2_CAPTURE_CLOCK:-2026-06-18T12:30:00Z}"
 # UI-07 matrix: resolution@scale. 1280x1024 is the 5:4 case.
 matrix="${MB2_CAPTURE_MATRIX:-1280x720@0.8 1280x720@1.0 1280x720@1.25 1280x720@1.5 1366x768@1.0 1920x1080@1.0 1920x1080@1.25 1920x1080@1.5 1920x1080@2.0 2560x1440@1.0 2560x1440@1.5 3440x1440@1.0 3840x2160@1.0 3840x2160@2.0 1280x1024@1.0 1280x1024@1.5}"
 uproject="$repo_root/MarburgumII.uproject"
-out_dir="$repo_root/Saved/UICapture/$(date -u +%Y%m%dT%H%M%SZ)"
+capture_culture="${MB2_CAPTURE_CULTURE:-}"
+culture_args=()
+[[ -n "$capture_culture" ]] && culture_args=("-culture=$capture_culture")
+out_dir="$repo_root/Saved/UICapture/$(date -u +%Y%m%dT%H%M%SZ)${capture_culture:+-$capture_culture}"
 
 case "$mode" in
     staged)
@@ -131,7 +135,8 @@ run_world_client() {
             code=0
         fi
         "${client_cmd[@]}" "$url" "${common_args[@]}" -RenderOffScreen -windowed -ForceRes -ResX="$width" -ResY="$height" \
-            -MB2UIScale="$scale" -MB2UICapture="$out_dir" -MB2UICaptureScript=tour -MB2UICaptureLabel="$name" -MB2UITour="$steps" "$@" \
+            -MB2UIScale="$scale" -MB2UICapture="$out_dir" -MB2UICaptureScript=tour -MB2UICaptureLabel="$name" -MB2UITour="$steps" \
+            "${culture_args[@]}" "$@" \
             > "$log" 2>&1 || code=$?
     done
     return "$code"
@@ -143,7 +148,7 @@ run_client() {
     shift 4
     # Front-end is no longer the game default (ADR-025). These captures still open it by name.
     "${client_cmd[@]}" /Game/Maps/FrontEnd "${common_args[@]}" -RenderOffScreen -windowed -ForceRes -ResX="$width" -ResY="$height" \
-        -MB2UICapture="$out_dir" -MB2UICaptureScript="$script" "$@" \
+        -MB2UICapture="$out_dir" -MB2UICaptureScript="$script" "${culture_args[@]}" "$@" \
         > "$out_dir/client-$name.log" 2>&1
 }
 

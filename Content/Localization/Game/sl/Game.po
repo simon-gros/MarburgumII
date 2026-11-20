@@ -1,0 +1,4614 @@
+﻿# Game Slovenian translation.
+# Fill out your copyright notice in the Description page of Project Settings.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: Game\n"
+"POT-Creation-Date: 2026-11-20 01:53\n"
+"PO-Revision-Date: 2026-11-20 01:53\n"
+"Language-Team: \n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3);\n"
+
+#. Key:	Talk
+#. SourceLocation:	Source/MarburgumII/Private/MarburgumNpc.cpp(59)
+#: Source/MarburgumII/Private/MarburgumNpc.cpp(59)
+msgctxt "MarburgumNpc,Talk"
+msgid "Talk"
+msgstr "Pogovori se"
+
+#. Key:	ChatHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(101)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(101)
+msgctxt "MarburgumChat,ChatHint"
+msgid "Chat"
+msgstr "Klepet"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(128)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(128)
+msgctxt "MarburgumChat,Overline"
+msgid "CHAT"
+msgstr "KLEPET"
+
+#. Key:	ComposerHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(153)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(153)
+msgctxt "MarburgumChat,ComposerHint"
+msgid "Say something"
+msgstr "Napiši kaj"
+
+#. Key:	Send
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(158)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(158)
+msgctxt "MarburgumChat,Send"
+msgid "Send"
+msgstr "Pošlji"
+
+#. Key:	Channel
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(159)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(159)
+msgctxt "MarburgumChat,Channel"
+msgid "General / Private"
+msgstr "Splošno / Zasebno"
+
+#. Key:	Leave
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(160)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(160)
+msgctxt "MarburgumChat,Leave"
+msgid "Close"
+msgstr "Zapri"
+
+#. Key:	PlayerNumber
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(198)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(198)
+msgctxt "MarburgumChat,PlayerNumber"
+msgid "Player {0}"
+msgstr "Igralec {0}"
+
+#. Key:	Unread
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(267)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(267)
+msgctxt "MarburgumChat,Unread"
+msgid "{0} new  ·  Enter"
+msgstr "Novo: {0}  ·  Enter"
+
+#. Key:	NoticeHeading
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(276)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(276)
+msgctxt "MarburgumChat,NoticeHeading"
+msgid "Chat"
+msgstr "Klepet"
+
+#. Key:	Server
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(293)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(293)
+msgctxt "MarburgumChat,Server"
+msgid "Server"
+msgstr "Strežnik"
+
+#. Key:	PrivateTo
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(300)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(300)
+msgctxt "MarburgumChat,PrivateTo"
+msgid "To {0}"
+msgstr "Za {0}"
+
+#. Key:	PrivateFrom
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(301)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(301)
+msgctxt "MarburgumChat,PrivateFrom"
+msgid "From {0}"
+msgstr "Od {0}"
+
+#. Key:	Usage
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(395)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(395)
+msgctxt "MarburgumChat,Usage"
+msgid "Private lines: /w <player number> <message>, or choose someone under Online."
+msgstr "Zasebna sporočila: /w <številka igralca> <sporočilo> ali izberi koga v razdelku Prisotni."
+
+#. Key:	BadId
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(401)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(401)
+msgctxt "MarburgumChat,BadId"
+msgid "Choose the number of a player who is online now."
+msgstr "Izberi številko igralca, ki je zdaj na strežniku."
+
+#. Key:	NoTarget
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(414)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(414)
+msgctxt "MarburgumChat,NoTarget"
+msgid "Choose someone under Online first, or write /w <player number> <message>."
+msgstr "Najprej izberi koga v razdelku Prisotni ali napiši /w <številka igralca> <sporočilo>."
+
+#. Key:	Online
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(481)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(481)
+msgctxt "MarburgumChat,Online"
+msgid "{0} online"
+msgstr "Prisotni: {0}"
+
+#. Key:	PrivateNone
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(514)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(514)
+msgctxt "MarburgumChat,PrivateNone"
+msgid "Private"
+msgstr "Zasebno"
+
+#. Key:	PrivateTarget
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(515)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(515)
+msgctxt "MarburgumChat,PrivateTarget"
+msgid "To {0}"
+msgstr "Za {0}"
+
+#. Key:	General
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(520)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(520)
+msgctxt "MarburgumChat,General"
+msgid "General"
+msgstr "Splošno"
+
+#. Key:	NoList
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(550)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(550)
+msgctxt "MarburgumChat,NoList"
+msgid "Who is online is not known yet."
+msgstr "Še ni znano, kdo je na strežniku."
+
+#. Key:	OnlineNote
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(553)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(553)
+msgctxt "MarburgumChat,OnlineNote"
+msgid "Numbers belong to this session only, not to accounts."
+msgstr "Številke veljajo le za to sejo, ne za račune."
+
+#. Key:	Number
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(566)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(566)
+msgctxt "MarburgumChat,Number"
+msgid "#{0}"
+msgstr "#{0}"
+
+#. Key:	You
+#. SourceLocation:	Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(566)
+#: Source/MarburgumIIClient/Private/MarburgumChatWidget.cpp(566)
+msgctxt "MarburgumChat,You"
+msgid "you"
+msgstr "ti"
+
+#. Key:	ServerTrouble
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(107)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(107)
+msgctxt "MarburgumAccount,ServerTrouble"
+msgid "The account service is having trouble. Try again in a minute."
+msgstr "Storitev za račune ima težave. Poskusi znova čez minuto."
+
+#. Key:	Unknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(108)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(108)
+msgctxt "MarburgumAccount,Unknown"
+msgid "The account service could not do that. Try again in a minute."
+msgstr "Storitev za račune tega ni mogla izvesti. Poskusi znova čez minuto."
+
+#. Key:	CodeSent
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(254)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(254)
+msgctxt "MarburgumAccount,CodeSent"
+msgid "We sent a message to {0}. Type the eight-character code from it below."
+msgstr "Na naslov {0} smo poslali sporočilo. Spodaj vpiši osemmestno kodo iz sporočila."
+
+#. Key:	Confirmed
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(285)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(285)
+msgctxt "MarburgumAccount,Confirmed"
+msgid "Email confirmed. Choose the username and password you will sign in with."
+msgstr "E-poštni naslov je potrjen. Izberi uporabniško ime in geslo za prijavo."
+
+#. Key:	ResetSent
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(338)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(338)
+msgctxt "MarburgumAccount,ResetSent"
+msgid "If {0} has an account, a reset code is on its way, with your username."
+msgstr "Če je naslov {0} povezan z računom, boš nanj prejel kodo za ponastavitev in svoje uporabniško ime."
+
+#. Key:	ResetDone
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(360)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(360)
+msgctxt "MarburgumAccount,ResetDone"
+msgid "Password changed. Every other session was signed out. Sign in with the new password."
+msgstr "Geslo je spremenjeno. Vse druge seje so bile odjavljene. Prijavi se z novim geslom."
+
+#. Key:	Created
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(388)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(388)
+msgctxt "MarburgumAccount,Created"
+msgid "{0} {1} is ready. Enter the world when you are."
+msgstr "Lik {0} {1} je pripravljen. Vstopi v svet, ko boš nared."
+
+#. Key:	SignInFirst
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(422)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(422)
+msgctxt "MarburgumAccount,SignInFirst"
+msgid "Sign in and create your character first."
+msgstr "Najprej se prijavi in ustvari svoj lik."
+
+#. Key:	EmailInvalid
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(69)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(69)
+msgctxt "MarburgumAccount,EmailInvalid"
+msgid "That does not look like an email address."
+msgstr "To ni videti kot e-poštni naslov."
+
+#. Key:	ResendTooSoon
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(70)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(70)
+msgctxt "MarburgumAccount,ResendTooSoon"
+msgid "A code was sent a moment ago. Wait a minute before asking for another."
+msgstr "Koda je bila pravkar poslana. Počakaj minuto, preden zahtevaš novo."
+
+#. Key:	CodeInvalid
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(71)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(71)
+msgctxt "MarburgumAccount,CodeInvalid"
+msgid "That code is wrong, used or expired. Check the email, or ask for a new code."
+msgstr "Koda je napačna, že uporabljena ali potekla. Preveri e-poštno sporočilo ali zahtevaj novo kodo."
+
+#. Key:	SetupExpired
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(72)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(72)
+msgctxt "MarburgumAccount,SetupExpired"
+msgid "This confirmation has expired. Start again with your email address."
+msgstr "Ta potrditev je potekla. Začni znova z vnosom e-poštnega naslova."
+
+#. Key:	UsernameLength
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(73)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(73)
+msgctxt "MarburgumAccount,UsernameLength"
+msgid "A username is 3 to 20 characters."
+msgstr "Uporabniško ime mora imeti od 3 do 20 znakov."
+
+#. Key:	UsernameCharacters
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(74)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(74)
+msgctxt "MarburgumAccount,UsernameCharacters"
+msgid "Use letters a–z, digits, dots, dashes or underscores, starting with a letter or digit."
+msgstr "Uporabi črke a–z, števke, pike, vezaje ali podčrtaje. Začni s črko ali števko."
+
+#. Key:	UsernameReserved
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(75)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(75)
+msgctxt "MarburgumAccount,UsernameReserved"
+msgid "That username is reserved. Choose another."
+msgstr "To uporabniško ime je rezervirano. Izberi drugo."
+
+#. Key:	UsernameTaken
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(76)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(76)
+msgctxt "MarburgumAccount,UsernameTaken"
+msgid "That username is taken. Choose another."
+msgstr "To uporabniško ime je zasedeno. Izberi drugo."
+
+#. Key:	PasswordLength
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(77)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(77)
+msgctxt "MarburgumAccount,PasswordLength"
+msgid "A password is 10 to 128 characters."
+msgstr "Geslo mora imeti od 10 do 128 znakov."
+
+#. Key:	PasswordUsername
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(78)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(78)
+msgctxt "MarburgumAccount,PasswordUsername"
+msgid "The password must not contain your username or be your email address."
+msgstr "Geslo ne sme vsebovati tvojega uporabniškega imena ali biti enako tvojemu e-poštnemu naslovu."
+
+#. Key:	CredentialsInvalid
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(79)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(79)
+msgctxt "MarburgumAccount,CredentialsInvalid"
+msgid "That username and password do not match."
+msgstr "Uporabniško ime in geslo se ne ujemata."
+
+#. Key:	TooMany
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(80)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(80)
+msgctxt "MarburgumAccount,TooMany"
+msgid "Too many wrong passwords. Wait fifteen minutes, or reset the password."
+msgstr "Preveč napačnih vnosov gesla. Počakaj petnajst minut ali ponastavi geslo."
+
+#. Key:	SessionInvalid
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(81)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(81)
+msgctxt "MarburgumAccount,SessionInvalid"
+msgid "You have been signed out. Sign in again."
+msgstr "Tvoja seja je bila odjavljena. Prijavi se znova."
+
+#. Key:	FirstLength
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(82)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(82)
+msgctxt "MarburgumAccount,FirstLength"
+msgid "A first name is 2 to 24 characters."
+msgstr "Ime mora imeti od 2 do 24 znakov."
+
+#. Key:	FirstCharacters
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(83)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(83)
+msgctxt "MarburgumAccount,FirstCharacters"
+msgid "A first name uses letters, with single spaces, hyphens or apostrophes between them."
+msgstr "Ime je sestavljeno iz črk, med katerimi so lahko posamezni presledki, vezaji ali opuščaji."
+
+#. Key:	FirstReserved
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(84)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(84)
+msgctxt "MarburgumAccount,FirstReserved"
+msgid "That first name is reserved. Choose another."
+msgstr "To ime je rezervirano. Izberi drugo."
+
+#. Key:	LastLength
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(85)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(85)
+msgctxt "MarburgumAccount,LastLength"
+msgid "A last name is 2 to 24 characters."
+msgstr "Priimek mora imeti od 2 do 24 znakov."
+
+#. Key:	LastCharacters
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(86)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(86)
+msgctxt "MarburgumAccount,LastCharacters"
+msgid "A last name uses letters, with single spaces, hyphens or apostrophes between them."
+msgstr "Priimek je sestavljen iz črk, med katerimi so lahko posamezni presledki, vezaji ali opuščaji."
+
+#. Key:	LastReserved
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(87)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(87)
+msgctxt "MarburgumAccount,LastReserved"
+msgid "That last name is reserved. Choose another."
+msgstr "Ta priimek je rezerviran. Izberi drugega."
+
+#. Key:	ModelUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(88)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(88)
+msgctxt "MarburgumAccount,ModelUnknown"
+msgid "Choose one of the bodies shown."
+msgstr "Izberi eno od prikazanih teles."
+
+#. Key:	CharacterExists
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(89)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(89)
+msgctxt "MarburgumAccount,CharacterExists"
+msgid "This account already has its character."
+msgstr "Ta račun že ima svoj lik."
+
+#. Key:	NoCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(90)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(90)
+msgctxt "MarburgumAccount,NoCharacter"
+msgid "Create your character first."
+msgstr "Najprej ustvari svoj lik."
+
+#. Key:	StoreUnavailable
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(91)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(91)
+msgctxt "MarburgumAccount,StoreUnavailable"
+msgid "The account service could not save. Nothing changed; try again."
+msgstr "Storitev za račune ni mogla shraniti podatkov. Nič se ni spremenilo; poskusi znova."
+
+#. Key:	MailUnavailable
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(92)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(92)
+msgctxt "MarburgumAccount,MailUnavailable"
+msgid "The email could not be sent. Try again in a minute."
+msgstr "E-poštnega sporočila ni bilo mogoče poslati. Poskusi znova čez minuto."
+
+#. Key:	Unreachable
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(93)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(93)
+msgctxt "MarburgumAccount,Unreachable"
+msgid "The account service cannot be reached. Check your connection and try again."
+msgstr "Storitev za račune ni dosegljiva. Preveri povezavo in poskusi znova."
+
+#. Key:	TooManyRequests
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(95)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(95)
+msgctxt "MarburgumAccount,TooManyRequests"
+msgid "Too many requests from this connection. Wait a minute and try again."
+msgstr "Preveč zahtev s te povezave. Počakaj minuto in poskusi znova."
+
+#. Key:	ServiceBusy
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(96)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(96)
+msgctxt "MarburgumAccount,ServiceBusy"
+msgid "The account service is busy. Try again in a moment."
+msgstr "Storitev za račune je zasedena. Poskusi znova čez trenutek."
+
+#. Key:	RequestInvalid
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(97)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(97)
+msgctxt "MarburgumAccount,RequestInvalid"
+msgid "The account service did not understand the request. Update the game and try again."
+msgstr "Storitev za račune ni razumela zahteve. Posodobi igro in poskusi znova."
+
+#. Key:	NotFound
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(98)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(98)
+msgctxt "MarburgumAccount,NotFound"
+msgid "The account service did not understand the request. Update the game and try again."
+msgstr "Storitev za račune ni razumela zahteve. Posodobi igro in poskusi znova."
+
+#. Key:	MethodNotAllowed
+#. SourceLocation:	Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(99)
+#: Source/MarburgumIIClient/Private/Session/MarburgumAccountSubsystem.cpp(99)
+msgctxt "MarburgumAccount,MethodNotAllowed"
+msgid "The account service did not understand the request. Update the game and try again."
+msgstr "Storitev za račune ni razumela zahteve. Posodobi igro in poskusi znova."
+
+#. Key:	Footer
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(119)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(119)
+msgctxt "MarburgumAccountScreen,Footer"
+msgid "Development preview  ·  account service: email codes are written to the service's outbox folder until a mail sender is chosen"
+msgstr "Predogled razvojne različice  ·  storitev za račune: e-poštne kode se zapisujejo v mapo za odhodno pošto storitve, dokler ni izbran pošiljatelj e-pošte"
+
+#. Key:	Series
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(195)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(195)
+msgctxt "MarburgumAccountScreen,Series"
+msgid "MAGNA RAEDARUM"
+msgstr "MAGNA RAEDARUM"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(196)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(196)
+msgctxt "MarburgumAccountScreen,Title"
+msgid "MARBURGUM II"
+msgstr "MARBURGUM II"
+
+#. Key:	Tagline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(200)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(200)
+msgctxt "MarburgumAccountScreen,Tagline"
+msgid "A persistent urban role-playing game  ·  Maribor, the 1990s"
+msgstr "Urbana igra vlog s trajnim svetom  ·  Maribor, devetdeseta leta 20. stoletja"
+
+#. Key:	Username
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(253)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(253)
+msgctxt "MarburgumAccountScreen,Username"
+msgid "USERNAME"
+msgstr "UPORABNIŠKO IME"
+
+#. Key:	UsernameHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(253)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(253)
+msgctxt "MarburgumAccountScreen,UsernameHint"
+msgid "your username"
+msgstr "tvoje uporabniško ime"
+
+#. Key:	Password
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(254)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(254)
+msgctxt "MarburgumAccountScreen,Password"
+msgid "PASSWORD"
+msgstr "GESLO"
+
+#. Key:	SignIn
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(256)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(256)
+msgctxt "MarburgumAccountScreen,SignIn"
+msgid "Sign in"
+msgstr "Prijavi se"
+
+#. Key:	CreateAccount
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(257)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(257)
+msgctxt "MarburgumAccountScreen,CreateAccount"
+msgid "Create account"
+msgstr "Ustvari račun"
+
+#. Key:	Forgot
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(258)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(258)
+msgctxt "MarburgumAccountScreen,Forgot"
+msgid "Forgot password"
+msgstr "Pozabljeno geslo"
+
+#. Key:	Email
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(263)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(263)
+msgctxt "MarburgumAccountScreen,Email"
+msgid "EMAIL"
+msgstr "E-POŠTA"
+
+#. Key:	EmailHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(263)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(263)
+msgctxt "MarburgumAccountScreen,EmailHint"
+msgid "you@example.com"
+msgstr "ti@example.com"
+
+#. Key:	SendCode
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(265)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(265)
+msgctxt "MarburgumAccountScreen,SendCode"
+msgid "Send code"
+msgstr "Pošlji kodo"
+
+#. Key:	Back
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(266)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(266)
+msgctxt "MarburgumAccountScreen,Back"
+msgid "Back"
+msgstr "Nazaj"
+
+#. Key:	Code
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(271)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(271)
+msgctxt "MarburgumAccountScreen,Code"
+msgid "CODE"
+msgstr "KODA"
+
+#. Key:	CodeHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(271)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(271)
+msgctxt "MarburgumAccountScreen,CodeHint"
+msgid "eight characters from the email"
+msgstr "osem znakov iz e-poštnega sporočila"
+
+#. Key:	Confirm
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(273)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(273)
+msgctxt "MarburgumAccountScreen,Confirm"
+msgid "Confirm"
+msgstr "Potrdi"
+
+#. Key:	Resend
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(274)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(274)
+msgctxt "MarburgumAccountScreen,Resend"
+msgid "Send a new code"
+msgstr "Pošlji novo kodo"
+
+#. Key:	ChangeEmail
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(275)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(275)
+msgctxt "MarburgumAccountScreen,ChangeEmail"
+msgid "Change email"
+msgstr "Spremeni e-poštni naslov"
+
+#. Key:	ChooseUsername
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(280)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(280)
+msgctxt "MarburgumAccountScreen,ChooseUsername"
+msgid "USERNAME"
+msgstr "UPORABNIŠKO IME"
+
+#. Key:	ChooseUsernameHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(280)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(280)
+msgctxt "MarburgumAccountScreen,ChooseUsernameHint"
+msgid "3–20: a–z, 0–9, . _ -"
+msgstr "3–20: a–z, 0–9, . _ -"
+
+#. Key:	ChoosePassword
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(281)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(281)
+msgctxt "MarburgumAccountScreen,ChoosePassword"
+msgid "PASSWORD"
+msgstr "GESLO"
+
+#. Key:	ChoosePasswordHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(281)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(281)
+msgctxt "MarburgumAccountScreen,ChoosePasswordHint"
+msgid "at least 10 characters"
+msgstr "najmanj 10 znakov"
+
+#. Key:	RepeatPassword
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(282)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(282)
+msgctxt "MarburgumAccountScreen,RepeatPassword"
+msgid "PASSWORD AGAIN"
+msgstr "PONOVI GESLO"
+
+#. Key:	Finish
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(284)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(284)
+msgctxt "MarburgumAccountScreen,Finish"
+msgid "Create account"
+msgstr "Ustvari račun"
+
+#. Key:	ForgotEmail
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(289)
+msgctxt "MarburgumAccountScreen,ForgotEmail"
+msgid "EMAIL"
+msgstr "E-POŠTA"
+
+#. Key:	ForgotEmailHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(289)
+msgctxt "MarburgumAccountScreen,ForgotEmailHint"
+msgid "the address of your account"
+msgstr "e-poštni naslov tvojega računa"
+
+#. Key:	SendReset
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(291)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(291)
+msgctxt "MarburgumAccountScreen,SendReset"
+msgid "Send reset code"
+msgstr "Pošlji kodo za ponastavitev"
+
+#. Key:	Back2
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(292)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(292)
+msgctxt "MarburgumAccountScreen,Back2"
+msgid "Back"
+msgstr "Nazaj"
+
+#. Key:	ResetCode
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(297)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(297)
+msgctxt "MarburgumAccountScreen,ResetCode"
+msgid "CODE"
+msgstr "KODA"
+
+#. Key:	ResetCodeHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(297)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(297)
+msgctxt "MarburgumAccountScreen,ResetCodeHint"
+msgid "eight characters from the email"
+msgstr "osem znakov iz e-poštnega sporočila"
+
+#. Key:	NewPassword
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(298)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(298)
+msgctxt "MarburgumAccountScreen,NewPassword"
+msgid "NEW PASSWORD"
+msgstr "NOVO GESLO"
+
+#. Key:	NewPasswordHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(298)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(298)
+msgctxt "MarburgumAccountScreen,NewPasswordHint"
+msgid "at least 10 characters"
+msgstr "najmanj 10 znakov"
+
+#. Key:	NewPasswordAgain
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(299)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(299)
+msgctxt "MarburgumAccountScreen,NewPasswordAgain"
+msgid "NEW PASSWORD AGAIN"
+msgstr "PONOVI NOVO GESLO"
+
+#. Key:	SetPassword
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(301)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(301)
+msgctxt "MarburgumAccountScreen,SetPassword"
+msgid "Set password"
+msgstr "Nastavi geslo"
+
+#. Key:	Back3
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(302)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(302)
+msgctxt "MarburgumAccountScreen,Back3"
+msgid "Back"
+msgstr "Nazaj"
+
+#. Key:	FirstName
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(311)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(311)
+msgctxt "MarburgumAccountScreen,FirstName"
+msgid "FIRST NAME"
+msgstr "IME"
+
+#. Key:	FirstNameHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(311)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(311)
+msgctxt "MarburgumAccountScreen,FirstNameHint"
+msgid "e.g. Špela"
+msgstr "npr. Špela"
+
+#. Key:	LastName
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(312)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(312)
+msgctxt "MarburgumAccountScreen,LastName"
+msgid "LAST NAME"
+msgstr "PRIIMEK"
+
+#. Key:	LastNameHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(312)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(312)
+msgctxt "MarburgumAccountScreen,LastNameHint"
+msgid "e.g. Novak"
+msgstr "npr. Novak"
+
+#. Key:	Body
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(316)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(316)
+msgctxt "MarburgumAccountScreen,Body"
+msgid "BODY"
+msgstr "TELO"
+
+#. Key:	CreateCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(331)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(331)
+msgctxt "MarburgumAccountScreen,CreateCharacter"
+msgid "Create character"
+msgstr "Ustvari lik"
+
+#. Key:	SignOut
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(332)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(332)
+msgctxt "MarburgumAccountScreen,SignOut"
+msgid "Sign out"
+msgstr "Odjava"
+
+#. Key:	Busy
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(338)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(338)
+msgctxt "MarburgumAccountScreen,Busy"
+msgid "Working…"
+msgstr "Obdelava…"
+
+#. Key:	IntroCharacterNamed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(379)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(379)
+msgctxt "MarburgumAccountScreen,IntroCharacterNamed"
+msgid "Signed in as {0}. {1}"
+msgstr "Prijavljen kot {0}. {1}"
+
+#. Key:	TitleSignIn
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(40)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(40)
+msgctxt "MarburgumAccountScreen,TitleSignIn"
+msgid "Sign in"
+msgstr "Prijava"
+
+#. Key:	TitleRegister
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(41)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(41)
+msgctxt "MarburgumAccountScreen,TitleRegister"
+msgid "Create an account"
+msgstr "Ustvari račun"
+
+#. Key:	TitleConfirm
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(42)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(42)
+msgctxt "MarburgumAccountScreen,TitleConfirm"
+msgid "Confirm your email"
+msgstr "Potrdi e-poštni naslov"
+
+#. Key:	TitleCredentials
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(43)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(43)
+msgctxt "MarburgumAccountScreen,TitleCredentials"
+msgid "Choose how you sign in"
+msgstr "Izberi podatke za prijavo"
+
+#. Key:	TitleForgot
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(44)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(44)
+msgctxt "MarburgumAccountScreen,TitleForgot"
+msgid "Forgotten password"
+msgstr "Pozabljeno geslo"
+
+#. Key:	TitleReset
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(45)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(45)
+msgctxt "MarburgumAccountScreen,TitleReset"
+msgid "Set a new password"
+msgstr "Nastavi novo geslo"
+
+#. Key:	TitleCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(46)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(46)
+msgctxt "MarburgumAccountScreen,TitleCharacter"
+msgid "Your character"
+msgstr "Tvoj lik"
+
+#. Key:	IntroSignIn
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(55)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(55)
+msgctxt "MarburgumAccountScreen,IntroSignIn"
+msgid "Sign in with your Marburgum II username and password."
+msgstr "Prijavi se z uporabniškim imenom in geslom za Marburgum II."
+
+#. Key:	IntroRegister
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(56)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(56)
+msgctxt "MarburgumAccountScreen,IntroRegister"
+msgid "Start with an email address. We send it a code; the account exists once you confirm it."
+msgstr "Začni z e-poštnim naslovom. Nanj pošljemo kodo; račun nastane, ko naslov potrdiš."
+
+#. Key:	PasswordsDiffer
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(561)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(561)
+msgctxt "MarburgumAccountScreen,PasswordsDiffer"
+msgid "The two passwords are not the same."
+msgstr "Gesli se ne ujemata."
+
+#. Key:	PasswordsDiffer2
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(583)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(583)
+msgctxt "MarburgumAccountScreen,PasswordsDiffer2"
+msgid "The two passwords are not the same."
+msgstr "Gesli se ne ujemata."
+
+#. Key:	IntroForgot
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(59)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(59)
+msgctxt "MarburgumAccountScreen,IntroForgot"
+msgid "Type the email address of your account. We send it a reset code and your username."
+msgstr "Vpiši e-poštni naslov svojega računa. Nanj pošljemo kodo za ponastavitev in tvoje uporabniško ime."
+
+#. Key:	IntroCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(61)
+#: Source/MarburgumIIClient/Private/UI/MarburgumAccountScreen.cpp(61)
+msgctxt "MarburgumAccountScreen,IntroCharacter"
+msgid "Who you are in Maribor. Your first and last name are what other players see; they are not your username and need not be your own. You choose once."
+msgstr "Kdo si v Mariboru. Drugi igralci vidijo tvoje ime in priimek; to ni tvoje uporabniško ime in ni treba, da sta tvoje pravo ime in priimek. Izbereš ju le enkrat."
+
+#. Key:	Down
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(184)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(184)
+msgctxt "MarburgumCharacterPanel,Down"
+msgid "Down: back on your feet in {0} s"
+msgstr "Na tleh: spet na nogah čez {0} s"
+
+#. Key:	Submerged
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(185)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(185)
+msgctxt "MarburgumCharacterPanel,Submerged"
+msgid "Under water"
+msgstr "Pod vodo"
+
+#. Key:	Swimming
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(186)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(186)
+msgctxt "MarburgumCharacterPanel,Swimming"
+msgid "Swimming"
+msgstr "Plavanje"
+
+#. Key:	Winded
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(188)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(188)
+msgctxt "MarburgumCharacterPanel,Winded"
+msgid "Winded: walking until stamina is back to {0}"
+msgstr "Zasoplost: hodiš, dokler vzdržljivost spet ne doseže {0}"
+
+#. Key:	Running
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(189)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(189)
+msgctxt "MarburgumCharacterPanel,Running"
+msgid "Running"
+msgstr "Tek"
+
+#. Key:	Recovering
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(190)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(190)
+msgctxt "MarburgumCharacterPanel,Recovering"
+msgid "Getting breath back"
+msgstr "Zajemaš sapo"
+
+#. Key:	Rested
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(191)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(191)
+msgctxt "MarburgumCharacterPanel,Rested"
+msgid "Rested"
+msgstr "Spočit"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(234)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(234)
+msgctxt "MarburgumCharacterPanel,Overline"
+msgid "CHARACTER"
+msgstr "LIK"
+
+#. Key:	FullName
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(236)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(236)
+msgctxt "MarburgumCharacterPanel,FullName"
+msgid "{0} {1}"
+msgstr "{0} {1}"
+
+#. Key:	Unnamed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(237)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(237)
+msgctxt "MarburgumCharacterPanel,Unnamed"
+msgid "Development character"
+msgstr "Razvojni lik"
+
+#. Key:	Body
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(243)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(243)
+msgctxt "MarburgumCharacterPanel,Body"
+msgid "Body"
+msgstr "Telo"
+
+#. Key:	Kept
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(245)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(245)
+msgctxt "MarburgumCharacterPanel,Kept"
+msgid "Kept"
+msgstr "Shranjen"
+
+#. Key:	WithAccount
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(245)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(245)
+msgctxt "MarburgumCharacterPanel,WithAccount"
+msgid "With your account"
+msgstr "V tvojem računu"
+
+#. Key:	NoKey
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(249)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(249)
+msgctxt "MarburgumCharacterPanel,NoKey"
+msgid "No character on this connection."
+msgstr "Na tej povezavi ni lika."
+
+#. Key:	DevKey
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(250)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(250)
+msgctxt "MarburgumCharacterPanel,DevKey"
+msgid "A test identity for development, not an account."
+msgstr "Testna identiteta za razvoj, ne račun."
+
+#. Key:	PlaceTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(255)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(255)
+msgctxt "MarburgumCharacterPanel,PlaceTitle"
+msgid "WHEREABOUTS"
+msgstr "LOKACIJA"
+
+#. Key:	Area
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(258)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(258)
+msgctxt "MarburgumCharacterPanel,Area"
+msgid "Area"
+msgstr "Območje"
+
+#. Key:	AreaUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(258)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(258)
+msgctxt "MarburgumCharacterPanel,AreaUnknown"
+msgid "Not yet known"
+msgstr "Še ni znano"
+
+#. Key:	Quarter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(266)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(266)
+msgctxt "MarburgumCharacterPanel,Quarter"
+msgid "Quarter"
+msgstr "Četrt"
+
+#. Key:	Street
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(270)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(270)
+msgctxt "MarburgumCharacterPanel,Street"
+msgid "Street"
+msgstr "Ulica"
+
+#. Key:	Date
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(281)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(281)
+msgctxt "MarburgumCharacterPanel,Date"
+msgid "Date"
+msgstr "Datum"
+
+#. Key:	Time
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(282)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(282)
+msgctxt "MarburgumCharacterPanel,Time"
+msgid "Time"
+msgstr "Čas"
+
+#. Key:	ConditionTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(286)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(286)
+msgctxt "MarburgumCharacterPanel,ConditionTitle"
+msgid "CONDITION"
+msgstr "TELESNO STANJE"
+
+#. Key:	WaitingTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(289)
+msgctxt "MarburgumCharacterPanel,WaitingTitle"
+msgid "Waiting for the server"
+msgstr "Čakanje na strežnik"
+
+#. Key:	WaitingBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(290)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(290)
+msgctxt "MarburgumCharacterPanel,WaitingBody"
+msgid "Condition appears once the server has restored this character."
+msgstr "Stanje se prikaže, ko strežnik obnovi tega lika."
+
+#. Key:	Vitality
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(306)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(306)
+msgctxt "MarburgumCharacterPanel,Vitality"
+msgid "Vitality"
+msgstr "Vitalnost"
+
+#. Key:	Stamina
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(309)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(309)
+msgctxt "MarburgumCharacterPanel,Stamina"
+msgid "Stamina"
+msgstr "Vzdržljivost"
+
+#. Key:	Breath
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(313)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(313)
+msgctxt "MarburgumCharacterPanel,Breath"
+msgid "State"
+msgstr "Stanje"
+
+#. Key:	ConditionNote
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(315)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(315)
+msgctxt "MarburgumCharacterPanel,ConditionNote"
+msgid "Saved by the server when you leave. Vitality comes back in full when you get up after going down."
+msgstr "Strežnik shrani stanje ob tvojem odhodu. Ko po padcu spet vstaneš, se ti vitalnost v celoti obnovi."
+
+#. Key:	RecordTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(323)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(323)
+msgctxt "MarburgumCharacterPanel,RecordTitle"
+msgid "SAVED RECORD"
+msgstr "SHRANJENI PODATKI"
+
+#. Key:	Record
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(326)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(326)
+msgctxt "MarburgumCharacterPanel,Record"
+msgid "Items and missions"
+msgstr "Predmeti in naloge"
+
+#. Key:	RecordWaiting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(326)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(326)
+msgctxt "MarburgumCharacterPanel,RecordWaiting"
+msgid "Waiting for the server"
+msgstr "Čakanje na strežnik"
+
+#. Key:	NoCharacterTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(330)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(330)
+msgctxt "MarburgumCharacterPanel,NoCharacterTitle"
+msgid "Nothing is saved"
+msgstr "Nič ni shranjeno"
+
+#. Key:	NoCharacterBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(331)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(331)
+msgctxt "MarburgumCharacterPanel,NoCharacterBody"
+msgid "Join with a character to hold items and take missions."
+msgstr "Pridruži se z likom, da lahko nosiš predmete in sprejemaš naloge."
+
+#. Key:	Carried
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(361)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(361)
+msgctxt "MarburgumCharacterPanel,Carried"
+msgid "Carried"
+msgstr "Pri sebi"
+
+#. Key:	ItemCount
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(362)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(362)
+msgctxt "MarburgumCharacterPanel,ItemCount"
+msgid "{0} {0}|plural(one=item,other=items)"
+msgstr "Število predmetov: {0}"
+
+#. Key:	Missions
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(364)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(364)
+msgctxt "MarburgumCharacterPanel,Missions"
+msgid "Missions under way"
+msgstr "Naloge v teku"
+
+#. Key:	Money
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(368)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(368)
+msgctxt "MarburgumCharacterPanel,Money"
+msgid "Money"
+msgstr "Denar"
+
+#. Key:	SkillsTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(375)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(375)
+msgctxt "MarburgumCharacterPanel,SkillsTitle"
+msgid "SKILLS"
+msgstr "VEŠČINE"
+
+#. Key:	EquipmentTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(388)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(388)
+msgctxt "MarburgumCharacterPanel,EquipmentTitle"
+msgid "EQUIPMENT"
+msgstr "OPREMA"
+
+#. Key:	EquipmentBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(389)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(389)
+msgctxt "MarburgumCharacterPanel,EquipmentBody"
+msgid "Clothing and tools in hand arrive with the systems that use them; nothing is worn or held in this build."
+msgstr "Oblačila in orodja v rokah bodo na voljo skupaj s sistemi, ki jih uporabljajo; v tej različici lik nima ničesar oblečenega ali v rokah."
+
+#. Key:	Points
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(41)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPanel.cpp(41)
+msgctxt "MarburgumCharacterPanel,Points"
+msgid "{0} / {1}"
+msgstr "{0} / {1}"
+
+#. Key:	DragHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPreview.cpp(267)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPreview.cpp(267)
+msgctxt "MarburgumCharacterPreview,DragHint"
+msgid "Drag to turn  ·  scroll to look closer"
+msgstr "Povleci za zasuk  ·  zavrti kolešček za bližji pogled"
+
+#. Key:	Selected
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumCharacterPreview.cpp(446)
+#: Source/MarburgumIIClient/Private/UI/MarburgumCharacterPreview.cpp(446)
+msgctxt "MarburgumCharacterPreview,Selected"
+msgid "SELECTED"
+msgstr "IZBRANO"
+
+#. Key:	Gain
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(134)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(134)
+msgctxt "MarburgumChoicePanel,Gain"
+msgid "+{0} money"
+msgstr "Denar: +{0}"
+
+#. Key:	Cost
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(135)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(135)
+msgctxt "MarburgumChoicePanel,Cost"
+msgid "−{0} money"
+msgstr "Denar: −{0}"
+
+#. Key:	Xp
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(141)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(141)
+msgctxt "MarburgumChoicePanel,Xp"
+msgid "{0} +{1} XP"
+msgstr "{0} +{1} XP"
+
+#. Key:	Short
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(146)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(146)
+msgctxt "MarburgumChoicePanel,Short"
+msgid "Not enough money"
+msgstr "Premalo denarja"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(38)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(38)
+msgctxt "MarburgumChoicePanel,Overline"
+msgid "DECISION"
+msgstr "ODLOČITEV"
+
+#. Key:	Close
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(40)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(40)
+msgctxt "MarburgumChoicePanel,Close"
+msgid "Not now"
+msgstr "Ne zdaj"
+
+#. Key:	Answers
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(49)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(49)
+msgctxt "MarburgumChoicePanel,Answers"
+msgid "YOUR ANSWER"
+msgstr "TVOJ ODGOVOR"
+
+#. Key:	Hint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(54)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(54)
+msgctxt "MarburgumChoicePanel,Hint"
+msgid "Press a number to decide. The server records your choice; it cannot be taken back."
+msgstr "Pritisni številko za odločitev. Strežnik zabeleži tvojo izbiro; ne moreš je preklicati."
+
+#. Key:	GuideAddress
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(120)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(120)
+msgctxt "MarburgumConnection,GuideAddress"
+msgid "Use host:port, for example 127.0.0.1:7777."
+msgstr "Uporabi obliko host:port, na primer 127.0.0.1:7777."
+
+#. Key:	GuideTimeout
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(121)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(121)
+msgctxt "MarburgumConnection,GuideTimeout"
+msgid "Check that the server is running and reachable, then retry."
+msgstr "Preveri, ali strežnik deluje in je dosegljiv, nato poskusi znova."
+
+#. Key:	GuideRefused
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(122)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(122)
+msgctxt "MarburgumConnection,GuideRefused"
+msgid "The server answered but did not admit this client."
+msgstr "Strežnik se je odzval, vendar temu odjemalcu ni dovolil vstopa."
+
+#. Key:	GuideContract
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(123)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(123)
+msgctxt "MarburgumConnection,GuideContract"
+msgid "Update the client or connect to a server built from the same version."
+msgstr "Posodobi odjemalca ali se poveži s strežnikom, zgrajenim iz iste različice."
+
+#. Key:	GuideLost
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(124)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(124)
+msgctxt "MarburgumConnection,GuideLost"
+msgid "Automatic reconnection did not succeed. You can retry."
+msgstr "Samodejna ponovna povezava ni uspela. Lahko poskusiš znova."
+
+#. Key:	GuideTravel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(125)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(125)
+msgctxt "MarburgumConnection,GuideTravel"
+msgid "The client could not load the world the server named."
+msgstr "Odjemalec ni mogel naložiti sveta, ki ga je določil strežnik."
+
+#. Key:	Series
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(195)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(195)
+msgctxt "MarburgumConnection,Series"
+msgid "MAGNA RAEDARUM"
+msgstr "MAGNA RAEDARUM"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(196)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(196)
+msgctxt "MarburgumConnection,Title"
+msgid "MARBURGUM II"
+msgstr "MARBURGUM II"
+
+#. Key:	Tagline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(200)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(200)
+msgctxt "MarburgumConnection,Tagline"
+msgid "A persistent urban role-playing game  ·  Maribor, the 1990s"
+msgstr "Urbana igra vlog s trajnim svetom  ·  Maribor, 90. leta 20. stoletja"
+
+#. Key:	SignOut
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(216)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(216)
+msgctxt "MarburgumConnection,SignOut"
+msgid "Sign out"
+msgstr "Odjava"
+
+#. Key:	ServerHeading
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(222)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(222)
+msgctxt "MarburgumConnection,ServerHeading"
+msgid "SERVER"
+msgstr "STREŽNIK"
+
+#. Key:	AddressHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(225)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(225)
+msgctxt "MarburgumConnection,AddressHint"
+msgid "host:port"
+msgstr "host:port"
+
+#. Key:	Connect
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(228)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(228)
+msgctxt "MarburgumConnection,Connect"
+msgid "Connect"
+msgstr "Poveži se"
+
+#. Key:	StepConnect
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(252)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(252)
+msgctxt "MarburgumConnection,StepConnect"
+msgid "HANDSHAKE"
+msgstr "VZPOSTAVITEV STIKA"
+
+#. Key:	StepJoin
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(252)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(252)
+msgctxt "MarburgumConnection,StepJoin"
+msgid "JOIN"
+msgstr "PRIDRUŽITEV"
+
+#. Key:	StepAdmit
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(253)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(253)
+msgctxt "MarburgumConnection,StepAdmit"
+msgid "ADMITTED"
+msgstr "SPREJEM POTRJEN"
+
+#. Key:	StepLoad
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(253)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(253)
+msgctxt "MarburgumConnection,StepLoad"
+msgid "WORLD"
+msgstr "SVET"
+
+#. Key:	Retry
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(271)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(271)
+msgctxt "MarburgumConnection,Retry"
+msgid "Retry"
+msgstr "Poskusi znova"
+
+#. Key:	Cancel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(274)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(274)
+msgctxt "MarburgumConnection,Cancel"
+msgid "Cancel"
+msgstr "Prekliči"
+
+#. Key:	Quit
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(278)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(278)
+msgctxt "MarburgumConnection,Quit"
+msgid "Quit"
+msgstr "Zapri igro"
+
+#. Key:	PlayerFooter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(303)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(303)
+msgctxt "MarburgumConnection,PlayerFooter"
+msgid "Marburgum II  ·  {0}"
+msgstr "Marburgum II  ·  {0}"
+
+#. Key:	AccountsOff
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(306)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(306)
+msgctxt "MarburgumConnection,AccountsOff"
+msgid "development key, no account service"
+msgstr "razvojni ključ, brez storitve za račune"
+
+#. Key:	AccountsOn
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(306)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(306)
+msgctxt "MarburgumConnection,AccountsOn"
+msgid "signed-in entry"
+msgstr "vstop s prijavo"
+
+#. Key:	Footer
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(308)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(308)
+msgctxt "MarburgumConnection,Footer"
+msgid "Development preview  ·  client {0}  ·  network contract v{1}  ·  UI tokens v{2}  ·  {3}"
+msgstr "Razvojni predogled  ·  odjemalec {0}  ·  omrežni protokol v{1}  ·  žetoni vmesnika v{2}  ·  {3}"
+
+#. Key:	HeadStarting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(333)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(333)
+msgctxt "MarburgumConnection,HeadStarting"
+msgid "Starting"
+msgstr "Zagon"
+
+#. Key:	HeadIdle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(336)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(336)
+msgctxt "MarburgumConnection,HeadIdle"
+msgid "Not connected"
+msgstr "Brez povezave"
+
+#. Key:	DetailIdle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(337)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(337)
+msgctxt "MarburgumConnection,DetailIdle"
+msgid "Enter the address of an authoritative server. While offline, this client runs no gameplay."
+msgstr "Vnesi naslov avtoritativnega strežnika. Brez povezave ta odjemalec ne izvaja igre."
+
+#. Key:	HeadConnecting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(340)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(340)
+msgctxt "MarburgumConnection,HeadConnecting"
+msgid "Contacting the server"
+msgstr "Vzpostavljanje stika s strežnikom"
+
+#. Key:	DetailConnecting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(341)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(341)
+msgctxt "MarburgumConnection,DetailConnecting"
+msgid "Network handshake with {0}."
+msgstr "Vzpostavljanje omrežnega stika s strežnikom {0}."
+
+#. Key:	HeadJoining
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(344)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(344)
+msgctxt "MarburgumConnection,HeadJoining"
+msgid "Server accepted the handshake"
+msgstr "Strežnik je potrdil vzpostavitev stika"
+
+#. Key:	DetailJoining
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(345)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(345)
+msgctxt "MarburgumConnection,DetailJoining"
+msgid "Receiving the world assignment."
+msgstr "Prejemanje dodelitve sveta."
+
+#. Key:	HeadLoading
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(348)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(348)
+msgctxt "MarburgumConnection,HeadLoading"
+msgid "Loading the server's world"
+msgstr "Nalaganje sveta strežnika"
+
+#. Key:	DetailLoading
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(349)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(349)
+msgctxt "MarburgumConnection,DetailLoading"
+msgid "Admission is confirmed when the replicated world state arrives."
+msgstr "Sprejem je potrjen ob prejemu repliciranega stanja sveta."
+
+#. Key:	HeadReady
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(352)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(352)
+msgctxt "MarburgumConnection,HeadReady"
+msgid "Admitted to {0}"
+msgstr "Sprejem potrjen: {0}"
+
+#. Key:	HeadReconnecting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(355)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(355)
+msgctxt "MarburgumConnection,HeadReconnecting"
+msgid "Connection lost  ·  attempt {0} of {1}"
+msgstr "Povezava prekinjena  ·  poskus {0} od {1}"
+
+#. Key:	DetailReconnecting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(357)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(357)
+msgctxt "MarburgumConnection,DetailReconnecting"
+msgid "Reconnecting to {0}. No game rules run on this client while it waits."
+msgstr "Ponovno povezovanje s strežnikom {0}. Med čakanjem ta odjemalec ne izvaja pravil igre."
+
+#. Key:	DetailError
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(363)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(363)
+msgctxt "MarburgumConnection,DetailError"
+msgid "{0}\nDetail: {1}"
+msgstr "{0}\nPodrobnost: {1}"
+
+#. Key:	Elapsed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(439)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(439)
+msgctxt "MarburgumConnection,Elapsed"
+msgid "{0} s"
+msgstr "{0} s"
+
+#. Key:	SignedInAs
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(510)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(510)
+msgctxt "MarburgumConnection,SignedInAs"
+msgid "{0} {1}\nsigned in as {2}"
+msgstr "{0} {1}\nprijavljen kot {2}"
+
+#. Key:	PhaseStarting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(69)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(69)
+msgctxt "MarburgumConnection,PhaseStarting"
+msgid "STARTING"
+msgstr "ZAGON"
+
+#. Key:	PhaseIdle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(70)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(70)
+msgctxt "MarburgumConnection,PhaseIdle"
+msgid "OFFLINE"
+msgstr "BREZ POVEZAVE"
+
+#. Key:	PhaseConnecting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(71)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(71)
+msgctxt "MarburgumConnection,PhaseConnecting"
+msgid "CONNECTING"
+msgstr "POVEZOVANJE"
+
+#. Key:	PhaseJoining
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(72)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(72)
+msgctxt "MarburgumConnection,PhaseJoining"
+msgid "JOINING"
+msgstr "PRIDRUŽEVANJE"
+
+#. Key:	PhaseLoading
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(73)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(73)
+msgctxt "MarburgumConnection,PhaseLoading"
+msgid "LOADING WORLD"
+msgstr "NALAGANJE SVETA"
+
+#. Key:	PhaseReady
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(74)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(74)
+msgctxt "MarburgumConnection,PhaseReady"
+msgid "CONNECTED"
+msgstr "POVEZAVA VZPOSTAVLJENA"
+
+#. Key:	PhaseReconnecting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(75)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(75)
+msgctxt "MarburgumConnection,PhaseReconnecting"
+msgid "RECONNECTING"
+msgstr "PONOVNO POVEZOVANJE"
+
+#. Key:	PhaseError
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(76)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(76)
+msgctxt "MarburgumConnection,PhaseError"
+msgid "NOT CONNECTED"
+msgstr "POVEZAVA NI VZPOSTAVLJENA"
+
+#. Key:	FaultAddress
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(85)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(85)
+msgctxt "MarburgumConnection,FaultAddress"
+msgid "That server address is not valid"
+msgstr "Ta naslov strežnika ni veljaven"
+
+#. Key:	FaultTimeout
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(86)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(86)
+msgctxt "MarburgumConnection,FaultTimeout"
+msgid "The server did not respond in time"
+msgstr "Strežnik se ni pravočasno odzval"
+
+#. Key:	FaultRefused
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(87)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(87)
+msgctxt "MarburgumConnection,FaultRefused"
+msgid "The server refused the connection"
+msgstr "Strežnik je zavrnil povezavo"
+
+#. Key:	FaultContract
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(88)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(88)
+msgctxt "MarburgumConnection,FaultContract"
+msgid "Client and server versions do not match"
+msgstr "Različici odjemalca in strežnika se ne ujemata"
+
+#. Key:	FaultLost
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(89)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(89)
+msgctxt "MarburgumConnection,FaultLost"
+msgid "The connection to the server was lost"
+msgstr "Povezava s strežnikom je bila prekinjena"
+
+#. Key:	FaultTravel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(90)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(90)
+msgctxt "MarburgumConnection,FaultTravel"
+msgid "Could not reach the server's world"
+msgstr "Sveta strežnika ni bilo mogoče doseči"
+
+#. Key:	FaultUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(93)
+#: Source/MarburgumIIClient/Private/UI/MarburgumConnectionScreen.cpp(93)
+msgctxt "MarburgumConnection,FaultUnknown"
+msgid "Not connected"
+msgstr "Brez povezave"
+
+#. Key:	DefaultVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(208)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(208)
+msgctxt "MarburgumInteractionPrompt,DefaultVerb"
+msgid "Use"
+msgstr "Uporabi"
+
+#. Key:	Stock
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(215)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(215)
+msgctxt "MarburgumInteractionPrompt,Stock"
+msgid "{0} left  ·  shared by everyone on this server"
+msgstr "Preostalo: {0}  ·  skupna zaloga za vse na tem strežniku"
+
+#. Key:	WaitingVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(218)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(218)
+msgctxt "MarburgumInteractionPrompt,WaitingVerb"
+msgid "Waiting for the server"
+msgstr "Čakanje na strežnik"
+
+#. Key:	Waiting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(219)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(219)
+msgctxt "MarburgumInteractionPrompt,Waiting"
+msgid "Request sent. Nothing changes until the server confirms it."
+msgstr "Zahteva poslana. Nič se ne spremeni, dokler je strežnik ne potrdi."
+
+#. Key:	EmptyVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(224)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(224)
+msgctxt "MarburgumInteractionPrompt,EmptyVerb"
+msgid "Empty"
+msgstr "Prazno"
+
+#. Key:	Empty
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(225)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(225)
+msgctxt "MarburgumInteractionPrompt,Empty"
+msgid "Nothing left to take. The server keeps this count for every player."
+msgstr "Ničesar več ne moreš vzeti. Strežnik hrani to število za vsakega igralca."
+
+#. Key:	Unknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(230)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(230)
+msgctxt "MarburgumInteractionPrompt,Unknown"
+msgid "Waiting for the server's count."
+msgstr "Čakanje na podatek o številu s strežnika."
+
+#. Key:	NoCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(235)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(235)
+msgctxt "MarburgumInteractionPrompt,NoCharacter"
+msgid "No character selected for this connection; the server will refuse."
+msgstr "Za to povezavo ni izbran noben lik; strežnik bo zahtevo zavrnil."
+
+#. Key:	InspectVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(271)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(271)
+msgctxt "MarburgumInteractionPrompt,InspectVerb"
+msgid "Inspect"
+msgstr "Preglej"
+
+#. Key:	TalkVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(271)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(271)
+msgctxt "MarburgumInteractionPrompt,TalkVerb"
+msgid "Talk"
+msgstr "Pogovori se"
+
+#. Key:	NpcNoCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(289)
+msgctxt "MarburgumInteractionPrompt,NpcNoCharacter"
+msgid "No character selected for this connection; the server will refuse."
+msgstr "Za to povezavo ni izbran noben lik; strežnik bo zahtevo zavrnil."
+
+#. Key:	NpcUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(293)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(293)
+msgctxt "MarburgumInteractionPrompt,NpcUnknown"
+msgid "Waiting for the server's record of your missions."
+msgstr "Čakanje na strežniški zapis tvojih nalog."
+
+#. Key:	Offer
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(301)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(301)
+msgctxt "MarburgumInteractionPrompt,Offer"
+msgid "Has a job for you  ·  {0}"
+msgstr "Ima delo zate  ·  {0}"
+
+#. Key:	StageReady
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(305)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(305)
+msgctxt "MarburgumInteractionPrompt,StageReady"
+msgid "{0}  ·  next step"
+msgstr "{0}  ·  naslednji korak"
+
+#. Key:	ChoiceDue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(309)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(309)
+msgctxt "MarburgumInteractionPrompt,ChoiceDue"
+msgid "{0}  ·  a decision is yours to make"
+msgstr "{0}  ·  odločitev je tvoja"
+
+#. Key:	NeedsAny
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(314)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(314)
+msgctxt "MarburgumInteractionPrompt,NeedsAny"
+msgid "Bring {0} first."
+msgstr "Najprej prinesi: {0}."
+
+#. Key:	Needs
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(315)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(315)
+msgctxt "MarburgumInteractionPrompt,Needs"
+msgid "You need {0} for this."
+msgstr "Za to potrebuješ: {0}."
+
+#. Key:	Later
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(322)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(322)
+msgctxt "MarburgumInteractionPrompt,Later"
+msgid "Not yet. Finish “{0}” first."
+msgstr "Še ne. Najprej dokončaj »{0}«."
+
+#. Key:	Idle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(328)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(328)
+msgctxt "MarburgumInteractionPrompt,Idle"
+msgid "Nothing more to discuss for now."
+msgstr "Za zdaj se ni več o čem pogovarjati."
+
+#. Key:	IdlePlace
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(328)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(328)
+msgctxt "MarburgumInteractionPrompt,IdlePlace"
+msgid "Nothing more to find here for now."
+msgstr "Za zdaj tu ni več kaj najti."
+
+#. Key:	CounterUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(337)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(337)
+msgctxt "MarburgumInteractionPrompt,CounterUnknown"
+msgid "[B] Counter"
+msgstr "[B] Pult"
+
+#. Key:	CounterOpen
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(338)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(338)
+msgctxt "MarburgumInteractionPrompt,CounterOpen"
+msgid "[B] Counter, open"
+msgstr "[B] Pult, odprt"
+
+#. Key:	CounterClosed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(339)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(339)
+msgctxt "MarburgumInteractionPrompt,CounterClosed"
+msgid "[B] Counter, closed"
+msgstr "[B] Pult, zaprt"
+
+#. Key:	WithCounter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(340)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(340)
+msgctxt "MarburgumInteractionPrompt,WithCounter"
+msgid "{0}  ·  {1}"
+msgstr "{0}  ·  {1}"
+
+#. Key:	StrikeVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(373)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(373)
+msgctxt "MarburgumInteractionPrompt,StrikeVerb"
+msgid "Strike!"
+msgstr "Zategni!"
+
+#. Key:	Bite
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(374)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(374)
+msgctxt "MarburgumInteractionPrompt,Bite"
+msgid "Something has taken the bait. Strike now."
+msgstr "Nekaj je prijelo vabo. Zdaj zategni."
+
+#. Key:	WaitVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(379)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(379)
+msgctxt "MarburgumInteractionPrompt,WaitVerb"
+msgid "Wait for a bite"
+msgstr "Počakaj, da zagrize"
+
+#. Key:	LineIn
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(380)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(380)
+msgctxt "MarburgumInteractionPrompt,LineIn"
+msgid "Line in the water. Striking before a bite loses the cast; walking off ends it."
+msgstr "Vrvica je v vodi. Če zategneš, preden kaj zagrize, zapraviš met; če odideš, ga prekineš."
+
+#. Key:	FishVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(385)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(385)
+msgctxt "MarburgumInteractionPrompt,FishVerb"
+msgid "Fish"
+msgstr "Lovi ribe"
+
+#. Key:	NoRod
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(386)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(386)
+msgctxt "MarburgumInteractionPrompt,NoRod"
+msgid "You need a fishing rod."
+msgstr "Potrebuješ ribiško palico."
+
+#. Key:	CastVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(392)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(392)
+msgctxt "MarburgumInteractionPrompt,CastVerb"
+msgid "Cast"
+msgstr "Vrzi trnek"
+
+#. Key:	Cast
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(393)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(393)
+msgctxt "MarburgumInteractionPrompt,Cast"
+msgid "Cast your line and wait for a bite, then strike."
+msgstr "Vrzi trnek in počakaj, da kaj zagrize, nato zategni."
+
+#. Key:	VehicleWaiting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(416)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(416)
+msgctxt "MarburgumInteractionPrompt,VehicleWaiting"
+msgid "Request sent. You move only when the server confirms it."
+msgstr "Zahteva poslana. Premakneš se šele, ko jo strežnik potrdi."
+
+#. Key:	ExitVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(422)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(422)
+msgctxt "MarburgumInteractionPrompt,ExitVerb"
+msgid "Get out"
+msgstr "Izstopi"
+
+#. Key:	Driving
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(424)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(424)
+msgctxt "MarburgumInteractionPrompt,Driving"
+msgid "[W] Throttle  ·  [S] Brake / reverse  ·  [A][D] Steer  ·  [Shift] Handbrake"
+msgstr "[W] Plin  ·  [S] Zavora / vzvratno  ·  [A][D] Krmiljenje  ·  [Shift] Ročna zavora"
+
+#. Key:	Riding
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(425)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(425)
+msgctxt "MarburgumInteractionPrompt,Riding"
+msgid "Riding as a passenger. The driver has the wheel."
+msgstr "Voziš se kot sopotnik. Za volanom je voznik."
+
+#. Key:	DriveVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(430)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(430)
+msgctxt "MarburgumInteractionPrompt,DriveVerb"
+msgid "Drive"
+msgstr "Vozi"
+
+#. Key:	RideVerb
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(430)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(430)
+msgctxt "MarburgumInteractionPrompt,RideVerb"
+msgid "Get in"
+msgstr "Vstopi"
+
+#. Key:	DriverSeat
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(431)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(431)
+msgctxt "MarburgumInteractionPrompt,DriverSeat"
+msgid "Driver's seat"
+msgstr "Voznikov sedež"
+
+#. Key:	PassengerSeat
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(431)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(431)
+msgctxt "MarburgumInteractionPrompt,PassengerSeat"
+msgid "Passenger seat"
+msgstr "Sedež za sopotnika"
+
+#. Key:	Key
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(46)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(46)
+msgctxt "MarburgumInteractionPrompt,Key"
+msgid "E"
+msgstr "E"
+
+#. Key:	Fixture
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(60)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(60)
+msgctxt "MarburgumInteractionPrompt,Fixture"
+msgid "TEST FIXTURE"
+msgstr "PREIZKUSNI OBJEKT"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(108)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(108)
+msgctxt "MarburgumInventoryPanel,Overline"
+msgid "INVENTORY"
+msgstr "INVENTAR"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(109)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(109)
+msgctxt "MarburgumInventoryPanel,Title"
+msgid "What you carry"
+msgstr "Kaj imaš pri sebi"
+
+#. Key:	WaitingTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(248)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(248)
+msgctxt "MarburgumInventoryPanel,WaitingTitle"
+msgid "Waiting for the server"
+msgstr "Čakanje na strežnik"
+
+#. Key:	WaitingBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(249)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(249)
+msgctxt "MarburgumInventoryPanel,WaitingBody"
+msgid "The inventory appears once the server has loaded this character's saved record."
+msgstr "Inventar se prikaže, ko strežnik naloži shranjeni zapis tega lika."
+
+#. Key:	NoCharacterTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(254)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(254)
+msgctxt "MarburgumInventoryPanel,NoCharacterTitle"
+msgid "No character selected"
+msgstr "Noben lik ni izbran"
+
+#. Key:	NoCharacterBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(255)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(255)
+msgctxt "MarburgumInventoryPanel,NoCharacterBody"
+msgid "Join with a character to hold items. Interactions are refused without one."
+msgstr "Vstopi z likom, da lahko nosiš predmete. Brez lika so interakcije zavrnjene."
+
+#. Key:	EmptyTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(261)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(261)
+msgctxt "MarburgumInventoryPanel,EmptyTitle"
+msgid "Nothing carried yet"
+msgstr "Pri sebi še nimaš ničesar"
+
+#. Key:	EmptyBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(262)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(262)
+msgctxt "MarburgumInventoryPanel,EmptyBody"
+msgid "Items appear here only after the server has confirmed and saved them."
+msgstr "Predmeti se tukaj prikažejo šele, ko jih strežnik potrdi in shrani."
+
+#. Key:	Quantity
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(279)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(279)
+msgctxt "MarburgumInventoryPanel,Quantity"
+msgid "×{0}"
+msgstr "×{0}"
+
+#. Key:	Summary
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(299)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(299)
+msgctxt "MarburgumInventoryPanel,Summary"
+msgid "{0} {0}|plural(one=item,other=items)  ·  {1} {1}|plural(one=kind,other=kinds)"
+msgstr "Predmeti: {0}  ·  vrste: {1}"
+
+#. Key:	FilterEmptyTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(303)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(303)
+msgctxt "MarburgumInventoryPanel,FilterEmptyTitle"
+msgid "Nothing of this kind"
+msgstr "Ničesar te vrste"
+
+#. Key:	FilterEmptyBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(304)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(304)
+msgctxt "MarburgumInventoryPanel,FilterEmptyBody"
+msgid "Choose All to see everything you carry."
+msgstr "Izberi Vse, da vidiš vse, kar imaš pri sebi."
+
+#. Key:	Carried
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(356)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(356)
+msgctxt "MarburgumInventoryPanel,Carried"
+msgid "Carried"
+msgstr "Pri sebi"
+
+#. Key:	Confirmed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(357)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(357)
+msgctxt "MarburgumInventoryPanel,Confirmed"
+msgid "Confirmed and saved by the server"
+msgstr "Potrjeno in shranjeno na strežniku"
+
+#. Key:	Custody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(357)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(357)
+msgctxt "MarburgumInventoryPanel,Custody"
+msgid "Custody"
+msgstr "Hramba"
+
+#. Key:	Missions
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(362)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(362)
+msgctxt "MarburgumInventoryPanel,Missions"
+msgid "MISSIONS"
+msgstr "NALOGE"
+
+#. Key:	Actions
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(371)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(371)
+msgctxt "MarburgumInventoryPanel,Actions"
+msgid "WHAT YOU CAN DO"
+msgstr "KAJ LAHKO NAREDIŠ"
+
+#. Key:	Sell
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(381)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(381)
+msgctxt "MarburgumInventoryPanel,Sell"
+msgid "Sell at {0} for {1} each"
+msgstr "Prodajno mesto: {0} · cena na kos: {1}"
+
+#. Key:	CounterNote
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(390)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(390)
+msgctxt "MarburgumInventoryPanel,CounterNote"
+msgid "Selling happens at the counter itself: stand at its keeper and press B. The server confirms every sale."
+msgstr "Prodaja poteka pri samem pultu: stopi k prodajalcu in pritisni B. Strežnik potrdi vsako prodajo."
+
+#. Key:	ClueNote
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(392)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(392)
+msgctxt "MarburgumInventoryPanel,ClueNote"
+msgid "Evidence is handed over when a mission asks for it; talk to the person who needs it."
+msgstr "Dokaze predaš, ko to zahteva naloga; pogovori se z osebo, ki jih potrebuje."
+
+#. Key:	NoAction
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(393)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(393)
+msgctxt "MarburgumInventoryPanel,NoAction"
+msgid "Nothing to do with it from here. Missions and counters that want it will ask."
+msgstr "Tukaj s tem predmetom ne moreš ničesar storiti. Pri nalogah in na prodajnih mestih, kjer je potreben, ga bodo zahtevali."
+
+#. Key:	Tool
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(46)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(46)
+msgctxt "MarburgumInventoryPanel,Tool"
+msgid "Tool"
+msgstr "Orodje"
+
+#. Key:	Fish
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(47)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(47)
+msgctxt "MarburgumInventoryPanel,Fish"
+msgid "Fish"
+msgstr "Ribe"
+
+#. Key:	Clue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(48)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(48)
+msgctxt "MarburgumInventoryPanel,Clue"
+msgid "Evidence"
+msgstr "Dokazi"
+
+#. Key:	Goods
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(49)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(49)
+msgctxt "MarburgumInventoryPanel,Goods"
+msgid "Goods"
+msgstr "Blago"
+
+#. Key:	Item
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(50)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(50)
+msgctxt "MarburgumInventoryPanel,Item"
+msgid "Item"
+msgstr "Predmet"
+
+#. Key:	All
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(56)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(56)
+msgctxt "MarburgumInventoryPanel,All"
+msgid "All"
+msgstr "Vse"
+
+#. Key:	EmptyDossier
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(183)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(183)
+msgctxt "MarburgumJournalPanel,EmptyDossier"
+msgid "The archive is empty. A dossier opens here for every mission you take on."
+msgstr "Arhiv je prazen. Za vsako nalogo, ki jo sprejmeš, se tukaj odpre dosje."
+
+#. Key:	WaitingTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(188)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(188)
+msgctxt "MarburgumJournalPanel,WaitingTitle"
+msgid "Waiting for the server"
+msgstr "Čakanje na strežnik"
+
+#. Key:	WaitingBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(189)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(189)
+msgctxt "MarburgumJournalPanel,WaitingBody"
+msgid "Missions appear once the server has loaded this character's saved record."
+msgstr "Naloge se prikažejo, ko strežnik naloži shranjeni zapis tega lika."
+
+#. Key:	NoCharacterTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(194)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(194)
+msgctxt "MarburgumJournalPanel,NoCharacterTitle"
+msgid "No character selected"
+msgstr "Noben lik ni izbran"
+
+#. Key:	NoCharacterBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(195)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(195)
+msgctxt "MarburgumJournalPanel,NoCharacterBody"
+msgid "Join with a character to take on missions. People will not trust a stranger without a name."
+msgstr "Vstopi z likom, da lahko sprejemaš naloge. Ljudje ne bodo zaupali neznancu brez imena."
+
+#. Key:	EmptyTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(200)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(200)
+msgctxt "MarburgumJournalPanel,EmptyTitle"
+msgid "No missions yet"
+msgstr "Še ni nalog"
+
+#. Key:	EmptyBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(201)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(201)
+msgctxt "MarburgumJournalPanel,EmptyBody"
+msgid "People around the city may ask for help. A mission appears here only after the server has saved it."
+msgstr "Ljudje po mestu te lahko prosijo za pomoč. Naloga se tukaj prikaže šele, ko jo strežnik shrani."
+
+#. Key:	UnderWay
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(219)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(219)
+msgctxt "MarburgumJournalPanel,UnderWay"
+msgid "UNDER WAY"
+msgstr "V TEKU"
+
+#. Key:	NoneActive
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(228)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(228)
+msgctxt "MarburgumJournalPanel,NoneActive"
+msgid "Nothing under way."
+msgstr "Nič ni v teku."
+
+#. Key:	Closed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(234)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(234)
+msgctxt "MarburgumJournalPanel,Closed"
+msgid "CLOSED"
+msgstr "ZAKLJUČENO"
+
+#. Key:	ErrandOverline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(243)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(243)
+msgctxt "MarburgumJournalPanel,ErrandOverline"
+msgid "ERRAND"
+msgstr "OPRAVEK"
+
+#. Key:	StoryOverline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(243)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(243)
+msgctxt "MarburgumJournalPanel,StoryOverline"
+msgid "STORY"
+msgstr "ZGODBA"
+
+#. Key:	Pinned
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(250)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(250)
+msgctxt "MarburgumJournalPanel,Pinned"
+msgid "PINNED"
+msgstr "PRIPETO"
+
+#. Key:	Summary
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(260)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(260)
+msgctxt "MarburgumJournalPanel,Summary"
+msgid "{0} under way  ·  {1} closed  ·  saved by the server"
+msgstr "V teku: {0}  ·  zaključeno: {1}  ·  shranjeno na strežniku"
+
+#. Key:	DossierErrand
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(298)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(298)
+msgctxt "MarburgumJournalPanel,DossierErrand"
+msgid "DOSSIER  ·  ERRAND"
+msgstr "DOSJE  ·  OPRAVEK"
+
+#. Key:	DossierStory
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(298)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(298)
+msgctxt "MarburgumJournalPanel,DossierStory"
+msgid "DOSSIER  ·  STORY"
+msgstr "DOSJE  ·  ZGODBA"
+
+#. Key:	Open
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(301)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(301)
+msgctxt "MarburgumJournalPanel,Open"
+msgid "UNDER WAY"
+msgstr "V TEKU"
+
+#. Key:	Current
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(316)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(316)
+msgctxt "MarburgumJournalPanel,Current"
+msgid "CURRENT OBJECTIVE"
+msgstr "TRENUTNI CILJ"
+
+#. Key:	UnknownStage
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(319)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(319)
+msgctxt "MarburgumJournalPanel,UnknownStage"
+msgid "The next step is not known to this client version."
+msgstr "Ta različica odjemalca ne pozna naslednjega koraka."
+
+#. Key:	Steps
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(327)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(327)
+msgctxt "MarburgumJournalPanel,Steps"
+msgid "STEPS TAKEN"
+msgstr "OPRAVLJENI KORAKI"
+
+#. Key:	Ahead
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(338)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(338)
+msgctxt "MarburgumJournalPanel,Ahead"
+msgid "Later steps are revealed as you go."
+msgstr "Naslednji koraki se razkrivajo sproti."
+
+#. Key:	HeldMany
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(354)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(354)
+msgctxt "MarburgumJournalPanel,HeldMany"
+msgid "{0}  ×{1}"
+msgstr "{0}  ×{1}"
+
+#. Key:	Evidence
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(360)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(360)
+msgctxt "MarburgumJournalPanel,Evidence"
+msgid "IN YOUR POSSESSION"
+msgstr "V TVOJI POSESTI"
+
+#. Key:	Decision
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(380)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(380)
+msgctxt "MarburgumJournalPanel,Decision"
+msgid "YOUR DECISION"
+msgstr "TVOJA ODLOČITEV"
+
+#. Key:	Reward
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(390)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(390)
+msgctxt "MarburgumJournalPanel,Reward"
+msgid "Paid {0} money on completion"
+msgstr "Izplačani denar ob zaključku: {0}"
+
+#. Key:	Saved
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(394)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(394)
+msgctxt "MarburgumJournalPanel,Saved"
+msgid "Kept by the server  ·  survives a restart"
+msgstr "Shranjeno na strežniku  ·  se ohrani po ponovnem zagonu"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(86)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(86)
+msgctxt "MarburgumJournalPanel,Overline"
+msgid "JOURNAL"
+msgstr "DNEVNIK"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(87)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(87)
+msgctxt "MarburgumJournalPanel,Title"
+msgid "Cases and errands"
+msgstr "Primeri in opravki"
+
+#. Key:	District
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(279)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(279)
+msgctxt "MarburgumLocationBanner,District"
+msgid "DISTRICT"
+msgstr "PREDEL"
+
+#. Key:	Period
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(281)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(281)
+msgctxt "MarburgumLocationBanner,Period"
+msgid "Maribor  ·  1990s"
+msgstr "Maribor  ·  90. leta 20. stoletja"
+
+#. Key:	Unknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(286)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(286)
+msgctxt "MarburgumLocationBanner,Unknown"
+msgid "PLACE"
+msgstr "KRAJ"
+
+#. Key:	Unregistered
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(288)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(288)
+msgctxt "MarburgumLocationBanner,Unregistered"
+msgid "Not registered in this client version"
+msgstr "Ni zabeleženo v tej različici odjemalca"
+
+#. Key:	Quarter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(294)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(294)
+msgctxt "MarburgumLocationBanner,Quarter"
+msgid "QUARTER"
+msgstr "MESTNA ČETRT"
+
+#. Key:	LocalCommunity
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(295)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(295)
+msgctxt "MarburgumLocationBanner,LocalCommunity"
+msgid "LOCAL COMMUNITY"
+msgstr "KRAJEVNA SKUPNOST"
+
+#. Key:	Settlement
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(295)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(295)
+msgctxt "MarburgumLocationBanner,Settlement"
+msgid "SETTLEMENT"
+msgstr "NASELJE"
+
+#. Key:	Municipality
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(297)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(297)
+msgctxt "MarburgumLocationBanner,Municipality"
+msgid "Municipality of Maribor  ·  1990s"
+msgstr "Občina Maribor  ·  90. leta 20. stoletja"
+
+#. Key:	City
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(307)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(307)
+msgctxt "MarburgumLocationBanner,City"
+msgid "CITY"
+msgstr "MESTO"
+
+#. Key:	Outside
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(309)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(309)
+msgctxt "MarburgumLocationBanner,Outside"
+msgid "Outside the named districts"
+msgstr "Zunaj poimenovanih predelov"
+
+#. Key:	Close
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(165)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(165)
+msgctxt "MarburgumManagementShell,Close"
+msgid "Close"
+msgstr "Zapri"
+
+#. Key:	SwitchScreen
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(181)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(181)
+msgctxt "MarburgumManagementShell,SwitchScreen"
+msgid "Switch screen"
+msgstr "Preklopi zaslon"
+
+#. Key:	Move
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(182)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(182)
+msgctxt "MarburgumManagementShell,Move"
+msgid "Move"
+msgstr "Premikaj"
+
+#. Key:	Select
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(183)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(183)
+msgctxt "MarburgumManagementShell,Select"
+msgid "Select"
+msgstr "Izberi"
+
+#. Key:	Back
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(184)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(184)
+msgctxt "MarburgumManagementShell,Back"
+msgid "Back to the street"
+msgstr "Nazaj na ulico"
+
+#. Key:	FullName
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(236)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(236)
+msgctxt "MarburgumManagementShell,FullName"
+msgid "{0} {1}"
+msgstr "{0} {1}"
+
+#. Key:	Unnamed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(241)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(241)
+msgctxt "MarburgumManagementShell,Unnamed"
+msgid "Development character"
+msgstr "Razvojni lik"
+
+#. Key:	Maribor
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(243)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(243)
+msgctxt "MarburgumManagementShell,Maribor"
+msgid "Maribor"
+msgstr "Maribor"
+
+#. Key:	DistrictStreet
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(251)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(251)
+msgctxt "MarburgumManagementShell,DistrictStreet"
+msgid "{0}  ·  {1}"
+msgstr "{0}  ·  {1}"
+
+#. Key:	Character
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(59)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(59)
+msgctxt "MarburgumManagementShell,Character"
+msgid "Character"
+msgstr "Lik"
+
+#. Key:	Skills
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(60)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(60)
+msgctxt "MarburgumManagementShell,Skills"
+msgid "Skills"
+msgstr "Veščine"
+
+#. Key:	Inventory
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(61)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(61)
+msgctxt "MarburgumManagementShell,Inventory"
+msgid "Inventory"
+msgstr "Inventar"
+
+#. Key:	Journal
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(62)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(62)
+msgctxt "MarburgumManagementShell,Journal"
+msgid "Journal"
+msgstr "Dnevnik"
+
+#. Key:	Settings
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(63)
+#: Source/MarburgumIIClient/Private/UI/MarburgumManagementShell.cpp(63)
+msgctxt "MarburgumManagementShell,Settings"
+msgid "Settings"
+msgstr "Nastavitve"
+
+#. Key:	CompletedLine
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(189)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(189)
+msgctxt "MarburgumPinnedObjective,CompletedLine"
+msgid "Completed and saved by the server. [J] has the journal entry."
+msgstr "Opravljeno in shranjeno na strežniku. Zapis v dnevniku najdeš s tipko [J]."
+
+#. Key:	Completed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(193)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(193)
+msgctxt "MarburgumPinnedObjective,Completed"
+msgid "COMPLETED"
+msgstr "OPRAVLJENO"
+
+#. Key:	Mission
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(220)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(220)
+msgctxt "MarburgumPinnedObjective,Mission"
+msgid "MISSION"
+msgstr "NALOGA"
+
+#. Key:	Story
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(220)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(220)
+msgctxt "MarburgumPinnedObjective,Story"
+msgid "STORY MISSION"
+msgstr "ZGODBENA NALOGA"
+
+#. Key:	UnknownStage
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(223)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(223)
+msgctxt "MarburgumPinnedObjective,UnknownStage"
+msgid "The next step is not known to this client version."
+msgstr "Ta različica odjemalca ne pozna naslednjega koraka."
+
+#. Key:	Updated
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(230)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(230)
+msgctxt "MarburgumPinnedObjective,Updated"
+msgid "UPDATED"
+msgstr "POSODOBLJENO"
+
+#. Key:	New
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(234)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(234)
+msgctxt "MarburgumPinnedObjective,New"
+msgid "NEW"
+msgstr "NOVO"
+
+#. Key:	Journal
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(66)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(66)
+msgctxt "MarburgumPinnedObjective,Journal"
+msgid "Journal"
+msgstr "Dnevnik"
+
+#. Key:	JournalKey
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(66)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPinnedObjective.cpp(66)
+msgctxt "MarburgumPinnedObjective,JournalKey"
+msgid "J"
+msgstr "J"
+
+#. Key:	Running
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(186)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(186)
+msgctxt "MarburgumPlayerCondition,Running"
+msgid "RUNNING"
+msgstr "TEK"
+
+#. Key:	Winded
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(191)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(191)
+msgctxt "MarburgumPlayerCondition,Winded"
+msgid "WINDED"
+msgstr "ZADIHANOST"
+
+#. Key:	Swimming
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(197)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(197)
+msgctxt "MarburgumPlayerCondition,Swimming"
+msgid "SWIMMING"
+msgstr "PLAVANJE"
+
+#. Key:	HoldingBreath
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(202)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(202)
+msgctxt "MarburgumPlayerCondition,HoldingBreath"
+msgid "HOLDING BREATH"
+msgstr "ZADRŽEVANJE DIHA"
+
+#. Key:	KnockedDownChip
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(211)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(211)
+msgctxt "MarburgumPlayerCondition,KnockedDownChip"
+msgid "KNOCKED DOWN · {0} s"
+msgstr "NA TLEH · {0} s"
+
+#. Key:	DrownedChip
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(212)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(212)
+msgctxt "MarburgumPlayerCondition,DrownedChip"
+msgid "DROWNED · {0} s"
+msgstr "UTOPITEV · {0} s"
+
+#. Key:	DrownedTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(220)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(220)
+msgctxt "MarburgumPlayerCondition,DrownedTitle"
+msgid "Pulled from the water"
+msgstr "Potegnili so te iz vode"
+
+#. Key:	KnockedDownTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(220)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(220)
+msgctxt "MarburgumPlayerCondition,KnockedDownTitle"
+msgid "Knocked down"
+msgstr "Na tleh"
+
+#. Key:	Recovering
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(223)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(223)
+msgctxt "MarburgumPlayerCondition,Recovering"
+msgid "Back on your feet in {0} s. The server decides when."
+msgstr "Čez {0} s boš spet na nogah. Čas določi strežnik."
+
+#. Key:	Getting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(224)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(224)
+msgctxt "MarburgumPlayerCondition,Getting"
+msgid "Getting up…"
+msgstr "Vstajanje…"
+
+#. Key:	Waiting
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(77)
+#: Source/MarburgumIIClient/Private/UI/MarburgumPlayerCondition.cpp(77)
+msgctxt "MarburgumPlayerCondition,Waiting"
+msgid "Waiting for the server to restore this character"
+msgstr "Čakanje, da strežnik obnovi stanje tega lika"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(108)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(108)
+msgctxt "MarburgumSettingsPanel,Overline"
+msgid "SETTINGS"
+msgstr "NASTAVITVE"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(109)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(109)
+msgctxt "MarburgumSettingsPanel,Title"
+msgid "How the game looks, sounds and answers"
+msgstr "Kako je igra videti, kako zveni in kako se odziva"
+
+#. Key:	Interface
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(117)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(117)
+msgctxt "MarburgumSettingsPanel,Interface"
+msgid "INTERFACE"
+msgstr "VMESNIK"
+
+#. Key:	LanguageLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(118)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(118)
+msgctxt "MarburgumSettingsPanel,LanguageLabel"
+msgid "Language"
+msgstr "Jezik"
+
+#. Key:	LanguageDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(119)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(119)
+msgctxt "MarburgumSettingsPanel,LanguageDesc"
+msgid "The language of menus, screens and notices. Place names are always Slovene; what people in the city say, and mission texts, are still in English in this build."
+msgstr "Jezik menijev, zaslonov in obvestil. Imena krajev so vedno slovenska; pogovori z ljudmi v mestu in besedila nalog so v tej različici še v angleščini."
+
+#. Key:	ScaleLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(120)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(120)
+msgctxt "MarburgumSettingsPanel,ScaleLabel"
+msgid "Interface scale"
+msgstr "Velikost vmesnika"
+
+#. Key:	ScaleFixed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(122)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(122)
+msgctxt "MarburgumSettingsPanel,ScaleFixed"
+msgid "The size of every panel and text on top of the display's own scaling. Fixed for this run by -MB2UIScale."
+msgstr "Velikost vseh plošč in besedila poleg povečave, ki jo uporablja zaslon. Za ta zagon je določena s parametrom -MB2UIScale."
+
+#. Key:	ScaleDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(123)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(123)
+msgctxt "MarburgumSettingsPanel,ScaleDesc"
+msgid "The size of every panel and text on top of the display's own scaling. 100 % suits most screens; raise it on a large television or a high-density laptop."
+msgstr "Velikost vseh plošč in besedila poleg povečave, ki jo uporablja zaslon. 100 % ustreza večini zaslonov; povečaj jo na velikem televizorju ali prenosniku z visoko gostoto slikovnih pik."
+
+#. Key:	TextLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(125)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(125)
+msgctxt "MarburgumSettingsPanel,TextLabel"
+msgid "Text size"
+msgstr "Velikost besedila"
+
+#. Key:	TextDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(126)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(126)
+msgctxt "MarburgumSettingsPanel,TextDesc"
+msgid "Larger reading text in panels, the journal, chat and subtitles, without enlarging the frames."
+msgstr "Večje besedilo na ploščah, v dnevniku, klepetu in podnapisih, brez povečanja okvirjev."
+
+#. Key:	ContrastLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(127)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(127)
+msgctxt "MarburgumSettingsPanel,ContrastLabel"
+msgid "High contrast"
+msgstr "Visok kontrast"
+
+#. Key:	ContrastDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(128)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(128)
+msgctxt "MarburgumSettingsPanel,ContrastDesc"
+msgid "Opaque panels, brighter secondary text and stronger outlines that read over any street."
+msgstr "Neprosojne plošče, svetlejše pomožno besedilo in izrazitejši obrisi, ki so dobro vidni na ozadju katere koli ulice."
+
+#. Key:	MotionLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(129)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(129)
+msgctxt "MarburgumSettingsPanel,MotionLabel"
+msgid "Reduce motion"
+msgstr "Zmanjšaj gibanje"
+
+#. Key:	MotionDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(130)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(130)
+msgctxt "MarburgumSettingsPanel,MotionDesc"
+msgid "No slides, pulses or long fades: titles and notifications appear and leave at once."
+msgstr "Brez drsenja, utripanja ali dolgega bledenja: naslovi in obvestila se pojavijo in izginejo takoj."
+
+#. Key:	HudLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(131)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(131)
+msgctxt "MarburgumSettingsPanel,HudLabel"
+msgid "HUD opacity"
+msgstr "Neprosojnost prikaza HUD"
+
+#. Key:	HudDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(132)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(132)
+msgctxt "MarburgumSettingsPanel,HudDesc"
+msgid "How strongly the exploration HUD is drawn over the street. Screens and warnings stay opaque."
+msgstr "Kako izrazito je HUD med raziskovanjem prikazan čez ulico. Zasloni in opozorila ostanejo neprosojni."
+
+#. Key:	ConditionLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(133)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(133)
+msgctxt "MarburgumSettingsPanel,ConditionLabel"
+msgid "Condition"
+msgstr "Stanje"
+
+#. Key:	ConditionDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(134)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(134)
+msgctxt "MarburgumSettingsPanel,ConditionDesc"
+msgid "Show vitality and stamina only when they change or matter, or keep them on screen."
+msgstr "Vitalnost in vzdržljivost prikaži le, ko se spremenita ali sta pomembni, ali pa naj bosta ves čas na zaslonu."
+
+#. Key:	NoticeLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(135)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(135)
+msgctxt "MarburgumSettingsPanel,NoticeLabel"
+msgid "Notification time"
+msgstr "Čas prikaza obvestil"
+
+#. Key:	NoticeDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(136)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(136)
+msgctxt "MarburgumSettingsPanel,NoticeDesc"
+msgid "How long mission, item and server notices stay before they fade. Refusals always stay a little longer."
+msgstr "Kako dolgo so obvestila o nalogah, predmetih in strežniku prikazana, preden zbledijo. Obvestila o zavrnitvah so vedno prikazana nekoliko dlje."
+
+#. Key:	StampLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(137)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(137)
+msgctxt "MarburgumSettingsPanel,StampLabel"
+msgid "Chat timestamps"
+msgstr "Časovne oznake v klepetu"
+
+#. Key:	StampDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(138)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(138)
+msgctxt "MarburgumSettingsPanel,StampDesc"
+msgid "Each chat line carries the time this computer received it."
+msgstr "Vsaka vrstica klepeta je opremljena s časom, ko jo je ta računalnik prejel."
+
+#. Key:	Audio
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(140)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(140)
+msgctxt "MarburgumSettingsPanel,Audio"
+msgid "AUDIO"
+msgstr "ZVOK"
+
+#. Key:	VolumeLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(141)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(141)
+msgctxt "MarburgumSettingsPanel,VolumeLabel"
+msgid "Master volume"
+msgstr "Glavna glasnost"
+
+#. Key:	VolumeDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(142)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(142)
+msgctxt "MarburgumSettingsPanel,VolumeDesc"
+msgid "The loudness of everything the game plays. Separate music and effects levels arrive when the game has separate music and effects channels."
+msgstr "Glasnost vsega, kar igra predvaja. Ločeni nastavitvi glasnosti glasbe in učinkov bosta na voljo, ko bo igra imela ločena kanala za glasbo in učinke."
+
+#. Key:	Display
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(145)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(145)
+msgctxt "MarburgumSettingsPanel,Display"
+msgid "DISPLAY"
+msgstr "ZASLON"
+
+#. Key:	ResolutionLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(146)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(146)
+msgctxt "MarburgumSettingsPanel,ResolutionLabel"
+msgid "Resolution"
+msgstr "Ločljivost"
+
+#. Key:	ResolutionDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(147)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(147)
+msgctxt "MarburgumSettingsPanel,ResolutionDesc"
+msgid "The size of the game's window. Changing it in game is not offered yet; start the client with -ResX and -ResY to choose."
+msgstr "Velikost okna igre. Spreminjanje med igro še ni na voljo; izbereš jo tako, da odjemalec zaženeš s parametroma -ResX in -ResY."
+
+#. Key:	WindowLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(149)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(149)
+msgctxt "MarburgumSettingsPanel,WindowLabel"
+msgid "Window mode"
+msgstr "Način prikaza"
+
+#. Key:	WindowDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(150)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(150)
+msgctxt "MarburgumSettingsPanel,WindowDesc"
+msgid "Full screen, borderless or windowed, as the client was started."
+msgstr "Celozaslonsko, brez robov ali v oknu, kot ob zagonu odjemalca."
+
+#. Key:	DpiLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(151)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(151)
+msgctxt "MarburgumSettingsPanel,DpiLabel"
+msgid "Display scaling"
+msgstr "Merilo prikaza"
+
+#. Key:	DpiDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(152)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(152)
+msgctxt "MarburgumSettingsPanel,DpiDesc"
+msgid "The interface is designed at 1080p and follows the window's height: 80 % at 720p, 133 % at 1440p and 200 % at 4K. Interface scale multiplies on top."
+msgstr "Vmesnik je zasnovan za 1080p in se prilagaja višini okna: 80 % pri 720p, 133 % pri 1440p in 200 % pri 4K. Merilo vmesnika to vrednost dodatno pomnoži."
+
+#. Key:	VSyncLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(154)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(154)
+msgctxt "MarburgumSettingsPanel,VSyncLabel"
+msgid "Vertical sync"
+msgstr "Navpična sinhronizacija"
+
+#. Key:	VSyncDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(155)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(155)
+msgctxt "MarburgumSettingsPanel,VSyncDesc"
+msgid "Waits for the display before showing each frame: no tearing, slightly more input delay."
+msgstr "Pred prikazom vsake sličice počaka na zaslon: brez trganja slike, z nekoliko večjim zamikom vnosa."
+
+#. Key:	FpsLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(156)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(156)
+msgctxt "MarburgumSettingsPanel,FpsLabel"
+msgid "Frame-rate limit"
+msgstr "Omejitev sličic na sekundo"
+
+#. Key:	FpsDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(157)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(157)
+msgctxt "MarburgumSettingsPanel,FpsDesc"
+msgid "Caps how many frames the game draws per second, to keep a laptop cool and quiet."
+msgstr "Omeji število sličic, ki jih igra izriše na sekundo, da prenosnik ostane hladen in tih."
+
+#. Key:	Controls
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(159)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(159)
+msgctxt "MarburgumSettingsPanel,Controls"
+msgid "CONTROLS"
+msgstr "UPRAVLJANJE"
+
+#. Key:	Move
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(161)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(161)
+msgctxt "MarburgumSettingsPanel,Move"
+msgid "Walk"
+msgstr "Hoja"
+
+#. Key:	Run
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(162)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(162)
+msgctxt "MarburgumSettingsPanel,Run"
+msgid "Run  ·  handbrake when driving"
+msgstr "Tek  ·  ročna zavora med vožnjo"
+
+#. Key:	Jump
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(163)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(163)
+msgctxt "MarburgumSettingsPanel,Jump"
+msgid "Jump"
+msgstr "Skok"
+
+#. Key:	Interact
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(164)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(164)
+msgctxt "MarburgumSettingsPanel,Interact"
+msgid "Talk, inspect, fish, enter or leave a car"
+msgstr "Pogovor, ogled, ribolov, vstop v avto ali izstop iz njega"
+
+#. Key:	Shop
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(165)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(165)
+msgctxt "MarburgumSettingsPanel,Shop"
+msgid "Open a shopkeeper's counter"
+msgstr "Odpri ponudbo pri trgovcu"
+
+#. Key:	Fight
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(166)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(166)
+msgctxt "MarburgumSettingsPanel,Fight"
+msgid "Jab  ·  heavy swing  ·  guard (hold)"
+msgstr "Kratek udarec  ·  močan zamah  ·  obramba (drži)"
+
+#. Key:	Chat
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(167)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(167)
+msgctxt "MarburgumSettingsPanel,Chat"
+msgid "Chat"
+msgstr "Klepet"
+
+#. Key:	Screens
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(168)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(168)
+msgctxt "MarburgumSettingsPanel,Screens"
+msgid "Character  ·  Skills  ·  Inventory  ·  Journal"
+msgstr "Lik  ·  Veščine  ·  Inventar  ·  Dnevnik"
+
+#. Key:	Choose
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(169)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(169)
+msgctxt "MarburgumSettingsPanel,Choose"
+msgid "Pick an answer in a decision"
+msgstr "Izberi odgovor pri odločitvi"
+
+#. Key:	Menu
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(170)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(170)
+msgctxt "MarburgumSettingsPanel,Menu"
+msgid "Close a screen  ·  game menu"
+msgstr "Zapri zaslon  ·  meni igre"
+
+#. Key:	Pad
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(171)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(171)
+msgctxt "MarburgumSettingsPanel,Pad"
+msgid "Gamepad in menus: move, select, back, switch screen"
+msgstr "Igralni plošček v menijih: premikanje, izbira, nazaj, preklop zaslona"
+
+#. Key:	Rebind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(172)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(172)
+msgctxt "MarburgumSettingsPanel,Rebind"
+msgid "Keys cannot be changed yet; rebinding arrives with the input-mapping design. Walking and driving with a gamepad are not part of this build."
+msgstr "Tipk še ni mogoče spremeniti; spreminjanje bo na voljo ob uvedbi sistema za preslikavo vnosa. Hoja in vožnja z igralnim ploščkom nista vključeni v to različico."
+
+#. Key:	Restore
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(177)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(177)
+msgctxt "MarburgumSettingsPanel,Restore"
+msgid "RESTORE"
+msgstr "PONASTAVITEV"
+
+#. Key:	UndoLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(178)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(178)
+msgctxt "MarburgumSettingsPanel,UndoLabel"
+msgid "Undo changes"
+msgstr "Razveljavi spremembe"
+
+#. Key:	UndoDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(179)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(179)
+msgctxt "MarburgumSettingsPanel,UndoDesc"
+msgid "Puts every setting back the way it was when this screen opened."
+msgstr "Vse nastavitve povrne v stanje ob odprtju tega zaslona."
+
+#. Key:	ResetLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(180)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(180)
+msgctxt "MarburgumSettingsPanel,ResetLabel"
+msgid "Reset to defaults"
+msgstr "Ponastavi na privzeto"
+
+#. Key:	ResetDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(181)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(181)
+msgctxt "MarburgumSettingsPanel,ResetDesc"
+msgid "Puts every interface, audio and display setting here back to the shipped values."
+msgstr "Vse nastavitve vmesnika, zvoka in prikaza na tem zaslonu povrne na privzete vrednosti igre."
+
+#. Key:	About
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(188)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(188)
+msgctxt "MarburgumSettingsPanel,About"
+msgid "ABOUT THIS SETTING"
+msgstr "O TEJ NASTAVITVI"
+
+#. Key:	Current
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(196)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(196)
+msgctxt "MarburgumSettingsPanel,Current"
+msgid "Now"
+msgstr "Trenutno"
+
+#. Key:	Default
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(199)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(199)
+msgctxt "MarburgumSettingsPanel,Default"
+msgid "Default"
+msgstr "Privzeto"
+
+#. Key:	Local
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(202)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(202)
+msgctxt "MarburgumSettingsPanel,Local"
+msgid "Saved on this computer as soon as you change it. Nothing here is sent to the server or to your account."
+msgstr "Shrani se na ta računalnik takoj, ko spremeniš nastavitev. Nič od tega se ne pošlje strežniku ali v tvoj račun."
+
+#. Key:	Change
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(206)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(206)
+msgctxt "MarburgumSettingsPanel,Change"
+msgid "Change value"
+msgstr "Spremeni vrednost"
+
+#. Key:	Next
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(207)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(207)
+msgctxt "MarburgumSettingsPanel,Next"
+msgid "Next value"
+msgstr "Naslednja vrednost"
+
+#. Key:	Large
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(308)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(308)
+msgctxt "MarburgumSettingsPanel,Large"
+msgid "Large"
+msgstr "Veliko"
+
+#. Key:	Larger
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(308)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(308)
+msgctxt "MarburgumSettingsPanel,Larger"
+msgid "Larger"
+msgstr "Večje"
+
+#. Key:	Standard
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(308)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(308)
+msgctxt "MarburgumSettingsPanel,Standard"
+msgid "Standard"
+msgstr "Običajno"
+
+#. Key:	Always
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
+msgctxt "MarburgumSettingsPanel,Always"
+msgid "Always"
+msgstr "Vedno"
+
+#. Key:	WhenItMatters
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
+msgctxt "MarburgumSettingsPanel,WhenItMatters"
+msgid "When it matters"
+msgstr "Ko je pomembno"
+
+#. Key:	Long
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(314)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(314)
+msgctxt "MarburgumSettingsPanel,Long"
+msgid "Long"
+msgstr "Dolgo"
+
+#. Key:	Short
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(314)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(314)
+msgctxt "MarburgumSettingsPanel,Short"
+msgid "Short"
+msgstr "Kratko"
+
+#. Key:	Unavailable
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(319)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(319)
+msgctxt "MarburgumSettingsPanel,Unavailable"
+msgid "Unavailable"
+msgstr "Ni na voljo"
+
+#. Key:	Unlimited
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(325)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(325)
+msgctxt "MarburgumSettingsPanel,Unlimited"
+msgid "Unlimited"
+msgstr "Brez omejitve"
+
+#. Key:	Fps
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(326)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(326)
+msgctxt "MarburgumSettingsPanel,Fps"
+msgid "{0} fps"
+msgstr "{0} fps"
+
+#. Key:	Size
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(330)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(330)
+msgctxt "MarburgumSettingsPanel,Size"
+msgid "{0} × {1}"
+msgstr "{0} × {1}"
+
+#. Key:	Fullscreen
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(340)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(340)
+msgctxt "MarburgumSettingsPanel,Fullscreen"
+msgid "Full screen"
+msgstr "Celozaslonsko"
+
+#. Key:	Borderless
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(341)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(341)
+msgctxt "MarburgumSettingsPanel,Borderless"
+msgid "Borderless"
+msgstr "Brez robov"
+
+#. Key:	Windowed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(342)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(342)
+msgctxt "MarburgumSettingsPanel,Windowed"
+msgid "Windowed"
+msgstr "V oknu"
+
+#. Key:	SystemLanguage
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(501)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(501)
+msgctxt "MarburgumSettingsPanel,SystemLanguage"
+msgid "The system's"
+msgstr "Sistemski jezik"
+
+#. Key:	NotApplicable
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(507)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(507)
+msgctxt "MarburgumSettingsPanel,NotApplicable"
+msgid "—"
+msgstr "—"
+
+#. Key:	Percent
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(55)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(55)
+msgctxt "MarburgumSettingsPanel,Percent"
+msgid "{0} %"
+msgstr "{0} %"
+
+#. Key:	Off
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(60)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(60)
+msgctxt "MarburgumSettingsPanel,Off"
+msgid "Off"
+msgstr "Izklopljeno"
+
+#. Key:	On
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(60)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(60)
+msgctxt "MarburgumSettingsPanel,On"
+msgid "On"
+msgstr "Vklopljeno"
+
+#. Key:	Unknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(150)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(150)
+msgctxt "MarburgumShopPanel,Unknown"
+msgid "Petra is still counting the shelves."
+msgstr "Petra še prešteva zalogo na policah."
+
+#. Key:	Open
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(151)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(151)
+msgctxt "MarburgumShopPanel,Open"
+msgid "Petra looks up from the counter."
+msgstr "Petra dvigne pogled izza pulta."
+
+#. Key:	Money
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(154)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(154)
+msgctxt "MarburgumShopPanel,Money"
+msgid "You have {0} money"
+msgstr "Tvoj denar: {0}"
+
+#. Key:	Price
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(175)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(175)
+msgctxt "MarburgumShopPanel,Price"
+msgid "{0} money"
+msgstr "Denar: {0}"
+
+#. Key:	TakesBack
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(179)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(179)
+msgctxt "MarburgumShopPanel,TakesBack"
+msgid "Takes back for {0}"
+msgstr "Odkup za {0}"
+
+#. Key:	ShelfUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(182)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(182)
+msgctxt "MarburgumShopPanel,ShelfUnknown"
+msgid "Shelf unknown"
+msgstr "Zaloga ni znana"
+
+#. Key:	SoldOut
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(183)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(183)
+msgctxt "MarburgumShopPanel,SoldOut"
+msgid "Sold out"
+msgstr "Razprodano"
+
+#. Key:	OnShelf
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(184)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(184)
+msgctxt "MarburgumShopPanel,OnShelf"
+msgid "{0} on the shelf"
+msgstr "Na polici: {0}"
+
+#. Key:	Held
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(187)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(187)
+msgctxt "MarburgumShopPanel,Held"
+msgid "You hold {0}"
+msgstr "Imaš: {0}"
+
+#. Key:	Short
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(191)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(191)
+msgctxt "MarburgumShopPanel,Short"
+msgid "Not enough money"
+msgstr "Premalo denarja"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(44)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(44)
+msgctxt "MarburgumShopPanel,Overline"
+msgid "COUNTER"
+msgstr "PULT"
+
+#. Key:	Close
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(46)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(46)
+msgctxt "MarburgumShopPanel,Close"
+msgid "Leave the counter"
+msgstr "Zapusti pult"
+
+#. Key:	Shelves
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(60)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(60)
+msgctxt "MarburgumShopPanel,Shelves"
+msgid "ON THE SHELVES"
+msgstr "NA POLICAH"
+
+#. Key:	Buy
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(64)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(64)
+msgctxt "MarburgumShopPanel,Buy"
+msgid "Buy one"
+msgstr "Kupi en kos"
+
+#. Key:	Sell
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(65)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(65)
+msgctxt "MarburgumShopPanel,Sell"
+msgid "Sell one back"
+msgstr "Prodaj en kos nazaj"
+
+#. Key:	Hint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(67)
+#: Source/MarburgumIIClient/Private/UI/MarburgumShopPanel.cpp(67)
+msgctxt "MarburgumShopPanel,Hint"
+msgid "The counter sets the prices. A trade counts once the server confirms it."
+msgstr "Cene določa trgovec. Menjava velja šele, ko jo potrdi strežnik."
+
+#. Key:	WaitingTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(192)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(192)
+msgctxt "MarburgumSkillsPanel,WaitingTitle"
+msgid "Waiting for the server"
+msgstr "Čakanje na strežnik"
+
+#. Key:	WaitingBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(193)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(193)
+msgctxt "MarburgumSkillsPanel,WaitingBody"
+msgid "Skills appear once the server has loaded this character's saved record."
+msgstr "Veščine se prikažejo, ko strežnik naloži shranjeni zapis tega lika."
+
+#. Key:	NoCharacterTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(194)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(194)
+msgctxt "MarburgumSkillsPanel,NoCharacterTitle"
+msgid "No character selected"
+msgstr "Noben lik ni izbran"
+
+#. Key:	NoCharacterBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(195)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(195)
+msgctxt "MarburgumSkillsPanel,NoCharacterBody"
+msgid "A connection without a character learns nothing that lasts."
+msgstr "Če si povezan brez lika, se nič naučenega ne ohrani."
+
+#. Key:	Progress
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(217)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(217)
+msgctxt "MarburgumSkillsPanel,Progress"
+msgid "{0} / {1} XP to level {2}"
+msgstr "{0} / {1} XP do ravni {2}"
+
+#. Key:	TopLevel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(219)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(219)
+msgctxt "MarburgumSkillsPanel,TopLevel"
+msgid "Top level reached"
+msgstr "Dosežena najvišja raven"
+
+#. Key:	LevelOverline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(224)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(224)
+msgctxt "MarburgumSkillsPanel,LevelOverline"
+msgid "LEVEL"
+msgstr "RAVEN"
+
+#. Key:	Shown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(242)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(242)
+msgctxt "MarburgumSkillsPanel,Shown"
+msgid "{0} {1}  ·  {2} / {3} XP to level {4}  ·  {5} XP in all"
+msgstr "{0} {1}  ·  {2} / {3} XP do ravni {4}  ·  Skupaj {5} XP"
+
+#. Key:	ShownTop
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(244)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(244)
+msgctxt "MarburgumSkillsPanel,ShownTop"
+msgid "{0} {1}  ·  Top level  ·  {2} XP in all"
+msgstr "{0} {1}  ·  Najvišja raven  ·  Skupaj {2} XP"
+
+#. Key:	Money
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(250)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(250)
+msgctxt "MarburgumSkillsPanel,Money"
+msgid "{0} money"
+msgstr "Denar: {0}"
+
+#. Key:	Craft
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(281)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(281)
+msgctxt "MarburgumSkillsPanel,Craft"
+msgid "CRAFT"
+msgstr "PRAKTIČNO ZNANJE"
+
+#. Key:	Standing
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(281)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(281)
+msgctxt "MarburgumSkillsPanel,Standing"
+msgid "STANDING"
+msgstr "DRUŽBENI POLOŽAJ"
+
+#. Key:	OfMax
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(289)
+msgctxt "MarburgumSkillsPanel,OfMax"
+msgid "level, of {0}"
+msgstr "raven od {0}"
+
+#. Key:	ToNext
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(294)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(294)
+msgctxt "MarburgumSkillsPanel,ToNext"
+msgid "TO THE NEXT LEVEL"
+msgstr "DO NASLEDNJE RAVNI"
+
+#. Key:	Into
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(296)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(296)
+msgctxt "MarburgumSkillsPanel,Into"
+msgid "XP in this level"
+msgstr "XP na tej ravni"
+
+#. Key:	IntoValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(297)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(297)
+msgctxt "MarburgumSkillsPanel,IntoValue"
+msgid "{0} of {1}"
+msgstr "{0} od {1}"
+
+#. Key:	TopValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(298)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(298)
+msgctxt "MarburgumSkillsPanel,TopValue"
+msgid "Top level"
+msgstr "Najvišja raven"
+
+#. Key:	Total
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(299)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(299)
+msgctxt "MarburgumSkillsPanel,Total"
+msgid "XP in all"
+msgstr "Skupaj XP"
+
+#. Key:	Scale
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(301)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(301)
+msgctxt "MarburgumSkillsPanel,Scale"
+msgid "ON THE 0–1990 SCALE"
+msgstr "NA LESTVICI 0–1990"
+
+#. Key:	Raises
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(304)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(304)
+msgctxt "MarburgumSkillsPanel,Raises"
+msgid "WHAT RAISES IT"
+msgstr "KAJ ZVIŠUJE RAVEN"
+
+#. Key:	FishingSource
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(36)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(36)
+msgctxt "MarburgumSkillsPanel,FishingSource"
+msgid "Landing a fish at a Drava fishing spot. Bigger species give more."
+msgstr "Ulov ribe na ribolovnem mestu ob reki Drava. Večje vrste prinesejo več."
+
+#. Key:	TradingSource
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(37)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(37)
+msgctxt "MarburgumSkillsPanel,TradingSource"
+msgid "Your first purchase at each shopkeeper's counter, and some mission decisions."
+msgstr "Prvi nakup pri vsakem trgovcu in nekatere odločitve pri nalogah."
+
+#. Key:	ReputationSource
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(38)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(38)
+msgctxt "MarburgumSkillsPanel,ReputationSource"
+msgid "Decisions at the end of missions. Reputation can be lost as well as earned."
+msgstr "Odločitve ob koncu nalog. Ugled lahko pridobiš ali izgubiš."
+
+#. Key:	NoSource
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(39)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(39)
+msgctxt "MarburgumSkillsPanel,NoSource"
+msgid "Nothing in this build raises it yet; it is kept for the systems that will."
+msgstr "V tej različici te veščine še nič ne izboljšuje; ohranjena je za sisteme, ki jo bodo."
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(83)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(83)
+msgctxt "MarburgumSkillsPanel,Overline"
+msgid "SKILLS"
+msgstr "VEŠČINE"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(84)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(84)
+msgctxt "MarburgumSkillsPanel,Title"
+msgid "What you have learned"
+msgstr "Pridobljeno znanje"
+
+#. Key:	Footnote
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(95)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSkillsPanel.cpp(95)
+msgctxt "MarburgumSkillsPanel,Footnote"
+msgid "Levels run from 0 to 1990. Only the server awards XP and money; both are saved with your character."
+msgstr "Ravni segajo od 0 do 1990. XP in denar podeljuje le strežnik; oboje se shrani s tvojim likom."
+
+#. Key:	Stay
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(110)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(110)
+msgctxt "MarburgumSystemMenu,Stay"
+msgid "Stay"
+msgstr "Ostani"
+
+#. Key:	Note
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(118)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(118)
+msgctxt "MarburgumSystemMenu,Note"
+msgid "The city goes on while this is open: Marburgum is one shared world and never pauses."
+msgstr "Mesto živi naprej tudi, ko je ta meni odprt: Marburgum je en sam skupen svet, ki se nikoli ne ustavi."
+
+#. Key:	Select
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(123)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(123)
+msgctxt "MarburgumSystemMenu,Select"
+msgid "Select"
+msgstr "Izberi"
+
+#. Key:	Back
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(124)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(124)
+msgctxt "MarburgumSystemMenu,Back"
+msgid "Back"
+msgstr "Nazaj"
+
+#. Key:	LeaveTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(181)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(181)
+msgctxt "MarburgumSystemMenu,LeaveTitle"
+msgid "Leave the world?"
+msgstr "Želiš zapustiti svet?"
+
+#. Key:	QuitTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(181)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(181)
+msgctxt "MarburgumSystemMenu,QuitTitle"
+msgid "Quit Marburgum?"
+msgstr "Želiš zapreti Marburgum?"
+
+#. Key:	QuitBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(183)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(183)
+msgctxt "MarburgumSystemMenu,QuitBody"
+msgid "The game closes. The server saves your character as you go; the city carries on without you."
+msgstr "Igra se zapre. Strežnik sproti shranjuje tvoj lik; mesto živi naprej brez tebe."
+
+#. Key:	LeaveBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(184)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(184)
+msgctxt "MarburgumSystemMenu,LeaveBody"
+msgid "You return to the title screen. The server saves your character as you go, and you can come back."
+msgstr "Vrneš se na naslovni zaslon. Strežnik sproti shranjuje tvoj lik in lahko se vrneš."
+
+#. Key:	LeaveConfirm
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(194)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(194)
+msgctxt "MarburgumSystemMenu,LeaveConfirm"
+msgid "Leave the world"
+msgstr "Zapusti svet"
+
+#. Key:	QuitConfirm
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(194)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(194)
+msgctxt "MarburgumSystemMenu,QuitConfirm"
+msgid "Quit the game"
+msgstr "Zapri igro"
+
+#. Key:	Wordmark
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(73)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(73)
+msgctxt "MarburgumSystemMenu,Wordmark"
+msgid "Marburgum"
+msgstr "Marburgum"
+
+#. Key:	Resume
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(81)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(81)
+msgctxt "MarburgumSystemMenu,Resume"
+msgid "Back to the street"
+msgstr "Nazaj na ulico"
+
+#. Key:	Settings
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(84)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(84)
+msgctxt "MarburgumSystemMenu,Settings"
+msgid "Settings"
+msgstr "Nastavitve"
+
+#. Key:	SettingsDetail
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(85)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(85)
+msgctxt "MarburgumSystemMenu,SettingsDetail"
+msgid "Interface, sound, display and keys"
+msgstr "Vmesnik, zvok, prikaz in tipke"
+
+#. Key:	Leave
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(88)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(88)
+msgctxt "MarburgumSystemMenu,Leave"
+msgid "Leave the world"
+msgstr "Zapusti svet"
+
+#. Key:	LeaveDetail
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(89)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(89)
+msgctxt "MarburgumSystemMenu,LeaveDetail"
+msgid "Back to the title screen. Your character is saved."
+msgstr "Nazaj na naslovni zaslon. Tvoj lik se shrani."
+
+#. Key:	Quit
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(92)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(92)
+msgctxt "MarburgumSystemMenu,Quit"
+msgid "Quit the game"
+msgstr "Zapri igro"
+
+#. Key:	SampleData
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIBuilder.cpp(475)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIBuilder.cpp(475)
+msgctxt "MarburgumUI,SampleData"
+msgid "SAMPLE DATA · NOT LIVE GAMEPLAY"
+msgstr "VZORČNI PODATKI · NE GRE ZA IGRANJE V ŽIVO"
+
+#. Key:	TypeStrong
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(100)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(100)
+msgctxt "MarburgumGallery,TypeStrong"
+msgid "Strong body for action verbs"
+msgstr "Krepko osnovno besedilo za glagole dejanj"
+
+#. Key:	TypeCaption
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(101)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(101)
+msgctxt "MarburgumGallery,TypeCaption"
+msgid "Caption  ·  secondary detail and metadata"
+msgstr "Pripis  ·  dodatne podrobnosti in metapodatki"
+
+#. Key:	TypeOverline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(102)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(102)
+msgctxt "MarburgumGallery,TypeOverline"
+msgid "OVERLINE  ·  PILLS AND KIND LABELS"
+msgstr "NADNASLOV  ·  ZAOBLJENE ZNAČKE IN OZNAKE VRST"
+
+#. Key:	TypeNumeric
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(103)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(103)
+msgctxt "MarburgumGallery,TypeNumeric"
+msgid "1 990  ·  12 345 678  ·  07:45"
+msgstr "1 990  ·  12 345 678  ·  07:45"
+
+#. Key:	ColorTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(113)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(113)
+msgctxt "MarburgumGallery,ColorTitle"
+msgid "COLOUR ROLES"
+msgstr "BARVNE VLOGE"
+
+#. Key:	SwBackdrop
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(117)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(117)
+msgctxt "MarburgumGallery,SwBackdrop"
+msgid "Backdrop"
+msgstr "Ozadje"
+
+#. Key:	SwPanel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(118)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(118)
+msgctxt "MarburgumGallery,SwPanel"
+msgid "Panel"
+msgstr "Plošča"
+
+#. Key:	SwRaised
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(119)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(119)
+msgctxt "MarburgumGallery,SwRaised"
+msgid "Raised"
+msgstr "Dvignjena površina"
+
+#. Key:	SwText
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(120)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(120)
+msgctxt "MarburgumGallery,SwText"
+msgid "Text primary"
+msgstr "Primarno besedilo"
+
+#. Key:	SwText2
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(121)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(121)
+msgctxt "MarburgumGallery,SwText2"
+msgid "Text secondary"
+msgstr "Sekundarno besedilo"
+
+#. Key:	SwAccent
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(122)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(122)
+msgctxt "MarburgumGallery,SwAccent"
+msgid "Accent  ·  copper"
+msgstr "Poudarek  ·  bakrena"
+
+#. Key:	SwInfo
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(123)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(123)
+msgctxt "MarburgumGallery,SwInfo"
+msgid "Info  ·  teal"
+msgstr "Informacije  ·  modrozelena"
+
+#. Key:	SwSuccess
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(124)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(124)
+msgctxt "MarburgumGallery,SwSuccess"
+msgid "Success"
+msgstr "Uspeh"
+
+#. Key:	SwWarning
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(125)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(125)
+msgctxt "MarburgumGallery,SwWarning"
+msgid "Warning"
+msgstr "Opozorilo"
+
+#. Key:	SwDanger
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(126)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(126)
+msgctxt "MarburgumGallery,SwDanger"
+msgid "Danger"
+msgstr "Nevarnost"
+
+#. Key:	SwFocus
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(127)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(127)
+msgctxt "MarburgumGallery,SwFocus"
+msgid "Focus"
+msgstr "Fokus"
+
+#. Key:	SwSample
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(128)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(128)
+msgctxt "MarburgumGallery,SwSample"
+msgid "Sample-data marker"
+msgstr "Oznaka vzorčnih podatkov"
+
+#. Key:	ControlsTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(147)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(147)
+msgctxt "MarburgumGallery,ControlsTitle"
+msgid "CONTROLS"
+msgstr "KONTROLNIKI"
+
+#. Key:	BtnPrimary
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(150)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(150)
+msgctxt "MarburgumGallery,BtnPrimary"
+msgid "Primary"
+msgstr "Primarni"
+
+#. Key:	BtnSecondary
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(151)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(151)
+msgctxt "MarburgumGallery,BtnSecondary"
+msgid "Secondary"
+msgstr "Sekundarni"
+
+#. Key:	BtnQuiet
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(152)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(152)
+msgctxt "MarburgumGallery,BtnQuiet"
+msgid "Quiet"
+msgstr "Nevpadljiv"
+
+#. Key:	BtnDisabled
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(156)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(156)
+msgctxt "MarburgumGallery,BtnDisabled"
+msgid "Disabled  ·  not yet available"
+msgstr "Onemogočen  ·  še ni na voljo"
+
+#. Key:	FieldHint
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(161)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(161)
+msgctxt "MarburgumGallery,FieldHint"
+msgid "Search"
+msgstr "Išči"
+
+#. Key:	FieldValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(161)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(161)
+msgctxt "MarburgumGallery,FieldValue"
+msgid "Glavni trg 1"
+msgstr "Glavni trg 1"
+
+#. Key:	PillNeutral
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(164)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(164)
+msgctxt "MarburgumGallery,PillNeutral"
+msgid "OFFLINE"
+msgstr "BREZ POVEZAVE"
+
+#. Key:	PillInfo
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(165)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(165)
+msgctxt "MarburgumGallery,PillInfo"
+msgid "JOINING"
+msgstr "PRIDRUŽEVANJE"
+
+#. Key:	PillSuccess
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(166)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(166)
+msgctxt "MarburgumGallery,PillSuccess"
+msgid "CONNECTED"
+msgstr "POVEZANO"
+
+#. Key:	PillWarning
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(170)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(170)
+msgctxt "MarburgumGallery,PillWarning"
+msgid "RECONNECTING"
+msgstr "PONOVNO POVEZOVANJE"
+
+#. Key:	PillDanger
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(171)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(171)
+msgctxt "MarburgumGallery,PillDanger"
+msgid "REFUSED"
+msgstr "ZAVRNJENO"
+
+#. Key:	PillAccent
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(172)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(172)
+msgctxt "MarburgumGallery,PillAccent"
+msgid "PINNED"
+msgstr "PRIPETO"
+
+#. Key:	MeterTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(176)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(176)
+msgctxt "MarburgumGallery,MeterTitle"
+msgid "METERS"
+msgstr "MERILNIKI"
+
+#. Key:	MeterVitality
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(177)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(177)
+msgctxt "MarburgumGallery,MeterVitality"
+msgid "Vitality (sample)"
+msgstr "Vitalnost (primer)"
+
+#. Key:	MeterVitalityValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(177)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(177)
+msgctxt "MarburgumGallery,MeterVitalityValue"
+msgid "72 / 100"
+msgstr "72 / 100"
+
+#. Key:	MeterStamina
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(182)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(182)
+msgctxt "MarburgumGallery,MeterStamina"
+msgid "Stamina (sample)"
+msgstr "Vzdržljivost (primer)"
+
+#. Key:	MeterStaminaValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(182)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(182)
+msgctxt "MarburgumGallery,MeterStaminaValue"
+msgid "38 / 100"
+msgstr "38 / 100"
+
+#. Key:	FeedbackTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(195)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(195)
+msgctxt "MarburgumGallery,FeedbackTitle"
+msgid "FEEDBACK & STATES"
+msgstr "POVRATNE INFORMACIJE IN STANJA"
+
+#. Key:	ToastSkill
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(196)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(196)
+msgctxt "MarburgumGallery,ToastSkill"
+msgid "Fishing +40 XP"
+msgstr "Ribolov +40 XP"
+
+#. Key:	ToastSkillKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(196)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(196)
+msgctxt "MarburgumGallery,ToastSkillKind"
+msgid "SKILL  ·  SAMPLE"
+msgstr "VEŠČINA  ·  PRIMER"
+
+#. Key:	ToastObj
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(197)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(197)
+msgctxt "MarburgumGallery,ToastObj"
+msgid "Ask the angler on the Drava bank about the missing boat"
+msgstr "Vprašaj ribiča na bregu Drave o pogrešanem čolnu"
+
+#. Key:	ToastObjKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(197)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(197)
+msgctxt "MarburgumGallery,ToastObjKind"
+msgid "OBJECTIVE  ·  SAMPLE"
+msgstr "CILJ  ·  PRIMER"
+
+#. Key:	ToastConn
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(198)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(198)
+msgctxt "MarburgumGallery,ToastConn"
+msgid "Reconnected to the server"
+msgstr "Povezava s strežnikom je znova vzpostavljena"
+
+#. Key:	ToastConnKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(198)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(198)
+msgctxt "MarburgumGallery,ToastConnKind"
+msgid "CONNECTION"
+msgstr "POVEZAVA"
+
+#. Key:	ToastRefuse
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(199)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(199)
+msgctxt "MarburgumGallery,ToastRefuse"
+msgid "The server declined this action. Nothing was changed."
+msgstr "Strežnik je zavrnil to dejanje. Nič se ni spremenilo."
+
+#. Key:	ToastRefuseKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(199)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(199)
+msgctxt "MarburgumGallery,ToastRefuseKind"
+msgid "REFUSED"
+msgstr "ZAVRNJENO"
+
+#. Key:	EmptyTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(200)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(200)
+msgctxt "MarburgumGallery,EmptyTitle"
+msgid "Inventory is empty"
+msgstr "Inventar je prazen"
+
+#. Key:	EmptyBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(201)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(201)
+msgctxt "MarburgumGallery,EmptyBody"
+msgid "Items appear here once the server confirms you have them."
+msgstr "Predmeti se tu prikažejo, ko strežnik potrdi, da jih imaš."
+
+#. Key:	UnsupportedTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(202)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(202)
+msgctxt "MarburgumGallery,UnsupportedTitle"
+msgid "Skills are not available yet"
+msgstr "Veščine še niso na voljo"
+
+#. Key:	UnsupportedBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(203)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(203)
+msgctxt "MarburgumGallery,UnsupportedBody"
+msgid "This build has no authoritative skill system, so nothing is shown."
+msgstr "Ta različica nima sistema veščin pod nadzorom strežnika, zato ni nič prikazano."
+
+#. Key:	DiagTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(214)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(214)
+msgctxt "MarburgumGallery,DiagTitle"
+msgid "DIAGNOSTIC  ·  LIVE REPLICATED STATE"
+msgstr "DIAGNOSTIKA  ·  SPROTNO SINHRONIZIRANO STANJE"
+
+#. Key:	DiagServer
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(216)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(216)
+msgctxt "MarburgumGallery,DiagServer"
+msgid "Server"
+msgstr "Strežnik"
+
+#. Key:	DiagContract
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(217)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(217)
+msgctxt "MarburgumGallery,DiagContract"
+msgid "Network contract"
+msgstr "Omrežni dogovor"
+
+#. Key:	DiagHeartbeat
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(218)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(218)
+msgctxt "MarburgumGallery,DiagHeartbeat"
+msgid "Authority heartbeat"
+msgstr "Signal delovanja pristojnega strežnika"
+
+#. Key:	DiagPlayers
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(219)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(219)
+msgctxt "MarburgumGallery,DiagPlayers"
+msgid "Players in session"
+msgstr "Igralci v seji"
+
+#. Key:	DiagOutcomes
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(220)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(220)
+msgctxt "MarburgumGallery,DiagOutcomes"
+msgid "Applied / refused"
+msgstr "Izvedeno / zavrnjeno"
+
+#. Key:	DiagUnknown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(249)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(249)
+msgctxt "MarburgumGallery,DiagUnknown"
+msgid "—"
+msgstr "—"
+
+#. Key:	DiagNotAdmitted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(250)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(250)
+msgctxt "MarburgumGallery,DiagNotAdmitted"
+msgid "not admitted"
+msgstr "vstop ni odobren"
+
+#. Key:	DiagContractValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(258)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(258)
+msgctxt "MarburgumGallery,DiagContractValue"
+msgid "v{0}"
+msgstr "v{0}"
+
+#. Key:	DiagOutcomesValue
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(261)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(261)
+msgctxt "MarburgumGallery,DiagOutcomesValue"
+msgid "{0} / {1}"
+msgstr "{0} / {1}"
+
+#. Key:	Overline
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(59)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(59)
+msgctxt "MarburgumGallery,Overline"
+msgid "UI-01  ·  DESIGN SYSTEM"
+msgstr "UI-01  ·  OBLIKOVNI SISTEM"
+
+#. Key:	Title
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(60)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(60)
+msgctxt "MarburgumGallery,Title"
+msgid "Component gallery"
+msgstr "Galerija komponent"
+
+#. Key:	TypeTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(88)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(88)
+msgctxt "MarburgumGallery,TypeTitle"
+msgid "TYPOGRAPHY"
+msgstr "TIPOGRAFIJA"
+
+#. Key:	TypeDisplay
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(90)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(90)
+msgctxt "MarburgumGallery,TypeDisplay"
+msgid "Marburgum"
+msgstr "Marburgum"
+
+#. Key:	TypeTitleSample
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(95)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(95)
+msgctxt "MarburgumGallery,TypeTitleSample"
+msgid "Lent ob Dravi"
+msgstr "Lent ob Dravi"
+
+#. Key:	TypeHeading
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(96)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(96)
+msgctxt "MarburgumGallery,TypeHeading"
+msgid "JOURNAL  ·  ACTIVE"
+msgstr "DNEVNIK  ·  AKTIVNO"
+
+#. Key:	TypeBody
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(97)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUIGallery.cpp(97)
+msgctxt "MarburgumGallery,TypeBody"
+msgid "Body text carries Slovene diacritics cleanly: čevljar, šola, žaga, Tezno, Studenci, Šentilj."
+msgstr "Osnovno besedilo jasno prikazuje slovenske šumnike: čevljar, šola, žaga, Tezno, Studenci, Šentilj."
+
+#. Key:	ItemApplied
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1001)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1001)
+msgctxt "MarburgumUISubsystem,ItemApplied"
+msgid "{0} ×{1} added to your inventory. Confirmed and saved by the server."
+msgstr "V tvoj inventar dodano: {0} ×{1}. Strežnik je to potrdil in shranil."
+
+#. Key:	ItemDuplicate
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1008)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1008)
+msgctxt "MarburgumUISubsystem,ItemDuplicate"
+msgid "Already received: {0}. The server ignored the repeat; nothing was added twice."
+msgstr "Že prejeto: {0}. Strežnik je ponovitev prezrl; nič ni bilo dodano dvakrat."
+
+#. Key:	Requirement
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1021)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1021)
+msgctxt "MarburgumUISubsystem,Requirement"
+msgid "{0} needs something you do not have yet. Nothing was changed."
+msgstr "{0} potrebuje nekaj, česar še nimaš. Nič se ni spremenilo."
+
+#. Key:	RequirementItems
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1022)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1022)
+msgctxt "MarburgumUISubsystem,RequirementItems"
+msgid "{0} wants to see one {1} first. You have none, so nothing was changed."
+msgstr "{0} želi najprej videti en primerek: {1}. Nimaš nobenega, zato se ni nič spremenilo."
+
+#. Key:	NothingToDo
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1034)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1034)
+msgctxt "MarburgumUISubsystem,NothingToDo"
+msgid "{0} has nothing more for you right now. Nothing was changed."
+msgstr "{0} trenutno nima ničesar več zate. Nič se ni spremenilo."
+
+#. Key:	ChoiceRequired
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1038)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1038)
+msgctxt "MarburgumUISubsystem,ChoiceRequired"
+msgid "A decision is due here. Press [E] to see your choices."
+msgstr "Tu je potrebna odločitev. Pritisni [E] za ogled možnosti."
+
+#. Key:	UnknownChoice
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1042)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1042)
+msgctxt "MarburgumUISubsystem,UnknownChoice"
+msgid "That decision is not open here any more. Nothing was changed."
+msgstr "Ta odločitev tu ni več na voljo. Nič se ni spremenilo."
+
+#. Key:	InsufficientMoney
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1045)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1045)
+msgctxt "MarburgumUISubsystem,InsufficientMoney"
+msgid "You cannot afford that. Nothing was changed."
+msgstr "Za to nimaš dovolj denarja. Nič se ni spremenilo."
+
+#. Key:	Prerequisite
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1049)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1049)
+msgctxt "MarburgumUISubsystem,Prerequisite"
+msgid "{0} is not ready to ask more of you yet. Nothing was changed."
+msgstr "{0} te še ne more prositi za kaj več. Nič se ni spremenilo."
+
+#. Key:	NoRod
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1053)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1053)
+msgctxt "MarburgumUISubsystem,NoRod"
+msgid "You need a fishing rod to fish here."
+msgstr "Za ribolov tukaj potrebuješ ribiško palico."
+
+#. Key:	TooSoon
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1057)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1057)
+msgctxt "MarburgumUISubsystem,TooSoon"
+msgid "Give the line a moment before casting again."
+msgstr "Malo počakaj, preden znova vržeš trnek."
+
+#. Key:	CannotFish
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1061)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1061)
+msgctxt "MarburgumUISubsystem,CannotFish"
+msgid "Fishing needs both feet on the bank."
+msgstr "Za ribolov moraš z obema nogama stati na bregu."
+
+#. Key:	TooEarly
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1066)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1066)
+msgctxt "MarburgumUISubsystem,TooEarly"
+msgid "You struck too early. Whatever was there is gone; cast again."
+msgstr "Prehitro si zategnil. Kar je bilo tam, je ušlo; znova vrzi trnek."
+
+#. Key:	SoldOut
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1070)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1070)
+msgctxt "MarburgumUISubsystem,SoldOut"
+msgid "The last {0} has already gone. Nothing was changed."
+msgstr "Zaloga je pošla: {0}. Nič se ni spremenilo."
+
+#. Key:	OutOfStock
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1071)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1071)
+msgctxt "MarburgumUISubsystem,OutOfStock"
+msgid "Nothing left to take. Someone else got there first; nothing was changed."
+msgstr "Ničesar ni več ostalo. Nekdo drug te je prehitel; nič se ni spremenilo."
+
+#. Key:	ShopClosed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1076)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1076)
+msgctxt "MarburgumUISubsystem,ShopClosed"
+msgid "The counter is closed. Nothing was changed."
+msgstr "Prodajni pult je zaprt. Nič se ni spremenilo."
+
+#. Key:	InvalidQuantity
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1081)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1081)
+msgctxt "MarburgumUISubsystem,InvalidQuantity"
+msgid "That quantity is not for sale. Nothing was changed."
+msgstr "Ta količina ni naprodaj. Nič se ni spremenilo."
+
+#. Key:	NotOnCounter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1084)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1084)
+msgctxt "MarburgumUISubsystem,NotOnCounter"
+msgid "That is not on the counter. Nothing was changed."
+msgstr "Tega ni na pultu. Nič se ni spremenilo."
+
+#. Key:	ItemNotAccepted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1087)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1087)
+msgctxt "MarburgumUISubsystem,ItemNotAccepted"
+msgid "Petra will not take {0} back. Nothing was changed."
+msgstr "Petra tega ne vzame nazaj: {0}. Nič se ni spremenilo."
+
+#. Key:	InsufficientItems
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1091)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1091)
+msgctxt "MarburgumUISubsystem,InsufficientItems"
+msgid "You have no {0} to sell. Nothing was changed."
+msgstr "Tega predmeta nimaš za prodajo: {0}. Nič se ni spremenilo."
+
+#. Key:	NoCounter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1095)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1095)
+msgctxt "MarburgumUISubsystem,NoCounter"
+msgid "{0} keeps no counter. Nothing was changed."
+msgstr "{0} nima prodajnega pulta. Nič se ni spremenilo."
+
+#. Key:	OutOfRange
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1098)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1098)
+msgctxt "MarburgumUISubsystem,OutOfRange"
+msgid "Too far away. Move closer and try again; nothing was changed."
+msgstr "Predaleč si. Približaj se in poskusi znova; nič se ni spremenilo."
+
+#. Key:	Incapacitated
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1101)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1101)
+msgctxt "MarburgumUISubsystem,Incapacitated"
+msgid "Not from here: get out of the car, or back on your feet, first. Nothing was changed."
+msgstr "Tako ne gre: najprej izstopi iz avta ali se postavi nazaj na noge. Nič se ni spremenilo."
+
+#. Key:	NoCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1105)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1105)
+msgctxt "MarburgumUISubsystem,NoCharacter"
+msgid "This connection has no character, so it cannot hold items or take on missions. Nothing was changed."
+msgstr "Ta povezava nima lika, zato ne more imeti predmetov ali prevzemati nalog. Nič se ni spremenilo."
+
+#. Key:	StoreFailed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1109)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1109)
+msgctxt "MarburgumUISubsystem,StoreFailed"
+msgid "The server could not save the result, so it did not apply it. Nothing was changed."
+msgstr "Strežnik rezultata ni mogel shraniti, zato ga ni uveljavil. Nič se ni spremenilo."
+
+#. Key:	NoAuthority
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1113)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1113)
+msgctxt "MarburgumUISubsystem,NoAuthority"
+msgid "No authoritative server handled this request. Nothing was changed."
+msgstr "Te zahteve ni obdelal noben pristojni strežnik. Nič se ni spremenilo."
+
+#. Key:	Refused
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1117)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1117)
+msgctxt "MarburgumUISubsystem,Refused"
+msgid "The server refused this request. Nothing was changed."
+msgstr "Strežnik je zavrnil to zahtevo. Nič se ni spremenilo."
+
+#. Key:	NotYetKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1122)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1122)
+msgctxt "MarburgumUISubsystem,NotYetKind"
+msgid "NOT YET"
+msgstr "ŠE NE"
+
+#. Key:	RefusedKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1122)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1122)
+msgctxt "MarburgumUISubsystem,RefusedKind"
+msgid "REFUSED"
+msgstr "ZAVRNJENO"
+
+#. Key:	FightKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1135)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1135)
+msgctxt "MarburgumUISubsystem,FightKind"
+msgid "FIGHT"
+msgstr "PRETEP"
+
+#. Key:	FightExhausted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1140)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1140)
+msgctxt "MarburgumUISubsystem,FightExhausted"
+msgid "Not enough breath."
+msgstr "Nimaš dovolj sape."
+
+#. Key:	FightSeated
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1144)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1144)
+msgctxt "MarburgumUISubsystem,FightSeated"
+msgid "Get out before you swing."
+msgstr "Pred udarcem izstopi."
+
+#. Key:	FightDown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1148)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1148)
+msgctxt "MarburgumUISubsystem,FightDown"
+msgid "You cannot swing from the ground."
+msgstr "S tal ne moreš udariti."
+
+#. Key:	FightSomeone
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1153)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1153)
+msgctxt "MarburgumUISubsystem,FightSomeone"
+msgid "Someone"
+msgstr "Nekdo"
+
+#. Key:	FightHeavyMissed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1156)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1156)
+msgctxt "MarburgumUISubsystem,FightHeavyMissed"
+msgid "The heavy blow missed."
+msgstr "Močan udarec je zgrešil."
+
+#. Key:	FightJabMissed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1156)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1156)
+msgctxt "MarburgumUISubsystem,FightJabMissed"
+msgid "The jab missed."
+msgstr "Kratek direkt je zgrešil."
+
+#. Key:	FightBlocked
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1161)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1161)
+msgctxt "MarburgumUISubsystem,FightBlocked"
+msgid "{0} kept their hands up."
+msgstr "{0} drži roke dvignjene."
+
+#. Key:	FightFloored
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1165)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1165)
+msgctxt "MarburgumUISubsystem,FightFloored"
+msgid "{0} goes down."
+msgstr "{0} pade na tla."
+
+#. Key:	FightHit
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1169)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1169)
+msgctxt "MarburgumUISubsystem,FightHit"
+msgid "{0}. {1}."
+msgstr "{0}. {1}."
+
+#. Key:	ReceiptApplied
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1185)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1185)
+msgctxt "MarburgumUISubsystem,ReceiptApplied"
+msgid "Request applied by the server."
+msgstr "Strežnik je izvedel zahtevo."
+
+#. Key:	ReceiptDuplicate
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1188)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1188)
+msgctxt "MarburgumUISubsystem,ReceiptDuplicate"
+msgid "Already applied. The server ignored the repeat; nothing changed twice."
+msgstr "Že izvedeno. Strežnik je ponovitev prezrl; nič se ni spremenilo dvakrat."
+
+#. Key:	ReceiptRejected
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1191)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1191)
+msgctxt "MarburgumUISubsystem,ReceiptRejected"
+msgid "The server declined this request. Nothing was changed."
+msgstr "Strežnik je zavrnil to zahtevo. Nič se ni spremenilo."
+
+#. Key:	BackInWorld
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1286)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1286)
+msgctxt "MarburgumUISubsystem,BackInWorld"
+msgid "Back in Maribor."
+msgstr "Spet v Mariboru."
+
+#. Key:	InWorld
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1286)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1286)
+msgctxt "MarburgumUISubsystem,InWorld"
+msgid "You are in Maribor."
+msgstr "V Mariboru si."
+
+#. Key:	Reconnected
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1288)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1288)
+msgctxt "MarburgumUISubsystem,Reconnected"
+msgid "Reconnected to {0}  ·  network contract v{1}"
+msgstr "Povezava znova vzpostavljena: {0}  ·  omrežni dogovor v{1}"
+
+#. Key:	Connected
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1289)
+msgctxt "MarburgumUISubsystem,Connected"
+msgid "Connected to {0}  ·  network contract v{1}"
+msgstr "Povezava vzpostavljena: {0}  ·  omrežni dogovor v{1}"
+
+#. Key:	ConnectionKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1291)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1291)
+msgctxt "MarburgumUISubsystem,ConnectionKind"
+msgid "CONNECTION"
+msgstr "POVEZAVA"
+
+#. Key:	Bite
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(494)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(494)
+msgctxt "MarburgumUISubsystem,Bite"
+msgid "A bite! Press [E] to strike."
+msgstr "Prijem! Pritisni [E], da zategneš."
+
+#. Key:	FishingKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(494)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(494)
+msgctxt "MarburgumUISubsystem,FishingKind"
+msgid "FISHING"
+msgstr "RIBOLOV"
+
+#. Key:	Escaped
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(504)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(504)
+msgctxt "MarburgumUISubsystem,Escaped"
+msgid "It got away. Strike sooner after the bite."
+msgstr "Riba je ušla. Po prijemu zategni prej."
+
+#. Key:	Cancelled
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(509)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(509)
+msgctxt "MarburgumUISubsystem,Cancelled"
+msgid "You reeled in. Fishing needs you to stand still on the bank."
+msgstr "Navil si vrvico. Za ribolov moraš stati pri miru na bregu."
+
+#. Key:	Said
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(859)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(859)
+msgctxt "MarburgumUISubsystem,Said"
+msgid "“{0}”"
+msgstr "»{0}«"
+
+#. Key:	ItemsKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(871)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(871)
+msgctxt "MarburgumUISubsystem,ItemsKind"
+msgid "ITEMS RECEIVED"
+msgstr "PREJETI PREDMETI"
+
+#. Key:	MoneyKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(879)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(879)
+msgctxt "MarburgumUISubsystem,MoneyKind"
+msgid "MONEY"
+msgstr "DENAR"
+
+#. Key:	MoneyPaid
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(880)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(880)
+msgctxt "MarburgumUISubsystem,MoneyPaid"
+msgid "+{0}. Saved by the server."
+msgstr "+{0}. Strežnik je to shranil."
+
+#. Key:	MoneySpent
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(881)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(881)
+msgctxt "MarburgumUISubsystem,MoneySpent"
+msgid "−{0}. Saved by the server."
+msgstr "−{0}. Strežnik je to shranil."
+
+#. Key:	XpKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(887)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(887)
+msgctxt "MarburgumUISubsystem,XpKind"
+msgid "SKILL"
+msgstr "VEŠČINA"
+
+#. Key:	XpGained
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(888)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(888)
+msgctxt "MarburgumUISubsystem,XpGained"
+msgid "{0} +{1} XP. [K] Skills."
+msgstr "{0} +{1} XP. [K] Veščine."
+
+#. Key:	Cast
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(896)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(896)
+msgctxt "MarburgumUISubsystem,Cast"
+msgid "Line in the water. Wait for a bite, then press [E] to strike."
+msgstr "Vrvica je v vodi. Počakaj na prijem, nato pritisni [E], da zategneš."
+
+#. Key:	Caught
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(902)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(902)
+msgctxt "MarburgumUISubsystem,Caught"
+msgid "You landed a {0}. Saved by the server."
+msgstr "Tvoj ulov: {0}. Strežnik je to shranil."
+
+#. Key:	ReceiptKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(912)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(912)
+msgctxt "MarburgumUISubsystem,ReceiptKind"
+msgid "SERVER RECEIPT"
+msgstr "POTRDILO STREŽNIKA"
+
+#. Key:	TradeDuplicate
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(913)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(913)
+msgctxt "MarburgumUISubsystem,TradeDuplicate"
+msgid "Already done: {0} ×{1}. The server ignored the repeat; nothing changed hands twice."
+msgstr "Že opravljeno: {0} ×{1}. Strežnik je ponovitev prezrl; nič ni zamenjalo lastnika dvakrat."
+
+#. Key:	BoughtKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(917)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(917)
+msgctxt "MarburgumUISubsystem,BoughtKind"
+msgid "BOUGHT"
+msgstr "KUPLJENO"
+
+#. Key:	SoldKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(917)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(917)
+msgctxt "MarburgumUISubsystem,SoldKind"
+msgid "SOLD"
+msgstr "PRODANO"
+
+#. Key:	Bought
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(918)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(918)
+msgctxt "MarburgumUISubsystem,Bought"
+msgid "Petra takes the coins and slides {0} ×{1} across the counter. −{2} money, saved by the server."
+msgstr "Petra vzame kovance in ti čez pult potisne nakup: {0} ×{1}. Denar: −{2}; strežnik je to shranil."
+
+#. Key:	Sold
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(920)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(920)
+msgctxt "MarburgumUISubsystem,Sold"
+msgid "Petra counts out the coins and takes {0} ×{1} back. +{2} money, saved by the server."
+msgstr "Petra odšteje kovance in vzame blago nazaj: {0} ×{1}. Denar: +{2}; strežnik je to shranil."
+
+#. Key:	FirstPurchaseXp
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(927)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(927)
+msgctxt "MarburgumUISubsystem,FirstPurchaseXp"
+msgid "First purchase here: {0} +{1} XP. [K] Skills."
+msgstr "Prvi nakup tukaj: {0} +{1} XP. [K] Veščine."
+
+#. Key:	MissionStartedKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(936)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(936)
+msgctxt "MarburgumUISubsystem,MissionStartedKind"
+msgid "MISSION STARTED"
+msgstr "NALOGA ZAČETA"
+
+#. Key:	MissionStarted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(937)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(937)
+msgctxt "MarburgumUISubsystem,MissionStarted"
+msgid "{0}. Saved by the server; your objective is pinned, and [J] opens the journal."
+msgstr "{0}. Strežnik je to shranil; tvoj cilj je pripet, z [J] pa odpreš dnevnik."
+
+#. Key:	ItemKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(941)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(941)
+msgctxt "MarburgumUISubsystem,ItemKind"
+msgid "ITEM RECEIVED"
+msgstr "PREJET PREDMET"
+
+#. Key:	MissionItem
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(942)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(942)
+msgctxt "MarburgumUISubsystem,MissionItem"
+msgid "{0} ×{1}, handed over for the mission."
+msgstr "{0} ×{1}, izročeno za nalogo."
+
+#. Key:	MissionCompletedKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(970)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(970)
+msgctxt "MarburgumUISubsystem,MissionCompletedKind"
+msgid "MISSION COMPLETED"
+msgstr "NALOGA OPRAVLJENA"
+
+#. Key:	MissionCompletedEntry
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(972)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(972)
+msgctxt "MarburgumUISubsystem,MissionCompletedEntry"
+msgid "{0}. Journal entry added: {1}."
+msgstr "{0}. Dodan zapis v dnevnik: {1}."
+
+#. Key:	MissionCompleted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(974)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(974)
+msgctxt "MarburgumUISubsystem,MissionCompleted"
+msgid "{0}. Saved by the server."
+msgstr "{0}. Strežnik je to shranil."
+
+#. Key:	MissionUpdatedKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(979)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(979)
+msgctxt "MarburgumUISubsystem,MissionUpdatedKind"
+msgid "MISSION UPDATED"
+msgstr "NALOGA POSODOBLJENA"
+
+#. Key:	StageDone
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(981)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(981)
+msgctxt "MarburgumUISubsystem,StageDone"
+msgid "{0}: step complete. Saved by the server."
+msgstr "{0}: korak opravljen. Strežnik je to shranil."
+
+#. Key:	StageDoneItem
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(982)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(982)
+msgctxt "MarburgumUISubsystem,StageDoneItem"
+msgid "{0}: step complete; {1} ×{2} handed over. Saved by the server."
+msgstr "{0}: korak opravljen; izročeno: {1} ×{2}. Strežnik je to shranil."
+
+#. Key:	MissionDuplicate
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(993)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(993)
+msgctxt "MarburgumUISubsystem,MissionDuplicate"
+msgid "Already done: {0}. The server ignored the repeat; nothing changed twice."
+msgstr "Že opravljeno: {0}. Strežnik je ponovitev prezrl; nič se ni spremenilo dvakrat."
+
+#. Key:	Driving
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(132)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(132)
+msgctxt "MarburgumVehicleStatus,Driving"
+msgid "Driver's seat"
+msgstr "Voznikov sedež"
+
+#. Key:	Passenger
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(132)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(132)
+msgctxt "MarburgumVehicleStatus,Passenger"
+msgid "Passenger seat"
+msgstr "Sopotnikov sedež"
+
+#. Key:	Forward
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(143)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(143)
+msgctxt "MarburgumVehicleStatus,Forward"
+msgid "DRIVE"
+msgstr "NAPREJ"
+
+#. Key:	Reverse
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(143)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(143)
+msgctxt "MarburgumVehicleStatus,Reverse"
+msgid "REVERSE"
+msgstr "VZVRATNO"
+
+#. Key:	Stopped
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(143)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(143)
+msgctxt "MarburgumVehicleStatus,Stopped"
+msgid "STOPPED"
+msgstr "USTAVLJENO"
+
+#. Key:	Unit
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(45)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(45)
+msgctxt "MarburgumVehicleStatus,Unit"
+msgid "KM/H"
+msgstr "KM/H"
+
+#. Key:	Drive
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(47)
+#: Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(47)
+msgctxt "MarburgumVehicleStatus,Drive"
+msgid "DRIVE"
+msgstr "VOŽNJA"
+
