@@ -57,7 +57,7 @@ namespace
         TEXT("r.Nanite"), TEXT("r.Nanite.ProjectEnabled"), TEXT("r.ViewDistanceScale"), TEXT("r.StaticMeshLODDistanceScale"),
         TEXT("r.HZBOcclusion"), TEXT("foliage.DensityScale"), TEXT("grass.DensityScale"),
         // Lights, ray tracing, materials
-        TEXT("r.MegaLights.EnableForProject"), TEXT("r.MegaLights.Allowed"), TEXT("r.RayTracing"), TEXT("r.RayTracing.Enable"), TEXT("r.Substrate"),
+        TEXT("r.MegaLights.EnableForProject"), TEXT("r.MegaLights.Allowed"), TEXT("r.SkinCache.CompileShaders"), TEXT("r.RayTracing"), TEXT("r.RayTracing.Enable"), TEXT("r.Substrate"),
         // Sky, fog, water
         TEXT("r.VolumetricFog"), TEXT("r.VolumetricCloud"), TEXT("r.SkyAtmosphere"), TEXT("r.Water.SingleLayer"),
         // Exposure and post-processing
@@ -86,6 +86,7 @@ namespace
     {
         TSharedRef<FJsonObject> Out = MakeShared<FJsonObject>();
         Out->SetStringField(TEXT("name"), GDynamicRHI ? GDynamicRHI->GetName() : TEXT("none"));
+        Out->SetStringField(TEXT("graphics_rhi"), FApp::GetGraphicsRHI());
         Out->SetStringField(TEXT("shader_platform"), FDataDrivenShaderPlatformInfo::GetName(GMaxRHIShaderPlatform).ToString());
         Out->SetStringField(TEXT("adapter"), GRHIAdapterName);
         Out->SetStringField(TEXT("driver"), GRHIAdapterUserDriverVersion);

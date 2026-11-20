@@ -185,6 +185,7 @@ pub fn summarize(dir: &Path) -> Result<(Value, String, bool), String> {
             "clock": summary.get("clock"),
             "weather": summary.get("weather"),
             "start": summary.get("start"),
+            "client_args": summary.get("client_args"),
             "views": views,
             "shots": shots,
             "complete": complete,

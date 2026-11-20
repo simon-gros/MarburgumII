@@ -10,7 +10,9 @@
 # name@eye@target@fov;... in Unreal centimetres, instead of the fixed set, for close-ups of one defect).
 # MB2_SURVEY_PLAYER_VIEW=1 first adds `player_hud`, the player's own camera with the HUD (character and interface);
 # MB2_SURVEY_START picks the player's start (?MB2Start=; a door_<id> start also gives the server -MB2DoorStarts);
-# MB2_SURVEY_SETTLE seconds per view (default 2.5; longer gives more frame samples). Evidence goes to
+# MB2_SURVEY_SETTLE seconds per view (default 2.5; longer gives more frame samples). MB2_SURVEY_CLIENT_ARGS adds client
+# arguments, split on spaces (render A/B: "-sm5", "-ExecCmds=r.DynamicGlobalIlluminationMethod 0" needs no spaces, so use
+# -ini:Engine:[SystemSettings]:r.DynamicGlobalIlluminationMethod=0). Evidence goes to
 # Saved/VisualSurvey/<name or UTC timestamp>/ (or MB2_SURVEY_OUT): one PNG per view, stats.tsv (per-view frame, thread
 # and GPU percentiles, VRAM), render_config.json (the renderer's settings and the level's render inventory),
 # server.log, client.log and summary.txt, which also names other GPU users at the start (they skew the numbers).
@@ -27,6 +29,9 @@ map="/Game/World/lent"
 out_dir="${MB2_SURVEY_OUT:-$repo_root/Saved/VisualSurvey/$name}"
 settle="${MB2_SURVEY_SETTLE:-2.5}"
 start="${MB2_SURVEY_START:-}"
+read -r -a client_extra <<< "${MB2_SURVEY_CLIENT_ARGS:-}"
+# One word in summary.txt, whose first line is space-separated key=value pairs.
+client_args_word="$(IFS=,; echo "${client_extra[*]}")"
 
 case "$mode" in
     staged)
@@ -105,7 +110,7 @@ for attempt in 0 1 2; do
     fi
     timeout --kill-after=15 "$client_timeout" "${client_cmd[@]}" "$client_url" "${common_args[@]}" \
         -RenderOffScreen -windowed -ForceRes -ResX=1920 -ResY=1080 -MB2ViewShots="$views" -MB2ViewShotDir="$out_dir" \
-        -MB2ViewShotSettle="$settle" \
+        -MB2ViewShotSettle="$settle" "${client_extra[@]}" \
         > "$out_dir/client.log" 2>&1 || code=$?
 done
 stop_server
@@ -113,7 +118,7 @@ epoch_end="$(date +%s)"
 
 shots="$(find "$out_dir" -maxdepth 1 -name '*.png' | wc -l)"
 {
-    echo "mode=$mode clock=$clock weather=$weather start=${start:-default} settle_s=$settle client_exit=$code views=$expected shots=$shots epoch_start=$epoch_start epoch_end=$epoch_end"
+    echo "mode=$mode clock=$clock weather=$weather start=${start:-default} settle_s=$settle client_args=${client_args_word:-none} client_exit=$code views=$expected shots=$shots epoch_start=$epoch_start epoch_end=$epoch_end"
     echo "gpu_at_start=${gpu_others:-unknown} (utilization, memory used) other_unreal_processes=$ue_others"
     echo "commit=$(git -C "$repo_root" rev-parse --short HEAD)$(git -C "$repo_root" diff --quiet HEAD -- Content Source || echo '+dirty')"
     echo "skipped_packages=$(grep -ac 'SkipPackage' "$out_dir/client.log")"

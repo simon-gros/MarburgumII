@@ -8,7 +8,8 @@
 #
 # Scenes (summer, Maribor local time = UTC+2): morning 07:00, noon 12:00, dusk 21:00, night 23:30 (clear_dry);
 # noon overcast; noon and night rain_wet; noon at the door. MB2_GFX_SCENES limits the run to a comma-separated
-# subset (e.g. noon,night). MB2_GFX_SETTLE seconds per view (default 4). MB2_SURVEY_PORT as for the survey (default
+# subset (e.g. noon,night). MB2_GFX_SETTLE seconds per view (default 4). MB2_GFX_CLIENT_ARGS goes to every client (an A/B
+# variant of the same build, e.g. -sm5 or -ini:Engine:[SystemSettings]:r.DynamicGlobalIlluminationMethod=0). MB2_SURVEY_PORT as for the survey (default
 # 27891; never 7777 or 17777, which are for playtests).
 #
 # This host is shared: other sessions' smokes render on the same GPU and lengthen the frame-time tails. A monitor samples
@@ -59,6 +60,7 @@ gfx_views="$("$repo_root/scripts/mb2.sh" gfx-views)" || exit 1
     echo "source_dirty=$([[ -n "$(git -C "$repo_root" status --porcelain -- Source Config Content Data Plugins)" ]] && echo 1 || echo 0)"
     echo "started_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     echo "settle_s=$settle"
+    echo "client_args=${MB2_GFX_CLIENT_ARGS:-}"
     echo "resolution=1920x1080"
     echo "host_kernel=$(uname -r)"
     echo "gpu=$(nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader 2>/dev/null | head -n 1)"
@@ -105,7 +107,7 @@ for entry in "${scenes[@]}"; do
     fi
     echo "== $scene ($clock, $weather${start:+, start $start})"
     MB2_SURVEY_OUT="$out_dir/$scene" MB2_SURVEY_CLOCK="$clock" MB2_SURVEY_WEATHER="$weather" MB2_SURVEY_START="$start" \
-        MB2_SURVEY_VIEWS="$views" MB2_SURVEY_SETTLE="$settle" \
+        MB2_SURVEY_VIEWS="$views" MB2_SURVEY_SETTLE="$settle" MB2_SURVEY_CLIENT_ARGS="${MB2_GFX_CLIENT_ARGS:-}" \
         "$repo_root/scripts/visual-survey-linux.sh" "$mode" "$name-$scene" > "$out_dir/$scene.out" 2>&1 || failed=1
     head -n 3 "$out_dir/$scene/summary.txt" 2>/dev/null || { echo "  no summary; see $out_dir/$scene.out"; failed=1; }
 done
