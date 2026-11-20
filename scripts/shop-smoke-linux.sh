@@ -11,7 +11,7 @@
 #           postcard it cannot afford, six newspapers and the brass key refused; the newspaper sold back (+8, shelf
 #           12 again); selling it twice refused; a pen bought (-15, no XP).
 #   FAR     from the arrival start, a purchase at Petra is refused as out of range.
-# The server is stopped and the store checked (mb2 store-check shop): rewritten at schema 5, three commits.
+# The server is stopped and the store checked (mb2 store-check shop): rewritten at schema 6, three commits.
 # Phase 2, Sunday 12:00, same store: CLOSED sees money, pen, XP and shelves as left, the counter shut, and a purchase
 # refused as shop_closed. The store must be byte-identical afterwards.
 #
@@ -171,10 +171,10 @@ start_server "$out_dir/server-2.log" -MB2ClockWeekday=6 -MB2ClockHour=12
 run closed CLOSED mission_petra_kralj $(shot closed)
 sleep 1
 stop_server
-loaded_2=$(grep -ac "MB2INTERACT role=server event=store_loaded .* schema=5 revision=4 " "$out_dir/server-2.log" || true)
+loaded_2=$(grep -ac "MB2INTERACT role=server event=store_loaded .* schema=6 revision=4 " "$out_dir/server-2.log" || true)
 closed=$(grep -ac "MB2SHOP role=server event=trade .* decision=shop_closed" "$out_dir/server-2.log" || true)
 store_hash_2="$(sha256sum "$store" 2>/dev/null | cut -d' ' -f1 || true)"
-echo "  server phase 2: store_loaded(schema 5, revision 4)=$loaded_2 (want 1); shop_closed=$closed (want 1); store unchanged: $([[ "$store_hash" == "$store_hash_2" ]] && echo yes || echo NO)"
+echo "  server phase 2: store_loaded(schema 6, revision 4)=$loaded_2 (want 1); shop_closed=$closed (want 1); store unchanged: $([[ "$store_hash" == "$store_hash_2" ]] && echo yes || echo NO)"
 [[ "$loaded_2" -eq 1 && "$closed" -eq 1 && "$store_hash" == "$store_hash_2" ]] || status=1
 
 {
