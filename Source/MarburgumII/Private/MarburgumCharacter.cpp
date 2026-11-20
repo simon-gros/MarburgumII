@@ -130,7 +130,7 @@ AMarburgumCharacter::AMarburgumCharacter(const FObjectInitializer& ObjectInitial
     }
 
     // A rod in the right hand while the line is out, and the hold, cast, wait and reel clips the riverside angler uses
-    // (ADR-080). Every body is on the mannequin skeleton, so fishing_rod_r is on every body.
+    // (ADR-081). Every body is on the mannequin skeleton, so fishing_rod_r is on every body.
     static ConstructorHelpers::FObjectFinder<UStaticMesh> RodMesh(MarburgumII::Npc::RodMeshPath);
     Rod = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rod"));
     Rod->SetupAttachment(Body, MarburgumII::Npc::RodSocket);

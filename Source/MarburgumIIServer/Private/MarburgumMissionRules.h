@@ -54,7 +54,7 @@ namespace MarburgumII::Missions
         const FString& TargetId, const FString& MissionId, const FString& ChoiceId, FMarburgumWorldRecord& OutNext);
 
     /**
-     * A photograph of a photo subject (ADR-080): the camera must be in custody. The print (unless one is already held),
+     * A photograph of a photo subject (ADR-081): the camera must be in custody. The print (unless one is already held),
      * the first photograph's Photography XP and the remembered subject, and the current Photograph stage that names the
      * subject, in one record. A subject already documented whose print is still held, with no stage to complete, is
      * refused (AlreadyPhotographed). Refusals: UnknownTarget, NoCamera, AlreadyPhotographed. The view itself (range,

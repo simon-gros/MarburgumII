@@ -18,7 +18,7 @@
  *     (RequirementNotMet).
  *  4. Otherwise an offer here waiting on another mission (PrerequisiteIncomplete), or nothing (NothingToDo).
  *
- * An offer gated on another mission's outcome (ADR-080) waits while that mission is unfinished and is simply not
+ * An offer gated on another mission's outcome (ADR-081) waits while that mission is unfinished and is simply not
  * made once it ended another way: a decision taken earlier closes the door for good, without a refusal to explain.
  * A Photograph stage is completed by photographing its subject (the server's photograph path), never by talking.
  *

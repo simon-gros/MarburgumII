@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 
 /**
- * What every machine agrees on about how an authored NPC looks and moves (ADR-080): the assets its body, rod and
+ * What every machine agrees on about how an authored NPC looks and moves (ADR-081): the assets its body, rod and
  * clips come from, and the angler's fishing cycle as a pure function of the server's world clock, so every client
  * draws the same cast at the same moment without anything extra on the wire.
  */

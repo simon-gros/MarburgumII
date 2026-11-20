@@ -98,7 +98,7 @@ public:
      * Client: buy or sell Quantity of ItemId at the counter Target keeps (ADR-060). Like SubmitInteraction: the same
      * id is safe to resend, and the answer arrives as an interaction receipt. The server sets every price.
      */
-    /** Local: take a photograph with the camera in custody (ADR-080); the server decides what was in frame. */
+    /** Local: take a photograph with the camera in custody (ADR-081); the server decides what was in frame. */
     void RequestPhotograph();
 
     void SubmitTrade(const FGuid& OperationId, AMarburgumInteractable* Target, EMarburgumTradeAction Action, FName ItemId, int32 Quantity);

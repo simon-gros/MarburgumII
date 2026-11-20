@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Regenerate what an authored NPC's body needs (ADR-080) with the C++ editor commandlet (MarburgumIIEditorTools):
+# Regenerate what an authored NPC's body needs (ADR-081) with the C++ editor commandlet (MarburgumIIEditorTools):
 #   Content/Characters/Props/SM_FishingRod          a period spinning rod built from code on M_Vehicle (rod step;
 #                                                   needs scripts/create-vehicle-content.sh's M_Vehicle)
 #   fishing_rod_r on SK_Mannequin                   the grip socket on hand_r, fitted to the hold pose (animation step)

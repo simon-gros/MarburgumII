@@ -12,7 +12,7 @@ namespace MarburgumII::Gameplay
 
     /**
      * Goods are what a shop counter sells and buys back (original `trade: retail`, ADR-060). A photo is a print of
-     * something the character documented with a camera (ADR-080).
+     * something the character documented with a camera (ADR-081).
      */
     enum class EItemKind : uint8 { Tool, Fish, Clue, Goods, Photo };
 
@@ -50,7 +50,7 @@ namespace MarburgumII::Gameplay
     };
 
     /**
-     * Something a camera can document (ADR-080): a heritage building, a bridge, a view. The first photograph of it a
+     * Something a camera can document (ADR-081): a heritage building, a bridge, a view. The first photograph of it a
      * character takes trains Photography and is remembered; every photograph is a print in the inventory, and a
      * mission stage can ask for one. The server finds the ground under the plan position and aims AimHeightCm above it.
      */
@@ -133,11 +133,11 @@ namespace MarburgumII::Gameplay
 
     /**
      * Interaction: talk to or inspect CompleteTarget. InventoryAny: hold one of ObjectiveItems. Choice: pick a choice there.
-     * Photograph: take a photograph of the photo subject CompleteTarget (ADR-080).
+     * Photograph: take a photograph of the photo subject CompleteTarget (ADR-081).
      */
     enum class EObjectiveType : uint8 { Interaction, InventoryAny, Choice, Photograph };
 
-    /** A mission offered only after another mission ended in one of these outcomes (ADR-080). */
+    /** A mission offered only after another mission ended in one of these outcomes (ADR-081). */
     struct FMissionOutcomeGate
     {
         const TCHAR* Mission;

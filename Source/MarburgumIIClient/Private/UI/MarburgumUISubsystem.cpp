@@ -930,7 +930,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         }
     };
 
-    // A photograph (ADR-080): what the print shows first, then whatever mission step it completed.
+    // A photograph (ADR-081): what the print shows first, then whatever mission step it completed.
     if (const FPhotoSubjectDefinition* Photo = bApplied ? FindPhotoSubject(Receipt.InteractableId.ToString()) : nullptr)
     {
         Feed->Push(FName(*(Key.ToString() + TEXT(".photo"))), LOCTEXT("PhotoKind", "PHOTOGRAPH"),

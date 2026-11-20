@@ -94,7 +94,7 @@ void AMarburgumPlayerController::SetupInputComponent()
         InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &AMarburgumPlayerController::RequestBack);
         // B opens the counter of the shopkeeper in reach (ADR-060); E still talks to them.
         InputComponent->BindKey(EKeys::B, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleShop);
-        // P takes a photograph with the camera in custody (ADR-080).
+        // P takes a photograph with the camera in custody (ADR-081).
         InputComponent->BindKey(EKeys::P, IE_Pressed, this, &AMarburgumPlayerController::RequestPhotograph);
         // The wheel and Page Up/Down scroll an open management screen taller than the screen (QA 2026-11-19).
         const TPair<FKey, float> ScrollKeys[] = {

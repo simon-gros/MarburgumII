@@ -14,7 +14,7 @@ class UStaticMeshComponent;
  * interaction request: the server decides what it means for the requesting character, e.g. accepting
  * the mission this NPC offers (MarburgumII::Gameplay::FindMissionOfferedBy). An NPC holds no stock.
  *
- * The body is the template mannequin (ADR-080), tinted with the person's colours from the original
+ * The body is the template mannequin (ADR-081), tinted with the person's colours from the original
  * npc_visual_profiles.json, breathing in the template idle. It turns toward the nearest player who comes close
  * and, when the server says someone spoke to it, turns to them and talks with its hands for a few seconds; every
  * client sees the same. The riverside angler holds a period spinning rod on fishing_rod_r and runs a fishing cycle

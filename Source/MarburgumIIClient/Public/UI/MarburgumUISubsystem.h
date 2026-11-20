@@ -171,7 +171,7 @@ private:
     /** Settings was opened from the Escape menu, so closing it goes back there. */
     bool bSettingsFromMenu = false;
     FDelegateHandle FishingHandle;
-    /** The shutter (ADR-080): a brief white flash over the world on the Notifications layer, fading on a ticker. */
+    /** The shutter (ADR-081): a brief white flash over the world on the Notifications layer, fading on a ticker. */
     void HandlePhotographTaken(APlayerController* Player);
     FDelegateHandle PhotographHandle;
     FTSTicker::FDelegateHandle ShutterTicker;

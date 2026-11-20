@@ -36,7 +36,7 @@ public:
         PURE_VIRTUAL(UMarburgumAuthorityService::HandleTrade, return FMarburgumInteractionReceipt(););
 
     /**
-     * Validate and, if allowed, durably commit a photograph (ADR-080): what the requester's camera is pointed at, judged
+     * Validate and, if allowed, durably commit a photograph (ADR-081): what the requester's camera is pointed at, judged
      * on the server from its own copy of the pawn and its view.
      */
     virtual FMarburgumInteractionReceipt HandlePhotograph(AMarburgumPlayerController& Requester, const FGuid& OperationId)

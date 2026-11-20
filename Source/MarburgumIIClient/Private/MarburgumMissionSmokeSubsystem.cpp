@@ -323,7 +323,7 @@ void UMarburgumMissionSmokeSubsystem::TickFish(double Now)
             return;
         }
         MB2_MISSION_LOG("event=bite attempt=%d after_s=%.2f", Line.Attempt, Now - StepSeconds);
-        // ADR-080: the body shows the line it has out: the rod in the right hand and a fishing clip.
+        // ADR-081: the body shows the line it has out: the rod in the right hand and a fishing clip.
         if (const AMarburgumCharacter* Body = Controller.IsValid() ? Cast<AMarburgumCharacter>(Controller->GetPawn()) : nullptr)
         {
             MB2_MISSION_LOG("event=fishing_presentation pose=%s rod=%d clip=%d", ToString(Body->GetFishingPose()), Body->IsRodInHand() ? 1 : 0,
@@ -383,7 +383,7 @@ void UMarburgumMissionSmokeSubsystem::TickStep(double Now)
         return;
     case 2:
         if (Now - StepSeconds < ToastSettleSeconds) return;
-        // ADR-080: the server told everyone this person was spoken to; on this client they turn and talk (the angler
+        // ADR-081: the server told everyone this person was spoken to; on this client they turn and talk (the angler
         // keeps fishing, rod in hand).
         if (const AMarburgumNpc* Person = Cast<AMarburgumNpc>(Find(TargetId)))
         {
@@ -406,7 +406,7 @@ void UMarburgumMissionSmokeSubsystem::TickStep(double Now)
 
 void UMarburgumMissionSmokeSubsystem::TickPhoto(double Now)
 {
-    // ADR-080: aim the view at the subject's aim point the way a player would, then press the shutter (P).
+    // ADR-081: aim the view at the subject's aim point the way a player would, then press the shutter (P).
     AMarburgumPlayerController* Local = Controller.Get();
     const UMarburgumPhotographySubsystem* Photography = Local ? Local->GetWorld()->GetSubsystem<UMarburgumPhotographySubsystem>() : nullptr;
     const FMarburgumInteractionReceipt* R = ReceiptFor(Op);
@@ -618,7 +618,7 @@ void UMarburgumMissionSmokeSubsystem::TickCheck(double Now)
 
 void UMarburgumMissionSmokeSubsystem::TickStoryCheck(double Now)
 {
-    // ADR-080, after a server restart: what scripts/story-smoke-linux.sh played is all still there.
+    // ADR-081, after a server restart: what scripts/story-smoke-linux.sh played is all still there.
     const AMarburgumPlayerState* State = LocalState();
     UMarburgumUISubsystem* UI = GetGameInstance()->GetSubsystem<UMarburgumUISubsystem>();
     switch (Step)

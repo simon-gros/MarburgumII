@@ -94,7 +94,7 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
     }
     out.push_str("    };\n\n");
 
-    // Photo subjects (ADR-080): what a camera can document, where, and what the first photograph of it is worth.
+    // Photo subjects (ADR-081): what a camera can document, where, and what the first photograph of it is worth.
     let photography = &catalogue["photography"];
     writeln!(out, "    inline constexpr const TCHAR* CameraItem = {};", lit(str_of(photography, "camera_item")?)).unwrap();
     out.push_str("    inline constexpr FPhotoSubjectDefinition PhotoSubjects[] = {\n");

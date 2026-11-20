@@ -83,7 +83,7 @@ public:
     /** Presentation evidence: the playing swim clip is treading water, upright, not the stroke. */
     bool IsTreadingWater() const;
 
-    // ---- Fishing (ADR-048, presentation ADR-080) ----
+    // ---- Fishing (ADR-048, presentation ADR-081) ----
 
     /** Server: the owner's line is in the water (Waiting), something is on (Bite), or neither (None). */
     void SetFishingPoseAuthority(EMarburgumFishingPhase Phase);
@@ -163,7 +163,7 @@ private:
     void UpdateFishingPresentation();
 
     /**
-     * How the body holds a rod (ADR-080): None, Waiting or Bite, set by the server whenever the owner's fishing status
+     * How the body holds a rod (ADR-081): None, Waiting or Bite, set by the server whenever the owner's fishing status
      * changes, public so everyone nearby sees the cast, the wait and the bite. The status (spot, attempt, catch) stays
      * the owner's.
      */

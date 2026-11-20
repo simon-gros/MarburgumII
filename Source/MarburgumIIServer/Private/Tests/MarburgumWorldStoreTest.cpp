@@ -188,7 +188,7 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
         TestTrue(TEXT("schema 4 has no first purchases"), Store.Get().FirstPurchases.IsEmpty());
     }
 
-    // Schema 6 (ADR-080): each character's documented photo subjects round-trip; a schema 5 world has none.
+    // Schema 6 (ADR-081): each character's documented photo subjects round-trip; a schema 5 world has none.
     {
         FMarburgumWorldStore Store(Path);
         FMarburgumWorldRecord Next;

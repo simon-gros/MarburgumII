@@ -126,7 +126,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     }
     let missions = list(&catalogue, "missions");
     let ids: Vec<&str> = list(&catalogue, "interactables").iter().map(|e| text(&e["id"])).collect();
-    // Photography (ADR-080): a registered camera tool, subjects with a place, a positive first-photograph XP and a
+    // Photography (ADR-081): a registered camera tool, subjects with a place, a positive first-photograph XP and a
     // registered photograph item each, and the Photography skill they train.
     let photography = &catalogue["photography"];
     let camera = text(&photography["camera_item"]);

@@ -80,7 +80,7 @@ struct FMarburgumWorldRecord
     TMap<FString, TMap<FString, int32>> Shelves;
     /** Schema 5 (ADR-060): character key -> shops where it has made its first purchase (its Trading XP is paid). */
     TMap<FString, TArray<FString>> FirstPurchases;
-    /** Schema 6 (ADR-080): character key -> photo subjects it has documented (its first-photograph XP is paid). */
+    /** Schema 6 (ADR-081): character key -> photo subjects it has documented (its first-photograph XP is paid). */
     TMap<FString, TArray<FString>> Discoveries;
     /** Operation id (32 hex digits) -> committed operation. */
     TMap<FString, FMarburgumStoredReceipt> Receipts;

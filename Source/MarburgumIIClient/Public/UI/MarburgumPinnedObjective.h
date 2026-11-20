@@ -23,7 +23,7 @@ namespace MarburgumII::Gameplay
  * server has not saved. Until a pin choice exists, the earliest-started active mission is pinned.
  * Updated by the missions-changed event, not polled. When the server moves the mission on, an "updated" chip shows
  * for a moment; when it completes, the tracker ticks it off for a moment before showing the next one.
- * Under the step, a guide line names where it is done and how far and which way from the player (ADR-080): the
+ * Under the step, a guide line names where it is done and how far and which way from the player (ADR-081): the
  * person or place when it is in this world, the photo subject's aim point for a photograph, and an honest note when
  * the place stands on a temporary floor beyond the built map (ADR-052). Refreshed twice a second.
  */

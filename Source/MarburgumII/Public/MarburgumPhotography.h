@@ -10,7 +10,7 @@ namespace MarburgumII::Gameplay
 }
 
 /**
- * Where the catalogue's photo subjects are in this world, and which one a camera is pointed at (ADR-080). The server
+ * Where the catalogue's photo subjects are in this world, and which one a camera is pointed at (ADR-081). The server
  * judges a photograph with it; the client asks the same question to show what [P] would photograph. Every machine
  * resolves the same aim points: the street level round the subject's plan position (the median of dry ground a few
  * metres out, so a tower's roof or the riverbed does not count) plus the subject's aim height.

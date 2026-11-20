@@ -35,7 +35,7 @@ enum class EMarburgumInteractionReason : uint8
     ItemNotAccepted,      // The counter does not buy that back.
     InsufficientItems,    // Selling more copies than the character holds.
     Incapacitated,        // Seated in a car or down: the body cannot talk, choose or trade (QA 2026-11-19).
-    NoCamera,             // Photography needs a camera in the character's custody (ADR-080).
+    NoCamera,             // Photography needs a camera in the character's custody (ADR-081).
     NothingInFrame,       // No photo subject close enough, in the middle of the frame and in plain view.
     AlreadyPhotographed   // That subject is documented and its print is still held: nothing would change.
 };
@@ -53,7 +53,7 @@ enum class EMarburgumInteractionEffect : uint8
     FishCaught,     // Struck while a fish was on: the fish and its Fishing XP were committed together.
     ItemBought,     // Bought at a counter: shelf, money, goods and any first-purchase Trading XP in one commit (ADR-060).
     ItemSold,       // Sold back at a counter: goods, money and the shelf in one commit.
-    Photographed    // Photographed a subject: the print and any first-photograph Photography XP in one commit (ADR-080).
+    Photographed    // Photographed a subject: the print and any first-photograph Photography XP in one commit (ADR-081).
 };
 
 /** What a request at a shop counter asks for (ADR-060). */

@@ -573,7 +573,7 @@
       "kind": "tool",
       "provenance": {
         "source": "original Marburgum docs/PHOTOGRAPHY_SKILL_ROADMAP.md and NARRATIVE_BIBLE.md (Nika Vidmar)",
-        "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+        "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
       }
     },
     {
@@ -585,8 +585,8 @@
       "stacking": "fungible_stack",
       "kind": "clue",
       "provenance": {
-        "source": "Marburgum II extension (ADR-080)",
-        "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+        "source": "Marburgum II extension (ADR-081)",
+        "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
       }
     },
     {
@@ -598,7 +598,7 @@
       "stacking": "fungible_stack",
       "kind": "photo",
       "provenance": {
-        "source": "Marburgum II extension (ADR-080)",
+        "source": "Marburgum II extension (ADR-081)",
         "note": "A print of a character's own photograph; nothing is imported."
       }
     },
@@ -611,7 +611,7 @@
       "stacking": "fungible_stack",
       "kind": "photo",
       "provenance": {
-        "source": "Marburgum II extension (ADR-080)",
+        "source": "Marburgum II extension (ADR-081)",
         "note": "A print of a character's own photograph; nothing is imported."
       }
     },
@@ -624,7 +624,7 @@
       "stacking": "fungible_stack",
       "kind": "photo",
       "provenance": {
-        "source": "Marburgum II extension (ADR-080)",
+        "source": "Marburgum II extension (ADR-081)",
         "note": "A print of a character's own photograph; nothing is imported."
       }
     },
@@ -637,7 +637,7 @@
       "stacking": "fungible_stack",
       "kind": "photo",
       "provenance": {
-        "source": "Marburgum II extension (ADR-080)",
+        "source": "Marburgum II extension (ADR-081)",
         "note": "A print of a character's own photograph; nothing is imported."
       }
     },
@@ -650,7 +650,7 @@
       "stacking": "fungible_stack",
       "kind": "photo",
       "provenance": {
-        "source": "Marburgum II extension (ADR-080)",
+        "source": "Marburgum II extension (ADR-081)",
         "note": "A print of a character's own photograph; nothing is imported."
       }
     },
@@ -663,7 +663,7 @@
       "stacking": "fungible_stack",
       "kind": "photo",
       "provenance": {
-        "source": "Marburgum II extension (ADR-080)",
+        "source": "Marburgum II extension (ADR-081)",
         "note": "A print of a character's own photograph; nothing is imported."
       }
     },
@@ -676,7 +676,7 @@
       "stacking": "fungible_stack",
       "kind": "photo",
       "provenance": {
-        "source": "Marburgum II extension (ADR-080)",
+        "source": "Marburgum II extension (ADR-081)",
         "note": "A print of a character's own photograph; nothing is imported."
       }
     },
@@ -689,7 +689,7 @@
       "stacking": "fungible_stack",
       "kind": "photo",
       "provenance": {
-        "source": "Marburgum II extension (ADR-080)",
+        "source": "Marburgum II extension (ADR-081)",
         "note": "A print of a character's own photograph; nothing is imported."
       }
     },
@@ -702,7 +702,7 @@
       "stacking": "fungible_stack",
       "kind": "photo",
       "provenance": {
-        "source": "Marburgum II extension (ADR-080)",
+        "source": "Marburgum II extension (ADR-081)",
         "note": "A print of a character's own photograph; nothing is imported."
       }
     }
@@ -2398,7 +2398,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter IV ('a Tabor household')",
-        "note": "The canon's unnamed Tabor household, named here (ADR-080). Tabor is not built yet: she stands on the temporary Tabor floor (ADR-052)."
+        "note": "The canon's unnamed Tabor household, named here (ADR-081). Tabor is not built yet: she stands on the temporary Tabor floor (ADR-052)."
       }
     }
   ],
@@ -2463,7 +2463,7 @@
     "format": "marburgumii.world_store",
     "schema_version": 6,
     "oldest_readable_schema": 1,
-    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition (ADR-020); schema 4 adds skill XP, money and mission outcomes (ADR-047, ADR-049); schema 5 adds shop shelves and each character's first purchase per shop (ADR-060); schema 6 adds each character's documented photo subjects (discoveries, ADR-080)."
+    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition (ADR-020); schema 4 adds skill XP, money and mission outcomes (ADR-047, ADR-049); schema 5 adds shop shelves and each character's first purchase per shop (ADR-060); schema 6 adds each character's documented photo subjects (discoveries, ADR-081)."
   },
   "condition": {
     "walk_speed_mps": 2.2,
@@ -4506,7 +4506,7 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter IV beat 4 (Maja branch, 'a journalist borrowed a folder')",
-        "note": "Offered only to a character whose Chapter I ended in maja_informed (outcome gate, ADR-080); a separate follow-up because the runtime has no optional stages."
+        "note": "Offered only to a character whose Chapter I ended in maja_informed (outcome gate, ADR-081); a separate follow-up because the runtime has no optional stages."
       }
     },
     {
@@ -4696,7 +4696,7 @@
         }
       },
       "provenance": {
-        "source": "Marburgum II extension (ADR-080), built on original Marburgum NARRATIVE_BIBLE.md (Nika Vidmar: 'photographs are evidence only when their context is known') and PHOTOGRAPHY_SKILL_ROADMAP.md",
+        "source": "Marburgum II extension (ADR-081), built on original Marburgum NARRATIVE_BIBLE.md (Nika Vidmar: 'photographs are evidence only when their context is known') and PHOTOGRAPHY_SKILL_ROADMAP.md",
         "note": "Newly authored introduction to Photography; Nika's prints are fictional props and no historical image is reproduced."
       }
     },
@@ -4890,7 +4890,7 @@
   ],
   "photography": {
     "camera_item": "camera",
-    "rules": "Server-validated (ADR-080): the camera in custody, the photographer within within_m of the subject's aim point, the view within cone_degrees of it and nothing else in the way. Each photograph is a print; the first of each subject trains Photography once per character and is remembered in the world store (schema 6, discoveries).",
+    "rules": "Server-validated (ADR-081): the camera in custody, the photographer within within_m of the subject's aim point, the view within cone_degrees of it and nothing else in the way. Each photograph is a print; the first of each subject trains Photography once per character and is remembered in the world store (schema 6, discoveries).",
     "subjects": [
       {
         "id": "vodni_stolp",
@@ -4914,7 +4914,7 @@
         },
         "provenance": {
           "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
-          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+          "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
         }
       },
       {
@@ -4939,7 +4939,7 @@
         },
         "provenance": {
           "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
-          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+          "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
         }
       },
       {
@@ -4964,7 +4964,7 @@
         },
         "provenance": {
           "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
-          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+          "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
         }
       },
       {
@@ -4989,7 +4989,7 @@
         },
         "provenance": {
           "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
-          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+          "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
         }
       },
       {
@@ -5014,7 +5014,7 @@
         },
         "provenance": {
           "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
-          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+          "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
         }
       },
       {
@@ -5039,7 +5039,7 @@
         },
         "provenance": {
           "source": "Stari most middle (plan origin)",
-          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+          "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
         }
       },
       {
@@ -5064,7 +5064,7 @@
         },
         "provenance": {
           "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
-          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+          "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
         }
       },
       {
@@ -5089,7 +5089,7 @@
         },
         "provenance": {
           "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
-          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+          "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
         }
       },
       {
@@ -5114,7 +5114,7 @@
         },
         "provenance": {
           "source": "original Marburgum docs/MAIN_STORYLINE.md timeline (Aug 1990 sign) and SIDE_STORY_BIBLE.md 3.10; beside melje_yard_gate",
-          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+          "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
         }
       }
     ]

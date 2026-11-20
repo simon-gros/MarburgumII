@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chapter IV, its Maja branch, Photography and the two photography side missions (ADR-080), played on /Game/World/lent
+# Chapter IV, its Maja branch, Photography and the two photography side missions (ADR-081), played on /Game/World/lent
 # against a real dedicated server through the same RPCs the E and P keys and the choice panel use.
 #
 # The world store is seeded (schema 5, revision 1) with one character who has finished the prologue and Chapters I-III

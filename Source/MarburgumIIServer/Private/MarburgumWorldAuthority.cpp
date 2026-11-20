@@ -695,7 +695,7 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
         return Finish(Receipt, Requester);
     }
     // Somebody close enough to be spoken to answers whatever the request means: everyone nearby sees them turn
-    // to the speaker and talk (ADR-080). Presentation only; the decision below is the server's alone.
+    // to the speaker and talk (ADR-081). Presentation only; the decision below is the server's alone.
     if (AMarburgumNpc* Person = Cast<AMarburgumNpc>(Target))
     {
         Person->ConverseAuthority(Requester.GetPawn());
@@ -757,7 +757,7 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandlePhotograph(AMarburg
     {
         return Finish(Receipt, Requester);
     }
-    // The server's own copy of the body and its view decides what is in frame (ADR-080); the client only asks.
+    // The server's own copy of the body and its view decides what is in frame (ADR-081); the client only asks.
     const APawn* Body = Requester.GetPawn();
     const AMarburgumCharacter* Photographer = Cast<AMarburgumCharacter>(Body);
     if (!Body || State->GetCondition().IsDown() || (Photographer && Photographer->GetSeatedVehicle()))
@@ -1288,7 +1288,7 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
         }
         return false;
     };
-    // The angler fishes from the bank (ADR-080): the level put him on the promenade, a road and a verge away from the
+    // The angler fishes from the bank (ADR-081): the level put him on the promenade, a road and a verge away from the
     // Drava. Walk him forward along his facing to the last dry ground before the water, before anything is laid out
     // round him, and move the development starts that look at him by the same step. His place replicates.
     if (Angler)
@@ -1397,7 +1397,7 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
         // People stand on their feet; a place marker sits half sunk so it reads as a post, crate or sign.
         const FVector At = Ground.ImpactPoint + FVector(0.0, 0.0, bPerson ? 0.0 : 25.0);
         // Everyone faces the river (the original's -z in Unreal's -X) unless the angler shows otherwise; a person whose
-        // original spot puts a wall in their face turns to the clearest way instead (ADR-080).
+        // original spot puts a wall in their face turns to the clearest way instead (ADR-081).
         FRotator Facing = Angler ? Angler->GetActorRotation() : FRotator(0.0, 180.0, 0.0);
         if (bPerson)
         {
@@ -1464,7 +1464,7 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
             At.X, At.Y, At.Z, Entry.Placement == EPlacement::AnglerRelative ? TEXT("angler_relative")
                 : Entry.Placement == EPlacement::Pad ? TEXT("pad") : TEXT("original"));
     }
-    // Photo subjects (ADR-080): a development start where each can be photographed from (?MB2Start=photo_<id>), found
+    // Photo subjects (ADR-081): a development start where each can be photographed from (?MB2Start=photo_<id>), found
     // round its aim point on dry ground in plain view; a subject with none is reported, never silently skipped.
     if (const UMarburgumPhotographySubsystem* Photography = InWorld.GetSubsystem<UMarburgumPhotographySubsystem>())
     {

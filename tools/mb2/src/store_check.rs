@@ -200,7 +200,7 @@ fn check_missions(doc: &Value, key: &str) -> u8 {
     finish(problems, format!("{money} {fishing} {reputation}"))
 }
 
-/// Chapter IV, Maja's folder and the photography missions (scripts/story-smoke-linux.sh, ADR-080), after both phases on a
+/// Chapter IV, Maja's folder and the photography missions (scripts/story-smoke-linux.sh, ADR-081), after both phases on a
 /// seeded schema 5 store. Prints "<money> <reputation> <photography> <discoveries>".
 pub fn story(store: &str, key: &str) -> u8 {
     let doc = match load(store) {

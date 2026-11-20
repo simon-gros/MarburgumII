@@ -5,7 +5,7 @@
 #include "MarburgumNpcContentCommandlet.generated.h"
 
 /**
- * Builds what an authored NPC's body needs beyond the template mannequin (ADR-080).
+ * Builds what an authored NPC's body needs beyond the template mannequin (ADR-081).
  *
  *   UnrealEditor-Cmd MarburgumII.uproject -run=MarburgumNpcContent -Steps=rod,animation
  *
