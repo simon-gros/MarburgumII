@@ -2,6 +2,8 @@
 
 Marburgum II can use DLSS Super Resolution and DLAA, DLSS Frame Generation and Reflex when NVIDIA's Unreal plugins are present. It can also run under NVIDIA Smooth Motion. The ordinary renderer is TSR with no generated frames. It must look right on its own and is what runs when any of these features is unavailable.
 
+For the **broader engine-native graphics modernization** (Lumen/A-B checks, physically based materials, water, environment, packaged benchmarks and the playable Lent showcase), see [GRAPHICS_ROADMAP.md](GRAPHICS_ROADMAP.md). Neural-rendering research is deliberately outside the critical path; proprietary or unofficial binary dependencies never gate an approved playable build.
+
 ## What the original did
 
 Unreal Marburgum (`magna-raedarum-marburgum`, `UnrealMarburgum/`) never ran DLSS in the game. Its uproject enables no NVIDIA plugin. What it had:
