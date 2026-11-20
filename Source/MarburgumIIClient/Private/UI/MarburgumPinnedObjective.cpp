@@ -11,7 +11,12 @@
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
+#include "EngineUtils.h"
+#include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerController.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumInteractable.h"
+#include "MarburgumPhotography.h"
 #include "MarburgumPlayerState.h"
 #include "UI/MarburgumUIBuilder.h"
 
@@ -76,6 +81,10 @@ void UMarburgumPinnedObjective::NativeOnInitialized()
     ObjectiveLabel->SetAutoWrapText(true);
     FBuilder::Inline(Step, ObjectiveLabel, 0.f, true, false);
     FBuilder::Stack(Column, Step, 0.f);
+    GuideLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextSecondary);
+    GuideLabel->SetAutoWrapText(true);
+    GuideLabel->SetVisibility(ESlateVisibility::Collapsed);
+    FBuilder::Stack(Column, GuideLabel, 0.f);
 
     UHorizontalBox* Line = B.Row();
     FBuilder::Inline(Line, B.Rule(T.Color.Accent, 1.f, 2.f), T.Space.M, false, false);
@@ -119,6 +128,12 @@ void UMarburgumPinnedObjective::NativeDestruct()
 void UMarburgumPinnedObjective::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
     Super::NativeTick(MyGeometry, InDeltaTime);
+    SinceGuide += InDeltaTime;
+    if (SinceGuide >= 0.5f)
+    {
+        SinceGuide = 0.f;
+        RefreshGuide();
+    }
     if (NewsLeft <= 0.f)
     {
         return;
@@ -234,7 +249,76 @@ void UMarburgumPinnedObjective::Refresh()
         ShowNews(LOCTEXT("New", "NEW"), ETone::Accent, EMarburgumGlyph::Mission);
     }
     bHasShownOnce = true;
+    GuideTarget = Stage ? Stage->CompleteTarget : TEXT("");
+    GuideActor.Reset();
+    RefreshGuide();
     Card->SetVisibility(ESlateVisibility::HitTestInvisible);
+}
+
+void UMarburgumPinnedObjective::RefreshGuide()
+{
+    using namespace MarburgumII::Gameplay;
+    const APlayerController* Owner = GetOwningPlayer();
+    const APawn* Body = Owner ? Owner->GetPawn() : nullptr;
+    UWorld* World = Owner ? Owner->GetWorld() : nullptr;
+    if (GuideTarget.IsEmpty() || !Body || !World || bShowingCompletion)
+    {
+        GuideLabel->SetVisibility(ESlateVisibility::Collapsed);
+        return;
+    }
+    // Where the step is done: a photo subject's aim point, or the person or place standing in this world.
+    FText Where;
+    FVector At;
+    bool bFound = false;
+    bool bTemporary = false;
+    if (const FPhotoSubjectDefinition* Subject = FindPhotoSubject(GuideTarget))
+    {
+        const UMarburgumPhotographySubsystem* Photography = World->GetSubsystem<UMarburgumPhotographySubsystem>();
+        bFound = Photography && Photography->GetAimPoint(GuideTarget, At);
+        Where = FText::FromString(Subject->DisplayName);
+    }
+    else
+    {
+        if (!GuideActor.IsValid())
+        {
+            for (TActorIterator<AMarburgumInteractable> It(World); It; ++It)
+            {
+                if (It->InteractableId == FName(*GuideTarget))
+                {
+                    GuideActor = *It;
+                    break;
+                }
+            }
+        }
+        const AMarburgumInteractable* Placed = Cast<AMarburgumInteractable>(GuideActor.Get());
+        const FInteractableDefinition* Entry = FindInteractable(GuideTarget);
+        bFound = Placed != nullptr;
+        At = Placed ? Placed->GetActorLocation() : FVector::ZeroVector;
+        Where = Placed && !Placed->DisplayName.IsEmpty() ? Placed->DisplayName : Entry ? FText::FromString(Entry->DisplayName) : FText::GetEmpty();
+        bTemporary = Entry && Entry->Placement == EPlacement::Pad;
+    }
+    if (!bFound)
+    {
+        // Not in this world (yet): say so rather than point somewhere it is not.
+        GuideLabel->SetText(Where.IsEmpty() ? FText::GetEmpty()
+            : FText::Format(LOCTEXT("GuideAbsent", "{0} \u00B7 not in this part of the city yet"), Where));
+        GuideLabel->SetVisibility(Where.IsEmpty() ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
+        return;
+    }
+    // Unreal +X is north and +Y east on the Marburgum maps (the original's -z and x).
+    const FVector Toward = At - Body->GetActorLocation();
+    const double Metres = Toward.Size2D() / 100.0;
+    static const FText Compass[] = { LOCTEXT("N", "north"), LOCTEXT("NE", "north-east"), LOCTEXT("E", "east"), LOCTEXT("SE", "south-east"),
+        LOCTEXT("S", "south"), LOCTEXT("SW", "south-west"), LOCTEXT("W", "west"), LOCTEXT("NW", "north-west") };
+    const double Bearing = FMath::Fmod(FMath::RadiansToDegrees(FMath::Atan2(Toward.Y, Toward.X)) + 360.0 + 22.5, 360.0);
+    const FText Direction = Compass[FMath::Clamp(FMath::FloorToInt32(Bearing / 45.0), 0, 7)];
+    FText Distance = Metres < 8.0 ? LOCTEXT("Here", "here")
+        : Metres < 1000.0 ? FText::Format(LOCTEXT("Metres", "{0} m {1}"), FText::AsNumber(FMath::RoundToInt32(Metres / 5.0) * 5), Direction)
+        : FText::Format(LOCTEXT("Kilometres", "{0} km {1}"), FText::AsNumber(FMath::RoundToDouble(Metres / 100.0) / 10.0), Direction);
+    GuideLabel->SetText(bTemporary
+        ? FText::Format(LOCTEXT("GuideTemporary", "{0} \u00B7 {1} \u00B7 on a temporary floor until that district is built"), Where, Distance)
+        : FText::Format(LOCTEXT("Guide", "{0} \u00B7 {1}"), Where, Distance));
+    GuideLabel->SetVisibility(ESlateVisibility::HitTestInvisible);
 }
 
 #undef LOCTEXT_NAMESPACE

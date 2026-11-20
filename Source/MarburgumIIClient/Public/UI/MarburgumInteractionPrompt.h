@@ -24,6 +24,8 @@ class AMarburgumVehicle;
  * result: items and missions appear only through the server receipt and replicated state.
  * Cars come first, as the same key gets in and out of them (ADR-039): a car in reach offers its seat,
  * and in a car the prompt offers the way out and names the controls.
+ * With a camera in custody and nothing else in reach, it names the photo subject [P] would photograph, and whether
+ * the character has documented it yet (ADR-080); the server still decides what a photograph shows.
  * Refreshes at 10 Hz and only touches widgets whose text changed.
  */
 UCLASS()
@@ -45,6 +47,8 @@ private:
         const AMarburgumPlayerState* State, bool bWaiting);
     void RefreshFishing(const AMarburgumInteractable& Spot, const AMarburgumPlayerState* State, bool bWaiting);
     void RefreshVehicle(const AMarburgumVehicle& Vehicle, FName Seat, bool bSeated, bool bWaiting);
+    /** With a camera in custody and nothing else in reach: what [P] would photograph (ADR-080). False when nothing. */
+    bool RefreshPhoto(const AMarburgumPlayerController& Controller);
     void Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone, bool bKeyActive,
         EMarburgumGlyph Icon);
     void ApplyTo(const AActor& Target, const FText& Subject, bool bFixture, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone,
@@ -65,4 +69,6 @@ private:
     bool Suppressed = false;
     FString LastSignature;
     TWeakObjectPtr<AActor> Shown;
+    /** The photo subject's aim point when the card is about a photograph rather than an actor. */
+    TOptional<FVector> ShownPoint;
 };

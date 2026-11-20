@@ -35,6 +35,7 @@ namespace
         case EItemKind::Fish: return EMarburgumGlyph::Fish;
         case EItemKind::Clue: return EMarburgumGlyph::Clue;
         case EItemKind::Goods: return EMarburgumGlyph::Item;
+        case EItemKind::Photo: return EMarburgumGlyph::Clue;
         default: return EMarburgumGlyph::Item;
         }
     }
@@ -47,6 +48,7 @@ namespace
         case EItemKind::Fish: return LOCTEXT("Fish", "Fish");
         case EItemKind::Clue: return LOCTEXT("Clue", "Evidence");
         case EItemKind::Goods: return LOCTEXT("Goods", "Goods");
+        case EItemKind::Photo: return LOCTEXT("Photo", "Photograph");
         default: return LOCTEXT("Item", "Item");
         }
     }
@@ -390,6 +392,8 @@ void UMarburgumInventoryPanel::ShowDetail(FName ItemId)
         ? LOCTEXT("CounterNote", "Selling happens at the counter itself: stand at its keeper and press B. The server confirms every sale.")
         : Kind == EItemKind::Clue
             ? LOCTEXT("ClueNote", "Evidence is handed over when a mission asks for it; talk to the person who needs it.")
+            : Kind == EItemKind::Photo
+            ? LOCTEXT("PhotoNote", "A print of your own photograph. Somebody who asked for it will want to see it; the subject stays documented either way.")
             : LOCTEXT("NoAction", "Nothing to do with it from here. Missions and counters that want it will ask."),
         ETypeRole::Caption, T.Color.TextMuted);
     Note->SetAutoWrapText(true);

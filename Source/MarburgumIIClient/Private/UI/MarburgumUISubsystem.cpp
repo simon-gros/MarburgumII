@@ -10,6 +10,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "MarburgumChatWidget.h"
+#include "MarburgumClientUiHooks.h"
 #include "MarburgumCombatContract.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumNetworkContract.h"
@@ -29,6 +30,7 @@
 #include "UI/MarburgumSkillsPanel.h"
 #include "UI/MarburgumSettingsPanel.h"
 #include "UI/MarburgumUISettings.h"
+#include "Components/Border.h"
 #include "Components/Overlay.h"
 #include "UI/MarburgumSystemMenu.h"
 #include "UI/MarburgumLocationBanner.h"
@@ -76,6 +78,7 @@ void UMarburgumUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
     PreLoadMapHandle = FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &UMarburgumUISubsystem::HandlePreLoadMap);
     PostLoadMapHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UMarburgumUISubsystem::HandlePostLoadMap);
     FishingHandle = AMarburgumPlayerState::OnFishingChanged().AddUObject(this, &UMarburgumUISubsystem::HandleFishingChanged);
+    PhotographHandle = FMarburgumClientUiHooks::OnPhotographTaken().AddUObject(this, &UMarburgumUISubsystem::HandlePhotographTaken);
 }
 
 void UMarburgumUISubsystem::Deinitialize()
@@ -83,6 +86,8 @@ void UMarburgumUISubsystem::Deinitialize()
     FCoreUObjectDelegates::PreLoadMap.Remove(PreLoadMapHandle);
     FCoreUObjectDelegates::PostLoadMapWithWorld.Remove(PostLoadMapHandle);
     AMarburgumPlayerState::OnFishingChanged().Remove(FishingHandle);
+    FMarburgumClientUiHooks::OnPhotographTaken().Remove(PhotographHandle);
+    FTSTicker::RemoveTicker(ShutterTicker);
     if (UMarburgumSessionSubsystem* SessionSubsystem = Session.Get())
     {
         SessionSubsystem->OnSessionChanged().Remove(SessionChangedHandle);
@@ -834,6 +839,41 @@ namespace
     }
 }
 
+void UMarburgumUISubsystem::HandlePhotographTaken(APlayerController* Player)
+{
+    constexpr float ShutterSeconds = 0.22f;
+    if (!Root || !Player || !Player->IsLocalController())
+    {
+        return;
+    }
+    if (!ShutterFlash || !ShutterFlash->GetParent())
+    {
+        ShutterFlash = NewObject<UBorder>(Root);
+        ShutterFlash->SetBrushColor(FLinearColor(1.f, 0.98f, 0.94f, 1.f));
+        ShutterFlash->SetVisibility(ESlateVisibility::HitTestInvisible);
+        Root->AddToLayer(EMarburgumUILayer::Notifications, ShutterFlash);
+    }
+    ShutterLeft = ShutterSeconds;
+    ShutterFlash->SetRenderOpacity(0.7f);
+    if (!ShutterTicker.IsValid())
+    {
+        ShutterTicker = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateWeakLambda(this, [this, ShutterSeconds](float Delta)
+        {
+            ShutterLeft = FMath::Max(ShutterLeft - Delta, 0.f);
+            if (ShutterFlash)
+            {
+                ShutterFlash->SetRenderOpacity(0.7f * ShutterLeft / ShutterSeconds);
+            }
+            if (ShutterLeft <= 0.f)
+            {
+                ShutterTicker.Reset();
+                return false;
+            }
+            return true;
+        }));
+    }
+}
+
 void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteractionReceipt& Receipt)
 {
     if (!Feed)
@@ -890,6 +930,18 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         }
     };
 
+    // A photograph (ADR-080): what the print shows first, then whatever mission step it completed.
+    if (const FPhotoSubjectDefinition* Photo = bApplied ? FindPhotoSubject(Receipt.InteractableId.ToString()) : nullptr)
+    {
+        Feed->Push(FName(*(Key.ToString() + TEXT(".photo"))), LOCTEXT("PhotoKind", "PHOTOGRAPH"),
+            FText::Format(LOCTEXT("Photographed", "{0}. {1} The print is in your inventory; saved by the server."),
+                FText::FromString(Photo->DisplayName), FText::FromString(Photo->Note)), MarburgumUI::ETone::Success, false, EMarburgumGlyph::Item);
+        if (Receipt.Effect == EMarburgumInteractionEffect::Photographed)
+        {
+            PushRewards();
+            return;
+        }
+    }
     if (bApplied && Receipt.Effect == EMarburgumInteractionEffect::FishingCast)
     {
         Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"),
@@ -1103,6 +1155,18 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         break;
     case EMarburgumInteractionReason::NoCharacter:
         Message = LOCTEXT("NoCharacter", "This connection has no character, so it cannot hold items or take on missions. Nothing was changed.");
+        break;
+    case EMarburgumInteractionReason::NoCamera:
+        Message = LOCTEXT("NoCamera", "You have no camera. Nika Vidmar at Foto Vidmar lends one to people who ask.");
+        Tone = MarburgumUI::ETone::Info;
+        break;
+    case EMarburgumInteractionReason::NothingInFrame:
+        Message = LOCTEXT("NothingInFrame", "Nothing worth documenting in the middle of the frame. Get closer and point the camera straight at it.");
+        Tone = MarburgumUI::ETone::Info;
+        break;
+    case EMarburgumInteractionReason::AlreadyPhotographed:
+        Message = FText::Format(LOCTEXT("AlreadyPhotographed", "You already hold a print of that ({0}). Nothing was changed."), ItemName);
+        Tone = MarburgumUI::ETone::Info;
         break;
     case EMarburgumInteractionReason::StoreUnavailable:
     case EMarburgumInteractionReason::StoreWriteFailed:

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Containers/Ticker.h"
 #include "MarburgumGameState.h"
 #include "MarburgumInteractionTypes.h"
 #include "Session/MarburgumSessionSubsystem.h"
@@ -170,6 +171,12 @@ private:
     /** Settings was opened from the Escape menu, so closing it goes back there. */
     bool bSettingsFromMenu = false;
     FDelegateHandle FishingHandle;
+    /** The shutter (ADR-080): a brief white flash over the world on the Notifications layer, fading on a ticker. */
+    void HandlePhotographTaken(APlayerController* Player);
+    FDelegateHandle PhotographHandle;
+    FTSTicker::FDelegateHandle ShutterTicker;
+    UPROPERTY(Transient) TObjectPtr<class UBorder> ShutterFlash;
+    float ShutterLeft = 0.f;
     int32 LastFishingAttempt = 0;
     EMarburgumFishingEnd LastFishingEnd = EMarburgumFishingEnd::None;
 

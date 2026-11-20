@@ -1,5 +1,7 @@
 #include "UI/MarburgumInteractionPrompt.h"
 
+#include "MarburgumPhotography.h"
+
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Border.h"
@@ -16,6 +18,7 @@
 #include "MarburgumVehicle.h"
 #include "MarburgumVehicleContract.h"
 #include "MarburgumNpc.h"
+#include "MarburgumPhotography.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
 #include "Session/MarburgumSessionSubsystem.h"
@@ -108,7 +111,7 @@ void UMarburgumInteractionPrompt::Place()
 {
     const AActor* Target = Shown.Get();
     APlayerController* Controller = GetOwningPlayer();
-    if (!Target || !Controller || !Placement || Card->GetVisibility() == ESlateVisibility::Collapsed)
+    if ((!Target && !ShownPoint.IsSet()) || !Controller || !Placement || Card->GetVisibility() == ESlateVisibility::Collapsed)
     {
         return;
     }
@@ -121,7 +124,15 @@ void UMarburgumInteractionPrompt::Place()
 
     FVector Origin;
     FVector Extent;
-    Target->GetActorBounds(true, Origin, Extent);
+    if (ShownPoint.IsSet())
+    {
+        Origin = ShownPoint.GetValue();
+        Extent = FVector::ZeroVector;
+    }
+    else
+    {
+        Target->GetActorBounds(true, Origin, Extent);
+    }
     FVector2D Top;
     const bool bProjected = UWidgetLayoutLibrary::ProjectWorldLocationToWidgetPosition(
         Controller, Origin + FVector(0.f, 0.f, Extent.Z), Top, true);
@@ -186,6 +197,11 @@ void UMarburgumInteractionPrompt::Refresh()
         }
     }
     AMarburgumInteractable* Target = bAdmitted ? Controller->FindInteractionCandidate() : nullptr;
+    if (!Target && bAdmitted && RefreshPhoto(*Controller))
+    {
+        return;
+    }
+    ShownPoint.Reset();
     if (!Target)
     {
         if (!LastSignature.IsEmpty())
@@ -458,6 +474,41 @@ void UMarburgumInteractionPrompt::RefreshVehicle(const AMarburgumVehicle& Vehicl
     ApplyTo(Vehicle, Vehicle.GetDisplayName(), false, Verb, Detail, Tone, bKeyActive, EMarburgumGlyph::Car);
 }
 
+bool UMarburgumInteractionPrompt::RefreshPhoto(const AMarburgumPlayerController& Controller)
+{
+    const AMarburgumPlayerState* State = Controller.GetPlayerState<AMarburgumPlayerState>();
+    const APawn* Body = Controller.GetPawn();
+    const UMarburgumPhotographySubsystem* Photography = Controller.GetWorld() ? Controller.GetWorld()->GetSubsystem<UMarburgumPhotographySubsystem>() : nullptr;
+    if (!State || !Body || !Photography || !State->IsInventoryKnown() || State->CountItem(FName(MarburgumII::Gameplay::CameraItem)) <= 0)
+    {
+        return false;
+    }
+    // The same question the server asks, from the same eye and view, so the card promises what [P] will do.
+    const UMarburgumPhotographySubsystem::FInFrame Frame = Photography->FindInFrame(Body->GetPawnViewLocation(), Controller.GetControlRotation(), Body);
+    if (!Frame.Subject)
+    {
+        return false;
+    }
+    const bool bHeld = State->CountItem(FName(Frame.Subject->Item)) > 0;
+    const FString Signature = FString::Printf(TEXT("photo|%s|%d"), Frame.Subject->Id, bHeld ? 1 : 0);
+    ShownPoint = Frame.AimPoint;
+    Shown.Reset();
+    if (Signature == LastSignature)
+    {
+        if (Card->GetVisibility() == ESlateVisibility::Collapsed && !Suppressed)
+        {
+            Card->SetVisibility(ESlateVisibility::HitTestInvisible);
+        }
+        return true;
+    }
+    LastSignature = Signature;
+    ApplyTo(*Body, FText::FromString(Frame.Subject->DisplayName), false, LOCTEXT("PhotographVerb", "Photograph"),
+        bHeld ? LOCTEXT("PhotoHeld", "Already documented; you hold the print.") : FText::FromString(Frame.Subject->Note),
+        bHeld ? ETone::Neutral : ETone::Accent, !bHeld, EMarburgumGlyph::Info);
+    KeyLabel->SetText(LOCTEXT("PhotoKey", "P"));
+    return true;
+}
+
 void UMarburgumInteractionPrompt::Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, ETone Tone, bool bKeyActive,
     EMarburgumGlyph Icon)
 {
@@ -470,6 +521,7 @@ void UMarburgumInteractionPrompt::ApplyTo(const AActor& Target, const FText& Sub
 {
     const FTokens& T = Tokens();
     const FLinearColor VerbColor = Tone == ETone::Neutral ? T.Color.TextSecondary : ToneColor(Tone);
+    KeyLabel->SetText(LOCTEXT("Key", "E"));
     VerbLabel->SetText(MarburgumUI::Caps(Verb));
     VerbLabel->SetColorAndOpacity(FSlateColor(VerbColor));
     VerbGlyph->SetGlyph(Icon);

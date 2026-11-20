@@ -23,6 +23,9 @@ namespace MarburgumII::Gameplay
  * server has not saved. Until a pin choice exists, the earliest-started active mission is pinned.
  * Updated by the missions-changed event, not polled. When the server moves the mission on, an "updated" chip shows
  * for a moment; when it completes, the tracker ticks it off for a moment before showing the next one.
+ * Under the step, a guide line names where it is done and how far and which way from the player (ADR-080): the
+ * person or place when it is in this world, the photo subject's aim point for a photograph, and an honest note when
+ * the place stands on a temporary floor beyond the built map (ADR-052). Refreshed twice a second.
  */
 UCLASS()
 class MARBURGUMIICLIENT_API UMarburgumPinnedObjective : public UUserWidget
@@ -47,6 +50,7 @@ private:
     void HandleMissionsChanged(AMarburgumPlayerState* State);
     void Refresh();
     void ShowNews(const FText& Label, MarburgumUI::ETone Tone, EMarburgumGlyph Icon);
+    void RefreshGuide();
 
     UPROPERTY(Transient) TObjectPtr<UBorder> Card;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> KindLabel;
@@ -55,6 +59,10 @@ private:
     UPROPERTY(Transient) TObjectPtr<UBorder> NewsChip;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> NewsLabel;
     UPROPERTY(Transient) TObjectPtr<UMarburgumGlyph> StepGlyph;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> GuideLabel;
+    float SinceGuide = 0.f;
+    FString GuideTarget;
+    TWeakObjectPtr<AActor> GuideActor;
     float NewsLeft = 0.f;
     bool bShowingCompletion = false;
     bool bHasShownOnce = false;
