@@ -1,6 +1,6 @@
 # Fresh Builds and Assets for Every Owner Playtest
 
-**Status (20 November 2026):** The fail-closed build/asset guard, executable hashing and process-group cleanup are implemented. Separately, a **clean UE 5.8.3 Development package of `c967c46`** was created and used for real multi-client crowd tests; the staged night pair settled but daytime opposite-bank population failed (11/28). This does **not** demonstrate end-to-end qualification of the generic `mb2 playtest` example profile, the entire game or owner approval.
+**Status (20 November 2026, evening):** The fail-closed build/asset guard, executable hashing and process-group cleanup are implemented. Every package of the day below was clean (`dirty=0`) and stamped (`Saved/StagedBuilds/BUILD_STAMP`), and each staged smoke checked the stamp (`build_fresh: yes`); see [the packages of 20 November](#latest-development-package-evidence--20-november-2026). This does **not** demonstrate end-to-end qualification of the generic `mb2 playtest` example profile, the entire game or owner approval.
 
 ## Principle
 
@@ -35,7 +35,14 @@ Include generated **post-IK swim/tread, car enter/exit and fight animation asset
 
 ## Latest Development package evidence — 20 November 2026
 
-The clean `c967c46` Client/Server executable hashes are recorded in [AI evidence](AI_GAMEPLAY.md). The staged nighttime crowd settled at two and the daytime matrix settled most shared/district/cap cases, **but opposite banks timed out at 11/28, script exit 1**. The earlier QA package's 13/14 staged smokes belong to different source/asset snapshots. For every playtest keep the exact commit, sealed cooked data, build stamps, server/client logs and explicit owner outcome. See [current review](DEVELOPMENT_REVIEW_2026-11-20.md).
+| Package | Source | Server / Client sha256 | Staged evidence |
+| --- | --- | --- | --- |
+| `c967c46` (morning) | `main` | in [AI evidence](AI_GAMEPLAY.md) | Crowd matrix: night pair settled; daytime opposite banks **11/28, exit 1** |
+| `a0d0b89` (P0) | `qa/p0-packaged-integration` on `main` `735dce7` | `8eb8ddc1…` / `45234284…` | Door (two buildings at once, lag, streaming, restart), account, net, interaction, chat, mission, shop, vehicle, combat, condition, swim, weather, Lent **PASS**; street multiplayer **FAIL** scenario D 8/28 (the ADR-079 fix `af5b0bd` was not in this package). [P0 evidence](P0_PACKAGED_EVIDENCE_2026-11-20.md) |
+| `9b88369` (ADR-081 second story pass) | `feat/story-chapter-iv`, merged to `main` as `39ec175` | `97c198a8…` / `67ca6a6a…` | Story (English and `-culture=sl`), mission, shop, combat, Lent, interaction **PASS**. [Story expansion §8](STORY_EXPANSION.md#8-tests-and-evidence) |
+| FINAL_PACKAGE_ROW |
+
+For every playtest keep the exact commit, sealed cooked data, build stamps, server/client logs and explicit owner outcome. See [current review](DEVELOPMENT_REVIEW_2026-11-20.md).
 
 ## Microsoft TRELLIS asset freshness (ADR-071)
 

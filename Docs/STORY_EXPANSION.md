@@ -1,3 +1,10 @@
+| Packaged Linux Development Client/Server | package | `64ba57e` | `BUILD SUCCESSFUL`, 2,332 packages cooked; `build-stamp check`: clean tree, `build_fresh: yes`, Server `74b95667…`, Client `24893134…`, packaged 16:52 UTC (an earlier attempt failed with exit 25 because an editor smoke in the same worktree held the cached asset registry; the cook was repeated with nothing else running in the worktree) |
+| `negative-smoke-linux.sh staged`, `object_sold` | staged | `64ba57e` | **PASS**, `Saved/NegativeSmoke/20261120T165552Z-object_sold`: the whole sequence, restart, `store-check negative` = 140 / 65 / 15 / 3, photograph commits 3; stamp `build_fresh: yes` |
+| `negative-smoke-linux.sh staged`, `left_alone`, `-culture=sl` | staged | `64ba57e` | **PASS** on the second run, `Saved/NegativeSmoke/20261120T170342Z-left_alone`: the whole sequence in Slovene, restart, `store-check negative` = 180 / 65 / 0 / 3; stamp `build_fresh: yes`. The first run hit an engine crash, below |
+| Owner playtest | — | — | **Not done** |
+| `negative-smoke-linux.sh editor`, `tab_paid` | editor | `0cd1a2f` | **PASS**, `Saved/NegativeSmoke/20261120T163458Z-tab_paid`: Albin hesitates, asking again at once changes nothing, Petra's word, Albin testifies; `store-check negative` = 180 money, 65 Photography, 0 Trading, 3 documents |
+| `negative-smoke-linux.sh editor`, `temporary_work` | editor | `0cd1a2f` | **PASS**, `Saved/NegativeSmoke/20261120T164310Z-temporary_work`: Albin testifies at once; `store-check negative` = 180 money, 65 Photography, 0 Trading, 3 documents |
+| Prop survey (`visual-survey-linux.sh editor ch6-props`, 18 fixed cameras round the new furniture) | editor | `64ba57e` | 18/18 views, 0 skipped packages, no asset warnings (`Saved/VisualSurvey/ch6-props`) |
 # Story, NPC and progression expansion (ADR-081)
 
 **Status:** Chapter IV and the people and Photography pass (ADR-081) are on `main`; **Chapter VI *The Negative* and the Frame 37 side story (ADR-083) are on branch `feat/story-chapter-vi`**. Both **await the owner's in-game playtest and approval** (ADR-008). Nothing here is accepted release content. Test results are in [§8](#8-tests-and-evidence) and [§10.7](#107-tests-and-evidence-chapter-vi); what is not done is in [§9](#9-not-done-limits-and-blockers) and [§10.8](#108-not-done-limits-and-provisional-parts-chapter-vi).
@@ -247,7 +254,15 @@ The world store schema is unchanged (6): conditional stages, deductions and uniq
 
 ### 10.7 Tests and evidence (Chapter VI)
 
-<!-- filled in below as each run completes; nothing is listed before it ran -->
+All runs on branch `feat/story-chapter-vi`, Linux, UE 5.8.3, `/Game/World/lent`, dedicated server plus clients on ports 27751–27760 (never 7777 or 17777). **Source** is repository validation; **editor** means `UnrealEditor -server` / `-game` from the branch's editor build; **staged** means the cooked Linux Client/Server packaged from the stamped commit. None of them is the owner's playtest.
+
+| Check | Mode | Revision | Result |
+| --- | --- | --- | --- |
+| `mb2 validate all`; `cargo test` | source | `0cd1a2f` | **Pass**: gameplay contract 66 items, 60 interactables, 14 missions, 31 refusal reasons, catalogue current; every Kiosk 67 outcome has a stage; wrong answers change nothing; 66 Rust tests |
+| `Automation RunTests Marburgum` | editor, null RHI | `0cd1a2f` | **52/52 Success**, six new: `Server.Story.Negative.{Prerequisites, AlbinBranches, FrameThirtySevenFirst, Refusals, Persistence}`, `Shared.Mission.ConditionalStages` (log `Saved/Ch6Evidence/automation-3.log`) |
+| `negative-smoke-linux.sh editor`, `object_sold` | editor | `72f6a9e` | **PASS**, `Saved/NegativeSmoke/20261120T160556Z-object_sold`: 51 authored people and places, 0 skipped, 12 photo starts; two characters started the chapter at the same moment; every step of the chapter and the side story, the light table refusing a sheet not yet in hand, a wrong deduction refused (LOOK AGAIN), the collector paid 40, the ticket, Nika with nothing more; server restart: the chapter refused as done, the date board refused as already photographed; `store-check negative` = 140 money, 65 Photography, 15 Trading, 3 documents; photograph commits 3; the other character still at `read_order_book` |
+| `negative-smoke-linux.sh editor`, `left_alone`, `-culture=sl` | editor | `9d780f0` | **PASS**, `Saved/NegativeSmoke/20261120T161515Z-left_alone`: the whole sequence in Slovene; Albin refuses, a second ask changes nothing, Boris vouches, Albin testifies; `store-check negative` = 180 money, 65 Photography, 0 Trading, 3 documents; the scarf kept |
+
 
 ### 10.8 Not done, limits and provisional parts (Chapter VI)
 
@@ -255,11 +270,13 @@ The world store schema is unchanged (6): conditional stages, deductions and uniq
 - **Period variants.** Only the default mid-decade (1993–96) variant exists. 1990–92 (Stefan alive, with the negatives) and 1997–99 (Nika's scan, a copy, and the chain-of-custody question she puts to the player) need a calendar-dependent stage selection the world clock (mirrored to 1996) does not yet call for.
 - **Provisional places.** Foto Vidmar has no interior: its counter and light table stand beside Nika on Glavni trg. Block 13 and its cellar are not built: Ivana Zupan and her storage cage stand on the Tabor temporary floor, about 170 m from the canon's Block 13. The Melje date board and the Kainach trucks stand on the Melje temporary floor. All three are reached by development starts (`?MB2Start=mission_<id>`, `photo_<subject>`), not by walking across the city; none is presented as a finished district.
 - **Purple Saturday.** Albin's `left_alone` route is meant to find him among the match-day group at Ljudski vrt. Neither the stadium district nor a match-day event (`PublicEventState`) exists; Boris, by the Kiosk 67 café, vouches for you instead. Dependency recorded, route completable.
-- **Albin's routine.** The original says Albin resumes his kiosk routine after Kiosk 67; he stands at his authored spot whatever the outcome. His Chapter VI dialogue is what changes.
+- **Albin's routine.** The original says Albin resumes his kiosk routine after Kiosk 67; he stands at his authored spot whatever the outcome. His Chapter VI dialogue is what changes. His greeting line and name tag are still the Kiosk 67 ones (*"Kiosk 67 missing customer"*, *"I'm all right…"*): a person has one static line in the catalogue, shown before each step's own text, so after his testimony the greeting reads stale.
 - **Props are primitives.** Furniture is built from engine boxes and cylinders (and the project's lorry mesh), deliberately plain; no bespoke or generated models. The engine text font has no Latin Extended-A, so lettering on props avoids č, š and ž.
 - **Controller.** Gameplay actions (`[E]`, `[P]`, the number keys of a decision) have **no gamepad bindings** in the project; only menus navigate with a controller. Chapter VI is therefore keyboard and mouse only, like Chapters I–IV. A gameplay controller layer (aiming the camera for `[P]` included) is a separate item on the roadmap.
 - **Slovene.** All new catalogue text and the 21 new interface strings are drafted Slovene awaiting a native editorial review (terms checked against the existing translation: *fotografija*, *kontaktna kopija*, *dvorišče v Meljah*, *Modra knjiga*; new: *odtis* for a print, *izvirnik*, *pričevanje*, *sklep*, *garažna številka* for a fleet number).
 - **Chapter V** is not implemented and its evidence is never awarded; Chapter VI does not require it.
+- **Why Nika waits.** A character who has not finished Kiosk 67 (or Chapter III) is offered only the Frame 37 side story; once that is done Nika answers with the generic "not ready to ask more of you yet". The refusal does not name the missing mission (the receipt carries no prerequisite id); the Journal does not list unoffered missions either.
+- **Light table glow.** The table's small warm light throws a visible pool on the paving in daylight (survey `vidmar_*`); cosmetic, left for an art pass.
 
 ### 10.9 Owner playtest: how to play Chapter VI
 
@@ -287,3 +304,5 @@ The world store schema is unchanged (6): conditional stages, deductions and uniq
    - each character meets a different Albin: at once (`temporary_work`), after Petra (`tab_paid`), after the collector (`object_sold`: try buying with less than 40, then work it off), after Boris (`left_alone`);
    - at the end, Nika keeps the contact sheet and gives you a receipt; talking to her again changes nothing; restart the server and reconnect: everything is where you left it.
 6. **Record** the commit, the stamp, what you played and your decision (ADR-008).
+
+**Separate defect observed (not caused by this chapter, not fixed here).** In the first staged Slovene run, started while another staged run was rendering on the same GPU, one client crashed about two seconds after launch on the engine's RHI thread: `Assertion failed: AtomicFlags.GetNumRefs(...) == 0` in `FRHIResource::~FRHIResource()` from `FVulkanGraphicsPipelineState::~FVulkanGraphicsPipelineState()` (`RHIResources.cpp:37`), signal 11. Its step never reached the server, so every later step of that run was one stage behind and failed (`Saved/Ch6Evidence/negative-staged-left_alone-sl.run1-client-crash.log`, crash in `Saved/NegativeSmoke/20261120T165612Z-left_alone/client-n6-date.log`). The run was stopped and repeated on its own. The smoke harness retries a client only when Vulkan device creation fails, not after a crash like this one.
