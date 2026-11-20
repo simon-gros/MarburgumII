@@ -2,6 +2,8 @@
 
 # Marburgum Art Reference Archive
 
+**20 November 2026 research expansion:** 246 catalogued references (236 inherited unchanged plus ten new source-linked leads). Three additional historical imagery/map acquisition leads bring the separate [Marburgum II imagery catalogue](../Data/History/historical_imagery_catalogue.json) to six. Research metadata only; see [historical archive audit](../Docs/HISTORICAL_ARCHIVES.md).
+
 This directory is the canonical **historical visual-reference library** for *Magna Raedarum: Marburgum*. Its purpose is to collect, index, evaluate and preserve references for what Maribor actually looked, sounded and felt like during **1990–1999**, with particular emphasis on material that can guide terrain reconstruction, architectural modelling, props, vehicles, signage, vegetation, lighting, clothing, interiors and general art direction.
 
 The archive is an **evidence layer**, not a folder of game-ready assets. A photograph may establish the shape of a shopfront, road markings, paving, facade colour, street furniture, parked-car density or the weathering of a retaining wall without granting any right to copy the photograph itself into the game. Every reference therefore carries date, location, source, rights and production-use metadata.
