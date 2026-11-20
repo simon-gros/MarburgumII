@@ -1,86 +1,72 @@
 <div align="center">
-  <h1>MAGNA RAEDARUM<br>MARBURGUM II</h1>
-  <p><strong>A living city. A shared world. A new beginning.</strong></p>
-  <p><em>A persistent urban role-playing world in a fictionalized 1990s Maribor, Slovenia.</em></p>
-  <p>
-    <img alt="Status: pre-alpha" src="https://img.shields.io/badge/STATUS-PRE--ALPHA-c18a46?style=flat-square">
-    <img alt="Engine: Unreal Engine 5.8.3" src="https://img.shields.io/badge/UNREAL%20ENGINE-5.8.3-29364e?style=flat-square">
-    <img alt="Linux development" src="https://img.shields.io/badge/DEVELOPMENT-LINUX-43596a?style=flat-square">
-    <img alt="Server authoritative network" src="https://img.shields.io/badge/NETWORK-SERVER%20AUTHORITATIVE-436857?style=flat-square">
-  </p>
-  <p>
-    <a href="#the-world"><strong>Explore the world</strong></a> ·
-    <a href="#development-progress"><strong>Development progress</strong></a> ·
-    <a href="#building-from-source"><strong>Build the game</strong></a> ·
-    <a href="Docs/ROADMAP.md"><strong>Roadmap</strong></a> ·
-    <a href="Docs/GRAPHICS_ROADMAP.md"><strong>Graphics</strong></a>
-  </p>
-  <img src="Docs/Captures/visual-audit/survey-air-lent.jpg" width="920" alt="In-engine editor-mode capture of pedestrians and destinations in the developing Maribor world">
-  <p><sub>In-engine nine-window visual survey · November 2026 · Development capture, not final game art.</sub></p>
+
+# MAGNA RAEDARUM: MARBURGUM II
+
+**A living city. A shared world. A second beginning.**
+
+*A server-authoritative urban MMORPG in a fictionalized 1990s Maribor, Slovenia.*
+
+![Pre-alpha](https://img.shields.io/badge/STATUS-PRE--ALPHA-886b53?style=flat-square)
+![Engine](https://img.shields.io/badge/UNREAL-5.8.3-29364e?style=flat-square)
+![Development](https://img.shields.io/badge/DEVELOPMENT-LINUX-43596a?style=flat-square)
+![Architecture](https://img.shields.io/badge/MULTIPLAYER-SERVER%20AUTHORITATIVE-436857?style=flat-square)
+
+[The world](#the-world) · [Recent development](#recent-development) · [Progress](#development-progress) · [Build](#building-from-source) · [Roadmap](Docs/ROADMAP.md) · [Graphics](Docs/GRAPHICS_ROADMAP.md)
+
+<img src="Docs/Captures/ui-overhaul/after/04-explore-arrival-1920x1080.jpg" width="980" alt="Actual development screenshot of the redesigned exploration HUD in Marburgum II">
+
+<sub>Actual Unreal client development capture · November 2026 · Work in progress; owner acceptance pending.</sub>
+
 </div>
 
 ---
 
 ## The world
 
-**Marburgum II** rebuilds the original *Magna Raedarum: Marburgum* as an MMORPG-first game in **Unreal Engine 5.8.3**. Explore streets along the Drava, follow urban stories, meet other players, learn skills, fish, trade, drive and participate in the ordinary and extraordinary life of a city with its own routines.
+**Marburgum II** rebuilds the original *Magna Raedarum: Marburgum* as an MMORPG-first game using **Unreal Engine 5.8.3**. Walk the Drava riverfront, encounter people with their own routines, investigate urban mysteries, fish, photograph places, learn skills, shop, drive and share a persistent fictionalized 1990s Maribor with other players.
 
-The experience emphasizes exploration, character growth, missions, social interaction and systemic city life. Combat exists as a deliberately bounded, evolving part of the design. Solo-friendly play and small-group cooperation share the same **dedicated, authoritative server** architecture; long-term population targets are ambitions, not achieved benchmarks.
+Its current world covers **1,536 × 1,536 metres** across nine original map windows centred on Lent, including streets, bridges, urban blocks and the Drava. It remains **one always-loaded development level**, not a finished city or a proven 250-player shard. Game rules and persistent state belong to an authoritative dedicated server; solo-friendly play and cooperation use that architecture.
 
-The current world is a **1,536 × 1,536 m nine-window development map** centered on Lent, with surveyed ground, buildings, roads and bridges, the Drava, a walkable street graph and a growing network of interactive locations. It is **one always-loaded level**—not a finished, streamed recreation of all of Maribor. The separately licensed candidate city model remains a future procurement and acceptance decision.
+## Recent development
 
-## Latest development · 20 November 2026
+*19–20 November 2026 · [Full engineering review](Docs/DEVELOPMENT_REVIEW_2026-11-20_EVENING.md)*
 
-The overnight development push brought together a broad **quality-assurance audit** and improvements through **ADR-076**. Accounts, persistence, input, scrolling screens, notifications and packaged-build verification were hardened; pedestrian crowds now follow each player's district, share local budgets and navigate a repaired bridge graph.
+The latest development has made the city more playable and recognizable. Mission contacts now use animated character models; the riverside angler holds a rod, and players visibly cast and reel. The new **Chapter IV — Voices on Tape**, its outcome-dependent follow-up, two side missions and **Photography** integrate story, pictures, discovery and skill progression. First building interiors, a substantial bilingual UI redesign and more robust multiplayer security have also arrived.
 
-A real editor pedestrian traversed **283 metres across Stari most and back**. The new multi-client crowd matrix shows **18 pedestrians shared by two players** on a shopping street (not 36), a nighttime pair sharing **2**, and three old-town players reaching the **48-person cap**.
-
-**The packaged daytime matrix is not fully passing.** The opposite-bank scenario timed out at **11 of the expected 28 pedestrians** in a clean Linux Development package. The majority of rejected spawn probes found no eligible pavement node. This is the immediate stabilization priority, rather than release readiness.
-
-<div align="center"><table>
+<div align="center">
+<table>
 <tr>
-<td width="50%"><img src="Docs/Captures/lent-buildings/promenade-street.jpg" alt="Development view of the Lent promenade streetscape"><br><sub>Lent streetscape</sub></td>
-<td width="50%"><img src="Docs/Captures/visual-audit/survey-stari-most-deck.jpg" alt="Stari most bridge"><br><sub>Bridge-deck inspection</sub></td>
+<td width="33%"><img src="Docs/Captures/story-npc/angler-bank.jpg" alt="Riverside angler with an animated rod"><br><sub>Fishing on the Drava</sub></td>
+<td width="33%"><img src="Docs/Captures/story-npc/photograph-water-tower.jpg" alt="Photography skill and its in-game notification"><br><sub>Photography gameplay</sub></td>
+<td width="33%"><img src="Docs/Captures/interiors-2026-11-20/hotel-lent-04-front-room.jpg" alt="Hotel Lent ground-floor interior"><br><sub>First enterable interiors</sub></td>
 </tr>
-</table><sub>Actual in-engine development captures. Not final release art.</sub></div>
+</table>
+<sub>Development screenshots from specific test revisions, not a single release candidate.</sub>
+</div>
 
-[20 November review](Docs/DEVELOPMENT_REVIEW_2026-11-20.md) · [QA audit](Docs/QA_AUDIT_2026-11-19.md) · [Visual backlog](Docs/VISUAL_QUALITY_BACKLOG.md) · [AI evidence](Docs/AI_GAMEPLAY.md)
-
-The merged **UI/HUD redesign** now includes a consolidated Character/Skills/Inventory/Journal shell, functioning Settings, revised HUD/creator/Escape/chat screens, **657 English/Slovene interface strings**, 5:4/150% creator-fit and contrast checks (**37/37 editor automation**). Packaged localization/fonts, full live resolution/controller input checks and personal owner approval are still open. **ADR-076 interiors** provide 586 eligible deterministic ground floors, but only **five shells have actual cut doors** and editor walking evidence; **581 remain sealed**. A Client/Server package compiled after data staging fixes, yet no staged multi-client door acceptance is recorded.
-
-The new [graphics roadmap](Docs/GRAPHICS_ROADMAP.md) is a **proposal** for measured visual improvements, not implemented rendering upgrades. Source-validation CI failed after the historical research tools were imported, because their Python validators and workflow contradicted the binding Python-free ADR-018. [ADR-077](Docs/DECISIONS.md) ports them to Rust `mb2`; source and archive validation now run on every revision. See the [morning review](Docs/DEVELOPMENT_REVIEW_2026-11-20_MORNING.md) for corrective priorities.
-
-## Historical research and art references
-
-Marburgum II now carries the historical **246-record art-reference catalogue** (236 original + 10 newly researched), **five evidence-derived art/world-state rules**, and **six historical imagery/cartography leads** (three original + three new). Source provenance, permissions and uncertainty remain explicit; the source images and rasters themselves were **not imported**. These catalogues are design evidence, not a claim that period-specific scenery is already implemented.
-
-[Browse the art-reference catalogue](art_reference/README.md) · [Historical archives and rights policy](Docs/HISTORICAL_ARCHIVES.md) · [Source directory](art_reference/SOURCES.md)
+**What's been demonstrated:** packaged tests of the two selected interiors, staged Chapter IV/Photography and Slovene mission content, and a staged account-enabled connection using **AES-256-GCM**. In the earlier packaged pedestrian test, an opposite-bank scene reached only 11/28; its **test fixture** was later corrected and passed **28/28 in the editor**, with a post-correction packaged rerun still outstanding. A full latest-source all-systems test and the project owner's personal playtest are not yet recorded.
 
 ## Development progress
 
-The table distinguishes **recorded engineering implementation** from **release acceptance**. A feature may work in a scoped editor test and still require current packaged multiplayer testing, graphical review and a personal owner playtest.
-
-| System | What exists today | What remains open |
+| System | Existing implementation and recorded evidence | Open work |
 | --- | --- | --- |
-| **Online foundation** | Authoritative Linux Client/Server, chat, QA fixes for RPC trust, persistence and packaged-build traceability | Full current regression, Windows parity, production operations and scaling |
-| **Identity and creation** | Development HTTPS registration/recovery, First/Last/model creator, rotating 3D preview and account-service hardening | Server-bound tickets (AR1), production email, complete UI matrix and owner approval |
-| **World and atmosphere** | Nine-window Lent, weather/day-night and lights; ADR-072 visual audit and targeted placement/signage corrections | Period-correct landmarks, vegetation, furniture, frame-time/streaming and art sign-off |
-| **Living streets** | Server-owned district/hour visitors and 239 places; shared crowds, bridge repairs and real 2–3-client packaged scenarios | **Opposite-bank crowd timeout: 11/28 staged**; complete settled matrix, incident regression and owner test |
-| **Life and progression** | Fishing (now with a visible rod and cast/wait/reel for the player and the angler), Photography (camera, nine documented subjects, server-judged photographs), persistent 0–1990 skills, Inventory, Journal, Skills, Kiosk 67, all eight original mission flows plus **Chapter IV *Voices on Tape***, Maja's folder (a branch on your Chapter I decision) and two photography side missions | Owner playtest of the new story pass; Chapters V–XI; further professions; authored remote terrain |
-| **People** | Every mission contact is an animated, tinted mannequin that turns to whoever talks to it; the riverside angler fishes from the bank with a period spinning rod | Bespoke character models and faces, walking daily routines for named residents |
-| **Movement and vehicles** | Third-person character, persisted condition, swimming, unarmed combat, five-car catalogue and authoritative vehicle seats/driving | Owner retest of the previously reported long-drive defect; current packaged passenger/combat regressions |
-| **Presentation and chat** | Merged UI v2, HUD/management/Settings/chat/creator, 657 localized interface strings, creator-fit and contrast editor checks | Fresh packaged UI/ICU/fonts, 720p–4K/80–200% and controller/focus, gameplay translation, owner acceptance |
-| **Interiors** | 586 eligible procedural ground floors, five physical shell door openings with editor three-client proof | Full staged door smoke, 581 remaining sealed candidates, 346 exceptions, furnishing and owner acceptance |
+| **Multiplayer and identity** | Dedicated Linux Client/Server, development accounts and three-model character creation; server-bound tickets and **AES-256-GCM signed-in sessions** in the latest security package | End-to-end current-head integration, security/reconnect audit, owner acceptance and eventual larger-scale operations |
+| **The living city** | Nine windows, weather/daylight/street lighting, mapped destinations and district crowds, bidirectional editor Stari most walking | Current packaged crowd day/night matrix, period-correct art and measured streaming/scale |
+| **Exploration and interiors** | Deterministic floor data for **586** eligible buildings; **five** actually have cut enterable shells; two staged multi-client interiors pass | **581** eligible shells unopened, **346** exceptions, authentic furnishing and owner walkthrough |
+| **Story and activities** | Original missions, *Voices on Tape*, outcome branches, two side stories, working Photography/prints/XP, fishing and Kiosk 67; packaged story evidence | Later chapters, deeper jobs and named routines, Slovene editorial review and full owner acceptance |
+| **Presentation** | UI design system v2, unified Character/Skills/Inventory/Journal, working **Settings**, English/Slovene UI including **657 strings**, and editor 37/37 automation | Current packaged controller, focus, 720p–4K/accessibility, localization and owner visual approval |
+| **Graphics and research** | Rendering audit and packaged baseline; 246 historical art-reference records, six imagery leads, Rust archival validation and passing source/archive CI | Historical source rights, authored visual assets, uncontended GPU benchmarks; hardware Lumen selected for study but **not yet enabled** |
 
-**Current status: pre-alpha.** The clean packaged multi-client crowd test is **partially passing**; the daytime matrix exits nonzero. No release build, full-city completion, production-scale MMO capacity or personal owner acceptance is claimed.
+**Status: pre-alpha.** The repository is a real development project and contains verified playable slices, yet it is not a finished or owner-approved public game.
 
 ### Development gallery
 
-| The city | Missions and player interface | The protagonist |
+| City light and weather | English and Slovene interface | Investigation and character presentation |
 | :---: | :---: | :---: |
-| ![Development view of Lent](Docs/Captures/lent-wide/overview.jpg) | ![Mission interface](Docs/Captures/stage1-lent/M-mission-started-1920x1080.jpg) | ![Character in Lent](Docs/Captures/character-protagonist/retopo-lent-520x560.jpg) |
+| ![Drava and Stari most in different lighting](Docs/Captures/gfx00-2026-11-20/river_to_stari_most-times.jpg) | ![Redesigned first-character screen under a compact layout](Docs/Captures/ui-overhaul/after/03-creator-1280x1024-150.jpg) | ![Story guidance in game](Docs/Captures/story-npc/chapter-iv-guidance.jpg) |
 
-<sub>Images document different editor-era development milestones, rather than one release-candidate build.</sub>
+<sub>All gallery material comes from the in-repository development captures; offline graphics and editor tests are not portrayed as release performance.</sub>
+
 
 ## Building from source
 
@@ -167,21 +153,19 @@ The server owns meaningful gameplay mutations, NPC destinations, combat resoluti
 
 ## What's next
 
-**P0:** Restore passing whole-repository CI and resolve the Python-free archival tooling conflict; fix the strict opposite-bank crowd timeout; stage and verify the five working interiors and merged UI in current matched Client/Server packages. Close full mission/account/vehicle regressions and ticket audience/privacy gaps before owner playtesting.
+**First complete the latest integrated test.** Package one clean UE 5.8.3 Linux Client+Server including encrypted admission, localizations, Chapter IV, Photography, floor/door data and the corrected ADR-079 crowds. Run strict day/night 2–3-client population, staged interiors, mission/vehicle/chat regressions, and record source/asset hashes, actual failures and the owner's personal decision.
 
-**P1:** Qualify audited batches of the 581 remaining sealed interior shells, rights/date/place-check the 246 references and six map leads, and measure a real packaged visual baseline. Follow the [graphics and rendering roadmap](Docs/GRAPHICS_ROADMAP.md) and [visual-quality backlog](Docs/VISUAL_QUALITY_BACKLOG.md) for original Marburgum trees, street furniture, period signage, mission props and landmark art. **Microsoft TRELLIS remains the selected image-to-3D workflow (ADR-071), not Hunyuan3D.**
-
-[Full roadmap](Docs/ROADMAP.md) · [20 November review](Docs/DEVELOPMENT_REVIEW_2026-11-20.md) · [AI backlog](Docs/AI_GAMEPLAY.md)
+**Then deepen lived-in Maribor.** Furnish the already opened rooms, make a small named NPC routine, add analog 1990s city life and a Photography album, and implement historically verified street details. All are gated in the [research-backed additions roadmap](Docs/GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md), separate from the existing [milestones](Docs/ROADMAP.md) and [graphics plan](Docs/GRAPHICS_ROADMAP.md). Microsoft TRELLIS remains the project's selected image-to-3D workflow; generated visuals still require rights and quality review.
 
 ## Documentation
 
 | Area | Documents |
 | --- | --- |
 | **Game design** | [Vision](Docs/VISION.md) · [Ontology](Docs/ONTOLOGY.md) · [Original-game parity](Docs/LEGACY_PARITY.md) |
-| **Roadmaps and status** | [Milestones](Docs/ROADMAP.md) · [Graphics](Docs/GRAPHICS_ROADMAP.md) · [UI/HUD](Docs/UI_HUD_ROADMAP.md) · [20 November review](Docs/DEVELOPMENT_REVIEW_2026-11-20.md) · [AI backlog](Docs/AI_GAMEPLAY.md) |
-| **Engineering** | [QA audit](Docs/QA_AUDIT_2026-11-19.md) · [Development](Docs/DEVELOPMENT.md) · [Architecture](Docs/ARCHITECTURE.md) · [Networking](Docs/NETWORK_ARCHITECTURE.md) · [Decision log](Docs/DECISIONS.md) · [Fresh owner playtests](Docs/PLAYTEST_FRESHNESS.md) |
-| **Player experience** | [First launch](Docs/FIRST_LAUNCH_ONTOLOGY.md) · [UI/HUD design](Docs/UI_HUD_DESIGN.md) · [UI ontology](Docs/UI_HUD_ONTOLOGY.md) · [Chat](Docs/CHAT.md) |
-| **Art and world** | [Graphics roadmap](Docs/GRAPHICS_ROADMAP.md) · [Visual backlog](Docs/VISUAL_QUALITY_BACKLOG.md) · [Map and licensing strategy](Docs/WORLD_MAP_ADOPTION.md) · [Character](Docs/CHARACTER_PROTAGONIST.md) · [Microsoft TRELLIS image-to-3D workflow](Docs/ASSET_GENERATION_TRELLIS.md) · [Rendering](Docs/RENDERING_NVIDIA.md) |
+| **Roadmaps and status** | [Milestones](Docs/ROADMAP.md) · [UI/HUD](Docs/UI_HUD_ROADMAP.md) · [Graphics](Docs/GRAPHICS_ROADMAP.md) · [24-hour review](Docs/DEVELOPMENT_REVIEW_2026-11-20_EVENING.md) · [Research proposals](Docs/GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md) |
+| **Engineering** | [Development](Docs/DEVELOPMENT.md) · [Architecture](Docs/ARCHITECTURE.md) · [Networking/security](Docs/NETWORK_ARCHITECTURE.md) · [P0 packaged evidence](Docs/P0_PACKAGED_EVIDENCE_2026-11-20.md) · [Playtest freshness](Docs/PLAYTEST_FRESHNESS.md) |
+| **Player experience** | [First launch](Docs/FIRST_LAUNCH_ONTOLOGY.md) · [UI/HUD design](Docs/UI_HUD_DESIGN.md) · [UI captures/evidence](Docs/UI_OVERHAUL_EVIDENCE.md) · [Story and Photography](Docs/STORY_EXPANSION.md) · [Chat](Docs/CHAT.md) |
+| **Art and world** | [Visual backlog](Docs/VISUAL_QUALITY_BACKLOG.md) · [Interiors](Docs/INTERIORS.md) · [Historical archives](Docs/HISTORICAL_ARCHIVES.md) · [TRELLIS](Docs/ASSET_GENERATION_TRELLIS.md) · [GFX baseline](Docs/GFX00_BASELINE.md) |
 | **Test evidence** | [Districts](Docs/STAGE1_STREET_DISTRICTS_EVIDENCE.md) · [Destinations](Docs/STAGE1_STREET_PLACES_EVIDENCE.md) · [Street incidents](Docs/STAGE1_STREET_EVIDENCE.md) · [Mission play](Docs/STAGE1_LENT_EVIDENCE.md) · [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) |
 
 Gameplay and ontology data live under `Data/`. Native game code is in `Source/`, tooling in `tools/` and `native/`, and scripts in `scripts/`. Rust/.NET CI **does not substitute for an Unreal package or a visual gameplay test**.
