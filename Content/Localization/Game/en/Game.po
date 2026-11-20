@@ -4,8 +4,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Game\n"
-"POT-Creation-Date: 2026-11-20 14:55\n"
-"PO-Revision-Date: 2026-11-20 14:55\n"
+"POT-Creation-Date: 2026-11-20 16:14\n"
+"PO-Revision-Date: 2026-11-20 16:14\n"
 "Language-Team: \n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
@@ -1168,30 +1168,37 @@ msgctxt "MarburgumCharacterPreview,Selected"
 msgid "SELECTED"
 msgstr "SELECTED"
 
+#. Key:	Deduction
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(121)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(121)
+msgctxt "MarburgumChoicePanel,Deduction"
+msgid "{0}  A wrong conclusion records nothing; you can look again."
+msgstr "{0}  A wrong conclusion records nothing; you can look again."
+
 #. Key:	Gain
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(134)
-#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(134)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(147)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(147)
 msgctxt "MarburgumChoicePanel,Gain"
 msgid "+{0} money"
 msgstr "+{0} money"
 
 #. Key:	Cost
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(135)
-#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(135)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(148)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(148)
 msgctxt "MarburgumChoicePanel,Cost"
 msgid "−{0} money"
 msgstr "−{0} money"
 
 #. Key:	Xp
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(141)
-#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(141)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(154)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(154)
 msgctxt "MarburgumChoicePanel,Xp"
 msgid "{0} +{1} XP"
 msgstr "{0} +{1} XP"
 
 #. Key:	Short
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(146)
-#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(146)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(159)
+#: Source/MarburgumIIClient/Private/UI/MarburgumChoicePanel.cpp(159)
 msgctxt "MarburgumChoicePanel,Short"
 msgid "Not enough money"
 msgstr "Not enough money"
@@ -1602,6 +1609,90 @@ msgctxt "MarburgumConnection,FaultUnknown"
 msgid "Not connected"
 msgstr "Not connected"
 
+#. Key:	Original
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(15)
+#: Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(15)
+msgctxt "MarburgumEvidence,Original"
+msgid "Original"
+msgstr "Original"
+
+#. Key:	Print
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(16)
+#: Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(16)
+msgctxt "MarburgumEvidence,Print"
+msgid "Print"
+msgstr "Print"
+
+#. Key:	Copy
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(17)
+#: Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(17)
+msgctxt "MarburgumEvidence,Copy"
+msgid "Copy"
+msgstr "Copy"
+
+#. Key:	Testimony
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(18)
+#: Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(18)
+msgctxt "MarburgumEvidence,Testimony"
+msgid "Testimony"
+msgstr "Testimony"
+
+#. Key:	Note
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(19)
+#: Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(19)
+msgctxt "MarburgumEvidence,Note"
+msgid "Information"
+msgstr "Information"
+
+#. Key:	Inference
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(20)
+#: Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(20)
+msgctxt "MarburgumEvidence,Inference"
+msgid "Inference"
+msgstr "Inference"
+
+#. Key:	OriginalMeaning
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(31)
+#: Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(31)
+msgctxt "MarburgumEvidence,OriginalMeaning"
+msgid "The thing itself. What it proves depends on where it has been: keep its custody unbroken."
+msgstr "The thing itself. What it proves depends on where it has been: keep its custody unbroken."
+
+#. Key:	PrintMeaning
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(33)
+#: Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(33)
+msgctxt "MarburgumEvidence,PrintMeaning"
+msgid "A photographic print. It shows what was in front of the lens; when and where still has to be established."
+msgstr "A photographic print. It shows what was in front of the lens; when and where still has to be established."
+
+#. Key:	CopyMeaning
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(35)
+#: Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(35)
+msgctxt "MarburgumEvidence,CopyMeaning"
+msgid "A copy. It records what the original says; the original, kept elsewhere, is what can be authenticated."
+msgstr "A copy. It records what the original says; the original, kept elsewhere, is what can be authenticated."
+
+#. Key:	TestimonyMeaning
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(37)
+#: Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(37)
+msgctxt "MarburgumEvidence,TestimonyMeaning"
+msgid "What a person said. It can be true and still needs paper or a place to stand on."
+msgstr "What a person said. It can be true and still needs paper or a place to stand on."
+
+#. Key:	NoteMeaning
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(39)
+#: Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(39)
+msgctxt "MarburgumEvidence,NoteMeaning"
+msgid "Information. Useful for finding things; it proves nothing by itself."
+msgstr "Information. Useful for finding things; it proves nothing by itself."
+
+#. Key:	InferenceMeaning
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(41)
+#: Source/MarburgumIIClient/Private/UI/MarburgumEvidenceText.cpp(41)
+msgctxt "MarburgumEvidence,InferenceMeaning"
+msgid "A conclusion drawn from other evidence. It is only as strong as what it rests on."
+msgstr "A conclusion drawn from other evidence. It is only as strong as what it rests on."
+
 #. Key:	CloseDoor
 #. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(179)
 #: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(179)
@@ -1939,25 +2030,32 @@ msgid "E"
 msgstr "E"
 
 #. Key:	PhotographVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(505)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(505)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(520)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(520)
 msgctxt "MarburgumInteractionPrompt,PhotographVerb"
 msgid "Photograph"
 msgstr "Photograph"
 
-#. Key:	PhotoHeld
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(506)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(506)
-msgctxt "MarburgumInteractionPrompt,PhotoHeld"
-msgid "Already documented; you hold the print."
-msgstr "Already documented; you hold the print."
+#. Key:	PhotoNeeds
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(521)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(521)
+msgctxt "MarburgumInteractionPrompt,PhotoNeeds"
+msgid "Bring {0} and lay it here first."
+msgstr "Bring {0} and lay it here first."
 
 #. Key:	PhotoKey
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(508)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(508)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(524)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(524)
 msgctxt "MarburgumInteractionPrompt,PhotoKey"
 msgid "P"
 msgstr "P"
+
+#. Key:	PhotoHeld
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(541)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(541)
+msgctxt "MarburgumInteractionPrompt,PhotoHeld"
+msgid "Already documented; you hold the print."
+msgstr "Already documented; you hold the print."
 
 #. Key:	Fixture
 #. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(64)
@@ -1967,400 +2065,428 @@ msgid "TEST FIXTURE"
 msgstr "TEST FIXTURE"
 
 #. Key:	Overline
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(110)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(110)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(111)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(111)
 msgctxt "MarburgumInventoryPanel,Overline"
 msgid "INVENTORY"
 msgstr "INVENTORY"
 
 #. Key:	Title
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(111)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(111)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(112)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(112)
 msgctxt "MarburgumInventoryPanel,Title"
 msgid "What you carry"
 msgstr "What you carry"
 
 #. Key:	WaitingTitle
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(250)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(250)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(251)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(251)
 msgctxt "MarburgumInventoryPanel,WaitingTitle"
 msgid "Waiting for the server"
 msgstr "Waiting for the server"
 
 #. Key:	WaitingBody
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(251)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(251)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(252)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(252)
 msgctxt "MarburgumInventoryPanel,WaitingBody"
 msgid "The inventory appears once the server has loaded this character's saved record."
 msgstr "The inventory appears once the server has loaded this character's saved record."
 
 #. Key:	NoCharacterTitle
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(256)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(256)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(257)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(257)
 msgctxt "MarburgumInventoryPanel,NoCharacterTitle"
 msgid "No character selected"
 msgstr "No character selected"
 
 #. Key:	NoCharacterBody
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(257)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(257)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(258)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(258)
 msgctxt "MarburgumInventoryPanel,NoCharacterBody"
 msgid "Join with a character to hold items. Interactions are refused without one."
 msgstr "Join with a character to hold items. Interactions are refused without one."
 
 #. Key:	EmptyTitle
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(263)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(263)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(264)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(264)
 msgctxt "MarburgumInventoryPanel,EmptyTitle"
 msgid "Nothing carried yet"
 msgstr "Nothing carried yet"
 
 #. Key:	EmptyBody
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(264)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(264)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(265)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(265)
 msgctxt "MarburgumInventoryPanel,EmptyBody"
 msgid "Items appear here only after the server has confirmed and saved them."
 msgstr "Items appear here only after the server has confirmed and saved them."
 
 #. Key:	Quantity
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(281)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(281)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(282)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(282)
 msgctxt "MarburgumInventoryPanel,Quantity"
 msgid "×{0}"
 msgstr "×{0}"
 
 #. Key:	Summary
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(301)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(301)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(302)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(302)
 msgctxt "MarburgumInventoryPanel,Summary"
 msgid "{0} {0}|plural(one=item,other=items)  ·  {1} {1}|plural(one=kind,other=kinds)"
 msgstr "{0} {0}|plural(one=item,other=items)  ·  {1} {1}|plural(one=kind,other=kinds)"
 
 #. Key:	FilterEmptyTitle
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(305)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(305)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(306)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(306)
 msgctxt "MarburgumInventoryPanel,FilterEmptyTitle"
 msgid "Nothing of this kind"
 msgstr "Nothing of this kind"
 
 #. Key:	FilterEmptyBody
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(306)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(306)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(307)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(307)
 msgctxt "MarburgumInventoryPanel,FilterEmptyBody"
 msgid "Choose All to see everything you carry."
 msgstr "Choose All to see everything you carry."
 
+#. Key:	EvidenceClass
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(369)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(369)
+msgctxt "MarburgumInventoryPanel,EvidenceClass"
+msgid "Evidence"
+msgstr "Evidence"
+
 #. Key:	Carried
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(358)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(358)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(380)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(380)
 msgctxt "MarburgumInventoryPanel,Carried"
 msgid "Carried"
 msgstr "Carried"
 
 #. Key:	Confirmed
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(359)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(359)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(381)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(381)
 msgctxt "MarburgumInventoryPanel,Confirmed"
 msgid "Confirmed and saved by the server"
 msgstr "Confirmed and saved by the server"
 
 #. Key:	Custody
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(359)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(359)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(381)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(381)
 msgctxt "MarburgumInventoryPanel,Custody"
 msgid "Custody"
 msgstr "Custody"
 
 #. Key:	Missions
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(364)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(364)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(386)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(386)
 msgctxt "MarburgumInventoryPanel,Missions"
 msgid "MISSIONS"
 msgstr "MISSIONS"
 
 #. Key:	Actions
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(373)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(373)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(395)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(395)
 msgctxt "MarburgumInventoryPanel,Actions"
 msgid "WHAT YOU CAN DO"
 msgstr "WHAT YOU CAN DO"
 
 #. Key:	Sell
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(383)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(383)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(405)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(405)
 msgctxt "MarburgumInventoryPanel,Sell"
 msgid "Sell at {0} for {1} each"
 msgstr "Sell at {0} for {1} each"
 
 #. Key:	CounterNote
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(392)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(392)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(414)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(414)
 msgctxt "MarburgumInventoryPanel,CounterNote"
 msgid "Selling happens at the counter itself: stand at its keeper and press B. The server confirms every sale."
 msgstr "Selling happens at the counter itself: stand at its keeper and press B. The server confirms every sale."
 
 #. Key:	ClueNote
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(394)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(394)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(416)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(416)
 msgctxt "MarburgumInventoryPanel,ClueNote"
 msgid "Evidence is handed over when a mission asks for it; talk to the person who needs it."
 msgstr "Evidence is handed over when a mission asks for it; talk to the person who needs it."
 
 #. Key:	PhotoNote
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(396)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(396)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(418)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(418)
 msgctxt "MarburgumInventoryPanel,PhotoNote"
 msgid "A print of your own photograph. Somebody who asked for it will want to see it; the subject stays documented either way."
 msgstr "A print of your own photograph. Somebody who asked for it will want to see it; the subject stays documented either way."
 
 #. Key:	NoAction
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(397)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(397)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(419)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(419)
 msgctxt "MarburgumInventoryPanel,NoAction"
 msgid "Nothing to do with it from here. Missions and counters that want it will ask."
 msgstr "Nothing to do with it from here. Missions and counters that want it will ask."
 
 #. Key:	Tool
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(47)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(47)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(48)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(48)
 msgctxt "MarburgumInventoryPanel,Tool"
 msgid "Tool"
 msgstr "Tool"
 
 #. Key:	Fish
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(48)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(48)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(49)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(49)
 msgctxt "MarburgumInventoryPanel,Fish"
 msgid "Fish"
 msgstr "Fish"
 
 #. Key:	Clue
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(49)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(49)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(50)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(50)
 msgctxt "MarburgumInventoryPanel,Clue"
 msgid "Evidence"
 msgstr "Evidence"
 
 #. Key:	Goods
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(50)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(50)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(51)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(51)
 msgctxt "MarburgumInventoryPanel,Goods"
 msgid "Goods"
 msgstr "Goods"
 
 #. Key:	Photo
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(51)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(51)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(52)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(52)
 msgctxt "MarburgumInventoryPanel,Photo"
 msgid "Photograph"
 msgstr "Photograph"
 
 #. Key:	Item
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(52)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(52)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(53)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(53)
 msgctxt "MarburgumInventoryPanel,Item"
 msgid "Item"
 msgstr "Item"
 
 #. Key:	All
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(58)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(58)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(59)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInventoryPanel.cpp(59)
 msgctxt "MarburgumInventoryPanel,All"
 msgid "All"
 msgstr "All"
 
 #. Key:	EmptyDossier
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(183)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(183)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(185)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(185)
 msgctxt "MarburgumJournalPanel,EmptyDossier"
 msgid "The archive is empty. A dossier opens here for every mission you take on."
 msgstr "The archive is empty. A dossier opens here for every mission you take on."
 
 #. Key:	WaitingTitle
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(188)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(188)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(190)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(190)
 msgctxt "MarburgumJournalPanel,WaitingTitle"
 msgid "Waiting for the server"
 msgstr "Waiting for the server"
 
 #. Key:	WaitingBody
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(189)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(189)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(191)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(191)
 msgctxt "MarburgumJournalPanel,WaitingBody"
 msgid "Missions appear once the server has loaded this character's saved record."
 msgstr "Missions appear once the server has loaded this character's saved record."
 
 #. Key:	NoCharacterTitle
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(194)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(194)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(196)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(196)
 msgctxt "MarburgumJournalPanel,NoCharacterTitle"
 msgid "No character selected"
 msgstr "No character selected"
 
 #. Key:	NoCharacterBody
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(195)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(195)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(197)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(197)
 msgctxt "MarburgumJournalPanel,NoCharacterBody"
 msgid "Join with a character to take on missions. People will not trust a stranger without a name."
 msgstr "Join with a character to take on missions. People will not trust a stranger without a name."
 
 #. Key:	EmptyTitle
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(200)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(200)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(202)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(202)
 msgctxt "MarburgumJournalPanel,EmptyTitle"
 msgid "No missions yet"
 msgstr "No missions yet"
 
 #. Key:	EmptyBody
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(201)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(201)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(203)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(203)
 msgctxt "MarburgumJournalPanel,EmptyBody"
 msgid "People around the city may ask for help. A mission appears here only after the server has saved it."
 msgstr "People around the city may ask for help. A mission appears here only after the server has saved it."
 
 #. Key:	UnderWay
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(219)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(219)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(221)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(221)
 msgctxt "MarburgumJournalPanel,UnderWay"
 msgid "UNDER WAY"
 msgstr "UNDER WAY"
 
 #. Key:	NoneActive
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(228)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(228)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(230)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(230)
 msgctxt "MarburgumJournalPanel,NoneActive"
 msgid "Nothing under way."
 msgstr "Nothing under way."
 
 #. Key:	Closed
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(234)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(234)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(236)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(236)
 msgctxt "MarburgumJournalPanel,Closed"
 msgid "CLOSED"
 msgstr "CLOSED"
 
 #. Key:	ErrandOverline
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(243)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(243)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(245)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(245)
 msgctxt "MarburgumJournalPanel,ErrandOverline"
 msgid "ERRAND"
 msgstr "ERRAND"
 
 #. Key:	StoryOverline
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(243)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(243)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(245)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(245)
 msgctxt "MarburgumJournalPanel,StoryOverline"
 msgid "STORY"
 msgstr "STORY"
 
 #. Key:	Pinned
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(250)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(250)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(252)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(252)
 msgctxt "MarburgumJournalPanel,Pinned"
 msgid "PINNED"
 msgstr "PINNED"
 
 #. Key:	Summary
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(260)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(260)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(262)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(262)
 msgctxt "MarburgumJournalPanel,Summary"
 msgid "{0} under way  ·  {1} closed  ·  saved by the server"
 msgstr "{0} under way  ·  {1} closed  ·  saved by the server"
 
 #. Key:	DossierErrand
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(298)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(298)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(300)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(300)
 msgctxt "MarburgumJournalPanel,DossierErrand"
 msgid "DOSSIER  ·  ERRAND"
 msgstr "DOSSIER  ·  ERRAND"
 
 #. Key:	DossierStory
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(298)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(298)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(300)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(300)
 msgctxt "MarburgumJournalPanel,DossierStory"
 msgid "DOSSIER  ·  STORY"
 msgstr "DOSSIER  ·  STORY"
 
 #. Key:	Open
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(301)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(301)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(303)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(303)
 msgctxt "MarburgumJournalPanel,Open"
 msgid "UNDER WAY"
 msgstr "UNDER WAY"
 
 #. Key:	Current
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(316)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(316)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(318)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(318)
 msgctxt "MarburgumJournalPanel,Current"
 msgid "CURRENT OBJECTIVE"
 msgstr "CURRENT OBJECTIVE"
 
 #. Key:	UnknownStage
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(319)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(319)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(321)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(321)
 msgctxt "MarburgumJournalPanel,UnknownStage"
 msgid "The next step is not known to this client version."
 msgstr "The next step is not known to this client version."
 
+#. Key:	OpenQuestions
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(348)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(348)
+msgctxt "MarburgumJournalPanel,OpenQuestions"
+msgid "OPEN QUESTIONS"
+msgstr "OPEN QUESTIONS"
+
+#. Key:	Established
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(358)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(358)
+msgctxt "MarburgumJournalPanel,Established"
+msgid "ESTABLISHED"
+msgstr "ESTABLISHED"
+
 #. Key:	Steps
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(327)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(327)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(376)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(376)
 msgctxt "MarburgumJournalPanel,Steps"
 msgid "STEPS TAKEN"
 msgstr "STEPS TAKEN"
 
 #. Key:	Ahead
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(338)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(338)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(399)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(399)
 msgctxt "MarburgumJournalPanel,Ahead"
 msgid "Later steps are revealed as you go."
 msgstr "Later steps are revealed as you go."
 
 #. Key:	HeldMany
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(354)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(354)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(415)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(415)
 msgctxt "MarburgumJournalPanel,HeldMany"
 msgid "{0}  ×{1}"
 msgstr "{0}  ×{1}"
 
+#. Key:	HeldClass
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(420)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(420)
+msgctxt "MarburgumJournalPanel,HeldClass"
+msgid "{0}  ·  {1}"
+msgstr "{0}  ·  {1}"
+
 #. Key:	Evidence
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(360)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(360)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(427)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(427)
 msgctxt "MarburgumJournalPanel,Evidence"
 msgid "IN YOUR POSSESSION"
 msgstr "IN YOUR POSSESSION"
 
 #. Key:	Decision
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(380)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(380)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(447)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(447)
 msgctxt "MarburgumJournalPanel,Decision"
 msgid "YOUR DECISION"
 msgstr "YOUR DECISION"
 
 #. Key:	Reward
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(390)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(390)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(457)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(457)
 msgctxt "MarburgumJournalPanel,Reward"
 msgid "Paid {0} money on completion"
 msgstr "Paid {0} money on completion"
 
 #. Key:	Saved
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(394)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(394)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(461)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(461)
 msgctxt "MarburgumJournalPanel,Saved"
 msgid "Kept by the server  ·  survives a restart"
 msgstr "Kept by the server  ·  survives a restart"
 
 #. Key:	Overline
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(86)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(86)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(88)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(88)
 msgctxt "MarburgumJournalPanel,Overline"
 msgid "JOURNAL"
 msgstr "JOURNAL"
 
 #. Key:	Title
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(87)
-#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(87)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(89)
+#: Source/MarburgumIIClient/Private/UI/MarburgumJournalPanel.cpp(89)
 msgctxt "MarburgumJournalPanel,Title"
 msgid "Cases and errands"
 msgstr "Cases and errands"
@@ -4220,593 +4346,614 @@ msgctxt "MarburgumGallery,TypeBody"
 msgid "Body text carries Slovene diacritics cleanly: čevljar, šola, žaga, Tezno, Studenci, Šentilj."
 msgstr "Body text carries Slovene diacritics cleanly: čevljar, šola, žaga, Tezno, Studenci, Šentilj."
 
-#. Key:	MissionCompletedKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1022)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1022)
-msgctxt "MarburgumUISubsystem,MissionCompletedKind"
-msgid "MISSION COMPLETED"
-msgstr "MISSION COMPLETED"
-
-#. Key:	MissionCompletedEntry
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1024)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1024)
-msgctxt "MarburgumUISubsystem,MissionCompletedEntry"
-msgid "{0}. Journal entry added: {1}."
-msgstr "{0}. Journal entry added: {1}."
-
-#. Key:	MissionCompleted
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1026)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1026)
-msgctxt "MarburgumUISubsystem,MissionCompleted"
-msgid "{0}. Saved by the server."
-msgstr "{0}. Saved by the server."
-
-#. Key:	MissionUpdatedKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1031)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1031)
-msgctxt "MarburgumUISubsystem,MissionUpdatedKind"
-msgid "MISSION UPDATED"
-msgstr "MISSION UPDATED"
-
-#. Key:	StageDone
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1033)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1033)
-msgctxt "MarburgumUISubsystem,StageDone"
-msgid "{0}: step complete. Saved by the server."
-msgstr "{0}: step complete. Saved by the server."
-
-#. Key:	StageDoneItem
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1034)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1034)
-msgctxt "MarburgumUISubsystem,StageDoneItem"
-msgid "{0}: step complete; {1} ×{2} handed over. Saved by the server."
-msgstr "{0}: step complete; {1} ×{2} handed over. Saved by the server."
-
-#. Key:	MissionDuplicate
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1045)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1045)
-msgctxt "MarburgumUISubsystem,MissionDuplicate"
-msgid "Already done: {0}. The server ignored the repeat; nothing changed twice."
-msgstr "Already done: {0}. The server ignored the repeat; nothing changed twice."
-
-#. Key:	ItemApplied
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1053)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1053)
-msgctxt "MarburgumUISubsystem,ItemApplied"
-msgid "{0} ×{1} added to your inventory. Confirmed and saved by the server."
-msgstr "{0} ×{1} added to your inventory. Confirmed and saved by the server."
-
-#. Key:	ItemDuplicate
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1060)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1060)
-msgctxt "MarburgumUISubsystem,ItemDuplicate"
-msgid "Already received: {0}. The server ignored the repeat; nothing was added twice."
-msgstr "Already received: {0}. The server ignored the repeat; nothing was added twice."
-
-#. Key:	Requirement
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1073)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1073)
-msgctxt "MarburgumUISubsystem,Requirement"
-msgid "{0} needs something you do not have yet. Nothing was changed."
-msgstr "{0} needs something you do not have yet. Nothing was changed."
-
-#. Key:	RequirementItems
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1074)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1074)
-msgctxt "MarburgumUISubsystem,RequirementItems"
-msgid "{0} wants to see one {1} first. You have none, so nothing was changed."
-msgstr "{0} wants to see one {1} first. You have none, so nothing was changed."
-
-#. Key:	NothingToDo
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1086)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1086)
-msgctxt "MarburgumUISubsystem,NothingToDo"
-msgid "{0} has nothing more for you right now. Nothing was changed."
-msgstr "{0} has nothing more for you right now. Nothing was changed."
-
-#. Key:	ChoiceRequired
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1090)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1090)
-msgctxt "MarburgumUISubsystem,ChoiceRequired"
-msgid "A decision is due here. Press [E] to see your choices."
-msgstr "A decision is due here. Press [E] to see your choices."
-
-#. Key:	UnknownChoice
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1094)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1094)
-msgctxt "MarburgumUISubsystem,UnknownChoice"
-msgid "That decision is not open here any more. Nothing was changed."
-msgstr "That decision is not open here any more. Nothing was changed."
-
-#. Key:	InsufficientMoney
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1097)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1097)
-msgctxt "MarburgumUISubsystem,InsufficientMoney"
-msgid "You cannot afford that. Nothing was changed."
-msgstr "You cannot afford that. Nothing was changed."
-
-#. Key:	Prerequisite
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1101)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1101)
-msgctxt "MarburgumUISubsystem,Prerequisite"
-msgid "{0} is not ready to ask more of you yet. Nothing was changed."
-msgstr "{0} is not ready to ask more of you yet. Nothing was changed."
-
-#. Key:	NoRod
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1105)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1105)
-msgctxt "MarburgumUISubsystem,NoRod"
-msgid "You need a fishing rod to fish here."
-msgstr "You need a fishing rod to fish here."
-
-#. Key:	TooSoon
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1109)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1109)
-msgctxt "MarburgumUISubsystem,TooSoon"
-msgid "Give the line a moment before casting again."
-msgstr "Give the line a moment before casting again."
-
-#. Key:	CannotFish
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1113)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1113)
-msgctxt "MarburgumUISubsystem,CannotFish"
-msgid "Fishing needs both feet on the bank."
-msgstr "Fishing needs both feet on the bank."
-
-#. Key:	TooEarly
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1118)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1118)
-msgctxt "MarburgumUISubsystem,TooEarly"
-msgid "You struck too early. Whatever was there is gone; cast again."
-msgstr "You struck too early. Whatever was there is gone; cast again."
-
-#. Key:	SoldOut
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1122)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1122)
-msgctxt "MarburgumUISubsystem,SoldOut"
-msgid "The last {0} has already gone. Nothing was changed."
-msgstr "The last {0} has already gone. Nothing was changed."
-
-#. Key:	OutOfStock
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1123)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1123)
-msgctxt "MarburgumUISubsystem,OutOfStock"
-msgid "Nothing left to take. Someone else got there first; nothing was changed."
-msgstr "Nothing left to take. Someone else got there first; nothing was changed."
-
-#. Key:	ShopClosed
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1128)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1128)
-msgctxt "MarburgumUISubsystem,ShopClosed"
-msgid "The counter is closed. Nothing was changed."
-msgstr "The counter is closed. Nothing was changed."
-
-#. Key:	InvalidQuantity
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1133)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1133)
-msgctxt "MarburgumUISubsystem,InvalidQuantity"
-msgid "That quantity is not for sale. Nothing was changed."
-msgstr "That quantity is not for sale. Nothing was changed."
-
-#. Key:	NotOnCounter
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1136)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1136)
-msgctxt "MarburgumUISubsystem,NotOnCounter"
-msgid "That is not on the counter. Nothing was changed."
-msgstr "That is not on the counter. Nothing was changed."
-
-#. Key:	ItemNotAccepted
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1139)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1139)
-msgctxt "MarburgumUISubsystem,ItemNotAccepted"
-msgid "Petra will not take {0} back. Nothing was changed."
-msgstr "Petra will not take {0} back. Nothing was changed."
-
-#. Key:	InsufficientItems
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1143)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1143)
-msgctxt "MarburgumUISubsystem,InsufficientItems"
-msgid "You have no {0} to sell. Nothing was changed."
-msgstr "You have no {0} to sell. Nothing was changed."
-
-#. Key:	NoCounter
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1147)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1147)
-msgctxt "MarburgumUISubsystem,NoCounter"
-msgid "{0} keeps no counter. Nothing was changed."
-msgstr "{0} keeps no counter. Nothing was changed."
-
-#. Key:	OutOfRange
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1150)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1150)
-msgctxt "MarburgumUISubsystem,OutOfRange"
-msgid "Too far away. Move closer and try again; nothing was changed."
-msgstr "Too far away. Move closer and try again; nothing was changed."
-
-#. Key:	Incapacitated
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1153)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1153)
-msgctxt "MarburgumUISubsystem,Incapacitated"
-msgid "Not from here: get out of the car, or back on your feet, first. Nothing was changed."
-msgstr "Not from here: get out of the car, or back on your feet, first. Nothing was changed."
-
-#. Key:	NoCharacter
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1157)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1157)
-msgctxt "MarburgumUISubsystem,NoCharacter"
-msgid "This connection has no character, so it cannot hold items or take on missions. Nothing was changed."
-msgstr "This connection has no character, so it cannot hold items or take on missions. Nothing was changed."
-
-#. Key:	NoCamera
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1160)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1160)
-msgctxt "MarburgumUISubsystem,NoCamera"
-msgid "You have no camera. Nika Vidmar at Foto Vidmar lends one to people who ask."
-msgstr "You have no camera. Nika Vidmar at Foto Vidmar lends one to people who ask."
-
-#. Key:	NothingInFrame
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1164)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1164)
-msgctxt "MarburgumUISubsystem,NothingInFrame"
-msgid "Nothing worth documenting in the middle of the frame. Get closer and point the camera straight at it."
-msgstr "Nothing worth documenting in the middle of the frame. Get closer and point the camera straight at it."
-
-#. Key:	AlreadyPhotographed
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1168)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1168)
-msgctxt "MarburgumUISubsystem,AlreadyPhotographed"
-msgid "You already hold a print of that ({0}). Nothing was changed."
-msgstr "You already hold a print of that ({0}). Nothing was changed."
-
-#. Key:	StoreFailed
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1173)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1173)
-msgctxt "MarburgumUISubsystem,StoreFailed"
-msgid "The server could not save the result, so it did not apply it. Nothing was changed."
-msgstr "The server could not save the result, so it did not apply it. Nothing was changed."
-
-#. Key:	NoAuthority
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1177)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1177)
-msgctxt "MarburgumUISubsystem,NoAuthority"
-msgid "No authoritative server handled this request. Nothing was changed."
-msgstr "No authoritative server handled this request. Nothing was changed."
-
-#. Key:	Refused
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1181)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1181)
-msgctxt "MarburgumUISubsystem,Refused"
-msgid "The server refused this request. Nothing was changed."
-msgstr "The server refused this request. Nothing was changed."
-
-#. Key:	NotYetKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1186)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1186)
-msgctxt "MarburgumUISubsystem,NotYetKind"
-msgid "NOT YET"
-msgstr "NOT YET"
-
-#. Key:	RefusedKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1186)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1186)
-msgctxt "MarburgumUISubsystem,RefusedKind"
-msgid "REFUSED"
-msgstr "REFUSED"
-
-#. Key:	FightKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1199)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1199)
-msgctxt "MarburgumUISubsystem,FightKind"
-msgid "FIGHT"
-msgstr "FIGHT"
-
-#. Key:	FightExhausted
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1204)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1204)
-msgctxt "MarburgumUISubsystem,FightExhausted"
-msgid "Not enough breath."
-msgstr "Not enough breath."
-
-#. Key:	FightSeated
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1208)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1208)
-msgctxt "MarburgumUISubsystem,FightSeated"
-msgid "Get out before you swing."
-msgstr "Get out before you swing."
-
-#. Key:	FightDown
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1212)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1212)
-msgctxt "MarburgumUISubsystem,FightDown"
-msgid "You cannot swing from the ground."
-msgstr "You cannot swing from the ground."
-
-#. Key:	FightSomeone
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1217)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1217)
-msgctxt "MarburgumUISubsystem,FightSomeone"
-msgid "Someone"
-msgstr "Someone"
-
-#. Key:	FightHeavyMissed
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1220)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1220)
-msgctxt "MarburgumUISubsystem,FightHeavyMissed"
-msgid "The heavy blow missed."
-msgstr "The heavy blow missed."
-
-#. Key:	FightJabMissed
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1220)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1220)
-msgctxt "MarburgumUISubsystem,FightJabMissed"
-msgid "The jab missed."
-msgstr "The jab missed."
-
-#. Key:	FightBlocked
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1225)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1225)
-msgctxt "MarburgumUISubsystem,FightBlocked"
-msgid "{0} kept their hands up."
-msgstr "{0} kept their hands up."
-
-#. Key:	FightFloored
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1229)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1229)
-msgctxt "MarburgumUISubsystem,FightFloored"
-msgid "{0} goes down."
-msgstr "{0} goes down."
-
-#. Key:	FightHit
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1233)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1233)
-msgctxt "MarburgumUISubsystem,FightHit"
-msgid "{0}. {1}."
-msgstr "{0}. {1}."
-
-#. Key:	ReceiptApplied
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1249)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1249)
-msgctxt "MarburgumUISubsystem,ReceiptApplied"
-msgid "Request applied by the server."
-msgstr "Request applied by the server."
-
-#. Key:	ReceiptDuplicate
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1252)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1252)
-msgctxt "MarburgumUISubsystem,ReceiptDuplicate"
-msgid "Already applied. The server ignored the repeat; nothing changed twice."
-msgstr "Already applied. The server ignored the repeat; nothing changed twice."
-
-#. Key:	ReceiptRejected
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1255)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1255)
-msgctxt "MarburgumUISubsystem,ReceiptRejected"
-msgid "The server declined this request. Nothing was changed."
-msgstr "The server declined this request. Nothing was changed."
-
-#. Key:	BackInWorld
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1350)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1350)
-msgctxt "MarburgumUISubsystem,BackInWorld"
-msgid "Back in Maribor."
-msgstr "Back in Maribor."
-
-#. Key:	InWorld
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1350)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1350)
-msgctxt "MarburgumUISubsystem,InWorld"
-msgid "You are in Maribor."
-msgstr "You are in Maribor."
-
-#. Key:	Reconnected
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1352)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1352)
-msgctxt "MarburgumUISubsystem,Reconnected"
-msgid "Reconnected to {0}  ·  network contract v{1}"
-msgstr "Reconnected to {0}  ·  network contract v{1}"
-
-#. Key:	Connected
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1353)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1353)
-msgctxt "MarburgumUISubsystem,Connected"
-msgid "Connected to {0}  ·  network contract v{1}"
-msgstr "Connected to {0}  ·  network contract v{1}"
-
-#. Key:	ConnectionKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1355)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1355)
-msgctxt "MarburgumUISubsystem,ConnectionKind"
-msgid "CONNECTION"
-msgstr "CONNECTION"
-
-#. Key:	Bite
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(499)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(499)
-msgctxt "MarburgumUISubsystem,Bite"
-msgid "A bite! Press [E] to strike."
-msgstr "A bite! Press [E] to strike."
-
-#. Key:	FishingKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(499)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(499)
-msgctxt "MarburgumUISubsystem,FishingKind"
-msgid "FISHING"
-msgstr "FISHING"
-
-#. Key:	Escaped
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(509)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(509)
-msgctxt "MarburgumUISubsystem,Escaped"
-msgid "It got away. Strike sooner after the bite."
-msgstr "It got away. Strike sooner after the bite."
-
-#. Key:	Cancelled
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(514)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(514)
-msgctxt "MarburgumUISubsystem,Cancelled"
-msgid "You reeled in. Fishing needs you to stand still on the bank."
-msgstr "You reeled in. Fishing needs you to stand still on the bank."
-
-#. Key:	ItemsOr
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(838)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(838)
-msgctxt "MarburgumUISubsystem,ItemsOr"
-msgid "{0} or {1}"
-msgstr "{0} or {1}"
-
-#. Key:	Said
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(899)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(899)
-msgctxt "MarburgumUISubsystem,Said"
-msgid "“{0}”"
-msgstr "“{0}”"
-
-#. Key:	ItemsKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(911)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(911)
-msgctxt "MarburgumUISubsystem,ItemsKind"
-msgid "ITEMS RECEIVED"
-msgstr "ITEMS RECEIVED"
-
-#. Key:	MoneyKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(919)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(919)
-msgctxt "MarburgumUISubsystem,MoneyKind"
-msgid "MONEY"
-msgstr "MONEY"
-
-#. Key:	MoneyPaid
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(920)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(920)
-msgctxt "MarburgumUISubsystem,MoneyPaid"
-msgid "+{0}. Saved by the server."
-msgstr "+{0}. Saved by the server."
-
-#. Key:	MoneySpent
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(921)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(921)
-msgctxt "MarburgumUISubsystem,MoneySpent"
-msgid "−{0}. Saved by the server."
-msgstr "−{0}. Saved by the server."
-
-#. Key:	XpKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(927)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(927)
-msgctxt "MarburgumUISubsystem,XpKind"
-msgid "SKILL"
-msgstr "SKILL"
-
-#. Key:	XpGained
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(928)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(928)
-msgctxt "MarburgumUISubsystem,XpGained"
-msgid "{0} +{1} XP. [K] Skills."
-msgstr "{0} +{1} XP. [K] Skills."
-
-#. Key:	PhotoKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(936)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(936)
-msgctxt "MarburgumUISubsystem,PhotoKind"
-msgid "PHOTOGRAPH"
-msgstr "PHOTOGRAPH"
-
-#. Key:	Photographed
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(937)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(937)
-msgctxt "MarburgumUISubsystem,Photographed"
-msgid "{0}. {1} The print is in your inventory; saved by the server."
-msgstr "{0}. {1} The print is in your inventory; saved by the server."
-
-#. Key:	Cast
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(948)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(948)
-msgctxt "MarburgumUISubsystem,Cast"
-msgid "Line in the water. Wait for a bite, then press [E] to strike."
-msgstr "Line in the water. Wait for a bite, then press [E] to strike."
-
-#. Key:	Caught
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(954)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(954)
-msgctxt "MarburgumUISubsystem,Caught"
-msgid "You landed a {0}. Saved by the server."
-msgstr "You landed a {0}. Saved by the server."
-
-#. Key:	ReceiptKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(964)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(964)
-msgctxt "MarburgumUISubsystem,ReceiptKind"
-msgid "SERVER RECEIPT"
-msgstr "SERVER RECEIPT"
-
-#. Key:	TradeDuplicate
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(965)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(965)
-msgctxt "MarburgumUISubsystem,TradeDuplicate"
-msgid "Already done: {0} ×{1}. The server ignored the repeat; nothing changed hands twice."
-msgstr "Already done: {0} ×{1}. The server ignored the repeat; nothing changed hands twice."
-
-#. Key:	BoughtKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(969)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(969)
-msgctxt "MarburgumUISubsystem,BoughtKind"
-msgid "BOUGHT"
-msgstr "BOUGHT"
-
-#. Key:	SoldKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(969)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(969)
-msgctxt "MarburgumUISubsystem,SoldKind"
-msgid "SOLD"
-msgstr "SOLD"
-
-#. Key:	Bought
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(970)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(970)
-msgctxt "MarburgumUISubsystem,Bought"
-msgid "Petra takes the coins and slides {0} ×{1} across the counter. −{2} money, saved by the server."
-msgstr "Petra takes the coins and slides {0} ×{1} across the counter. −{2} money, saved by the server."
-
-#. Key:	Sold
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(972)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(972)
-msgctxt "MarburgumUISubsystem,Sold"
-msgid "Petra counts out the coins and takes {0} ×{1} back. +{2} money, saved by the server."
-msgstr "Petra counts out the coins and takes {0} ×{1} back. +{2} money, saved by the server."
-
-#. Key:	FirstPurchaseXp
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(979)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(979)
-msgctxt "MarburgumUISubsystem,FirstPurchaseXp"
-msgid "First purchase here: {0} +{1} XP. [K] Skills."
-msgstr "First purchase here: {0} +{1} XP. [K] Skills."
-
 #. Key:	MissionStartedKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(988)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(988)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1000)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1000)
 msgctxt "MarburgumUISubsystem,MissionStartedKind"
 msgid "MISSION STARTED"
 msgstr "MISSION STARTED"
 
 #. Key:	MissionStarted
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(989)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(989)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1001)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1001)
 msgctxt "MarburgumUISubsystem,MissionStarted"
 msgid "{0}. Saved by the server; your objective is pinned, and [J] opens the journal."
 msgstr "{0}. Saved by the server; your objective is pinned, and [J] opens the journal."
 
 #. Key:	ItemKind
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(993)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(993)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1005)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1005)
 msgctxt "MarburgumUISubsystem,ItemKind"
 msgid "ITEM RECEIVED"
 msgstr "ITEM RECEIVED"
 
 #. Key:	MissionItem
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(994)
-#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(994)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1006)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1006)
 msgctxt "MarburgumUISubsystem,MissionItem"
 msgid "{0} ×{1}, handed over for the mission."
 msgstr "{0} ×{1}, handed over for the mission."
+
+#. Key:	MissionCompletedKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1039)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1039)
+msgctxt "MarburgumUISubsystem,MissionCompletedKind"
+msgid "MISSION COMPLETED"
+msgstr "MISSION COMPLETED"
+
+#. Key:	MissionCompletedEntry
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1041)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1041)
+msgctxt "MarburgumUISubsystem,MissionCompletedEntry"
+msgid "{0}. Journal entry added: {1}."
+msgstr "{0}. Journal entry added: {1}."
+
+#. Key:	MissionCompleted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1043)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1043)
+msgctxt "MarburgumUISubsystem,MissionCompleted"
+msgid "{0}. Saved by the server."
+msgstr "{0}. Saved by the server."
+
+#. Key:	MissionUpdatedKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1048)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1048)
+msgctxt "MarburgumUISubsystem,MissionUpdatedKind"
+msgid "MISSION UPDATED"
+msgstr "MISSION UPDATED"
+
+#. Key:	StageDone
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1050)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1050)
+msgctxt "MarburgumUISubsystem,StageDone"
+msgid "{0}: step complete. Saved by the server."
+msgstr "{0}: step complete. Saved by the server."
+
+#. Key:	StageDoneItem
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1051)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1051)
+msgctxt "MarburgumUISubsystem,StageDoneItem"
+msgid "{0}: step complete; {1} ×{2} handed over. Saved by the server."
+msgstr "{0}: step complete; {1} ×{2} handed over. Saved by the server."
+
+#. Key:	MissionDuplicate
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1062)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1062)
+msgctxt "MarburgumUISubsystem,MissionDuplicate"
+msgid "Already done: {0}. The server ignored the repeat; nothing changed twice."
+msgstr "Already done: {0}. The server ignored the repeat; nothing changed twice."
+
+#. Key:	ItemApplied
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1070)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1070)
+msgctxt "MarburgumUISubsystem,ItemApplied"
+msgid "{0} ×{1} added to your inventory. Confirmed and saved by the server."
+msgstr "{0} ×{1} added to your inventory. Confirmed and saved by the server."
+
+#. Key:	ItemDuplicate
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1077)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1077)
+msgctxt "MarburgumUISubsystem,ItemDuplicate"
+msgid "Already received: {0}. The server ignored the repeat; nothing was added twice."
+msgstr "Already received: {0}. The server ignored the repeat; nothing was added twice."
+
+#. Key:	PhotoNeedsItem
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1092)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1092)
+msgctxt "MarburgumUISubsystem,PhotoNeedsItem"
+msgid "Nothing to photograph yet: {1} is only there once you bring {0}. Nothing was changed."
+msgstr "Nothing to photograph yet: {1} is only there once you bring {0}. Nothing was changed."
+
+#. Key:	Requirement
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1098)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1098)
+msgctxt "MarburgumUISubsystem,Requirement"
+msgid "{0} needs something you do not have yet. Nothing was changed."
+msgstr "{0} needs something you do not have yet. Nothing was changed."
+
+#. Key:	RequirementItems
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1099)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1099)
+msgctxt "MarburgumUISubsystem,RequirementItems"
+msgid "{0} wants to see one {1} first. You have none, so nothing was changed."
+msgstr "{0} wants to see one {1} first. You have none, so nothing was changed."
+
+#. Key:	LookAgainKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1109)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1109)
+msgctxt "MarburgumUISubsystem,LookAgainKind"
+msgid "LOOK AGAIN"
+msgstr "LOOK AGAIN"
+
+#. Key:	WrongConclusion
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1111)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1111)
+msgctxt "MarburgumUISubsystem,WrongConclusion"
+msgid "That does not hold up. Nothing was recorded; look again and press [E]."
+msgstr "That does not hold up. Nothing was recorded; look again and press [E]."
+
+#. Key:	NothingToDo
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1123)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1123)
+msgctxt "MarburgumUISubsystem,NothingToDo"
+msgid "{0} has nothing more for you right now. Nothing was changed."
+msgstr "{0} has nothing more for you right now. Nothing was changed."
+
+#. Key:	ChoiceRequired
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1127)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1127)
+msgctxt "MarburgumUISubsystem,ChoiceRequired"
+msgid "A decision is due here. Press [E] to see your choices."
+msgstr "A decision is due here. Press [E] to see your choices."
+
+#. Key:	UnknownChoice
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1131)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1131)
+msgctxt "MarburgumUISubsystem,UnknownChoice"
+msgid "That decision is not open here any more. Nothing was changed."
+msgstr "That decision is not open here any more. Nothing was changed."
+
+#. Key:	InsufficientMoney
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1134)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1134)
+msgctxt "MarburgumUISubsystem,InsufficientMoney"
+msgid "You cannot afford that. Nothing was changed."
+msgstr "You cannot afford that. Nothing was changed."
+
+#. Key:	Prerequisite
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1138)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1138)
+msgctxt "MarburgumUISubsystem,Prerequisite"
+msgid "{0} is not ready to ask more of you yet. Nothing was changed."
+msgstr "{0} is not ready to ask more of you yet. Nothing was changed."
+
+#. Key:	NoRod
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1142)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1142)
+msgctxt "MarburgumUISubsystem,NoRod"
+msgid "You need a fishing rod to fish here."
+msgstr "You need a fishing rod to fish here."
+
+#. Key:	TooSoon
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1146)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1146)
+msgctxt "MarburgumUISubsystem,TooSoon"
+msgid "Give the line a moment before casting again."
+msgstr "Give the line a moment before casting again."
+
+#. Key:	CannotFish
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1150)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1150)
+msgctxt "MarburgumUISubsystem,CannotFish"
+msgid "Fishing needs both feet on the bank."
+msgstr "Fishing needs both feet on the bank."
+
+#. Key:	TooEarly
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1155)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1155)
+msgctxt "MarburgumUISubsystem,TooEarly"
+msgid "You struck too early. Whatever was there is gone; cast again."
+msgstr "You struck too early. Whatever was there is gone; cast again."
+
+#. Key:	SoldOut
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1159)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1159)
+msgctxt "MarburgumUISubsystem,SoldOut"
+msgid "The last {0} has already gone. Nothing was changed."
+msgstr "The last {0} has already gone. Nothing was changed."
+
+#. Key:	OutOfStock
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1160)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1160)
+msgctxt "MarburgumUISubsystem,OutOfStock"
+msgid "Nothing left to take. Someone else got there first; nothing was changed."
+msgstr "Nothing left to take. Someone else got there first; nothing was changed."
+
+#. Key:	ShopClosed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1165)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1165)
+msgctxt "MarburgumUISubsystem,ShopClosed"
+msgid "The counter is closed. Nothing was changed."
+msgstr "The counter is closed. Nothing was changed."
+
+#. Key:	InvalidQuantity
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1170)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1170)
+msgctxt "MarburgumUISubsystem,InvalidQuantity"
+msgid "That quantity is not for sale. Nothing was changed."
+msgstr "That quantity is not for sale. Nothing was changed."
+
+#. Key:	NotOnCounter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1173)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1173)
+msgctxt "MarburgumUISubsystem,NotOnCounter"
+msgid "That is not on the counter. Nothing was changed."
+msgstr "That is not on the counter. Nothing was changed."
+
+#. Key:	ItemNotAccepted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1176)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1176)
+msgctxt "MarburgumUISubsystem,ItemNotAccepted"
+msgid "Petra will not take {0} back. Nothing was changed."
+msgstr "Petra will not take {0} back. Nothing was changed."
+
+#. Key:	InsufficientItems
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1180)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1180)
+msgctxt "MarburgumUISubsystem,InsufficientItems"
+msgid "You have no {0} to sell. Nothing was changed."
+msgstr "You have no {0} to sell. Nothing was changed."
+
+#. Key:	NoCounter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1184)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1184)
+msgctxt "MarburgumUISubsystem,NoCounter"
+msgid "{0} keeps no counter. Nothing was changed."
+msgstr "{0} keeps no counter. Nothing was changed."
+
+#. Key:	OutOfRange
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1187)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1187)
+msgctxt "MarburgumUISubsystem,OutOfRange"
+msgid "Too far away. Move closer and try again; nothing was changed."
+msgstr "Too far away. Move closer and try again; nothing was changed."
+
+#. Key:	Incapacitated
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1190)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1190)
+msgctxt "MarburgumUISubsystem,Incapacitated"
+msgid "Not from here: get out of the car, or back on your feet, first. Nothing was changed."
+msgstr "Not from here: get out of the car, or back on your feet, first. Nothing was changed."
+
+#. Key:	NoCharacter
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1194)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1194)
+msgctxt "MarburgumUISubsystem,NoCharacter"
+msgid "This connection has no character, so it cannot hold items or take on missions. Nothing was changed."
+msgstr "This connection has no character, so it cannot hold items or take on missions. Nothing was changed."
+
+#. Key:	NoCamera
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1197)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1197)
+msgctxt "MarburgumUISubsystem,NoCamera"
+msgid "You have no camera. Nika Vidmar at Foto Vidmar lends one to people who ask."
+msgstr "You have no camera. Nika Vidmar at Foto Vidmar lends one to people who ask."
+
+#. Key:	NothingInFrame
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1201)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1201)
+msgctxt "MarburgumUISubsystem,NothingInFrame"
+msgid "Nothing worth documenting in the middle of the frame. Get closer and point the camera straight at it."
+msgstr "Nothing worth documenting in the middle of the frame. Get closer and point the camera straight at it."
+
+#. Key:	AlreadyPhotographed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1205)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1205)
+msgctxt "MarburgumUISubsystem,AlreadyPhotographed"
+msgid "You already hold a print of that ({0}). Nothing was changed."
+msgstr "You already hold a print of that ({0}). Nothing was changed."
+
+#. Key:	StoreFailed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1210)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1210)
+msgctxt "MarburgumUISubsystem,StoreFailed"
+msgid "The server could not save the result, so it did not apply it. Nothing was changed."
+msgstr "The server could not save the result, so it did not apply it. Nothing was changed."
+
+#. Key:	NoAuthority
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1214)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1214)
+msgctxt "MarburgumUISubsystem,NoAuthority"
+msgid "No authoritative server handled this request. Nothing was changed."
+msgstr "No authoritative server handled this request. Nothing was changed."
+
+#. Key:	Refused
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1218)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1218)
+msgctxt "MarburgumUISubsystem,Refused"
+msgid "The server refused this request. Nothing was changed."
+msgstr "The server refused this request. Nothing was changed."
+
+#. Key:	NotYetKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1223)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1223)
+msgctxt "MarburgumUISubsystem,NotYetKind"
+msgid "NOT YET"
+msgstr "NOT YET"
+
+#. Key:	RefusedKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1223)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1223)
+msgctxt "MarburgumUISubsystem,RefusedKind"
+msgid "REFUSED"
+msgstr "REFUSED"
+
+#. Key:	FightKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1236)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1236)
+msgctxt "MarburgumUISubsystem,FightKind"
+msgid "FIGHT"
+msgstr "FIGHT"
+
+#. Key:	FightExhausted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1241)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1241)
+msgctxt "MarburgumUISubsystem,FightExhausted"
+msgid "Not enough breath."
+msgstr "Not enough breath."
+
+#. Key:	FightSeated
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1245)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1245)
+msgctxt "MarburgumUISubsystem,FightSeated"
+msgid "Get out before you swing."
+msgstr "Get out before you swing."
+
+#. Key:	FightDown
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1249)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1249)
+msgctxt "MarburgumUISubsystem,FightDown"
+msgid "You cannot swing from the ground."
+msgstr "You cannot swing from the ground."
+
+#. Key:	FightSomeone
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1254)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1254)
+msgctxt "MarburgumUISubsystem,FightSomeone"
+msgid "Someone"
+msgstr "Someone"
+
+#. Key:	FightHeavyMissed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1257)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1257)
+msgctxt "MarburgumUISubsystem,FightHeavyMissed"
+msgid "The heavy blow missed."
+msgstr "The heavy blow missed."
+
+#. Key:	FightJabMissed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1257)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1257)
+msgctxt "MarburgumUISubsystem,FightJabMissed"
+msgid "The jab missed."
+msgstr "The jab missed."
+
+#. Key:	FightBlocked
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1262)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1262)
+msgctxt "MarburgumUISubsystem,FightBlocked"
+msgid "{0} kept their hands up."
+msgstr "{0} kept their hands up."
+
+#. Key:	FightFloored
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1266)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1266)
+msgctxt "MarburgumUISubsystem,FightFloored"
+msgid "{0} goes down."
+msgstr "{0} goes down."
+
+#. Key:	FightHit
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1270)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1270)
+msgctxt "MarburgumUISubsystem,FightHit"
+msgid "{0}. {1}."
+msgstr "{0}. {1}."
+
+#. Key:	ReceiptApplied
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1286)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1286)
+msgctxt "MarburgumUISubsystem,ReceiptApplied"
+msgid "Request applied by the server."
+msgstr "Request applied by the server."
+
+#. Key:	ReceiptDuplicate
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1289)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1289)
+msgctxt "MarburgumUISubsystem,ReceiptDuplicate"
+msgid "Already applied. The server ignored the repeat; nothing changed twice."
+msgstr "Already applied. The server ignored the repeat; nothing changed twice."
+
+#. Key:	ReceiptRejected
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1292)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1292)
+msgctxt "MarburgumUISubsystem,ReceiptRejected"
+msgid "The server declined this request. Nothing was changed."
+msgstr "The server declined this request. Nothing was changed."
+
+#. Key:	BackInWorld
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1387)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1387)
+msgctxt "MarburgumUISubsystem,BackInWorld"
+msgid "Back in Maribor."
+msgstr "Back in Maribor."
+
+#. Key:	InWorld
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1387)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1387)
+msgctxt "MarburgumUISubsystem,InWorld"
+msgid "You are in Maribor."
+msgstr "You are in Maribor."
+
+#. Key:	Reconnected
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1389)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1389)
+msgctxt "MarburgumUISubsystem,Reconnected"
+msgid "Reconnected to {0}  ·  network contract v{1}"
+msgstr "Reconnected to {0}  ·  network contract v{1}"
+
+#. Key:	Connected
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1390)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1390)
+msgctxt "MarburgumUISubsystem,Connected"
+msgid "Connected to {0}  ·  network contract v{1}"
+msgstr "Connected to {0}  ·  network contract v{1}"
+
+#. Key:	ConnectionKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1392)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(1392)
+msgctxt "MarburgumUISubsystem,ConnectionKind"
+msgid "CONNECTION"
+msgstr "CONNECTION"
+
+#. Key:	Bite
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(501)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(501)
+msgctxt "MarburgumUISubsystem,Bite"
+msgid "A bite! Press [E] to strike."
+msgstr "A bite! Press [E] to strike."
+
+#. Key:	FishingKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(501)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(501)
+msgctxt "MarburgumUISubsystem,FishingKind"
+msgid "FISHING"
+msgstr "FISHING"
+
+#. Key:	Escaped
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(511)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(511)
+msgctxt "MarburgumUISubsystem,Escaped"
+msgid "It got away. Strike sooner after the bite."
+msgstr "It got away. Strike sooner after the bite."
+
+#. Key:	Cancelled
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(516)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(516)
+msgctxt "MarburgumUISubsystem,Cancelled"
+msgid "You reeled in. Fishing needs you to stand still on the bank."
+msgstr "You reeled in. Fishing needs you to stand still on the bank."
+
+#. Key:	ItemsOr
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(850)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(850)
+msgctxt "MarburgumUISubsystem,ItemsOr"
+msgid "{0} or {1}"
+msgstr "{0} or {1}"
+
+#. Key:	Said
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(911)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(911)
+msgctxt "MarburgumUISubsystem,Said"
+msgid "“{0}”"
+msgstr "“{0}”"
+
+#. Key:	ItemsKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(923)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(923)
+msgctxt "MarburgumUISubsystem,ItemsKind"
+msgid "ITEMS RECEIVED"
+msgstr "ITEMS RECEIVED"
+
+#. Key:	MoneyKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(931)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(931)
+msgctxt "MarburgumUISubsystem,MoneyKind"
+msgid "MONEY"
+msgstr "MONEY"
+
+#. Key:	MoneyPaid
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(932)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(932)
+msgctxt "MarburgumUISubsystem,MoneyPaid"
+msgid "+{0}. Saved by the server."
+msgstr "+{0}. Saved by the server."
+
+#. Key:	MoneySpent
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(933)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(933)
+msgctxt "MarburgumUISubsystem,MoneySpent"
+msgid "−{0}. Saved by the server."
+msgstr "−{0}. Saved by the server."
+
+#. Key:	XpKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(939)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(939)
+msgctxt "MarburgumUISubsystem,XpKind"
+msgid "SKILL"
+msgstr "SKILL"
+
+#. Key:	XpGained
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(940)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(940)
+msgctxt "MarburgumUISubsystem,XpGained"
+msgid "{0} +{1} XP. [K] Skills."
+msgstr "{0} +{1} XP. [K] Skills."
+
+#. Key:	PhotoKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(948)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(948)
+msgctxt "MarburgumUISubsystem,PhotoKind"
+msgid "PHOTOGRAPH"
+msgstr "PHOTOGRAPH"
+
+#. Key:	Photographed
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(949)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(949)
+msgctxt "MarburgumUISubsystem,Photographed"
+msgid "{0}. {1} The print is in your inventory; saved by the server."
+msgstr "{0}. {1} The print is in your inventory; saved by the server."
+
+#. Key:	Cast
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(960)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(960)
+msgctxt "MarburgumUISubsystem,Cast"
+msgid "Line in the water. Wait for a bite, then press [E] to strike."
+msgstr "Line in the water. Wait for a bite, then press [E] to strike."
+
+#. Key:	Caught
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(966)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(966)
+msgctxt "MarburgumUISubsystem,Caught"
+msgid "You landed a {0}. Saved by the server."
+msgstr "You landed a {0}. Saved by the server."
+
+#. Key:	ReceiptKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(976)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(976)
+msgctxt "MarburgumUISubsystem,ReceiptKind"
+msgid "SERVER RECEIPT"
+msgstr "SERVER RECEIPT"
+
+#. Key:	TradeDuplicate
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(977)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(977)
+msgctxt "MarburgumUISubsystem,TradeDuplicate"
+msgid "Already done: {0} ×{1}. The server ignored the repeat; nothing changed hands twice."
+msgstr "Already done: {0} ×{1}. The server ignored the repeat; nothing changed hands twice."
+
+#. Key:	BoughtKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(981)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(981)
+msgctxt "MarburgumUISubsystem,BoughtKind"
+msgid "BOUGHT"
+msgstr "BOUGHT"
+
+#. Key:	SoldKind
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(981)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(981)
+msgctxt "MarburgumUISubsystem,SoldKind"
+msgid "SOLD"
+msgstr "SOLD"
+
+#. Key:	Bought
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(982)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(982)
+msgctxt "MarburgumUISubsystem,Bought"
+msgid "Petra takes the coins and slides {0} ×{1} across the counter. −{2} money, saved by the server."
+msgstr "Petra takes the coins and slides {0} ×{1} across the counter. −{2} money, saved by the server."
+
+#. Key:	Sold
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(984)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(984)
+msgctxt "MarburgumUISubsystem,Sold"
+msgid "Petra counts out the coins and takes {0} ×{1} back. +{2} money, saved by the server."
+msgstr "Petra counts out the coins and takes {0} ×{1} back. +{2} money, saved by the server."
+
+#. Key:	FirstPurchaseXp
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(991)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(991)
+msgctxt "MarburgumUISubsystem,FirstPurchaseXp"
+msgid "First purchase here: {0} +{1} XP. [K] Skills."
+msgstr "First purchase here: {0} +{1} XP. [K] Skills."
 
 #. Key:	Driving
 #. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumVehicleStatus.cpp(132)
