@@ -44,7 +44,8 @@ Include generated **post-IK swim/tread, car enter/exit and fight animation asset
 | `c967c46` (morning) | `main` | in [AI evidence](AI_GAMEPLAY.md) | Crowd matrix: night pair settled; daytime opposite banks **11/28, exit 1** |
 | `a0d0b89` (P0) | `qa/p0-packaged-integration` on `main` `735dce7` | `8eb8ddc1…` / `45234284…` | Door (two buildings at once, lag, streaming, restart), account, net, interaction, chat, mission, shop, vehicle, combat, condition, swim, weather, Lent **PASS**; street multiplayer **FAIL** scenario D 8/28 (the ADR-079 fix `af5b0bd` was not in this package). [P0 evidence](P0_PACKAGED_EVIDENCE_2026-11-20.md) |
 | `9b88369` (ADR-081 second story pass) | `feat/story-chapter-iv`, merged to `main` as `39ec175` | `97c198a8…` / `67ca6a6a…` | Story (English and `-culture=sl`), mission, shop, combat, Lent, interaction **PASS**. [Story expansion §8](STORY_EXPANSION.md#8-tests-and-evidence) |
-| `64ba57e` (Chapter VI) | `feat/story-chapter-vi` | `74b95667…` / `24893134…` | Chapter VI smoke `object_sold` (English) and `left_alone` (`-culture=sl`) **PASS**. [Story expansion §10.7](STORY_EXPANSION.md#107-tests-and-evidence-chapter-vi) |
+| `64ba57e` (Chapter VI) | `feat/story-chapter-vi` | `74b95667…` / `24893134…` | Chapter VI smoke `object_sold` (English) and `left_alone` (`-culture=sl`) **PASS**; crowd day **PASS**; door **FAIL** (lagged vine museum, intermittent) |
+| `72071db` (Chapter VI merged with `main`) | `feat/story-chapter-vi` | `10976b5b…` / `38a8621b…` | Chapter VI English and Slovene, Chapter IV story, missions, crowd day (28/28) and door **PASS**. [Story expansion §10.7](STORY_EXPANSION.md#107-tests-and-evidence-chapter-vi) |
 
 For every playtest keep the exact commit, sealed cooked data, build stamps, server/client logs and explicit owner outcome. See [current review](DEVELOPMENT_REVIEW_2026-11-20.md).
 
