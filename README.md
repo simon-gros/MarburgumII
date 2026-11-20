@@ -38,7 +38,7 @@ A real editor pedestrian traversed **283 metres across Stari most and back**. Th
 
 <div align="center"><table>
 <tr>
-<td width="50%"><img src="Docs/Captures/visual-audit/survey-air-lent.jpg" alt="Aerial view of Lent"><br><sub>Nine-window city survey</sub></td>
+<td width="50%"><img src="Docs/Captures/lent-buildings/promenade-street.jpg" alt="Development view of the Lent promenade streetscape"><br><sub>Lent streetscape</sub></td>
 <td width="50%"><img src="Docs/Captures/visual-audit/survey-stari-most-deck.jpg" alt="Stari most bridge"><br><sub>Bridge-deck inspection</sub></td>
 </tr>
 </table><sub>Actual in-engine development captures. Not final release art.</sub></div>
