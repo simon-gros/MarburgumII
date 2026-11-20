@@ -242,7 +242,7 @@ void UMarburgumJournalPanel::Rebuild()
         UVerticalBox* Names = B.Column();
         FBuilder::Stack(Names, B.Text(IsStory(Mission) ? LOCTEXT("StoryOverline", "STORY") : LOCTEXT("ErrandOverline", "ERRAND"), ETypeRole::Overline,
             T.Color.TextMuted), T.Space.XXS);
-        FBuilder::Stack(Names, Wrapped(B, Mission ? FText::FromString(Mission->Name) : FText::FromName(Progress.MissionId), ETypeRole::Label,
+        FBuilder::Stack(Names, Wrapped(B, Mission ? FText::FromString(MarburgumII::Gameplay::Localized(Mission->Name)) : FText::FromName(Progress.MissionId), ETypeRole::Label,
             Progress.bCompleted ? T.Color.TextSecondary : T.Color.TextPrimary), 0.f);
         FBuilder::Inline(Line, Names, T.Space.S, true);
         if (bPinned)
@@ -300,10 +300,10 @@ void UMarburgumJournalPanel::ShowDossier(FName MissionId)
     FBuilder::Inline(Head, Progress->bCompleted ? B.Chip(EMarburgumGlyph::Check, LOCTEXT("Closed", "CLOSED"), ETone::Success)
         : B.Chip(EMarburgumGlyph::Clock, LOCTEXT("Open", "UNDER WAY"), ETone::Info), 0.f);
     FBuilder::Stack(Dossier, Head, T.Space.M);
-    FBuilder::Stack(Dossier, Wrapped(B, Mission ? FText::FromString(Mission->Name) : FText::FromName(MissionId), ETypeRole::PlaceTitle, Ink), T.Space.S);
+    FBuilder::Stack(Dossier, Wrapped(B, Mission ? FText::FromString(MarburgumII::Gameplay::Localized(Mission->Name)) : FText::FromName(MissionId), ETypeRole::PlaceTitle, Ink), T.Space.S);
     if (Mission && *Mission->Summary)
     {
-        FBuilder::Stack(Dossier, Wrapped(B, FText::FromString(Mission->Summary), ETypeRole::Quote, T.Color.TextSecondary), T.Space.L);
+        FBuilder::Stack(Dossier, Wrapped(B, FText::FromString(MarburgumII::Gameplay::Localized(Mission->Summary)), ETypeRole::Quote, T.Color.TextSecondary), T.Space.L);
     }
     FBuilder::Stack(Dossier, B.Rule(T.Color.Hairline, 1.f), T.Space.L);
 
@@ -315,7 +315,7 @@ void UMarburgumJournalPanel::ShowDossier(FName MissionId)
         UVerticalBox* ObjectiveText = B.Column();
         FBuilder::Stack(ObjectiveText, B.Text(LOCTEXT("Current", "CURRENT OBJECTIVE"), ETypeRole::Overline, T.Color.Accent), T.Space.XS);
         const FMissionStageDefinition* Stage = Current != INDEX_NONE ? &Mission->Stages[Current] : nullptr;
-        FBuilder::Stack(ObjectiveText, Wrapped(B, Stage ? FText::FromString(Stage->ObjectiveText)
+        FBuilder::Stack(ObjectiveText, Wrapped(B, Stage ? FText::FromString(MarburgumII::Gameplay::Localized(Stage->ObjectiveText))
             : LOCTEXT("UnknownStage", "The next step is not known to this client version."), ETypeRole::BodyStrong, Ink), 0.f);
         FBuilder::Inline(Objective, ObjectiveText, 0.f, true);
         FBuilder::Stack(Dossier, Objective, T.Space.XL);
@@ -330,7 +330,7 @@ void UMarburgumJournalPanel::ShowDossier(FName MissionId)
         {
             UHorizontalBox* Step = B.Row();
             FBuilder::Inline(Step, B.Glyph(EMarburgumGlyph::Check, T.Color.Success, T.Icon.Small), T.Space.S, false, false);
-            FBuilder::Inline(Step, Wrapped(B, FText::FromString(Mission->Stages[Index].ObjectiveText), ETypeRole::Body, T.Color.TextSecondary), 0.f, true);
+            FBuilder::Inline(Step, Wrapped(B, FText::FromString(MarburgumII::Gameplay::Localized(Mission->Stages[Index].ObjectiveText)), ETypeRole::Body, T.Color.TextSecondary), 0.f, true);
             FBuilder::Stack(Dossier, Step, T.Space.XS);
         }
         if (!Progress->bCompleted)
@@ -351,8 +351,8 @@ void UMarburgumJournalPanel::ShowDossier(FName MissionId)
             const FItemDefinition* Item = FindItem(Id);
             if (Stack && Item)
             {
-                Held.Add(Stack->Quantity > 1 ? FText::Format(LOCTEXT("HeldMany", "{0}  ×{1}"), FText::FromString(Item->DisplayName),
-                    FText::AsNumber(Stack->Quantity)) : FText::FromString(Item->DisplayName));
+                Held.Add(Stack->Quantity > 1 ? FText::Format(LOCTEXT("HeldMany", "{0}  ×{1}"), FText::FromString(MarburgumII::Gameplay::Localized(Item->DisplayName)),
+                    FText::AsNumber(Stack->Quantity)) : FText::FromString(MarburgumII::Gameplay::Localized(Item->DisplayName)));
             }
         }
         if (!Held.IsEmpty())
@@ -370,20 +370,20 @@ void UMarburgumJournalPanel::ShowDossier(FName MissionId)
     {
         if (*Mission->JournalEntryId)
         {
-            FBuilder::Stack(Dossier, B.SectionTitle(Caps(FString(Mission->JournalEntryTitle)), T.Color.Accent), T.Space.S);
-            FBuilder::Stack(Dossier, Wrapped(B, FText::FromString(Mission->JournalEntryText), ETypeRole::Quote, Ink), T.Space.L);
+            FBuilder::Stack(Dossier, B.SectionTitle(Caps(FString(MarburgumII::Gameplay::Localized(Mission->JournalEntryTitle))), T.Color.Accent), T.Space.S);
+            FBuilder::Stack(Dossier, Wrapped(B, FText::FromString(MarburgumII::Gameplay::Localized(Mission->JournalEntryText)), ETypeRole::Quote, Ink), T.Space.L);
         }
         const FMissionStageDefinition* Stage = Current != INDEX_NONE ? &Mission->Stages[Current] : nullptr;
         const FMissionChoiceDefinition* Choice = Stage && !Progress->Choice.IsNone() ? FindChoice(*Stage, Progress->Choice.ToString()) : nullptr;
         if (Choice)
         {
             FBuilder::Stack(Dossier, B.SectionTitle(LOCTEXT("Decision", "YOUR DECISION"), T.Color.TextSecondary), T.Space.S);
-            FBuilder::Stack(Dossier, Wrapped(B, FText::FromString(Choice->Label), ETypeRole::BodyStrong, Ink), T.Space.XS);
-            FBuilder::Stack(Dossier, Wrapped(B, FText::FromString(Choice->CompletionText), ETypeRole::Body, T.Color.TextSecondary), T.Space.L);
+            FBuilder::Stack(Dossier, Wrapped(B, FText::FromString(MarburgumII::Gameplay::Localized(Choice->Label)), ETypeRole::BodyStrong, Ink), T.Space.XS);
+            FBuilder::Stack(Dossier, Wrapped(B, FText::FromString(MarburgumII::Gameplay::Localized(Choice->CompletionText)), ETypeRole::Body, T.Color.TextSecondary), T.Space.L);
         }
         else if (Stage && *Stage->CompletionText)
         {
-            FBuilder::Stack(Dossier, Wrapped(B, FText::FromString(Stage->CompletionText), ETypeRole::Body, T.Color.TextSecondary), T.Space.L);
+            FBuilder::Stack(Dossier, Wrapped(B, FText::FromString(MarburgumII::Gameplay::Localized(Stage->CompletionText)), ETypeRole::Body, T.Color.TextSecondary), T.Space.L);
         }
         if (Mission->RewardMoney > 0)
         {

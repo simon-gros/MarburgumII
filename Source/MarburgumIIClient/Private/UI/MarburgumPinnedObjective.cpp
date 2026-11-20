@@ -200,7 +200,7 @@ void UMarburgumPinnedObjective::Refresh()
                 ShownMission = NAME_None;
                 ShownStage = NAME_None;
                 bShowingCompletion = true;
-                NameLabel->SetText(Done ? FText::FromString(Done->Name) : FText::FromName(Mission.MissionId));
+                NameLabel->SetText(Done ? FText::FromString(MarburgumII::Gameplay::Localized(Done->Name)) : FText::FromName(Mission.MissionId));
                 ObjectiveLabel->SetText(LOCTEXT("CompletedLine", "Completed and saved by the server. [J] has the journal entry."));
                 ObjectiveLabel->SetColorAndOpacity(FSlateColor(T.Color.TextSecondary));
                 StepGlyph->SetGlyph(EMarburgumGlyph::Check);
@@ -233,8 +233,8 @@ void UMarburgumPinnedObjective::Refresh()
     const FMissionStageDefinition* Stage = Mission ? FindStage(*Mission, Pinned->StageId.ToString()) : nullptr;
     KindLabel->SetText(Mission && FCString::Strcmp(Mission->Category, TEXT("story")) == 0
         ? LOCTEXT("Story", "STORY MISSION") : LOCTEXT("Mission", "MISSION"));
-    NameLabel->SetText(Mission ? FText::FromString(Mission->Name) : FText::FromName(Pinned->MissionId));
-    ObjectiveLabel->SetText(Stage ? FText::FromString(Stage->ObjectiveText)
+    NameLabel->SetText(Mission ? FText::FromString(MarburgumII::Gameplay::Localized(Mission->Name)) : FText::FromName(Pinned->MissionId));
+    ObjectiveLabel->SetText(Stage ? FText::FromString(MarburgumII::Gameplay::Localized(Stage->ObjectiveText))
         : LOCTEXT("UnknownStage", "The next step is not known to this client version."));
     ObjectiveLabel->SetColorAndOpacity(FSlateColor(Stage ? T.Color.TextPrimary : T.Color.TextSecondary));
     StepGlyph->SetGlyph(Stage ? EMarburgumGlyph::ChevronRight : EMarburgumGlyph::Info);
@@ -275,7 +275,7 @@ void UMarburgumPinnedObjective::RefreshGuide()
     {
         const UMarburgumPhotographySubsystem* Photography = World->GetSubsystem<UMarburgumPhotographySubsystem>();
         bFound = Photography && Photography->GetAimPoint(GuideTarget, At);
-        Where = FText::FromString(Subject->DisplayName);
+        Where = FText::FromString(MarburgumII::Gameplay::Localized(Subject->DisplayName));
     }
     else
     {
@@ -294,7 +294,7 @@ void UMarburgumPinnedObjective::RefreshGuide()
         const FInteractableDefinition* Entry = FindInteractable(GuideTarget);
         bFound = Placed != nullptr;
         At = Placed ? Placed->GetActorLocation() : FVector::ZeroVector;
-        Where = Placed && !Placed->DisplayName.IsEmpty() ? Placed->DisplayName : Entry ? FText::FromString(Entry->DisplayName) : FText::GetEmpty();
+        Where = Placed && !Placed->DisplayName.IsEmpty() ? Placed->DisplayName : Entry ? FText::FromString(MarburgumII::Gameplay::Localized(Entry->DisplayName)) : FText::GetEmpty();
         bTemporary = Entry && Entry->Placement == EPlacement::Pad;
     }
     if (!bFound)

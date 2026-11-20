@@ -281,7 +281,7 @@ void UMarburgumInventoryPanel::Rebuild()
         FBuilder::Inline(Top, B.Text(FText::Format(LOCTEXT("Quantity", "×{0}"), FText::AsNumber(Stack.Quantity)), ETypeRole::Numeric,
             T.Color.TextPrimary), 0.f);
         FBuilder::Stack(Tile, Top, T.Space.S);
-        UTextBlock* Name = B.Text(Definition ? FText::FromString(Definition->DisplayName) : FText::FromName(Stack.ItemId), ETypeRole::Label);
+        UTextBlock* Name = B.Text(Definition ? FText::FromString(MarburgumII::Gameplay::Localized(Definition->DisplayName)) : FText::FromName(Stack.ItemId), ETypeRole::Label);
         Name->SetAutoWrapText(true);
         FBuilder::Stack(Tile, Name, 0.f, true);
         FBuilder::Stack(Tile, B.Text(Caps(KindName(Kind)), ETypeRole::Overline, T.Color.TextMuted), 0.f);
@@ -352,7 +352,7 @@ void UMarburgumInventoryPanel::ShowDetail(FName ItemId)
     {
         ChipSlot->SetHorizontalAlignment(HAlign_Left);
     }
-    UTextBlock* Name = B.Text(Definition ? FText::FromString(Definition->DisplayName) : FText::FromName(ItemId), ETypeRole::Title);
+    UTextBlock* Name = B.Text(Definition ? FText::FromString(MarburgumII::Gameplay::Localized(Definition->DisplayName)) : FText::FromName(ItemId), ETypeRole::Title);
     Name->SetAutoWrapText(true);
     FBuilder::Stack(DetailBox, Name, T.Space.M);
     FBuilder::Stack(DetailBox, B.Field(LOCTEXT("Carried", "Carried"), FText::AsNumber(Quantity)), T.Space.XS);
@@ -364,7 +364,7 @@ void UMarburgumInventoryPanel::ShowDetail(FName ItemId)
         FBuilder::Stack(DetailBox, B.SectionTitle(LOCTEXT("Missions", "MISSIONS"), T.Color.Accent), T.Space.S);
         for (const FMissionDefinition* Mission : Related)
         {
-            FBuilder::Stack(DetailBox, B.GlyphText(EMarburgumGlyph::Mission, FText::FromString(Mission->Name), ETypeRole::Body, T.Color.TextPrimary),
+            FBuilder::Stack(DetailBox, B.GlyphText(EMarburgumGlyph::Mission, FText::FromString(MarburgumII::Gameplay::Localized(Mission->Name)), ETypeRole::Body, T.Color.TextPrimary),
                 T.Space.XS);
         }
         FBuilder::Stack(DetailBox, B.Spacer(1.f, T.Space.M), 0.f);
@@ -380,7 +380,7 @@ void UMarburgumInventoryPanel::ShowDetail(FName ItemId)
             bAnyCounter = true;
             UHorizontalBox* Line = B.Row();
             FBuilder::Inline(Line, B.Glyph(EMarburgumGlyph::Shop, T.Color.TextSecondary, T.Icon.Small), T.Space.S);
-            UTextBlock* Sell = B.Text(FText::Format(LOCTEXT("Sell", "Sell at {0} for {1} each"), FText::FromString(Shop.Name),
+            UTextBlock* Sell = B.Text(FText::Format(LOCTEXT("Sell", "Sell at {0} for {1} each"), FText::FromString(MarburgumII::Gameplay::Localized(Shop.Name)),
                 FText::AsNumber(Offer->SellPrice)), ETypeRole::Body, T.Color.TextSecondary);
             Sell->SetAutoWrapText(true);
             FBuilder::Inline(Line, Sell, T.Space.S, true);

@@ -6,7 +6,8 @@ use serde_json::Value;
 use crate::repo::Problems;
 
 fn load(path: &str) -> Result<Value, String> {
-    let text = std::fs::read_to_string(path).map_err(|error| format!("cannot read {path}: {error}"))?;
+    let text =
+        std::fs::read_to_string(path).map_err(|error| format!("cannot read {path}: {error}"))?;
     serde_json::from_str(&text).map_err(|error| format!("invalid JSON in {path}: {error}"))
 }
 
@@ -26,7 +27,9 @@ fn is_store(doc: &Value) -> bool {
 
 /// No character's condition was saved (the Gate 1 and Lent smoke clients never run).
 fn no_conditions(doc: &Value) -> bool {
-    doc["conditions"].as_object().is_some_and(serde_json::Map::is_empty)
+    doc["conditions"]
+        .as_object()
+        .is_some_and(serde_json::Map::is_empty)
 }
 
 /// Gate 1 (scripts/interaction-smoke-linux.sh): three grants in total and nothing else.
@@ -44,14 +47,29 @@ fn check_interaction(doc: &Value, key_a: &str, key_b: &str, first_op: &str) -> u
     let rods = |key: &str| doc["inventories"][key]["fishing_rod"].as_i64().unwrap_or(0);
     let (a, b) = (rods(key_a), rods(key_b));
     problems.expect(is_store(doc), "format");
-    problems.expect(no_conditions(doc), format!("conditions={}", doc["conditions"]));
-    problems.expect(doc["revision"] == 3, format!("revision={}", doc["revision"]));
-    problems.expect(doc["stocks"]["dev_supply_crate"] == 0, format!("stock={}", doc["stocks"]["dev_supply_crate"]));
-    problems.expect(doc["stocks"].get("dev_supply_crate_far").is_none(), "far_stock_written");
+    problems.expect(
+        no_conditions(doc),
+        format!("conditions={}", doc["conditions"]),
+    );
+    problems.expect(
+        doc["revision"] == 3,
+        format!("revision={}", doc["revision"]),
+    );
+    problems.expect(
+        doc["stocks"]["dev_supply_crate"] == 0,
+        format!("stock={}", doc["stocks"]["dev_supply_crate"]),
+    );
+    problems.expect(
+        doc["stocks"].get("dev_supply_crate_far").is_none(),
+        "far_stock_written",
+    );
     problems.expect(a + b == 3, format!("granted={}", a + b));
     let receipts = doc["receipts"].as_object().map(|r| r.len()).unwrap_or(0);
     problems.expect(receipts == 3, format!("receipts={receipts}"));
-    problems.expect(doc["receipts"][first_op]["character"] == key_a, "first_op_receipt");
+    problems.expect(
+        doc["receipts"][first_op]["character"] == key_a,
+        "first_op_receipt",
+    );
     finish(problems, format!("{a} {b} {}", doc["revision"]))
 }
 
@@ -70,15 +88,36 @@ fn check_lent(doc: &Value, key_m: &str, key_w: &str, first_op: &str) -> u8 {
     let mission = &doc["missions"][key_m]["lent_first_catch"];
     let stage = mission["stage"].as_str().unwrap_or("-");
     problems.expect(is_store(doc), "format");
-    problems.expect(no_conditions(doc), format!("conditions={}", doc["conditions"]));
-    problems.expect(doc["revision"] == 1, format!("revision={}", doc["revision"]));
-    problems.expect(stage == "catch_first_fish" && mission["started_revision"] == 1, format!("mission={mission}"));
-    problems.expect(doc["inventories"][key_m]["fishing_rod"] == 1, format!("rods={}", doc["inventories"][key_m]));
-    problems.expect(doc["inventories"].get(key_w).is_none() && doc["missions"].get(key_w).is_none(), "walker_written");
+    problems.expect(
+        no_conditions(doc),
+        format!("conditions={}", doc["conditions"]),
+    );
+    problems.expect(
+        doc["revision"] == 1,
+        format!("revision={}", doc["revision"]),
+    );
+    problems.expect(
+        stage == "catch_first_fish" && mission["started_revision"] == 1,
+        format!("mission={mission}"),
+    );
+    problems.expect(
+        doc["inventories"][key_m]["fishing_rod"] == 1,
+        format!("rods={}", doc["inventories"][key_m]),
+    );
+    problems.expect(
+        doc["inventories"].get(key_w).is_none() && doc["missions"].get(key_w).is_none(),
+        "walker_written",
+    );
     let receipt = &doc["receipts"][first_op];
     let receipts = doc["receipts"].as_object().map(|r| r.len()).unwrap_or(0);
-    problems.expect(receipts == 1 && receipt["kind"] == "mission_started" && receipt["character"] == key_m
-        && receipt["item"] == "fishing_rod" && receipt["mission"] == "lent_first_catch", format!("receipts={}", doc["receipts"]));
+    problems.expect(
+        receipts == 1
+            && receipt["kind"] == "mission_started"
+            && receipt["character"] == key_m
+            && receipt["item"] == "fishing_rod"
+            && receipt["mission"] == "lent_first_catch",
+        format!("receipts={}", doc["receipts"]),
+    );
     finish(problems, format!("{} {stage}", doc["revision"]))
 }
 
@@ -97,33 +136,71 @@ fn check_condition(doc: &Value, key_r: &str, key_c: &str, key_s: &str, phase: &s
     let mut problems = Problems::default();
     let conditions = &doc["conditions"];
     let saved = |key: &str| conditions.get(key).filter(|entry| entry.is_object());
-    let tired = |key: &str| saved(key).is_some_and(|entry| entry["vitality"] == 100 && entry["stamina"].as_i64().is_some_and(|s| (0..100).contains(&s)));
+    let tired = |key: &str| {
+        saved(key).is_some_and(|entry| {
+            entry["vitality"] == 100
+                && entry["stamina"]
+                    .as_i64()
+                    .is_some_and(|s| (0..100).contains(&s))
+        })
+    };
     problems.expect(is_store(doc), "format");
-    let empty = |field: &str| doc[field].as_object().is_some_and(serde_json::Map::is_empty);
-    problems.expect(empty("inventories") && empty("missions") && empty("receipts"), "custody_written");
-    problems.expect(conditions.as_object().map(serde_json::Map::len) == Some(2), format!("conditions={conditions}"));
+    let empty = |field: &str| {
+        doc[field]
+            .as_object()
+            .is_some_and(serde_json::Map::is_empty)
+    };
+    problems.expect(
+        empty("inventories") && empty("missions") && empty("receipts"),
+        "custody_written",
+    );
+    problems.expect(
+        conditions.as_object().map(serde_json::Map::len) == Some(2),
+        format!("conditions={conditions}"),
+    );
     problems.expect(tired(key_c), format!("cheater={}", conditions[key_c]));
     match phase {
         "1" => {
-            problems.expect(doc["revision"] == 2, format!("revision={}", doc["revision"]));
+            problems.expect(
+                doc["revision"] == 2,
+                format!("revision={}", doc["revision"]),
+            );
             // R left the moment it was winded: almost no breath, and winded.
             let runner = &conditions[key_r];
-            problems.expect(tired(key_r) && runner["winded"] == true && runner["stamina"].as_i64().is_some_and(|s| s <= 5),
-                format!("runner={runner}"));
+            problems.expect(
+                tired(key_r)
+                    && runner["winded"] == true
+                    && runner["stamina"].as_i64().is_some_and(|s| s <= 5),
+                format!("runner={runner}"),
+            );
             problems.expect(saved(key_s).is_none(), "stopper_written_early");
         }
         "2" => {
-            problems.expect(doc["revision"] == 4, format!("revision={}", doc["revision"]));
+            problems.expect(
+                doc["revision"] == 4,
+                format!("revision={}", doc["revision"]),
+            );
             // A rested body is stored as no entry at all.
-            problems.expect(saved(key_r).is_none(), format!("runner_not_rested={}", conditions[key_r]));
+            problems.expect(
+                saved(key_r).is_none(),
+                format!("runner_not_rested={}", conditions[key_r]),
+            );
             problems.expect(tired(key_s), format!("stopper={}", conditions[key_s]));
         }
         _ => problems.0.push(format!("unknown phase {phase}")),
     }
     let runner = &conditions[key_r];
-    finish(problems, format!("{} {} {}", doc["revision"],
-        runner["stamina"].as_i64().map_or("-".to_string(), |s| s.to_string()),
-        if runner["winded"] == true { 1 } else { 0 }))
+    finish(
+        problems,
+        format!(
+            "{} {} {}",
+            doc["revision"],
+            runner["stamina"]
+                .as_i64()
+                .map_or("-".to_string(), |s| s.to_string()),
+            if runner["winded"] == true { 1 } else { 0 }
+        ),
+    )
 }
 
 /// Missions, fishing and skills (scripts/mission-smoke-linux.sh), after phase 1.
@@ -139,31 +216,59 @@ pub fn missions(store: &str, key: &str) -> u8 {
 fn check_missions(doc: &Value, key: &str) -> u8 {
     let mut problems = Problems::default();
     problems.expect(is_store(doc), "format");
-    problems.expect(no_conditions(doc), format!("conditions={}", doc["conditions"]));
+    problems.expect(
+        no_conditions(doc),
+        format!("conditions={}", doc["conditions"]),
+    );
     let item = |id: &str| doc["inventories"][key][id].as_i64().unwrap_or(0);
-    for id in ["fishing_rod", "brass_key", "drava_cashbox", "water_damaged_accounting_page",
-        "torn_gate_photograph", "faded_transport_ticket", "carbon_copy_receipt"]
-    {
+    for id in [
+        "fishing_rod",
+        "brass_key",
+        "drava_cashbox",
+        "water_damaged_accounting_page",
+        "torn_gate_photograph",
+        "faded_transport_ticket",
+        "carbon_copy_receipt",
+    ] {
         problems.expect(item(id) == 1, format!("{id}={}", item(id)));
     }
     for id in ["chub", "roach", "perch"] {
         problems.expect(item(id) == 0, format!("fish_left {id}={}", item(id)));
     }
     let first = &doc["missions"][key]["lent_first_catch"];
-    problems.expect(first["completed"] == true && first["stage"] == "meet_vera" && first["reward_paid"] == true
-        && first["journal_entry"] == "blue_ledger_r90",
-        format!("first_catch={first}"));
+    problems.expect(
+        first["completed"] == true
+            && first["stage"] == "meet_vera"
+            && first["reward_paid"] == true
+            && first["journal_entry"] == "blue_ledger_r90",
+        format!("first_catch={first}"),
+    );
     let kiosk = &doc["missions"][key]["kiosk_67_customer_stopped_coming"];
-    problems.expect(kiosk["completed"] == true && kiosk["stage"] == "resolution" && kiosk["choice"] == "pay_tab"
-        && kiosk["outcome"] == "tab_paid" && kiosk["journal_entry"] == "kiosk_67_missing_customer"
-        && kiosk["flags"]["ledger_initials_recognized"] == true,
-        format!("kiosk={kiosk}"));
+    problems.expect(
+        kiosk["completed"] == true
+            && kiosk["stage"] == "resolution"
+            && kiosk["choice"] == "pay_tab"
+            && kiosk["outcome"] == "tab_paid"
+            && kiosk["journal_entry"] == "kiosk_67_missing_customer"
+            && kiosk["flags"]["ledger_initials_recognized"] == true,
+        format!("kiosk={kiosk}"),
+    );
     let names = &doc["missions"][key]["raeda_names_no_longer_match"];
-    problems.expect(names["completed"] == true && names["stage"] == "decide_maja" && names["choice"] == "tell_maja"
-        && names["outcome"] == "maja_informed" && names["journal_entry"] == "blue_ledger_names_no_longer_match"
-        && names["flags"]["maja_informed"] == true,
-        format!("names={names}"));
-    for id in ["raeda_directory_copy", "successor_company_notice", "returned_raeda_envelope", "raeda_newspaper_clipping"] {
+    problems.expect(
+        names["completed"] == true
+            && names["stage"] == "decide_maja"
+            && names["choice"] == "tell_maja"
+            && names["outcome"] == "maja_informed"
+            && names["journal_entry"] == "blue_ledger_names_no_longer_match"
+            && names["flags"]["maja_informed"] == true,
+        format!("names={names}"),
+    );
+    for id in [
+        "raeda_directory_copy",
+        "successor_company_notice",
+        "returned_raeda_envelope",
+        "raeda_newspaper_clipping",
+    ] {
         problems.expect(item(id) == 1, format!("{id}={}", item(id)));
     }
     let money = doc["money"][key].as_i64().unwrap_or(0);
@@ -173,29 +278,58 @@ fn check_missions(doc: &Value, key: &str) -> u8 {
         let mut done = |id: &str, stage: &str, choice: &str| {
             let mission = &doc["missions"][key][id];
             // A mission with no decision stores no choice.
-            problems.expect(mission["completed"] == true && mission["stage"] == stage
-                && mission["choice"].as_str().unwrap_or("") == choice,
-                format!("{id}={mission}"));
+            problems.expect(
+                mission["completed"] == true
+                    && mission["stage"] == stage
+                    && mission["choice"].as_str().unwrap_or("") == choice,
+                format!("{id}={mission}"),
+            );
         };
         done("lent_late_delivery", "resolve_fee", "leave_clerk_share");
-        done("hall_three_last_shift", "resolve_inventory", "negotiate_settlement");
-        done("under_the_paint_four_names", "decide_sign_window", "preserve_layers");
+        done(
+            "hall_three_last_shift",
+            "resolve_inventory",
+            "negotiate_settlement",
+        );
+        done(
+            "under_the_paint_four_names",
+            "decide_sign_window",
+            "preserve_layers",
+        );
         done("raeda_last_shift", "show_vera", "");
         done("raeda_city_for_sale", "decide_milan", "trust_milan");
     }
     problems.expect(item("brown_paper_parcel") == 0, "parcel_not_consumed");
-    problems.expect(item("raeda_yard_archive_boxes") == 0, "archive_boxes_not_consumed");
-    for id in ["hall_three_plate_photos", "hall_three_keyring", "raeda_transport_maintenance_book",
-        "storefront_layer_one_photo", "storefront_layer_two_photo", "storefront_layer_three_photo",
-        "storefront_oldest_lettering_photo", "storefront_archived_advertisements",
-        "tone_vogrin_locker_card", "kainach_serial_photos", "yard_vehicle_log", "corrected_yard_schedule",
-        "exchange_counterfoil_copy", "kainach_contract_reference", "prehod_classified_clippings",
-        "pohorska_bank_file_locator", "k67_raeda_concession_copy"]
-    {
+    problems.expect(
+        item("raeda_yard_archive_boxes") == 0,
+        "archive_boxes_not_consumed",
+    );
+    for id in [
+        "hall_three_plate_photos",
+        "hall_three_keyring",
+        "raeda_transport_maintenance_book",
+        "storefront_layer_one_photo",
+        "storefront_layer_two_photo",
+        "storefront_layer_three_photo",
+        "storefront_oldest_lettering_photo",
+        "storefront_archived_advertisements",
+        "tone_vogrin_locker_card",
+        "kainach_serial_photos",
+        "yard_vehicle_log",
+        "corrected_yard_schedule",
+        "exchange_counterfoil_copy",
+        "kainach_contract_reference",
+        "prehod_classified_clippings",
+        "pohorska_bank_file_locator",
+        "k67_raeda_concession_copy",
+    ] {
         problems.expect(item(id) == 1, format!("{id}={}", item(id)));
     }
     problems.expect(money == 90, format!("money={money}"));
-    problems.expect([16, 20, 24].contains(&fishing), format!("fishing_xp={fishing}"));
+    problems.expect(
+        [16, 20, 24].contains(&fishing),
+        format!("fishing_xp={fishing}"),
+    );
     problems.expect(reputation == 95, format!("reputation_xp={reputation}"));
     finish(problems, format!("{money} {fishing} {reputation}"))
 }
@@ -216,23 +350,52 @@ fn check_story(doc: &Value, key: &str) -> u8 {
     let item = |id: &str| doc["inventories"][key][id].as_i64().unwrap_or(0);
     let mission = |id: &str| &doc["missions"][key][id];
     let voices = mission("raeda_voices_on_tape");
-    problems.expect(voices["completed"] == true && voices["choice"] == "ask_tone" && voices["outcome"] == "tone_questioned"
-        && voices["journal_entry"] == "blue_ledger_voices_on_tape" && voices["flags"]["canteen_tape_place_melje"] == true,
-        format!("voices={voices}"));
+    problems.expect(
+        voices["completed"] == true
+            && voices["choice"] == "ask_tone"
+            && voices["outcome"] == "tone_questioned"
+            && voices["journal_entry"] == "blue_ledger_voices_on_tape"
+            && voices["flags"]["canteen_tape_place_melje"] == true,
+        format!("voices={voices}"),
+    );
     let folder = mission("raeda_mentor_folder");
-    problems.expect(folder["completed"] == true && folder["flags"]["mentor_question_found"] == true, format!("folder={folder}"));
+    problems.expect(
+        folder["completed"] == true && folder["flags"]["mentor_question_found"] == true,
+        format!("folder={folder}"),
+    );
     let nika = mission("nika_then_and_now");
-    problems.expect(nika["completed"] == true && nika["outcome"] == "darkroom_lesson", format!("nika={nika}"));
+    problems.expect(
+        nika["completed"] == true && nika["outcome"] == "darkroom_lesson",
+        format!("nika={nika}"),
+    );
     let brane = mission("brane_old_letters");
-    problems.expect(brane["completed"] == true && brane["outcome"] == "prints_given"
-        && brane["flags"]["prehod_spacing_error_documented"] == true, format!("brane={brane}"));
-    for id in ["camera", "canteen_cassette_c60", "canteen_tape_notes", "raeda_recorder_counter_note", "mentor_folder_note", "nika_old_prints",
-        "photo_vodni_stolp", "photo_sodni_stolp", "photo_stari_most", "photo_kvik_lettering", "photo_velika_kavarna_lettering",
-        "photo_prehod_sign_melje", "photo_sinagoga"]
-    {
+    problems.expect(
+        brane["completed"] == true
+            && brane["outcome"] == "prints_given"
+            && brane["flags"]["prehod_spacing_error_documented"] == true,
+        format!("brane={brane}"),
+    );
+    for id in [
+        "camera",
+        "canteen_cassette_c60",
+        "canteen_tape_notes",
+        "raeda_recorder_counter_note",
+        "mentor_folder_note",
+        "nika_old_prints",
+        "photo_vodni_stolp",
+        "photo_sodni_stolp",
+        "photo_stari_most",
+        "photo_kvik_lettering",
+        "photo_velika_kavarna_lettering",
+        "photo_prehod_sign_melje",
+        "photo_sinagoga",
+    ] {
         problems.expect(item(id) == 1, format!("{id}={}", item(id)));
     }
-    let documented: Vec<&str> = doc["discoveries"][key].as_array().map(|a| a.iter().filter_map(Value::as_str).collect()).unwrap_or_default();
+    let documented: Vec<&str> = doc["discoveries"][key]
+        .as_array()
+        .map(|a| a.iter().filter_map(Value::as_str).collect())
+        .unwrap_or_default();
     problems.expect(documented.len() == 7, format!("discoveries={documented:?}"));
     let money = doc["money"][key].as_i64().unwrap_or(0);
     let reputation = doc["skills"][key]["reputation"].as_i64().unwrap_or(0);
@@ -240,10 +403,28 @@ fn check_story(doc: &Value, key: &str) -> u8 {
     problems.expect(money == 180, format!("money={money}"));
     problems.expect(reputation == 70, format!("reputation_xp={reputation}"));
     problems.expect(photography == 215, format!("photography_xp={photography}"));
-    let photographs = doc["receipts"].as_object().map(|r| r.values().filter(|r| r["character"] == key
-        && (r["kind"] == "photographed" || r["interactable"].as_str().is_some_and(|i| documented.contains(&i)))).count()).unwrap_or(0);
-    problems.expect(photographs == 7, format!("photograph_receipts={photographs}"));
-    finish(problems, format!("{money} {reputation} {photography} {}", documented.len()))
+    let photographs = doc["receipts"]
+        .as_object()
+        .map(|r| {
+            r.values()
+                .filter(|r| {
+                    r["character"] == key
+                        && (r["kind"] == "photographed"
+                            || r["interactable"]
+                                .as_str()
+                                .is_some_and(|i| documented.contains(&i)))
+                })
+                .count()
+        })
+        .unwrap_or(0);
+    problems.expect(
+        photographs == 7,
+        format!("photograph_receipts={photographs}"),
+    );
+    finish(
+        problems,
+        format!("{money} {reputation} {photography} {}", documented.len()),
+    )
 }
 
 /// Kiosk 67 (scripts/shop-smoke-linux.sh), after phase 1 on a seeded schema 4 store (revision 1, 50 money, a brass
@@ -260,33 +441,90 @@ pub fn shop(store: &str, key: &str, first_op: &str) -> u8 {
 fn check_shop(doc: &Value, key: &str, first_op: &str) -> u8 {
     let mut problems = Problems::default();
     problems.expect(is_store(doc), "format");
-    problems.expect(doc["revision"] == 4, format!("revision={}", doc["revision"]));
+    problems.expect(
+        doc["revision"] == 4,
+        format!("revision={}", doc["revision"]),
+    );
     let money = doc["money"][key].as_i64().unwrap_or(0);
     problems.expect(money == 23, format!("money={money}"));
     let held = &doc["inventories"][key];
-    problems.expect(held["ballpoint_pen"] == 1 && held["brass_key"] == 1 && held.get("mariborski_glas").is_none(),
-        format!("inventory={held}"));
-    problems.expect(doc["skills"][key]["trading"] == 10, format!("skills={}", doc["skills"][key]));
-    problems.expect(doc["first_purchases"][key] == serde_json::json!(["kiosk_67"]), format!("first_purchases={}", doc["first_purchases"]));
+    problems.expect(
+        held["ballpoint_pen"] == 1
+            && held["brass_key"] == 1
+            && held.get("mariborski_glas").is_none(),
+        format!("inventory={held}"),
+    );
+    problems.expect(
+        doc["skills"][key]["trading"] == 10,
+        format!("skills={}", doc["skills"][key]),
+    );
+    problems.expect(
+        doc["first_purchases"][key] == serde_json::json!(["kiosk_67"]),
+        format!("first_purchases={}", doc["first_purchases"]),
+    );
     // Only the lines that ever moved are written; the postcard shelf stays at its starting stock.
     let shelves = &doc["shelves"]["kiosk_67"];
-    problems.expect(shelves["mariborski_glas"] == 12 && shelves["ballpoint_pen"] == 5 && shelves.get("maribor_postcard").is_none(),
-        format!("shelves={shelves}"));
+    problems.expect(
+        shelves["mariborski_glas"] == 12
+            && shelves["ballpoint_pen"] == 5
+            && shelves.get("maribor_postcard").is_none(),
+        format!("shelves={shelves}"),
+    );
     let receipts = doc["receipts"].as_object().cloned().unwrap_or_default();
-    let mut kinds: Vec<(i64, String, String, i64)> = receipts.values()
-        .map(|r| (r["revision"].as_i64().unwrap_or(0), r["kind"].as_str().unwrap_or("").to_string(),
-            r["item"].as_str().unwrap_or("").to_string(), r["money_delta"].as_i64().unwrap_or(0)))
+    let mut kinds: Vec<(i64, String, String, i64)> = receipts
+        .values()
+        .map(|r| {
+            (
+                r["revision"].as_i64().unwrap_or(0),
+                r["kind"].as_str().unwrap_or("").to_string(),
+                r["item"].as_str().unwrap_or("").to_string(),
+                r["money_delta"].as_i64().unwrap_or(0),
+            )
+        })
         .collect();
     kinds.sort();
-    let want = vec![(2, "item_bought".to_string(), "mariborski_glas".to_string(), -20), (3, "item_sold".to_string(), "mariborski_glas".to_string(), 8),
-        (4, "item_bought".to_string(), "ballpoint_pen".to_string(), -15)];
+    let want = vec![
+        (
+            2,
+            "item_bought".to_string(),
+            "mariborski_glas".to_string(),
+            -20,
+        ),
+        (3, "item_sold".to_string(), "mariborski_glas".to_string(), 8),
+        (
+            4,
+            "item_bought".to_string(),
+            "ballpoint_pen".to_string(),
+            -15,
+        ),
+    ];
     problems.expect(kinds == want, format!("receipts={kinds:?}"));
     let first = &doc["receipts"][first_op];
-    problems.expect(first["kind"] == "item_bought" && first["shop"] == "kiosk_67" && first["interactable"] == "petra_kralj"
-        && first["character"] == key && first["skill_xp"]["trading"] == 10, format!("first_receipt={first}"));
-    problems.expect(receipts.values().all(|r| r["shop"] == "kiosk_67" && r["character"] == key), "receipt_without_shop");
+    problems.expect(
+        first["kind"] == "item_bought"
+            && first["shop"] == "kiosk_67"
+            && first["interactable"] == "petra_kralj"
+            && first["character"] == key
+            && first["skill_xp"]["trading"] == 10,
+        format!("first_receipt={first}"),
+    );
+    problems.expect(
+        receipts
+            .values()
+            .all(|r| r["shop"] == "kiosk_67" && r["character"] == key),
+        "receipt_without_shop",
+    );
     let shelf = |item: &str, start: i64| shelves[item].as_i64().unwrap_or(start);
-    finish(problems, format!("{} {money} {},{},{}", doc["revision"], shelf("mariborski_glas", 12), shelf("maribor_postcard", 8), shelf("ballpoint_pen", 6)))
+    finish(
+        problems,
+        format!(
+            "{} {money} {},{},{}",
+            doc["revision"],
+            shelf("mariborski_glas", 12),
+            shelf("maribor_postcard", 8),
+            shelf("ballpoint_pen", 6)
+        ),
+    )
 }
 
 #[cfg(test)]
@@ -363,26 +601,38 @@ mod tests {
 
     #[test]
     fn condition_phases_pass() {
-        let one = condition_store(2, json!({
+        let one = condition_store(
+            2,
+            json!({
             "r": { "stamina": 1, "vitality": 100, "winded": true },
-            "c": { "stamina": 9, "vitality": 100, "winded": true } }));
+            "c": { "stamina": 9, "vitality": 100, "winded": true } }),
+        );
         assert_eq!(check_condition(&one, "r", "c", "s", "1"), 0);
-        let two = condition_store(4, json!({
+        let two = condition_store(
+            4,
+            json!({
             "c": { "stamina": 9, "vitality": 100, "winded": true },
-            "s": { "stamina": 71, "vitality": 100, "winded": false } }));
+            "s": { "stamina": 71, "vitality": 100, "winded": false } }),
+        );
         assert_eq!(check_condition(&two, "r", "c", "s", "2"), 0);
     }
 
     #[test]
     fn condition_rested_runner_or_breathless_save_fails() {
-        let rested = condition_store(2, json!({
+        let rested = condition_store(
+            2,
+            json!({
             "r": { "stamina": 30, "vitality": 100, "winded": false },
-            "c": { "stamina": 9, "vitality": 100, "winded": true } }));
+            "c": { "stamina": 9, "vitality": 100, "winded": true } }),
+        );
         assert_eq!(check_condition(&rested, "r", "c", "s", "1"), 1);
-        let kept = condition_store(4, json!({
+        let kept = condition_store(
+            4,
+            json!({
             "r": { "stamina": 100, "vitality": 100, "winded": false },
             "c": { "stamina": 9, "vitality": 100, "winded": true },
-            "s": { "stamina": 71, "vitality": 100, "winded": false } }));
+            "s": { "stamina": 71, "vitality": 100, "winded": false } }),
+        );
         assert_eq!(check_condition(&kept, "r", "c", "s", "2"), 1);
     }
 

@@ -10,7 +10,10 @@ pub fn root() -> PathBuf {
     }
     let starts = [std::env::current_dir().ok(), std::env::current_exe().ok()];
     for start in starts.into_iter().flatten() {
-        if let Some(found) = start.ancestors().find(|dir| dir.join("MarburgumII.uproject").is_file()) {
+        if let Some(found) = start
+            .ancestors()
+            .find(|dir| dir.join("MarburgumII.uproject").is_file())
+        {
             return found.to_path_buf();
         }
     }
@@ -51,7 +54,9 @@ pub fn read_json(root: &Path, relative: &str, problems: &mut Problems) -> serde_
         return serde_json::Value::Null;
     }
     serde_json::from_str(&text).unwrap_or_else(|error| {
-        problems.0.push(format!("invalid JSON in {relative}: {error}"));
+        problems
+            .0
+            .push(format!("invalid JSON in {relative}: {error}"));
         serde_json::Value::Null
     })
 }

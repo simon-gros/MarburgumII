@@ -73,8 +73,15 @@ fn view(name: &str, eye: [f64; 3], target: [f64; 3], fov: f64) -> String {
 
 /// Follows the graph from `start` without turning back, always taking the straightest way on, until `distance`
 /// metres of path; returns where it ended and how far it got.
-fn walk_ahead(nodes: &[Node], adjacency: &[Vec<usize>], start: usize, distance: f64, rng: &mut Rng) -> (usize, f64) {
-    let (mut current, mut previous, mut heading, mut walked) = (start, usize::MAX, None::<f64>, 0.0);
+fn walk_ahead(
+    nodes: &[Node],
+    adjacency: &[Vec<usize>],
+    start: usize,
+    distance: f64,
+    rng: &mut Rng,
+) -> (usize, f64) {
+    let (mut current, mut previous, mut heading, mut walked) =
+        (start, usize::MAX, None::<f64>, 0.0);
     while walked < distance {
         let here = nodes[current];
         let mut best: Option<(f64, usize)> = None;
@@ -85,7 +92,9 @@ fn walk_ahead(nodes: &[Node], adjacency: &[Vec<usize>], start: usize, distance: 
             let angle = (nodes[next].south - here.south).atan2(nodes[next].east - here.east);
             let turn = match heading {
                 None => rng.unit(),
-                Some(h) => ((angle - h + std::f64::consts::PI).rem_euclid(std::f64::consts::TAU) - std::f64::consts::PI).abs(),
+                Some(h) => ((angle - h + std::f64::consts::PI).rem_euclid(std::f64::consts::TAU)
+                    - std::f64::consts::PI)
+                    .abs(),
             };
             if best.map_or(true, |(b, _)| turn < b) {
                 best = Some((turn, next));
@@ -101,16 +110,32 @@ fn walk_ahead(nodes: &[Node], adjacency: &[Vec<usize>], start: usize, distance: 
 }
 
 pub fn views(graph: &Value, seed: u64) -> Result<Vec<String>, String> {
-    let number = |v: &Value| v.as_f64().ok_or_else(|| "a walk-graph node field is not a number".to_string());
+    let number = |v: &Value| {
+        v.as_f64()
+            .ok_or_else(|| "a walk-graph node field is not a number".to_string())
+    };
     let nodes = graph["nodes"]
         .as_array()
         .ok_or("the walk graph has no nodes")?
         .iter()
-        .map(|n| Ok(Node { east: number(&n[0])?, south: number(&n[1])?, up: number(&n[2])?, flags: n[3].as_i64().unwrap_or(0) }))
+        .map(|n| {
+            Ok(Node {
+                east: number(&n[0])?,
+                south: number(&n[1])?,
+                up: number(&n[2])?,
+                flags: n[3].as_i64().unwrap_or(0),
+            })
+        })
         .collect::<Result<Vec<_>, String>>()?;
     let mut adjacency = vec![Vec::new(); nodes.len()];
-    for edge in graph["edges"].as_array().ok_or("the walk graph has no edges")? {
-        let (a, b) = (edge[0].as_u64().ok_or("bad edge")? as usize, edge[1].as_u64().ok_or("bad edge")? as usize);
+    for edge in graph["edges"]
+        .as_array()
+        .ok_or("the walk graph has no edges")?
+    {
+        let (a, b) = (
+            edge[0].as_u64().ok_or("bad edge")? as usize,
+            edge[1].as_u64().ok_or("bad edge")? as usize,
+        );
         if a < nodes.len() && b < nodes.len() {
             adjacency[a].push(b);
             adjacency[b].push(a);
@@ -118,16 +143,34 @@ pub fn views(graph: &Value, seed: u64) -> Result<Vec<String>, String> {
     }
     let mut rng = Rng(seed);
     let mut out = vec![
-        view("angler_close", [7642.0, 1563.0, 386.0], [7042.0, 1813.0, 266.0], 60.0),
+        view(
+            "angler_close",
+            [7642.0, 1563.0, 386.0],
+            [7042.0, 1813.0, 266.0],
+            60.0,
+        ),
         // Along the deck from the north bank's end towards the south bank, a little above eye height.
-        view("stari_most_deck", ue(-1.0, -90.0, 16.5), ue(-1.0, 60.0, 15.5), 70.0),
+        view(
+            "stari_most_deck",
+            ue(-1.0, -90.0, 16.5),
+            ue(-1.0, 60.0, 15.5),
+            70.0,
+        ),
     ];
     for (window, cx, cy) in WINDOWS {
-        out.push(view(&format!("air_{window}"), ue(cx, cy + 300.0, 220.0), ue(cx, cy - 40.0, 0.0), 60.0));
+        out.push(view(
+            &format!("air_{window}"),
+            ue(cx, cy + 300.0, 220.0),
+            ue(cx, cy - 40.0, 0.0),
+            60.0,
+        ));
         let mut inside: Vec<usize> = (0..nodes.len())
             .filter(|&i| {
                 let n = nodes[i];
-                (n.east - cx).abs() < 230.0 && (n.south - cy).abs() < 230.0 && n.flags & BRIDGE_FLAG == 0 && adjacency[i].len() >= 2
+                (n.east - cx).abs() < 230.0
+                    && (n.south - cy).abs() < 230.0
+                    && n.flags & BRIDGE_FLAG == 0
+                    && adjacency[i].len() >= 2
             })
             .collect();
         rng.shuffle(&mut inside);
@@ -141,7 +184,12 @@ pub fn views(graph: &Value, seed: u64) -> Result<Vec<String>, String> {
                 continue;
             }
             let (s, e) = (nodes[start], nodes[end]);
-            out.push(view(&format!("street_{window}_{taken}"), ue(s.east, s.south, s.up + EYE_HEIGHT_M), ue(e.east, e.south, e.up + 1.2), 75.0));
+            out.push(view(
+                &format!("street_{window}_{taken}"),
+                ue(s.east, s.south, s.up + EYE_HEIGHT_M),
+                ue(e.east, e.south, e.up + 1.2),
+                75.0,
+            ));
             taken += 1;
         }
     }
@@ -151,7 +199,12 @@ pub fn views(graph: &Value, seed: u64) -> Result<Vec<String>, String> {
         ("edge_west", -740.0, 0.0, -1400.0, 0.0),
         ("edge_east", 740.0, 0.0, 1400.0, 0.0),
     ] {
-        out.push(view(name, ue(east, south, 60.0), ue(look_east, look_south, 0.0), 70.0));
+        out.push(view(
+            name,
+            ue(east, south, 60.0),
+            ue(look_east, look_south, 0.0),
+            70.0,
+        ));
     }
     Ok(out)
 }
@@ -165,7 +218,10 @@ pub fn run(graph_path: &str, seed: Option<&str>) -> u8 {
             return 2;
         }
     };
-    let graph = match std::fs::read_to_string(Path::new(graph_path)).map_err(|e| e.to_string()).and_then(|t| serde_json::from_str::<Value>(&t).map_err(|e| e.to_string())) {
+    let graph = match std::fs::read_to_string(Path::new(graph_path))
+        .map_err(|e| e.to_string())
+        .and_then(|t| serde_json::from_str::<Value>(&t).map_err(|e| e.to_string()))
+    {
         Ok(graph) => graph,
         Err(error) => {
             eprintln!("survey-views: cannot read {graph_path}: {error}");
@@ -191,7 +247,9 @@ mod tests {
 
     fn grid() -> Value {
         // A straight 100 m pavement through the middle of Lent's window, nodes every 10 m.
-        let nodes: Vec<Value> = (0..11).map(|i| json!([-50.0 + i as f64 * 10.0, 0.0, 2.0, 0, 0, 0.5])).collect();
+        let nodes: Vec<Value> = (0..11)
+            .map(|i| json!([-50.0 + i as f64 * 10.0, 0.0, 2.0, 0, 0, 0.5]))
+            .collect();
         let edges: Vec<Value> = (0..10).map(|i| json!([i, i + 1, 0])).collect();
         json!({ "nodes": nodes, "edges": edges })
     }
@@ -204,14 +262,20 @@ mod tests {
     #[test]
     fn a_street_view_looks_down_the_pavement_at_eye_height() {
         let all = views(&grid(), 1990).unwrap();
-        let street: Vec<&String> = all.iter().filter(|v| v.starts_with("street_lent_")).collect();
+        let street: Vec<&String> = all
+            .iter()
+            .filter(|v| v.starts_with("street_lent_"))
+            .collect();
         assert!(!street.is_empty());
         for v in street {
             let parts: Vec<&str> = v.split('@').collect();
             let eye: Vec<f64> = parts[1].split(',').map(|x| x.parse().unwrap()).collect();
             let target: Vec<f64> = parts[2].split(',').map(|x| x.parse().unwrap()).collect();
             assert_eq!(eye[2], 370.0, "eye 1.7 m above the 2 m pavement");
-            assert!((eye[1] - target[1]).abs() >= MIN_WALK_M * 100.0 - 1.0, "looks at least 35 m along");
+            assert!(
+                (eye[1] - target[1]).abs() >= MIN_WALK_M * 100.0 - 1.0,
+                "looks at least 35 m along"
+            );
             assert_eq!(eye[0], 0.0);
         }
         // Nine aerials, four edges, the angler and the deck, whatever the graph.

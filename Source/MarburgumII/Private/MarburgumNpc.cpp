@@ -14,6 +14,7 @@
 #include "MarburgumGameplayContract.h"
 #include "MarburgumNpcContract.h"
 #include "MarburgumWater.h"
+#include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
 
 namespace MarburgumNpcLook
@@ -64,6 +65,19 @@ namespace MarburgumNpcLook
     {
         return Path ? LoadObject<UAnimSequenceBase>(nullptr, Path) : nullptr;
     }
+}
+
+FVector FMarburgumNpcWalk::At(double ServerSeconds, bool& bOutWalking) const
+{
+    const double Distance = FVector::Dist(From, To);
+    if (StartSeconds < 0.0 || Distance < 1.0)
+    {
+        bOutWalking = false;
+        return To;
+    }
+    const double Alpha = FMath::Clamp((ServerSeconds - StartSeconds) * MarburgumII::Npc::StrollCmPerSecond / Distance, 0.0, 1.0);
+    bOutWalking = Alpha < 1.0;
+    return FMath::Lerp(FVector(From), FVector(To), Alpha);
 }
 
 AMarburgumNpc::AMarburgumNpc()
@@ -123,6 +137,60 @@ AMarburgumNpc::AMarburgumNpc()
     PrimaryActorTick.TickInterval = 0.f;
 }
 
+void AMarburgumNpc::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(AMarburgumNpc, Walk);
+}
+
+double AMarburgumNpc::ServerSeconds() const
+{
+    const AGameStateBase* GameState = GetWorld() ? GetWorld()->GetGameState() : nullptr;
+    return GameState ? GameState->GetServerWorldTimeSeconds() : (GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0);
+}
+
+bool AMarburgumNpc::IsWalking() const
+{
+    bool bWalking = false;
+    Walk.At(ServerSeconds(), bWalking);
+    return bWalking;
+}
+
+void AMarburgumNpc::OnRep_Walk()
+{
+    // A late joiner or a walk seen mid-way: start drawing it at once, wherever it has got to.
+    SetActorTickEnabled(true);
+}
+
+void AMarburgumNpc::SetPostsAuthority(const TArray<FVector>& Points)
+{
+    check(HasAuthority());
+    Posts = Points;
+    CurrentPost = 0;
+    // Only someone with somewhere to go needs the server's tick.
+    SetActorTickEnabled(Posts.Num() > 1 || GetNetMode() != NM_DedicatedServer);
+}
+
+void AMarburgumNpc::GoToPostAuthority(int32 Index)
+{
+    check(HasAuthority());
+    if (!Posts.IsValidIndex(Index) || ServerSeconds() < PausedUntilSeconds)
+    {
+        return;
+    }
+    bool bWalking = false;
+    const FVector Here = Walk.StartSeconds < 0.0 ? GetActorLocation() : Walk.At(ServerSeconds(), bWalking);
+    if (Index == CurrentPost && (bWalking || FVector::Dist2D(Here, Posts[Index]) < 5.0))
+    {
+        return;
+    }
+    CurrentPost = Index;
+    Walk.From = Here;
+    Walk.To = Posts[Index];
+    Walk.StartSeconds = ServerSeconds();
+    ForceNetUpdate();
+}
+
 void AMarburgumNpc::OnConstruction(const FTransform& Transform)
 {
     Super::OnConstruction(Transform);
@@ -148,6 +216,7 @@ void AMarburgumNpc::BeginPlay()
     }
     IdleClip = Look::LoadClip(Npc::IdleClipPath);
     TalkClip = Look::LoadClip(Npc::TalkClipPath);
+    WalkClip = Look::LoadClip(Npc::WalkClipPath);
     FishClips[static_cast<int32>(Npc::EAnglerPhase::Cast)] = Look::LoadClip(Npc::FishCastClipPath);
     FishClips[static_cast<int32>(Npc::EAnglerPhase::Wait)] = Look::LoadClip(Npc::FishWaitClipPath);
     FishClips[static_cast<int32>(Npc::EAnglerPhase::Reel)] = Look::LoadClip(Npc::FishReelClipPath);
@@ -207,6 +276,19 @@ void AMarburgumNpc::ApplyLook()
 void AMarburgumNpc::ConverseAuthority(APawn* With)
 {
     check(HasAuthority());
+    // Somebody on their way stops to talk; the next post check sets them off again afterwards.
+    bool bWalking = false;
+    const FVector Here = Walk.At(ServerSeconds(), bWalking);
+    if (bWalking)
+    {
+        Walk.From = Here;
+        Walk.To = Here;
+        Walk.StartSeconds = ServerSeconds();
+        CurrentPost = INDEX_NONE;
+        SetActorLocation(Here);
+        ForceNetUpdate();
+    }
+    PausedUntilSeconds = ServerSeconds() + MarburgumII::Npc::TalkSeconds;
     MulticastConverse(With);
 }
 
@@ -303,8 +385,38 @@ void AMarburgumNpc::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);
     namespace Look = MarburgumNpcLook;
     namespace Npc = MarburgumII::Npc;
+    // Everyone moves the body the walk says, the server included (its copy is what range checks use).
+    bool bWalking = false;
+    if (Walk.StartSeconds >= 0.0)
+    {
+        FVector At = Walk.At(ServerSeconds(), bWalking);
+        if (GetNetMode() != NM_DedicatedServer)
+        {
+            // Feet on the ground the straight line crosses (steps, kerbs), not on the line itself.
+            FHitResult Ground;
+            FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumNpcStep), false, this);
+            if (GetWorld()->LineTraceSingleByChannel(Ground, At + FVector(0.0, 0.0, 80.0), At - FVector(0.0, 0.0, 120.0), ECC_Visibility, Params))
+            {
+                At.Z = Ground.ImpactPoint.Z;
+            }
+        }
+        if (!At.Equals(GetActorLocation(), 0.5))
+        {
+            SetActorLocation(At);
+        }
+    }
     if (GetNetMode() == NM_DedicatedServer || !Body)
     {
+        return;
+    }
+    if (bWalking)
+    {
+        // Face the way they are going and stroll.
+        const FVector Way = (FVector(Walk.To) - FVector(Walk.From)).GetSafeNormal2D();
+        const FVector Local = GetActorTransform().InverseTransformVectorNoScale(Way);
+        BodyTurn = FMath::RadiansToDegrees(FMath::Atan2(Local.Y, Local.X));
+        Body->SetRelativeRotation(FRotator(0.0, -90.0 + BodyTurn, 0.0));
+        Play(WalkClip, TEXT("walk"), true, -1.f);
         return;
     }
     const AGameStateBase* GameState = GetWorld()->GetGameState();

@@ -112,9 +112,28 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
     }
     out.push_str("    };\n\n");
 
+    // Day posts (ADR-081), one array per person who keeps any.
+    for (index, entry) in array(catalogue, "interactables")?.iter().enumerate() {
+        let posts = array(entry, "day_posts")?;
+        if posts.is_empty() {
+            continue;
+        }
+        writeln!(out, "    inline constexpr FDayPost Interactable{index}Posts[] = {{").unwrap();
+        for post in posts {
+            let id = str_of(entry, "id")?;
+            let offset = array(post, "offset_m")?.iter().filter_map(Value::as_f64).collect::<Vec<_>>();
+            if offset.len() != 2 {
+                return Err(format!("interactable {id}: a day post's offset_m needs two numbers (east, south)"));
+            }
+            writeln!(out, "        {{ {}, {}, {}, {}, {} }},", clock(post, "from", id)?, clock(post, "to", id)?, double(offset[0]), double(offset[1]),
+                lit(str_of(post, "activity")?)).unwrap();
+        }
+        out.push_str("    };\n");
+    }
+
     // Interactables placed by the server at runtime (the map places the rest).
     out.push_str("    inline constexpr FInteractableDefinition Interactables[] = {\n");
-    for entry in array(catalogue, "interactables")? {
+    for (entry_index, entry) in array(catalogue, "interactables")?.iter().enumerate() {
         let placement = match entry["placement"].as_str() {
             Some("map") => "Map",
             Some("original") => "Original",
@@ -140,10 +159,10 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
                 .filter(|c| !c.is_empty()).unwrap_or_else(|| "0.f, 0.f, 0.f".to_string())
         };
         let dialogue = entry["dialogue"]["en"].as_str().unwrap_or("");
-        writeln!(out, "        {{ {}, EInteractableKind::{kind}, {}, {}, {}, {{ {}, {}, {} }}, {}, EPlacement::{placement}, {{ {} }}, {{ {} }} }},",
+        writeln!(out, "        {{ {}, EInteractableKind::{kind}, {}, {}, {}, {{ {}, {}, {} }}, {}, EPlacement::{placement}, {{ {} }}, {{ {} }}, {} }},",
             lit(str_of(entry, "id")?), lit(en(entry, "display_name")?), lit(verb(entry["verb"].as_str().unwrap_or("inspect"))),
             lit(dialogue), double(position[0]), double(position[1]), double(position[2]), float(entry["range_cm"].as_f64().unwrap_or(300.0)),
-            color("primary"), color("secondary")).unwrap();
+            color("primary"), color("secondary"), span(&format!("Interactable{entry_index}Posts"), !array(entry, "day_posts")?.is_empty())).unwrap();
     }
     out.push_str("    };\n\n");
 
@@ -242,6 +261,17 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
         out.push_str("    };\n\n");
     }
 
+    // Slovene for every player-facing string (ADR-081): English -> Slovene, looked up at display time.
+    let mut pairs: Vec<(String, String)> = vec![
+        ("Talk".into(), "Govori".into()), ("Inspect".into(), "Preglej".into()), ("Fish".into(), "Lovi".into()), ("Take".into(), "Vzemi".into()),
+    ];
+    collect_slovene(catalogue, &mut pairs)?;
+    out.push_str("    inline constexpr FTextTranslation SloveneText[] = {\n");
+    for (english, slovene) in &pairs {
+        writeln!(out, "        {{ {}, {} }},", lit(english), lit(slovene)).unwrap();
+    }
+    out.push_str("    };\n\n");
+
     out.push_str("    inline constexpr FMissionDefinition Missions[] = {\n");
     for (m, mission) in missions.iter().enumerate() {
         let prefix = format!("Mission{m}");
@@ -298,6 +328,37 @@ fn short(value: &Value) -> String {
 
 fn object_empty(value: &Value) -> bool {
     value.as_object().map_or(true, |o| o.is_empty())
+}
+
+/// Every non-empty `{ "en": ..., "sl": ... }` in the catalogue (provenance aside), first seen first. The same English
+/// with two different Slovene translations is an error: the runtime looks the English up.
+fn collect_slovene(value: &Value, pairs: &mut Vec<(String, String)>) -> Result<(), String> {
+    match value {
+        Value::Object(map) => {
+            if let (Some(Value::String(english)), Some(Value::String(slovene))) = (map.get("en"), map.get("sl")) {
+                match pairs.iter().find(|(e, _)| e == english) {
+                    _ if english.is_empty() => {}
+                    Some((_, existing)) if existing != slovene => {
+                        return Err(format!("\"{english}\" has two Slovene translations: \"{existing}\" and \"{slovene}\""));
+                    }
+                    Some(_) => {}
+                    None => pairs.push((english.clone(), slovene.clone())),
+                }
+            }
+            for (key, child) in map {
+                if key != "provenance" {
+                    collect_slovene(child, pairs)?;
+                }
+            }
+        }
+        Value::Array(items) => {
+            for item in items {
+                collect_slovene(item, pairs)?;
+            }
+        }
+        _ => {}
+    }
+    Ok(())
 }
 
 fn verb(raw: &str) -> &'static str {

@@ -12,8 +12,8 @@ mod render_probe;
 mod repo;
 mod store_check;
 mod survey_views;
-mod wet_footsteps;
 mod validate;
+mod wet_footsteps;
 
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -58,23 +58,36 @@ fn main() -> ExitCode {
         ["generate", "wet-footsteps"] => wet_footsteps::run(),
         ["generate", which] => generate::run(which),
         ["engine-version", engine_root] => engine::run(&PathBuf::from(engine_root)),
-        ["playtest", action, "--profile", profile] => playtest::run(action, &PathBuf::from(profile)),
+        ["playtest", action, "--profile", profile] => {
+            playtest::run(action, &PathBuf::from(profile))
+        }
         ["render-probe"] => render_probe::run(None),
         ["render-probe", engine_root] => render_probe::run(Some(&PathBuf::from(engine_root))),
         ["new-op"] => {
-            println!("{}", uuid::Uuid::new_v4().simple().to_string().to_uppercase());
+            println!(
+                "{}",
+                uuid::Uuid::new_v4().simple().to_string().to_uppercase()
+            );
             0
         }
-        ["store-check", "interaction", store, a, b, op] => store_check::interaction(store, a, b, op),
+        ["store-check", "interaction", store, a, b, op] => {
+            store_check::interaction(store, a, b, op)
+        }
         ["store-check", "lent", store, m, w, op] => store_check::lent(store, m, w, op),
-        ["store-check", "condition", store, r, c, s, phase] => store_check::condition(store, r, c, s, phase),
+        ["store-check", "condition", store, r, c, s, phase] => {
+            store_check::condition(store, r, c, s, phase)
+        }
         ["store-check", "missions", store, key] => store_check::missions(store, key),
         ["store-check", "shop", store, key, op] => store_check::shop(store, key, op),
         ["store-check", "story", store, key] => store_check::story(store, key),
-        ["movement-check", server, client, role, key, kind, ini] => movement_check::run(server, client, role, key, kind, ini),
+        ["movement-check", server, client, role, key, kind, ini] => {
+            movement_check::run(server, client, role, key, kind, ini)
+        }
         ["survey-views", graph] => survey_views::run(graph, None),
         ["survey-views", graph, seed] => survey_views::run(graph, Some(seed)),
-        ["crowd-summary", out, sha, case_name, clock] => crowd_summary::run(out, sha, case_name, clock),
+        ["crowd-summary", out, sha, case_name, clock] => {
+            crowd_summary::run(out, sha, case_name, clock)
+        }
         ["fetch-art-reference", rest @ ..] => history::fetch(rest),
         _ => {
             eprintln!("{USAGE}");

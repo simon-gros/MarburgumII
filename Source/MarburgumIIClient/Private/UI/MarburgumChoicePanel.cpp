@@ -110,8 +110,8 @@ void UMarburgumChoicePanel::Rebuild()
         return;
     }
     Stage = FName(Current->Id);
-    MissionLabel->SetText(FText::FromString(Definition->Name));
-    ObjectiveLabel->SetText(FText::FromString(Current->ObjectiveText));
+    MissionLabel->SetText(FText::FromString(MarburgumII::Gameplay::Localized(Definition->Name)));
+    ObjectiveLabel->SetText(FText::FromString(MarburgumII::Gameplay::Localized(Current->ObjectiveText)));
     for (int32 Index = 0; Index < Current->ChoiceCount; ++Index)
     {
         const FMissionChoiceDefinition& Choice = Current->Choices[Index];
@@ -122,7 +122,7 @@ void UMarburgumChoicePanel::Rebuild()
         UHorizontalBox* Line = B.Row();
         FBuilder::Inline(Line, B.KeyCap(FText::AsNumber(Index + 1), bAfford), T.Space.M, false, false);
         UVerticalBox* Words = B.Column();
-        UTextBlock* Label = B.Text(FText::FromString(Choice.Label), ETypeRole::BodyStrong, bAfford ? T.Color.TextPrimary : T.Color.TextMuted);
+        UTextBlock* Label = B.Text(FText::FromString(MarburgumII::Gameplay::Localized(Choice.Label)), ETypeRole::BodyStrong, bAfford ? T.Color.TextPrimary : T.Color.TextMuted);
         Label->SetAutoWrapText(true);
         FBuilder::Stack(Words, Label, T.Space.XS);
         // What each answer costs or earns, as chips that wrap: never a clipped line of dots.
@@ -139,7 +139,7 @@ void UMarburgumChoicePanel::Rebuild()
         {
             const FSkillDefinition* Skill = FindSkill(Choice.SkillXp[Award].Skill);
             Chips->AddChildToWrapBox(B.Chip(EMarburgumGlyph::Skill, FText::Format(LOCTEXT("Xp", "{0} +{1} XP"),
-                FText::FromString(Skill ? Skill->DisplayName : Choice.SkillXp[Award].Skill), FText::AsNumber(Choice.SkillXp[Award].Xp)), ETone::Info));
+                FText::FromString(MarburgumII::Gameplay::Localized(Skill ? Skill->DisplayName : Choice.SkillXp[Award].Skill)), FText::AsNumber(Choice.SkillXp[Award].Xp)), ETone::Info));
         }
         if (!bAfford)
         {

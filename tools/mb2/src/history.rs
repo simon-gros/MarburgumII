@@ -28,17 +28,43 @@ const PERIOD_END_YEAR: i64 = 1999;
 const SCHEMA_VERSION: i64 = 1;
 const CONFIDENCES: [&str; 3] = ["high", "medium", "low"];
 const RULE_KINDS: [&str; 2] = ["art_direction", "world_state"];
-const RULE_FIELDS: [&str; 11] = ["id", "kind", "domain", "location", "years", "confidence", "review_required", "ref_ids",
-    "requirements", "prohibitions", "review_targets"];
-const PRODUCT_KINDS: [&str; 5] = ["orthophoto", "cadastral_map", "topographic_map", "aerial_photo", "other"];
+const RULE_FIELDS: [&str; 11] = [
+    "id",
+    "kind",
+    "domain",
+    "location",
+    "years",
+    "confidence",
+    "review_required",
+    "ref_ids",
+    "requirements",
+    "prohibitions",
+    "review_targets",
+];
+const PRODUCT_KINDS: [&str; 5] = [
+    "orthophoto",
+    "cadastral_map",
+    "topographic_map",
+    "aerial_photo",
+    "other",
+];
 /// Present on every imagery product; null when not verified.
 const NULLABLE_NUMBER_FIELDS: [&str; 2] = ["georeference_accuracy_m", "resolution_m"];
 /// Present and non-empty on every imagery product; "unknown" when not verified.
-const PRODUCT_TEXT_FIELDS: [&str; 8] = ["id", "title", "publisher", "access", "coverage", "license", "known_distortions",
-    "absence_presence_reliability"];
+const PRODUCT_TEXT_FIELDS: [&str; 8] = [
+    "id",
+    "title",
+    "publisher",
+    "access",
+    "coverage",
+    "license",
+    "known_distortions",
+    "absence_presence_reliability",
+];
 /// User-supplied photographs have no catalogue record and no remote source, so they are never fetched.
 const USER_SUPPLIED_PREFIX: &str = "MAR-2026-USER-";
-const USER_AGENT: &str = "MarburgumII-Art-Reference/1.0 (+https://github.com/simon-gros/MarburgumII)";
+const USER_AGENT: &str =
+    "MarburgumII-Art-Reference/1.0 (+https://github.com/simon-gros/MarburgumII)";
 
 /// One CSV data row with its line number in the file.
 #[derive(Debug)]
@@ -55,9 +81,19 @@ impl Row {
 
 /// A non-empty CSV with every `mandatory` header; a row with too few or too many fields is an error.
 pub fn parse_csv(name: &str, text: &str, mandatory: &[&str]) -> Result<Vec<Row>, String> {
-    let mut reader = csv::ReaderBuilder::new().from_reader(text.trim_start_matches('\u{feff}').as_bytes());
-    let headers: Vec<String> = reader.headers().map_err(|error| format!("{name}: {error}"))?.iter().map(str::to_string).collect();
-    let mut missing: Vec<&str> = mandatory.iter().copied().filter(|m| !headers.iter().any(|h| h == m)).collect();
+    let mut reader =
+        csv::ReaderBuilder::new().from_reader(text.trim_start_matches('\u{feff}').as_bytes());
+    let headers: Vec<String> = reader
+        .headers()
+        .map_err(|error| format!("{name}: {error}"))?
+        .iter()
+        .map(str::to_string)
+        .collect();
+    let mut missing: Vec<&str> = mandatory
+        .iter()
+        .copied()
+        .filter(|m| !headers.iter().any(|h| h == m))
+        .collect();
     if !missing.is_empty() {
         missing.sort_unstable();
         return Err(format!("{name}: missing required headers: {missing:?}"));
@@ -66,7 +102,14 @@ pub fn parse_csv(name: &str, text: &str, mandatory: &[&str]) -> Result<Vec<Row>,
     for record in reader.records() {
         let record = record.map_err(|error| format!("{name}: malformed CSV row: {error}"))?;
         let line = record.position().map_or(0, csv::Position::line);
-        rows.push(Row { line, fields: headers.iter().cloned().zip(record.iter().map(str::to_string)).collect() });
+        rows.push(Row {
+            line,
+            fields: headers
+                .iter()
+                .cloned()
+                .zip(record.iter().map(str::to_string))
+                .collect(),
+        });
     }
     if rows.is_empty() {
         return Err(format!("{name}: empty catalogue"));
@@ -81,7 +124,10 @@ pub fn validate_catalog(rows: &[Row]) -> (HashSet<String>, Vec<String>) {
     for row in rows {
         let id = row.get("ref_id").trim();
         if id.is_empty() || !ids.insert(id.to_string()) {
-            errors.push(format!("{CATALOG}:{}: missing/duplicate ref_id {id:?}", row.line));
+            errors.push(format!(
+                "{CATALOG}:{}: missing/duplicate ref_id {id:?}",
+                row.line
+            ));
         }
         for field in ["title", "rights_status", "repository_status"] {
             if row.get(field).trim().is_empty() {
@@ -114,7 +160,9 @@ pub fn validate_manifest(rows: &[Row], catalog: &HashSet<String>) -> Vec<String>
             errors.push(format!("{at}: automatic fetch requires https URL"));
         }
         if safe_relative(row.get("filename")).is_none() {
-            errors.push(format!("{at}: filename must be a relative path inside the download directory"));
+            errors.push(format!(
+                "{at}: filename must be a relative path inside the download directory"
+            ));
         }
     }
     errors
@@ -125,7 +173,9 @@ fn non_empty_text(value: &Value) -> bool {
 }
 
 fn non_empty_text_list(value: &Value) -> bool {
-    value.as_array().is_some_and(|items| !items.is_empty() && items.iter().all(non_empty_text))
+    value
+        .as_array()
+        .is_some_and(|items| !items.is_empty() && items.iter().all(non_empty_text))
 }
 
 fn year(value: &Value) -> Option<i64> {
@@ -139,16 +189,25 @@ pub fn validate_rules(store: &Value, catalog: Option<&HashSet<String>>) -> Vec<S
     };
     let mut errors = Vec::new();
     if store["schema_version"].as_i64() != Some(SCHEMA_VERSION) {
-        errors.push(format!("historical reference rules: schema_version {} is not {SCHEMA_VERSION}", store["schema_version"]));
+        errors.push(format!(
+            "historical reference rules: schema_version {} is not {SCHEMA_VERSION}",
+            store["schema_version"]
+        ));
     }
     let period = &store["game_period"];
     if !period.is_object() {
         errors.push("historical reference rules: game_period must be an object".to_string());
-    } else if period["start_year"].as_i64() != Some(PERIOD_START_YEAR) || period["end_year"].as_i64() != Some(PERIOD_END_YEAR) {
-        errors.push(format!("historical reference rules: game_period must be {PERIOD_START_YEAR}-{PERIOD_END_YEAR}"));
+    } else if period["start_year"].as_i64() != Some(PERIOD_START_YEAR)
+        || period["end_year"].as_i64() != Some(PERIOD_END_YEAR)
+    {
+        errors.push(format!(
+            "historical reference rules: game_period must be {PERIOD_START_YEAR}-{PERIOD_END_YEAR}"
+        ));
     }
     if !non_empty_text(&store["source_catalog"]) {
-        errors.push("historical reference rules: source_catalog must be a non-empty string".to_string());
+        errors.push(
+            "historical reference rules: source_catalog must be a non-empty string".to_string(),
+        );
     }
     let Some(rules) = top.get("rules").and_then(Value::as_array) else {
         errors.push("historical reference rules: rules must be an array".to_string());
@@ -178,7 +237,10 @@ pub fn validate_rules(store: &Value, catalog: Option<&HashSet<String>>) -> Vec<S
                 errors.push(format!("{at}: missing required field {field:?}"));
             }
         }
-        if !rule["kind"].as_str().is_some_and(|k| RULE_KINDS.contains(&k)) {
+        if !rule["kind"]
+            .as_str()
+            .is_some_and(|k| RULE_KINDS.contains(&k))
+        {
             errors.push(format!("{at}: kind {} not in {RULE_KINDS:?}", rule["kind"]));
         }
         for field in ["domain", "location"] {
@@ -186,8 +248,14 @@ pub fn validate_rules(store: &Value, catalog: Option<&HashSet<String>>) -> Vec<S
                 errors.push(format!("{at}: {field} must be a non-empty string"));
             }
         }
-        if !rule["confidence"].as_str().is_some_and(|c| CONFIDENCES.contains(&c)) {
-            errors.push(format!("{at}: confidence {} not in {CONFIDENCES:?}", rule["confidence"]));
+        if !rule["confidence"]
+            .as_str()
+            .is_some_and(|c| CONFIDENCES.contains(&c))
+        {
+            errors.push(format!(
+                "{at}: confidence {} not in {CONFIDENCES:?}",
+                rule["confidence"]
+            ));
         }
         if !rule["review_required"].is_boolean() {
             errors.push(format!("{at}: review_required must be boolean"));
@@ -197,9 +265,13 @@ pub fn validate_rules(store: &Value, catalog: Option<&HashSet<String>>) -> Vec<S
             errors.push(format!("{at}: years must be an object"));
         } else {
             match (year(&years["start"]), year(&years["end"])) {
-                (Some(start), Some(end)) if start > end => errors.push(format!("{at}: years.start {start} is after years.end {end}")),
+                (Some(start), Some(end)) if start > end => errors.push(format!(
+                    "{at}: years.start {start} is after years.end {end}"
+                )),
                 (Some(start), Some(end)) if start < PERIOD_START_YEAR || end > PERIOD_END_YEAR => {
-                    errors.push(format!("{at}: years {start}-{end} outside {PERIOD_START_YEAR}-{PERIOD_END_YEAR}"));
+                    errors.push(format!(
+                        "{at}: years {start}-{end} outside {PERIOD_START_YEAR}-{PERIOD_END_YEAR}"
+                    ));
                 }
                 (Some(_), Some(_)) => {}
                 _ => errors.push(format!("{at}: years.start/end must be integer years")),
@@ -211,11 +283,19 @@ pub fn validate_rules(store: &Value, catalog: Option<&HashSet<String>>) -> Vec<S
             }
         }
         if non_empty_text_list(&rule["ref_ids"]) {
-            let refs: Vec<&str> = rule["ref_ids"].as_array().into_iter().flatten().filter_map(Value::as_str).collect();
+            let refs: Vec<&str> = rule["ref_ids"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+                .collect();
             if refs.iter().collect::<HashSet<_>>().len() != refs.len() {
                 errors.push(format!("{at}: ref_ids contains duplicates"));
             }
-            for id in refs.iter().filter(|id| catalog.is_some_and(|c| !c.contains(**id))) {
+            for id in refs
+                .iter()
+                .filter(|id| catalog.is_some_and(|c| !c.contains(**id)))
+            {
                 errors.push(format!("{at}: ref_id {id:?} not found in CATALOG.csv"));
             }
         }
@@ -231,10 +311,15 @@ fn validate_product(product: &Value, index: usize) -> Vec<String> {
     let mut errors = Vec::new();
     for field in PRODUCT_TEXT_FIELDS {
         if !non_empty_text(&product[field]) {
-            errors.push(format!("{at}.{field}: required non-empty string (use \"unknown\")"));
+            errors.push(format!(
+                "{at}.{field}: required non-empty string (use \"unknown\")"
+            ));
         }
     }
-    if !product["kind"].as_str().is_some_and(|k| PRODUCT_KINDS.contains(&k)) {
+    if !product["kind"]
+        .as_str()
+        .is_some_and(|k| PRODUCT_KINDS.contains(&k))
+    {
         errors.push(format!("{at}.kind: must be one of {PRODUCT_KINDS:?}"));
     }
     for field in NULLABLE_NUMBER_FIELDS {
@@ -246,7 +331,9 @@ fn validate_product(product: &Value, index: usize) -> Vec<String> {
         }
     }
     match product["date_range"].as_object() {
-        Some(range) if range.len() == 2 && range.contains_key("start") && range.contains_key("end") => {
+        Some(range)
+            if range.len() == 2 && range.contains_key("start") && range.contains_key("end") =>
+        {
             for key in ["start", "end"] {
                 if !range[key].is_null() && !range[key].is_string() {
                     errors.push(format!("{at}.date_range.{key}: must be a string or null"));
@@ -258,11 +345,18 @@ fn validate_product(product: &Value, index: usize) -> Vec<String> {
                 }
             }
         }
-        _ => errors.push(format!("{at}.date_range: must be an object with start and end (null when unknown)")),
+        _ => errors.push(format!(
+            "{at}.date_range: must be an object with start and end (null when unknown)"
+        )),
     }
-    let urls_ok = product["source_urls"].as_array().is_some_and(|urls| urls.iter().all(|u| u.as_str().is_some_and(|s| !s.is_empty())));
+    let urls_ok = product["source_urls"].as_array().is_some_and(|urls| {
+        urls.iter()
+            .all(|u| u.as_str().is_some_and(|s| !s.is_empty()))
+    });
     if !urls_ok {
-        errors.push(format!("{at}.source_urls: must be a list of non-empty strings"));
+        errors.push(format!(
+            "{at}.source_urls: must be a list of non-empty strings"
+        ));
     }
     if !product["verified"].is_boolean() {
         errors.push(format!("{at}.verified: must be a boolean"));
@@ -301,14 +395,24 @@ fn media_binaries(root: &Path) -> Vec<String> {
     fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
         for entry in std::fs::read_dir(dir).into_iter().flatten().flatten() {
             let path = entry.path();
-            if path.is_dir() { walk(&path, out) } else { out.push(path) }
+            if path.is_dir() {
+                walk(&path, out)
+            } else {
+                out.push(path)
+            }
         }
     }
     let mut files = Vec::new();
     walk(&root.join(MEDIA), &mut files);
-    let mut binaries: Vec<String> = files.iter()
+    let mut binaries: Vec<String> = files
+        .iter()
         .filter(|f| !matches!(f.extension().and_then(|e| e.to_str()), Some("csv" | "md")))
-        .map(|f| f.strip_prefix(root).unwrap_or(f).to_string_lossy().replace('\\', "/"))
+        .map(|f| {
+            f.strip_prefix(root)
+                .unwrap_or(f)
+                .to_string_lossy()
+                .replace('\\', "/")
+        })
         .collect();
     binaries.sort();
     binaries
@@ -326,28 +430,82 @@ fn load_csv(root: &Path, relative: &str, mandatory: &[&str], problems: &mut Prob
 }
 
 pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
-    let art = load_csv(root, CATALOG, &["ref_id", "title", "source_url", "rights_status", "repository_status"], problems);
+    let art = load_csv(
+        root,
+        CATALOG,
+        &[
+            "ref_id",
+            "title",
+            "source_url",
+            "rights_status",
+            "repository_status",
+        ],
+        problems,
+    );
     let (catalog, errors) = validate_catalog(&art);
     problems.0.extend(errors);
-    let manifest = load_csv(root, MANIFEST, &["ref_id", "filename", "remote_url", "license", "creator", "auto_fetch"], problems);
+    let manifest = load_csv(
+        root,
+        MANIFEST,
+        &[
+            "ref_id",
+            "filename",
+            "remote_url",
+            "license",
+            "creator",
+            "auto_fetch",
+        ],
+        problems,
+    );
     problems.0.extend(validate_manifest(&manifest, &catalog));
     let index = repo::read(root, INDEX, problems);
-    problems.expect(index.contains(&format!("Current coverage: **{} catalogue records**", catalog.len())),
-        format!("{INDEX} coverage does not match {CATALOG} ({} records)", catalog.len()));
+    problems.expect(
+        index.contains(&format!(
+            "Current coverage: **{} catalogue records**",
+            catalog.len()
+        )),
+        format!(
+            "{INDEX} coverage does not match {CATALOG} ({} records)",
+            catalog.len()
+        ),
+    );
     let rules = repo::read_json(root, RULES, problems);
-    problems.0.extend(validate_rules(&rules, Some(&catalog)).into_iter().map(|e| format!("{RULES}: {e}")));
+    problems.0.extend(
+        validate_rules(&rules, Some(&catalog))
+            .into_iter()
+            .map(|e| format!("{RULES}: {e}")),
+    );
     let imagery = repo::read_json(root, IMAGERY, problems);
-    problems.0.extend(validate_imagery(&imagery).into_iter().map(|e| format!("{IMAGERY}: {e}")));
+    problems.0.extend(
+        validate_imagery(&imagery)
+            .into_iter()
+            .map(|e| format!("{IMAGERY}: {e}")),
+    );
     for file in media_binaries(root) {
-        problems.0.push(format!("unexpected binary in research-only archive: {file}"));
+        problems.0.push(format!(
+            "unexpected binary in research-only archive: {file}"
+        ));
     }
     // Integration needs both workflows green on the same revision, so neither may skip a commit by path.
     let archive_ci = repo::read(root, ARCHIVE_WORKFLOW, problems);
-    problems.expect(archive_ci.contains("-- validate history") && archive_ci.contains("history::"),
-        format!("{ARCHIVE_WORKFLOW} must run `mb2 validate history` and the history unit tests"));
-    for (workflow, text) in [(ARCHIVE_WORKFLOW, &archive_ci), (SOURCE_WORKFLOW, &repo::read(root, SOURCE_WORKFLOW, problems))] {
-        problems.expect(!text.contains("paths:") && !text.contains("paths-ignore:") && text.contains("push:") && text.contains("pull_request:"),
-            format!("{workflow} must run on every push and pull request, without path filters"));
+    problems.expect(
+        archive_ci.contains("-- validate history") && archive_ci.contains("history::"),
+        format!("{ARCHIVE_WORKFLOW} must run `mb2 validate history` and the history unit tests"),
+    );
+    for (workflow, text) in [
+        (ARCHIVE_WORKFLOW, &archive_ci),
+        (
+            SOURCE_WORKFLOW,
+            &repo::read(root, SOURCE_WORKFLOW, problems),
+        ),
+    ] {
+        problems.expect(
+            !text.contains("paths:")
+                && !text.contains("paths-ignore:")
+                && text.contains("push:")
+                && text.contains("pull_request:"),
+            format!("{workflow} must run on every push and pull request, without path filters"),
+        );
     }
     vec![format!(
         "Historical archives OK: {} art records, {} manifest entries, {} evidence rules, {} historical imagery/map products; no media binaries; archive and source CI run on every revision.",
@@ -358,24 +516,45 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
 /// `path` as a plain relative path (no root, no `..`), so a manifest row cannot write outside the download directory.
 fn safe_relative(path: &str) -> Option<PathBuf> {
     let candidate = Path::new(path);
-    let plain = !path.is_empty() && candidate.components().all(|c| matches!(c, Component::Normal(_)));
+    let plain = !path.is_empty()
+        && candidate
+            .components()
+            .all(|c| matches!(c, Component::Normal(_)));
     plain.then(|| candidate.to_path_buf())
 }
 
 fn sha256_file(path: &Path) -> Result<String, String> {
-    let bytes = std::fs::read(path).map_err(|error| format!("cannot read {}: {error}", path.display()))?;
-    Ok(Sha256::digest(&bytes).iter().map(|b| format!("{b:02x}")).collect())
+    let bytes =
+        std::fs::read(path).map_err(|error| format!("cannot read {}: {error}", path.display()))?;
+    Ok(Sha256::digest(&bytes)
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect())
 }
 
 /// HTTPS only, also across redirects; curl writes to a temporary name so a failed transfer leaves no file behind.
 fn download(url: &str, target: &Path) -> Result<(), String> {
     if let Some(parent) = target.parent() {
-        std::fs::create_dir_all(parent).map_err(|error| format!("cannot create {}: {error}", parent.display()))?;
+        std::fs::create_dir_all(parent)
+            .map_err(|error| format!("cannot create {}: {error}", parent.display()))?;
     }
     let partial = target.with_extension("part");
     let status = Command::new("curl")
-        .args(["--fail", "--silent", "--show-error", "--location", "--proto", "=https", "--proto-redir", "=https", "--max-time", "60",
-            "--user-agent", USER_AGENT, "--output"])
+        .args([
+            "--fail",
+            "--silent",
+            "--show-error",
+            "--location",
+            "--proto",
+            "=https",
+            "--proto-redir",
+            "=https",
+            "--max-time",
+            "60",
+            "--user-agent",
+            USER_AGENT,
+            "--output",
+        ])
         .arg(&partial)
         .arg(url)
         .status()
@@ -384,7 +563,8 @@ fn download(url: &str, target: &Path) -> Result<(), String> {
         let _ = std::fs::remove_file(&partial);
         return Err(format!("curl failed ({status})"));
     }
-    std::fs::rename(&partial, target).map_err(|error| format!("cannot move {} into place: {error}", partial.display()))
+    std::fs::rename(&partial, target)
+        .map_err(|error| format!("cannot move {} into place: {error}", partial.display()))
 }
 
 /// `mb2 fetch-art-reference [--output <dir>] [--force]`: download the `auto_fetch=yes` rows of the licensed manifest
@@ -417,7 +597,12 @@ pub fn fetch(args: &[&str]) -> u8 {
         },
     };
     let mut problems = Problems::default();
-    let manifest = load_csv(&root, MANIFEST, &["ref_id", "filename", "remote_url", "auto_fetch"], &mut problems);
+    let manifest = load_csv(
+        &root,
+        MANIFEST,
+        &["ref_id", "filename", "remote_url", "auto_fetch"],
+        &mut problems,
+    );
     if !problems.is_empty() {
         eprintln!("{}", problems.0.join("\n"));
         return 1;
@@ -429,7 +614,10 @@ pub fn fetch(args: &[&str]) -> u8 {
             println!("skip {id}: manual review required");
             continue;
         }
-        let (Some(relative), true) = (safe_relative(row.get("filename")), row.get("remote_url").starts_with("https://")) else {
+        let (Some(relative), true) = (
+            safe_relative(row.get("filename")),
+            row.get("remote_url").starts_with("https://"),
+        ) else {
             eprintln!("ERROR {id}: filename must stay inside the download directory and the URL must be https");
             return 1;
         };
@@ -444,7 +632,10 @@ pub fn fetch(args: &[&str]) -> u8 {
             }
         }
         match sha256_file(&target) {
-            Ok(digest) => checksums.push(format!("{digest}  {}  # {id}\n", relative.to_string_lossy().replace('\\', "/"))),
+            Ok(digest) => checksums.push(format!(
+                "{digest}  {}  # {id}\n",
+                relative.to_string_lossy().replace('\\', "/")
+            )),
             Err(error) => {
                 eprintln!("ERROR {id}: {error}");
                 return 1;
@@ -452,7 +643,9 @@ pub fn fetch(args: &[&str]) -> u8 {
         }
     }
     let checksum_path = output.join("CHECKSUMS.sha256");
-    if let Err(error) = std::fs::create_dir_all(&output).and_then(|()| std::fs::write(&checksum_path, checksums.concat())) {
+    if let Err(error) = std::fs::create_dir_all(&output)
+        .and_then(|()| std::fs::write(&checksum_path, checksums.concat()))
+    {
         eprintln!("cannot write {}: {error}", checksum_path.display());
         return 1;
     }
@@ -481,7 +674,12 @@ mod tests {
     }
 
     fn committed_csv(relative: &str) -> Vec<Row> {
-        parse_csv(relative, &std::fs::read_to_string(root().join(relative)).unwrap(), &["ref_id"]).unwrap()
+        parse_csv(
+            relative,
+            &std::fs::read_to_string(root().join(relative)).unwrap(),
+            &["ref_id"],
+        )
+        .unwrap()
     }
 
     fn catalog_ids() -> HashSet<String> {
@@ -513,13 +711,21 @@ mod tests {
     }
 
     const NEW_ART_IDS: [&str; 10] = [
-        "MAR-1992-UNION-OTROK-OPENING-001", "MAR-1992-OTROK-FESTIVAL-PROGRAM-001", "MAR-1992-OTROK-KRAMBERGER-001",
-        "MAR-1995-96-OTROK-FESTIVAL-PROGRAM-001", "MAR-1993-JEKLOTEHNA-MERKUR-PRESS-001", "MAR-1997-ODPRTA-PLESNA-SCENA-006",
-        "MAR-1992-OREHOVA-VAS-DIRKA-001", "MAR-1998-FRIEDRIGER-SCHOOL-STUDY-001", "MAR-1999-FRIEDRIGER-UGM-EXHIBITION-001",
+        "MAR-1992-UNION-OTROK-OPENING-001",
+        "MAR-1992-OTROK-FESTIVAL-PROGRAM-001",
+        "MAR-1992-OTROK-KRAMBERGER-001",
+        "MAR-1995-96-OTROK-FESTIVAL-PROGRAM-001",
+        "MAR-1993-JEKLOTEHNA-MERKUR-PRESS-001",
+        "MAR-1997-ODPRTA-PLESNA-SCENA-006",
+        "MAR-1992-OREHOVA-VAS-DIRKA-001",
+        "MAR-1998-FRIEDRIGER-SCHOOL-STUDY-001",
+        "MAR-1999-FRIEDRIGER-UGM-EXHIBITION-001",
         "MAR-1994-CERNIGOJ-MUSEUM-EXHIBITION-001",
     ];
     const NEW_MAP_IDS: [&str; 3] = [
-        "gurs-cas-1975-2005-historical-air-photos", "gurs-dof5-initial-1994-1995", "si-as-177-styrian-franciscan-cadastral-1823-1869",
+        "gurs-cas-1975-2005-historical-air-photos",
+        "gurs-dof5-initial-1994-1995",
+        "si-as-177-styrian-franciscan-cadastral-1823-1869",
     ];
 
     #[test]
@@ -531,19 +737,28 @@ mod tests {
 
     #[test]
     fn a_minimal_rule_is_valid() {
-        assert_eq!(validate_rules(&valid_store(), Some(&only("MAR-TEST-001"))), Vec::<String>::new());
+        assert_eq!(
+            validate_rules(&valid_store(), Some(&only("MAR-TEST-001"))),
+            Vec::<String>::new()
+        );
     }
 
     #[test]
     fn a_rule_citing_a_missing_catalogue_record_fails() {
-        assert!(mentions(&validate_rules(&valid_store(), Some(&only("MAR-OTHER-001"))), "not found in CATALOG.csv"));
+        assert!(mentions(
+            &validate_rules(&valid_store(), Some(&only("MAR-OTHER-001"))),
+            "not found in CATALOG.csv"
+        ));
     }
 
     #[test]
     fn rule_years_stay_inside_the_playable_decade() {
         let mut store = valid_store();
         store["rules"][0]["years"] = json!({ "start": 1989, "end": 1990 });
-        assert!(mentions(&validate_rules(&store, Some(&only("MAR-TEST-001"))), "outside 1990-1999"));
+        assert!(mentions(
+            &validate_rules(&store, Some(&only("MAR-TEST-001"))),
+            "outside 1990-1999"
+        ));
     }
 
     #[test]
@@ -552,14 +767,20 @@ mod tests {
         store["rules"][0]["requirements"] = json!([]);
         store["rules"][0]["prohibitions"] = json!([]);
         let errors = validate_rules(&store, Some(&only("MAR-TEST-001")));
-        assert!(mentions(&errors, "requirements") && mentions(&errors, "prohibitions"), "{errors:?}");
+        assert!(
+            mentions(&errors, "requirements") && mentions(&errors, "prohibitions"),
+            "{errors:?}"
+        );
     }
 
     #[test]
     fn review_required_is_a_boolean() {
         let mut store = valid_store();
         store["rules"][0]["review_required"] = json!("yes");
-        assert!(mentions(&validate_rules(&store, Some(&only("MAR-TEST-001"))), "review_required"));
+        assert!(mentions(
+            &validate_rules(&store, Some(&only("MAR-TEST-001"))),
+            "review_required"
+        ));
     }
 
     #[test]
@@ -567,13 +788,19 @@ mod tests {
         let mut store = valid_store();
         let copy = store["rules"][0].clone();
         store["rules"].as_array_mut().unwrap().push(copy);
-        assert!(mentions(&validate_rules(&store, Some(&only("MAR-TEST-001"))), "duplicate id"));
+        assert!(mentions(
+            &validate_rules(&store, Some(&only("MAR-TEST-001"))),
+            "duplicate id"
+        ));
     }
 
     #[test]
     fn the_committed_rules_resolve_against_the_archive() {
         let store = committed(RULES);
-        assert_eq!(validate_rules(&store, Some(&catalog_ids())), Vec::<String>::new());
+        assert_eq!(
+            validate_rules(&store, Some(&catalog_ids())),
+            Vec::<String>::new()
+        );
         assert_eq!(store["rules"].as_array().unwrap().len(), 5);
     }
 
@@ -587,7 +814,10 @@ mod tests {
     #[test]
     fn an_imagery_product_missing_a_field_fails() {
         let mut catalogue = committed(IMAGERY);
-        catalogue["products"][0].as_object_mut().unwrap().remove("resolution_m");
+        catalogue["products"][0]
+            .as_object_mut()
+            .unwrap()
+            .remove("resolution_m");
         assert!(mentions(&validate_imagery(&catalogue), "resolution_m"));
     }
 
@@ -615,9 +845,23 @@ mod tests {
         for id in NEW_ART_IDS {
             let record = by_id.get(id).unwrap_or_else(|| panic!("{id} missing"));
             assert!(record.get("source_url").starts_with("https://"), "{id}");
-            assert!(["CC-BY-NC", "copyrighted-reference-only"].contains(&record.get("rights_status")), "{id}");
-            assert!(["catalogued-link", "bibliographic-lead", "catalogued-collection"].contains(&record.get("repository_status")), "{id}");
-            assert!(!record.get("date_start").is_empty() && !record.get("date_end").is_empty(), "{id}");
+            assert!(
+                ["CC-BY-NC", "copyrighted-reference-only"].contains(&record.get("rights_status")),
+                "{id}"
+            );
+            assert!(
+                [
+                    "catalogued-link",
+                    "bibliographic-lead",
+                    "catalogued-collection"
+                ]
+                .contains(&record.get("repository_status")),
+                "{id}"
+            );
+            assert!(
+                !record.get("date_start").is_empty() && !record.get("date_end").is_empty(),
+                "{id}"
+            );
             assert!(!record.get("notes").trim().is_empty(), "{id}");
         }
     }
@@ -625,7 +869,9 @@ mod tests {
     #[test]
     fn new_restricted_items_are_indexed() {
         let index = std::fs::read_to_string(root().join(INDEX)).unwrap();
-        assert!(index.contains("246 catalogue records") && index.contains("240 remain reference-only"));
+        assert!(
+            index.contains("246 catalogue records") && index.contains("240 remain reference-only")
+        );
         for id in NEW_ART_IDS {
             assert!(index.contains(id), "{id} not in {INDEX}");
         }
@@ -635,25 +881,49 @@ mod tests {
     fn new_map_leads_do_not_invent_georeferencing() {
         let catalogue = committed(IMAGERY);
         let products = catalogue["products"].as_array().unwrap();
-        let by_id: HashMap<&str, &Value> = products.iter().map(|p| (p["id"].as_str().unwrap(), p)).collect();
+        let by_id: HashMap<&str, &Value> = products
+            .iter()
+            .map(|p| (p["id"].as_str().unwrap(), p))
+            .collect();
         assert_eq!(by_id.len(), products.len());
         assert!(products.len() >= 6);
         for id in NEW_MAP_IDS {
             let item = by_id.get(id).unwrap_or_else(|| panic!("{id} missing"));
             assert_eq!(item["verified"], false, "{id}");
-            assert!(item["georeference_accuracy_m"].is_null() && item["resolution_m"].is_null(), "{id}");
+            assert!(
+                item["georeference_accuracy_m"].is_null() && item["resolution_m"].is_null(),
+                "{id}"
+            );
             assert_eq!(item["license"], "unknown", "{id}");
-            assert!(item["source_urls"].as_array().unwrap().iter().all(|u| u.as_str().unwrap().starts_with("https://")), "{id}");
+            assert!(
+                item["source_urls"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .all(|u| u.as_str().unwrap().starts_with("https://")),
+                "{id}"
+            );
         }
     }
 
     #[test]
     fn the_older_cadastre_is_not_treated_as_nineties_proof() {
         let catalogue = committed(IMAGERY);
-        let item = catalogue["products"].as_array().unwrap().iter()
-            .find(|p| p["id"] == "si-as-177-styrian-franciscan-cadastral-1823-1869").unwrap();
-        assert_eq!(item["date_range"], json!({ "start": "1823", "end": "1869" }));
-        assert!(item["access"].as_str().unwrap().to_lowercase().contains("not evidence"));
+        let item = catalogue["products"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|p| p["id"] == "si-as-177-styrian-franciscan-cadastral-1823-1869")
+            .unwrap();
+        assert_eq!(
+            item["date_range"],
+            json!({ "start": "1823", "end": "1869" })
+        );
+        assert!(item["access"]
+            .as_str()
+            .unwrap()
+            .to_lowercase()
+            .contains("not evidence"));
     }
 
     #[test]
@@ -662,21 +932,55 @@ mod tests {
         let rows = |body: &str| parse_csv("m", &format!("{header}{body}"), &[]).unwrap();
         let ids = only("MAR-A");
         assert!(validate_manifest(&rows("MAR-A,a/x.jpg,https://e/x,CC0,c,yes\n"), &ids).is_empty());
-        assert!(validate_manifest(&rows("MAR-2026-USER-1,u/x.jpg,,CC-BY-4.0,c,no\n"), &ids).is_empty());
-        assert!(mentions(&validate_manifest(&rows("MAR-2026-USER-1,u/x.jpg,https://e/x,CC0,c,yes\n"), &ids), "untracked"));
-        assert!(mentions(&validate_manifest(&rows("MAR-A,a/x.jpg,http://e/x,CC0,c,yes\n"), &ids), "https"));
-        assert!(mentions(&validate_manifest(&rows("MAR-A,a/x.jpg,https://e/x,CC0,c,maybe\n"), &ids), "auto_fetch"));
-        assert!(mentions(&validate_manifest(&rows("MAR-A,../x.jpg,https://e/x,CC0,c,yes\n"), &ids), "filename"));
-        assert!(mentions(&validate_manifest(&rows("MAR-A,a/x.jpg,https://e/x,CC0,c,yes\nMAR-A,a/y.jpg,https://e/y,CC0,c,yes\n"), &ids), "duplicate"));
+        assert!(
+            validate_manifest(&rows("MAR-2026-USER-1,u/x.jpg,,CC-BY-4.0,c,no\n"), &ids).is_empty()
+        );
+        assert!(mentions(
+            &validate_manifest(
+                &rows("MAR-2026-USER-1,u/x.jpg,https://e/x,CC0,c,yes\n"),
+                &ids
+            ),
+            "untracked"
+        ));
+        assert!(mentions(
+            &validate_manifest(&rows("MAR-A,a/x.jpg,http://e/x,CC0,c,yes\n"), &ids),
+            "https"
+        ));
+        assert!(mentions(
+            &validate_manifest(&rows("MAR-A,a/x.jpg,https://e/x,CC0,c,maybe\n"), &ids),
+            "auto_fetch"
+        ));
+        assert!(mentions(
+            &validate_manifest(&rows("MAR-A,../x.jpg,https://e/x,CC0,c,yes\n"), &ids),
+            "filename"
+        ));
+        assert!(mentions(
+            &validate_manifest(
+                &rows("MAR-A,a/x.jpg,https://e/x,CC0,c,yes\nMAR-A,a/y.jpg,https://e/y,CC0,c,yes\n"),
+                &ids
+            ),
+            "duplicate"
+        ));
     }
 
     #[test]
     fn a_short_or_long_csv_row_is_malformed() {
-        assert!(parse_csv("c", "ref_id,title\nA\n", &[]).unwrap_err().contains("malformed"));
-        assert!(parse_csv("c", "ref_id,title\nA,b,c\n", &[]).unwrap_err().contains("malformed"));
-        assert!(parse_csv("c", "ref_id\n", &[]).unwrap_err().contains("empty"));
-        assert!(parse_csv("c", "\u{feff}title\nA\n", &["ref_id"]).unwrap_err().contains("missing required headers"));
-        assert_eq!(parse_csv("c", "\u{feff}ref_id\nA\n", &["ref_id"]).unwrap()[0].get("ref_id"), "A");
+        assert!(parse_csv("c", "ref_id,title\nA\n", &[])
+            .unwrap_err()
+            .contains("malformed"));
+        assert!(parse_csv("c", "ref_id,title\nA,b,c\n", &[])
+            .unwrap_err()
+            .contains("malformed"));
+        assert!(parse_csv("c", "ref_id\n", &[])
+            .unwrap_err()
+            .contains("empty"));
+        assert!(parse_csv("c", "\u{feff}title\nA\n", &["ref_id"])
+            .unwrap_err()
+            .contains("missing required headers"));
+        assert_eq!(
+            parse_csv("c", "\u{feff}ref_id\nA\n", &["ref_id"]).unwrap()[0].get("ref_id"),
+            "A"
+        );
     }
 
     #[test]

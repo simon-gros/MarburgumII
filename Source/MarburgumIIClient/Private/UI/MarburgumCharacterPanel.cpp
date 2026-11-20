@@ -263,14 +263,14 @@ void UMarburgumCharacterPanel::Rebuild()
             : MarburgumII::Places::Get().FindDistrictById(State->GetPlace().District);
         if (District)
         {
-            FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Quarter", "Quarter"), FText::FromString(District->DisplayName)), T.Space.XS);
+            FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Quarter", "Quarter"), FText::FromString(MarburgumII::Gameplay::Localized(District->DisplayName))), T.Space.XS);
         }
         if (!State->GetPlace().Street.IsEmpty())
         {
             FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Street", "Street"), FText::FromString(State->GetPlace().Street)), T.Space.XS);
         }
         const FAreaDefinition* Area = State->GetAreaId().IsNone() ? nullptr : FindArea(State->GetAreaId().ToString());
-        const FText AreaName = Area ? FText::FromString(Area->DisplayName)
+        const FText AreaName = Area ? FText::FromString(MarburgumII::Gameplay::Localized(Area->DisplayName))
             : State->GetAreaId().IsNone() ? FText::FromString(OutsideAreaName) : FText::FromName(State->GetAreaId());
         FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Area", "Area"), AreaName), T.Space.XS);
     }
@@ -379,7 +379,7 @@ void UMarburgumCharacterPanel::Rebuild()
             const int64 Level = MarburgumII::SkillCurve::LevelForXp(State->GetSkillXp(FName(Skill.Id)));
             UVerticalBox* Cell = B.Column();
             FBuilder::Stack(Cell, B.Text(FText::AsNumber(Level), ETypeRole::NumericLarge, Level > 0 ? T.Color.TextPrimary : T.Color.TextMuted), 0.f);
-            FBuilder::Stack(Cell, B.Text(Caps(FString(Skill.DisplayName)), ETypeRole::Overline, T.Color.TextSecondary), 0.f);
+            FBuilder::Stack(Cell, B.Text(Caps(FString(MarburgumII::Gameplay::Localized(Skill.DisplayName))), ETypeRole::Overline, T.Color.TextSecondary), 0.f);
             FBuilder::Inline(Line, Cell, T.Space.XL);
         }
         FBuilder::Stack(SkillBox, Line, 0.f);

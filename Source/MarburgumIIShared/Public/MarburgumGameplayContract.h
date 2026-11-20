@@ -83,6 +83,36 @@ namespace MarburgumII::Gameplay
      */
     enum class EPlacement : uint8 { Map, Original, AnglerRelative, Unplaced, Pad };
 
+    /**
+     * Where a named person is during part of the day (ADR-081): from FromMinute to ToMinute of the Marburgum clock (the
+     * window may run past midnight), Offset metres from the authored spot (east, south in the original's plan), doing
+     * Activity. Outside every window the person is at the authored spot.
+     */
+    struct FDayPost
+    {
+        int32 FromMinute;
+        int32 ToMinute;
+        double OffsetEastM;
+        double OffsetSouthM;
+        const TCHAR* Activity;
+    };
+
+    /** The post a person keeps at MinuteOfDay: an index into Posts, or -1 for the authored spot. */
+    inline int32 DayPostAt(const FDayPost* Posts, int32 PostCount, int32 MinuteOfDay)
+    {
+        for (int32 Index = 0; Index < PostCount; ++Index)
+        {
+            const FDayPost& Post = Posts[Index];
+            const bool bInside = Post.FromMinute <= Post.ToMinute ? MinuteOfDay >= Post.FromMinute && MinuteOfDay < Post.ToMinute
+                                                                  : MinuteOfDay >= Post.FromMinute || MinuteOfDay < Post.ToMinute;
+            if (bInside)
+            {
+                return Index;
+            }
+        }
+        return INDEX_NONE;
+    }
+
     /** An authored interactable from the original interactions.json. */
     struct FInteractableDefinition
     {
@@ -97,6 +127,9 @@ namespace MarburgumII::Gameplay
         EPlacement Placement;
         float PrimaryColor[3];
         float SecondaryColor[3];
+        /** The person's day (ADR-081); none for places and for people who keep one spot. */
+        const FDayPost* Posts;
+        int32 PostCount;
     };
 
     struct FItemQuantity
@@ -136,6 +169,13 @@ namespace MarburgumII::Gameplay
      * Photograph: take a photograph of the photo subject CompleteTarget (ADR-081).
      */
     enum class EObjectiveType : uint8 { Interaction, InventoryAny, Choice, Photograph };
+
+    /** One player-facing catalogue string and its Slovene (ADR-081). */
+    struct FTextTranslation
+    {
+        const TCHAR* English;
+        const TCHAR* Slovene;
+    };
 
     /** A mission offered only after another mission ended in one of these outcomes (ADR-081). */
     struct FMissionOutcomeGate
@@ -304,6 +344,13 @@ namespace MarburgumII::Gameplay
         }
         return nullptr;
     }
+
+    /**
+     * Catalogue text for display (ADR-081): the Slovene of English when the running interface language is Slovene and a
+     * translation exists, English otherwise. Never use it for ids, logs or anything the server decides on.
+     */
+    MARBURGUMIISHARED_API const TCHAR* Localized(const TCHAR* English);
+    inline FString Localized(const FString& English) { return Localized(*English); }
 
     inline const FPhotoSubjectDefinition* FindPhotoSubject(const FString& Id)
     {

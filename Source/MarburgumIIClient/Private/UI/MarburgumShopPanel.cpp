@@ -145,11 +145,11 @@ void UMarburgumShopPanel::Rebuild()
     bShownOpen = Subject->IsShopOpen();
     const TArray<int32>& Shelves = Subject->GetShelves();
     const int64 Money = State->GetMoney();
-    ShopLabel->SetText(FText::FromString(Definition->Name));
+    ShopLabel->SetText(FText::FromString(MarburgumII::Gameplay::Localized(Definition->Name)));
     HoursLabel->SetText(FText::FromString(MarburgumII::Retail::HoursLabel(*Definition)));
     StatusLabel->SetText(!Subject->IsShopKnown() ? LOCTEXT("Unknown", "Petra is still counting the shelves.")
         : bShownOpen ? LOCTEXT("Open", "Petra looks up from the counter.")
-                     : FText::FromString(Definition->ClosedMessage));
+                     : FText::FromString(MarburgumII::Gameplay::Localized(Definition->ClosedMessage)));
     StatusLabel->SetColorAndOpacity(bShownOpen ? T.Color.TextSecondary : T.Color.TextMuted);
     MoneyLabel->SetText(FText::Format(LOCTEXT("Money", "You have {0} money"), FText::AsNumber(Money)));
 
@@ -166,7 +166,7 @@ void UMarburgumShopPanel::Rebuild()
         UHorizontalBox* Line = B.Row();
         FBuilder::Inline(Line, B.KeyCap(FText::AsNumber(Index + 1), bCanBuy || bCanSell), T.Space.M, false, false);
         UVerticalBox* Words = B.Column();
-        UTextBlock* Name = B.Text(FText::FromString(Item ? Item->DisplayName : Offer.Item), ETypeRole::BodyStrong,
+        UTextBlock* Name = B.Text(FText::FromString(MarburgumII::Gameplay::Localized(Item ? Item->DisplayName : Offer.Item)), ETypeRole::BodyStrong,
             bCanBuy || bCanSell ? T.Color.TextPrimary : T.Color.TextMuted);
         Name->SetAutoWrapText(true);
         FBuilder::Stack(Words, Name, T.Space.XS);

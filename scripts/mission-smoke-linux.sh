@@ -87,7 +87,10 @@ start_server() {
         echo "UDP port $port is already in use; stop the other server or set MB2_MISSION_PORT." >&2
         exit 1
     fi
-    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" "${common_args[@]}" > "$log" 2>&1 &
+    # A working morning by default (Tuesday 10:00): named people are at their authored posts (ADR-081) and every
+    # counter is open. Set MB2_MISSION_CLOCK to play the same sequence at another hour.
+    setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$store" -MB2Clock="${MB2_MISSION_CLOCK:-2026-06-16T08:00:00Z}" -MB2ClockSpeed=0.001 \
+        "${common_args[@]}" > "$log" 2>&1 &
     server_pid=$!
     for _ in $(seq 1 360); do
         grep -aq "MB2SMOKE role=server event=ready .* port=$port " "$log" && return 0

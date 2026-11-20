@@ -24,6 +24,7 @@ public:
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
     virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     /** Stable content id (snake_case); the persistence key for this object's stock. */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Marburgum|Interaction")
@@ -122,4 +123,5 @@ private:
     bool bShopOpen = false;
 
     FName ShopId;
+    FDelegateHandle CultureHandle;
 };

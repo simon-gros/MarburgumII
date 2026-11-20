@@ -7,7 +7,12 @@ use crate::repo;
 /// "5.8.3" from an Engine/Build/Build.version document.
 pub fn installed_version(build_version: &serde_json::Value) -> Option<String> {
     let part = |key: &str| build_version[key].as_u64().map(|n| n.to_string());
-    Some(format!("{}.{}.{}", part("MajorVersion")?, part("MinorVersion")?, part("PatchVersion")?))
+    Some(format!(
+        "{}.{}.{}",
+        part("MajorVersion")?,
+        part("MinorVersion")?,
+        part("PatchVersion")?
+    ))
 }
 
 pub fn run(engine_root: &Path) -> u8 {
@@ -20,12 +25,16 @@ pub fn run(engine_root: &Path) -> u8 {
             return 1;
         }
     };
-    let actual = std::fs::read_to_string(&build_file).ok()
+    let actual = std::fs::read_to_string(&build_file)
+        .ok()
         .and_then(|text| serde_json::from_str(&text).ok())
         .and_then(|doc| installed_version(&doc));
     match actual {
         Some(actual) if actual == required => {
-            println!("Verified Unreal Engine {actual} from {}", build_file.display());
+            println!(
+                "Verified Unreal Engine {actual} from {}",
+                build_file.display()
+            );
             0
         }
         Some(actual) => {
@@ -33,7 +42,10 @@ pub fn run(engine_root: &Path) -> u8 {
             1
         }
         None => {
-            eprintln!("ERROR: unreadable Unreal Engine build metadata: {}", build_file.display());
+            eprintln!(
+                "ERROR: unreadable Unreal Engine build metadata: {}",
+                build_file.display()
+            );
             1
         }
     }

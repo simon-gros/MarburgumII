@@ -41,7 +41,7 @@ namespace
 
     FText SkillName(const MarburgumII::Gameplay::FSkillDefinition& Skill)
     {
-        return FText::FromString(Skill.DisplayName);
+        return FText::FromString(MarburgumII::Gameplay::Localized(Skill.DisplayName));
     }
 
     struct FSkillView

@@ -103,6 +103,8 @@ private:
     bool Commit(FMarburgumInteractionReceipt& Receipt, FMarburgumWorldRecord& Next, const FMarburgumStoredReceipt& Stored);
     void SpawnAuthoredContent(UWorld& World);
     void TickFishing();
+    /** Every named person to the post their day puts them at now (ADR-081). */
+    void UpdatePosts();
     void EndCast(AMarburgumPlayerController& Player, EMarburgumFishingEnd End, FName Catch, const TCHAR* Why);
     /** Why this player cannot hold a line now, or nullptr. */
     const TCHAR* WhyCannotFish(const AMarburgumPlayerController& Player) const;
@@ -119,6 +121,7 @@ private:
     FTimerHandle LocationTimer;
     FTimerHandle FishingTimer;
     FTimerHandle ShopTimer;
+    FTimerHandle PostsTimer;
     /** -MB2NetRate: the measured send and receive rates every 5 s, for bandwidth baselines. */
     FTimerHandle NetRateTimer;
     void LogNetRate();

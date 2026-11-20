@@ -12,7 +12,13 @@ use serde_json::{json, Value};
 use crate::repo;
 
 /// Plugins the game binds at runtime, plus the unofficial DLSS 5 experiment the original project probed for.
-const PLUGINS: [&str; 5] = ["DLSS", "StreamlineCore", "StreamlineDLSSG", "StreamlineReflex", "DLSS5ForUE5"];
+const PLUGINS: [&str; 5] = [
+    "DLSS",
+    "StreamlineCore",
+    "StreamlineDLSSG",
+    "StreamlineReflex",
+    "DLSS5ForUE5",
+];
 
 pub fn run(engine_root: Option<&Path>) -> u8 {
     let project = repo::root();
@@ -23,7 +29,12 @@ pub fn run(engine_root: Option<&Path>) -> u8 {
     }
     let plugins: serde_json::Map<String, Value> = PLUGINS
         .iter()
-        .map(|name| (name.to_string(), find_plugin(&roots, name).map_or(Value::Null, |path| plugin_record(&path))))
+        .map(|name| {
+            (
+                name.to_string(),
+                find_plugin(&roots, name).map_or(Value::Null, |path| plugin_record(&path)),
+            )
+        })
         .collect();
     let gpus = nvidia_gpus();
     let layers = nv_present_manifests(&layer_dirs());
@@ -32,15 +43,24 @@ pub fn run(engine_root: Option<&Path>) -> u8 {
 
     let mut findings = Vec::new();
     if gpus.is_empty() {
-        findings.push("no NVIDIA GPU reported by nvidia-smi: every NVIDIA feature resolves to TSR".to_string());
+        findings.push(
+            "no NVIDIA GPU reported by nvidia-smi: every NVIDIA feature resolves to TSR"
+                .to_string(),
+        );
     }
     if dlss_plugin.is_null() {
-        findings.push("DLSS plugin not installed: the game runs TSR (download NVIDIA's UE 5.8 DLSS package)".to_string());
+        findings.push(
+            "DLSS plugin not installed: the game runs TSR (download NVIDIA's UE 5.8 DLSS package)"
+                .to_string(),
+        );
     } else if cfg!(target_os = "linux") && !supports_linux(dlss_plugin) {
         findings.push("installed DLSS plugin's DLSS module is not built for Linux: the game reports dlss:unsupported here".to_string());
     }
     if cfg!(target_os = "linux") && !layers.is_empty() {
-        findings.push("NVIDIA Smooth Motion layer present: scripts/smooth-motion-linux.sh can request it".to_string());
+        findings.push(
+            "NVIDIA Smooth Motion layer present: scripts/smooth-motion-linux.sh can request it"
+                .to_string(),
+        );
     }
 
     let report = json!({
@@ -58,7 +78,10 @@ pub fn run(engine_root: Option<&Path>) -> u8 {
         "neural_rendering": "no supported UE 5.8 package; not a game setting",
         "findings": findings,
     });
-    println!("{}", serde_json::to_string_pretty(&report).unwrap_or_default());
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&report).unwrap_or_default()
+    );
     0
 }
 
@@ -75,15 +98,25 @@ fn find_plugin(roots: &[PathBuf], name: &str) -> Option<PathBuf> {
 }
 
 fn search(dir: &Path, file: &str, depth: u32) -> Option<PathBuf> {
-    let mut entries: Vec<PathBuf> = std::fs::read_dir(dir).ok()?.flatten().map(|entry| entry.path()).collect();
+    let mut entries: Vec<PathBuf> = std::fs::read_dir(dir)
+        .ok()?
+        .flatten()
+        .map(|entry| entry.path())
+        .collect();
     entries.sort();
-    if let Some(found) = entries.iter().find(|path| path.file_name().is_some_and(|n| n == file) && path.is_file()) {
+    if let Some(found) = entries
+        .iter()
+        .find(|path| path.file_name().is_some_and(|n| n == file) && path.is_file())
+    {
         return Some(found.clone());
     }
     if depth == 0 {
         return None;
     }
-    entries.iter().filter(|path| path.is_dir()).find_map(|path| search(path, file, depth - 1))
+    entries
+        .iter()
+        .filter(|path| path.is_dir())
+        .find_map(|path| search(path, file, depth - 1))
 }
 
 fn plugin_record(path: &Path) -> Value {
@@ -106,7 +139,9 @@ pub fn module_platforms(descriptor: &Value) -> Vec<String> {
     for module in descriptor["Modules"].as_array().into_iter().flatten() {
         match module["PlatformAllowList"].as_array() {
             None => platforms.push("any".to_string()),
-            Some(list) => platforms.extend(list.iter().filter_map(Value::as_str).map(str::to_string)),
+            Some(list) => {
+                platforms.extend(list.iter().filter_map(Value::as_str).map(str::to_string))
+            }
         }
     }
     platforms.sort();
@@ -117,11 +152,19 @@ pub fn module_platforms(descriptor: &Value) -> Vec<String> {
 /// PlatformAllowList of the module named after the plugin (the one that does the work, not its
 /// cross-platform blueprint stubs); "any" when it has none, empty when there is no such module.
 pub fn main_module_platforms(descriptor: &Value, plugin: &str) -> Vec<String> {
-    let module = descriptor["Modules"].as_array().into_iter().flatten().find(|module| module["Name"] == plugin);
+    let module = descriptor["Modules"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .find(|module| module["Name"] == plugin);
     match module.map(|module| module["PlatformAllowList"].as_array()) {
         None => Vec::new(),
         Some(None) => vec!["any".to_string()],
-        Some(Some(list)) => list.iter().filter_map(Value::as_str).map(str::to_string).collect(),
+        Some(Some(list)) => list
+            .iter()
+            .filter_map(Value::as_str)
+            .map(str::to_string)
+            .collect(),
     }
 }
 
@@ -135,7 +178,10 @@ fn supports_linux(record: &Value) -> bool {
 
 fn nvidia_gpus() -> Vec<Value> {
     let output = Command::new("nvidia-smi")
-        .args(["--query-gpu=name,driver_version", "--format=csv,noheader,nounits"])
+        .args([
+            "--query-gpu=name,driver_version",
+            "--format=csv,noheader,nounits",
+        ])
         .output();
     let Some(output) = output.ok().filter(|output| output.status.success()) else {
         return Vec::new();
@@ -156,14 +202,20 @@ fn ngx_runtime() -> Value {
         .iter()
         .map(|dir| Path::new(dir).join("libnvidia-ngx.so.1"))
         .find(|path| path.exists())
-        .map_or(Value::Null, |path| Value::String(path.display().to_string()))
+        .map_or(Value::Null, |path| {
+            Value::String(path.display().to_string())
+        })
 }
 
 fn layer_dirs() -> Vec<PathBuf> {
-    let mut dirs: Vec<PathBuf> = ["/etc/vulkan/implicit_layer.d", "/usr/local/share/vulkan/implicit_layer.d", "/usr/share/vulkan/implicit_layer.d"]
-        .iter()
-        .map(PathBuf::from)
-        .collect();
+    let mut dirs: Vec<PathBuf> = [
+        "/etc/vulkan/implicit_layer.d",
+        "/usr/local/share/vulkan/implicit_layer.d",
+        "/usr/share/vulkan/implicit_layer.d",
+    ]
+    .iter()
+    .map(PathBuf::from)
+    .collect();
     if let Some(home) = std::env::var_os("HOME") {
         dirs.push(PathBuf::from(home).join(".local/share/vulkan/implicit_layer.d"));
     }
@@ -174,16 +226,27 @@ fn layer_dirs() -> Vec<PathBuf> {
 pub fn nv_present_manifests(dirs: &[PathBuf]) -> Vec<String> {
     let mut found = Vec::new();
     for dir in dirs {
-        let Ok(entries) = std::fs::read_dir(dir) else { continue };
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            continue;
+        };
         let mut paths: Vec<PathBuf> = entries.flatten().map(|entry| entry.path()).collect();
         paths.sort();
-        for path in paths.into_iter().filter(|path| path.extension().is_some_and(|ext| ext == "json")) {
-            let Some(manifest) = std::fs::read_to_string(&path).ok().and_then(|text| serde_json::from_str::<Value>(&text).ok()) else {
+        for path in paths
+            .into_iter()
+            .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
+        {
+            let Some(manifest) = std::fs::read_to_string(&path)
+                .ok()
+                .and_then(|text| serde_json::from_str::<Value>(&text).ok())
+            else {
                 continue;
             };
             let layers = manifest["layers"].as_array().cloned().unwrap_or_default();
             let names = std::iter::once(&manifest["layer"]).chain(layers.iter());
-            if names.filter_map(|layer| layer["name"].as_str()).any(|name| name == "VK_LAYER_NV_present") {
+            if names
+                .filter_map(|layer| layer["name"].as_str())
+                .any(|name| name == "VK_LAYER_NV_present")
+            {
                 found.push(path.display().to_string());
             }
         }
@@ -202,18 +265,35 @@ mod tests {
             { "Name": "DLSSBlueprint", "PlatformAllowList": ["Win64", "Linux"] },
         ]});
         assert_eq!(module_platforms(&descriptor), vec!["Linux", "Win64"]);
-        assert_eq!(module_platforms(&json!({ "Modules": [{ "Name": "Any" }] })), vec!["any"]);
+        assert_eq!(
+            module_platforms(&json!({ "Modules": [{ "Name": "Any" }] })),
+            vec!["any"]
+        );
         assert_eq!(main_module_platforms(&descriptor, "DLSS"), vec!["Win64"]);
         assert!(main_module_platforms(&descriptor, "Other").is_empty());
-        assert!(!supports_linux(&json!({ "main_module_platforms": ["Win64"] })));
+        assert!(!supports_linux(
+            &json!({ "main_module_platforms": ["Win64"] })
+        ));
     }
 
     #[test]
     fn finds_nv_present_in_single_and_multi_layer_manifests() {
         let dir = tempfile::tempdir().unwrap();
-        std::fs::write(dir.path().join("a.json"), r#"{"layer":{"name":"VK_LAYER_NV_optimus"}}"#).unwrap();
-        std::fs::write(dir.path().join("b.json"), r#"{"layers":[{"name":"VK_LAYER_NV_optimus"},{"name":"VK_LAYER_NV_present"}]}"#).unwrap();
-        std::fs::write(dir.path().join("c.txt"), r#"{"layer":{"name":"VK_LAYER_NV_present"}}"#).unwrap();
+        std::fs::write(
+            dir.path().join("a.json"),
+            r#"{"layer":{"name":"VK_LAYER_NV_optimus"}}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            dir.path().join("b.json"),
+            r#"{"layers":[{"name":"VK_LAYER_NV_optimus"},{"name":"VK_LAYER_NV_present"}]}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            dir.path().join("c.txt"),
+            r#"{"layer":{"name":"VK_LAYER_NV_present"}}"#,
+        )
+        .unwrap();
         let found = nv_present_manifests(&[dir.path().to_path_buf()]);
         assert_eq!(found.len(), 1);
         assert!(found[0].ends_with("b.json"));
@@ -225,7 +305,13 @@ mod tests {
         let nested = dir.path().join("Runtime/Nvidia/DLSS");
         std::fs::create_dir_all(&nested).unwrap();
         std::fs::write(nested.join("DLSS.uplugin"), "{}").unwrap();
-        assert_eq!(find_plugin(&[dir.path().to_path_buf()], "DLSS"), Some(nested.join("DLSS.uplugin")));
-        assert_eq!(find_plugin(&[dir.path().to_path_buf()], "StreamlineCore"), None);
+        assert_eq!(
+            find_plugin(&[dir.path().to_path_buf()], "DLSS"),
+            Some(nested.join("DLSS.uplugin"))
+        );
+        assert_eq!(
+            find_plugin(&[dir.path().to_path_buf()], "StreamlineCore"),
+            None
+        );
     }
 }

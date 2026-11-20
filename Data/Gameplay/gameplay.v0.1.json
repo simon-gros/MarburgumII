@@ -7,7 +7,8 @@
     {
       "id": "fishing_rod",
       "name": {
-        "en": "Fishing rod"
+        "en": "Fishing rod",
+        "sl": "Ribiška palica"
       },
       "stacking": "fungible_stack",
       "kind": "tool",
@@ -20,7 +21,8 @@
     {
       "id": "chub",
       "name": {
-        "en": "European chub"
+        "en": "European chub",
+        "sl": "Klen"
       },
       "stacking": "fungible_stack",
       "kind": "fish",
@@ -33,7 +35,8 @@
     {
       "id": "roach",
       "name": {
-        "en": "Common roach"
+        "en": "Common roach",
+        "sl": "Rdečeoka"
       },
       "stacking": "fungible_stack",
       "kind": "fish",
@@ -46,7 +49,8 @@
     {
       "id": "perch",
       "name": {
-        "en": "European perch"
+        "en": "European perch",
+        "sl": "Ostriž"
       },
       "stacking": "fungible_stack",
       "kind": "fish",
@@ -59,7 +63,8 @@
     {
       "id": "bream",
       "name": {
-        "en": "Common bream"
+        "en": "Common bream",
+        "sl": "Ploščič"
       },
       "stacking": "fungible_stack",
       "kind": "fish",
@@ -72,7 +77,8 @@
     {
       "id": "barbel",
       "name": {
-        "en": "Common barbel"
+        "en": "Common barbel",
+        "sl": "Mrena"
       },
       "stacking": "fungible_stack",
       "kind": "fish",
@@ -85,7 +91,8 @@
     {
       "id": "carp",
       "name": {
-        "en": "Common carp"
+        "en": "Common carp",
+        "sl": "Krap"
       },
       "stacking": "fungible_stack",
       "kind": "fish",
@@ -98,7 +105,8 @@
     {
       "id": "drava_cashbox",
       "name": {
-        "en": "Battered cashbox"
+        "en": "Battered cashbox",
+        "sl": "Pretolčena blagajnica"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -111,7 +119,8 @@
     {
       "id": "brass_key",
       "name": {
-        "en": "Small brass key"
+        "en": "Small brass key",
+        "sl": "Majhen medeninast ključ"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -124,7 +133,8 @@
     {
       "id": "water_damaged_accounting_page",
       "name": {
-        "en": "Water-damaged accounting page"
+        "en": "Water-damaged accounting page",
+        "sl": "Od vode poškodovan knjigovodski list"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -137,7 +147,8 @@
     {
       "id": "torn_gate_photograph",
       "name": {
-        "en": "Torn black-and-white photograph"
+        "en": "Torn black-and-white photograph",
+        "sl": "Strgana črno-bela fotografija"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -150,7 +161,8 @@
     {
       "id": "faded_transport_ticket",
       "name": {
-        "en": "Faded transport ticket"
+        "en": "Faded transport ticket",
+        "sl": "Zbledela vozovnica"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -163,7 +175,8 @@
     {
       "id": "carbon_copy_receipt",
       "name": {
-        "en": "Carbon-copy receipt"
+        "en": "Carbon-copy receipt",
+        "sl": "Kopija računa z indigom"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -176,7 +189,8 @@
     {
       "id": "brown_paper_parcel",
       "name": {
-        "en": "Brown-paper parcel"
+        "en": "Brown-paper parcel",
+        "sl": "Paket v rjavem papirju"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -189,7 +203,8 @@
     {
       "id": "hall_three_plate_photos",
       "name": {
-        "en": "Hall Three machine-plate photographs"
+        "en": "Hall Three machine-plate photographs",
+        "sl": "Fotografije tablic strojev v Hali tri"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -202,7 +217,8 @@
     {
       "id": "hall_three_keyring",
       "name": {
-        "en": "Hall Three keyring"
+        "en": "Hall Three keyring",
+        "sl": "Ključi Hale tri"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -215,7 +231,8 @@
     {
       "id": "raeda_transport_maintenance_book",
       "name": {
-        "en": "Raeda transport-maintenance book"
+        "en": "Raeda transport-maintenance book",
+        "sl": "Knjiga vzdrževanja prevoznih sredstev Raede"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -228,7 +245,8 @@
     {
       "id": "raeda_directory_copy",
       "name": {
-        "en": "Copied Raeda directory entry"
+        "en": "Copied Raeda directory entry",
+        "sl": "Prepis vpisa Raede v imeniku"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -241,7 +259,8 @@
     {
       "id": "successor_company_notice",
       "name": {
-        "en": "Successor-company notice"
+        "en": "Successor-company notice",
+        "sl": "Obvestilo podjetja naslednika"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -254,7 +273,8 @@
     {
       "id": "returned_raeda_envelope",
       "name": {
-        "en": "Returned Raeda envelope"
+        "en": "Returned Raeda envelope",
+        "sl": "Vrnjena kuverta Raede"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -267,7 +287,8 @@
     {
       "id": "raeda_newspaper_clipping",
       "name": {
-        "en": "Raeda successor newspaper clipping"
+        "en": "Raeda successor newspaper clipping",
+        "sl": "Časopisni izrezek o naslednikih Raede"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -280,7 +301,8 @@
     {
       "id": "storefront_layer_one_photo",
       "name": {
-        "en": "Photograph of first hidden storefront sign"
+        "en": "Photograph of first hidden storefront sign",
+        "sl": "Fotografija prvega skritega napisa na izložbi"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -293,7 +315,8 @@
     {
       "id": "storefront_layer_two_photo",
       "name": {
-        "en": "Photograph of second hidden storefront sign"
+        "en": "Photograph of second hidden storefront sign",
+        "sl": "Fotografija drugega skritega napisa na izložbi"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -306,7 +329,8 @@
     {
       "id": "storefront_layer_three_photo",
       "name": {
-        "en": "Photograph of third hidden storefront sign"
+        "en": "Photograph of third hidden storefront sign",
+        "sl": "Fotografija tretjega skritega napisa na izložbi"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -319,7 +343,8 @@
     {
       "id": "storefront_oldest_lettering_photo",
       "name": {
-        "en": "Photograph of oldest storefront lettering"
+        "en": "Photograph of oldest storefront lettering",
+        "sl": "Fotografija najstarejšega napisa na izložbi"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -332,7 +357,8 @@
     {
       "id": "storefront_archived_advertisements",
       "name": {
-        "en": "Archived storefront advertisements"
+        "en": "Archived storefront advertisements",
+        "sl": "Arhivski oglasi trgovine"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -345,7 +371,8 @@
     {
       "id": "tone_vogrin_locker_card",
       "name": {
-        "en": "Tone Vogrin locker card"
+        "en": "Tone Vogrin locker card",
+        "sl": "Omarična kartica Toneta Vogrina"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -358,7 +385,8 @@
     {
       "id": "kainach_serial_photos",
       "name": {
-        "en": "Kainach truck serial photographs"
+        "en": "Kainach truck serial photographs",
+        "sl": "Fotografije serijskih številk tovornjakov Kainach"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -371,7 +399,8 @@
     {
       "id": "yard_vehicle_log",
       "name": {
-        "en": "Melje yard vehicle log"
+        "en": "Melje yard vehicle log",
+        "sl": "Dnevnik vozil z dvorišča v Meljah"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -384,7 +413,8 @@
     {
       "id": "raeda_yard_archive_boxes",
       "name": {
-        "en": "Raeda yard archive boxes"
+        "en": "Raeda yard archive boxes",
+        "sl": "Arhivske škatle z dvorišča Raede"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -397,7 +427,8 @@
     {
       "id": "corrected_yard_schedule",
       "name": {
-        "en": "Corrected Melje yard property schedule"
+        "en": "Corrected Melje yard property schedule",
+        "sl": "Popravljeni seznam premoženja dvorišča v Meljah"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -410,7 +441,8 @@
     {
       "id": "exchange_counterfoil_copy",
       "name": {
-        "en": "Tabor exchange counterfoil copy"
+        "en": "Tabor exchange counterfoil copy",
+        "sl": "Kopija talona menjalnice na Taboru"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -423,7 +455,8 @@
     {
       "id": "kainach_contract_reference",
       "name": {
-        "en": "Kainach contract reference"
+        "en": "Kainach contract reference",
+        "sl": "Številka pogodbe s Kainachom"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -436,7 +469,8 @@
     {
       "id": "prehod_classified_clippings",
       "name": {
-        "en": "Prehod classified clippings"
+        "en": "Prehod classified clippings",
+        "sl": "Mali oglasi Prehoda"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -449,7 +483,8 @@
     {
       "id": "pohorska_bank_file_locator",
       "name": {
-        "en": "Pohorska banka archive-file locator"
+        "en": "Pohorska banka archive-file locator",
+        "sl": "Kazalo arhivske mape Pohorske banke"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -462,7 +497,8 @@
     {
       "id": "k67_raeda_concession_copy",
       "name": {
-        "en": "K67 Raeda concession copy"
+        "en": "K67 Raeda concession copy",
+        "sl": "Kopija koncesije K67 od Raede"
       },
       "stacking": "fungible_stack",
       "kind": "clue",
@@ -475,7 +511,8 @@
     {
       "id": "mariborski_glas",
       "name": {
-        "en": "Mariborski Glas"
+        "en": "Mariborski Glas",
+        "sl": "Mariborski glas"
       },
       "stacking": "fungible_stack",
       "kind": "goods",
@@ -488,7 +525,8 @@
     {
       "id": "maribor_postcard",
       "name": {
-        "en": "Maribor picture postcard"
+        "en": "Maribor picture postcard",
+        "sl": "Razglednica Maribora"
       },
       "stacking": "fungible_stack",
       "kind": "goods",
@@ -501,7 +539,8 @@
     {
       "id": "ballpoint_pen",
       "name": {
-        "en": "Ballpoint pen"
+        "en": "Ballpoint pen",
+        "sl": "Kemični svinčnik"
       },
       "stacking": "fungible_stack",
       "kind": "goods",
@@ -721,7 +760,8 @@
       {
         "id": "fishing",
         "name": {
-          "en": "Fishing"
+          "en": "Fishing",
+          "sl": "Ribolov"
         },
         "reversible": false,
         "provenance": {
@@ -732,7 +772,8 @@
       {
         "id": "photography",
         "name": {
-          "en": "Photography"
+          "en": "Photography",
+          "sl": "Fotografija"
         },
         "reversible": false,
         "provenance": {
@@ -743,7 +784,8 @@
       {
         "id": "housing",
         "name": {
-          "en": "Housing"
+          "en": "Housing",
+          "sl": "Stanovanje"
         },
         "reversible": false,
         "provenance": {
@@ -754,7 +796,8 @@
       {
         "id": "trading",
         "name": {
-          "en": "Trading"
+          "en": "Trading",
+          "sl": "Trgovanje"
         },
         "reversible": false,
         "provenance": {
@@ -765,7 +808,8 @@
       {
         "id": "reputation",
         "name": {
-          "en": "Reputation"
+          "en": "Reputation",
+          "sl": "Ugled"
         },
         "reversible": true,
         "provenance": {
@@ -791,7 +835,8 @@
       {
         "id": "drava_fishing_spot",
         "name": {
-          "en": "Drava — Lent bank"
+          "en": "Drava — Lent bank",
+          "sl": "Drava — breg na Lentu"
         },
         "water": "Drava, Lent bank",
         "habitat": "Slow water against the old town bank, shaded by the promenade wall.",
@@ -825,7 +870,8 @@
       {
         "id": "drava_melje_weir_fishing_spot",
         "name": {
-          "en": "Drava — above the Melje weir"
+          "en": "Drava — above the Melje weir",
+          "sl": "Drava — nad jezom v Meljah"
         },
         "water": "Drava, above the Melje weir",
         "habitat": "Deep, slow water held back by the Melje weir (1968), fished from the steep, wooded right bank beside the field track; a deep bottom-fishing pool, not the shaded town bank.",
@@ -871,7 +917,8 @@
       "kind": "test_fixture",
       "map": "/Game/Maps/NetSmoke",
       "display_name": {
-        "en": "Test supply crate"
+        "en": "Test supply crate",
+        "sl": "Testni zaboj z zalogo"
       },
       "verb": "take",
       "grants": {
@@ -887,7 +934,8 @@
       "kind": "test_fixture",
       "map": "/Game/Maps/NetSmoke",
       "display_name": {
-        "en": "Test supply crate (far)"
+        "en": "Test supply crate (far)",
+        "sl": "Testni zaboj z zalogo (oddaljen)"
       },
       "verb": "take",
       "grants": {
@@ -903,7 +951,8 @@
       "kind": "npc",
       "map": "/Game/Maps/Lent",
       "display_name": {
-        "en": "Riverside angler"
+        "en": "Riverside angler",
+        "sl": "Ribič ob reki"
       },
       "verb": "talk",
       "position_m": [
@@ -914,7 +963,8 @@
       "range_cm": 400,
       "offers_mission": "lent_first_catch",
       "dialogue": {
-        "en": "The Drava looks calm from here, but the current does the real work. Keep your first casts close to the bank."
+        "en": "The Drava looks calm from here, but the current does the real work. Keep your first casts close to the bank.",
+        "sl": "Drava je od tu videti mirna, a pravo delo opravi tok. Prve mete imej blizu brega."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
@@ -927,7 +977,8 @@
       "id": "drava_fishing_spot",
       "kind": "fishing_spot",
       "display_name": {
-        "en": "Drava — Lent bank"
+        "en": "Drava — Lent bank",
+        "sl": "Drava — breg na Lentu"
       },
       "verb": "fish",
       "godot_position_m": [
@@ -946,7 +997,8 @@
       "id": "drava_melje_weir_fishing_spot",
       "kind": "fishing_spot",
       "display_name": {
-        "en": "Drava — above the Melje weir"
+        "en": "Drava — above the Melje weir",
+        "sl": "Drava — nad jezom v Meljah"
       },
       "verb": "fish",
       "godot_position_m": [
@@ -965,7 +1017,8 @@
       "id": "drava_cashbox_debris",
       "kind": "clue",
       "display_name": {
-        "en": "Debris caught against the bank"
+        "en": "Debris caught against the bank",
+        "sl": "Naplavine ob bregu"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -976,7 +1029,8 @@
       "range_cm": 300,
       "placement": "angler_relative",
       "dialogue": {
-        "en": "Branches, wire and river rubbish have collected here. Something metal is wedged underneath."
+        "en": "Branches, wire and river rubbish have collected here. Something metal is wedged underneath.",
+        "sl": "Tu so se nabrale veje, žica in rečne smeti. Spodaj je zagozdeno nekaj kovinskega."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -987,7 +1041,8 @@
       "id": "petra_kralj",
       "kind": "npc",
       "display_name": {
-        "en": "Petra Kralj"
+        "en": "Petra Kralj",
+        "sl": "Petra Kralj"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -998,7 +1053,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "If an address has changed names twice, somebody at a kiosk usually remembers the older one."
+        "en": "If an address has changed names twice, somebody at a kiosk usually remembers the older one.",
+        "sl": "Če je naslov dvakrat zamenjal ime, se starejšega navadno spomni kdo v kiosku."
       },
       "colors": {
         "primary": [
@@ -1014,14 +1070,28 @@
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
-        "source_version": 3
-      }
+        "source_version": 3,
+        "note": "",
+        "day_posts": "Marburgum II extension (ADR-081): an authored day so the person is somewhere else in the evening and still within reach; not in the original."
+      },
+      "day_posts": [
+        {
+          "from": "19:00",
+          "to": "07:00",
+          "offset_m": [
+            6.0,
+            0.0
+          ],
+          "activity": "after_closing"
+        }
+      ]
     },
     {
       "id": "raeda_service_room",
       "kind": "location",
       "display_name": {
-        "en": "Shuttered service room"
+        "en": "Shuttered service room",
+        "sl": "Zaprt servisni prostor"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -1032,7 +1102,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "The narrow door has an old lock. Dust around the frame suggests it has been opened more recently than the sign above it."
+        "en": "The narrow door has an old lock. Dust around the frame suggests it has been opened more recently than the sign above it.",
+        "sl": "Ozka vrata imajo staro ključavnico. Prah okrog podboja kaže, da so jih odprli pozneje, kot je bil obešen napis nad njimi."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -1043,7 +1114,8 @@
       "id": "vera_horvat",
       "kind": "npc",
       "display_name": {
-        "en": "Vera Horvat"
+        "en": "Vera Horvat",
+        "sl": "Vera Horvat"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1054,7 +1126,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "Paper survives people more often than people expect. That does not mean it tells the truth by itself."
+        "en": "Paper survives people more often than people expect. That does not mean it tells the truth by itself.",
+        "sl": "Papir preživi ljudi pogosteje, kot si mislijo. To še ne pomeni, da sam po sebi govori resnico."
       },
       "colors": {
         "primary": [
@@ -1070,14 +1143,28 @@
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
-        "source_version": 3
-      }
+        "source_version": 3,
+        "note": "",
+        "day_posts": "Marburgum II extension (ADR-081): an authored day so the person is somewhere else in the evening and still within reach; not in the original."
+      },
+      "day_posts": [
+        {
+          "from": "17:30",
+          "to": "22:00",
+          "offset_m": [
+            -10.0,
+            0.0
+          ],
+          "activity": "evening_walk"
+        }
+      ]
     },
     {
       "id": "kiosk_67_bus_regular",
       "kind": "npc",
       "display_name": {
-        "en": "Kiosk 67 bus-stop regular"
+        "en": "Kiosk 67 bus-stop regular",
+        "sl": "Stalni obiskovalec postaje pri Kiosku 67"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1088,7 +1175,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "He stopped waiting here a few days ago. Last time I saw him, he headed toward the café instead of taking his usual bus."
+        "en": "He stopped waiting here a few days ago. Last time I saw him, he headed toward the café instead of taking his usual bus.",
+        "sl": "Pred nekaj dnevi je nehal čakati tukaj. Ko sem ga zadnjič videl, je namesto na svoj avtobus šel proti kavarni."
       },
       "colors": {
         "primary": [
@@ -1111,7 +1199,8 @@
       "id": "kiosk_67_cafe_regular",
       "kind": "npc",
       "display_name": {
-        "en": "Kiosk 67 café regular"
+        "en": "Kiosk 67 café regular",
+        "sl": "Stalni gost kavarne pri Kiosku 67"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1122,7 +1211,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "He was counting coins, asking whether anybody needed a few days of work. Then he left in a hurry."
+        "en": "He was counting coins, asking whether anybody needed a few days of work. Then he left in a hurry.",
+        "sl": "Štel je kovance in spraševal, ali kdo potrebuje koga za nekaj dni dela. Potem je naglo odšel."
       },
       "colors": {
         "primary": [
@@ -1145,7 +1235,8 @@
       "id": "kiosk_67_neighbour",
       "kind": "npc",
       "display_name": {
-        "en": "Kiosk 67 customer's neighbour"
+        "en": "Kiosk 67 customer's neighbour",
+        "sl": "Sosed stranke Kioska 67"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1156,7 +1247,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "He did not come home that evening. Someone said he had gone to the hospital, but nobody knew whether it was serious."
+        "en": "He did not come home that evening. Someone said he had gone to the hospital, but nobody knew whether it was serious.",
+        "sl": "Tisti večer ni prišel domov. Nekdo je rekel, da je šel v bolnišnico, ampak nihče ni vedel, ali je resno."
       },
       "colors": {
         "primary": [
@@ -1179,7 +1271,8 @@
       "id": "kiosk_67_customer",
       "kind": "npc",
       "display_name": {
-        "en": "Kiosk 67 missing customer"
+        "en": "Kiosk 67 missing customer",
+        "sl": "Pogrešana stranka Kioska 67"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1190,7 +1283,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "I'm all right. I just needed a few days away from the usual questions. Those initials, though—I remember them from paperwork around the machine hall."
+        "en": "I'm all right. I just needed a few days away from the usual questions. Those initials, though—I remember them from paperwork around the machine hall.",
+        "sl": "V redu sem. Samo nekaj dni sem potreboval stran od običajnih vprašanj. Tiste začetnice pa — spomnim se jih s papirjev okrog strojne hale."
       },
       "colors": {
         "primary": [
@@ -1213,7 +1307,8 @@
       "id": "lent_dispatcher",
       "kind": "npc",
       "display_name": {
-        "en": "Lent delivery clerk"
+        "en": "Lent delivery clerk",
+        "sl": "Uslužbenec dostave na Lentu"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1224,7 +1319,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "This parcel should have gone out before lunch. The workshop is west along the river. The hatchback nearby is free if you would rather drive."
+        "en": "This parcel should have gone out before lunch. The workshop is west along the river. The hatchback nearby is free if you would rather drive.",
+        "sl": "Ta paket bi moral oditi pred kosilom. Delavnica je zahodno ob reki. Avto v bližini je prost, če bi raje vozil."
       },
       "colors": {
         "primary": [
@@ -1247,7 +1343,8 @@
       "id": "lent_workshop_mechanic",
       "kind": "npc",
       "display_name": {
-        "en": "West Lent mechanic"
+        "en": "West Lent mechanic",
+        "sl": "Mehanik na zahodnem Lentu"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1258,7 +1355,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "You made it. Good. Hand me the parcel and we'll settle the delivery fee."
+        "en": "You made it. Good. Hand me the parcel and we'll settle the delivery fee.",
+        "sl": "Prišel si. Dobro. Daj mi paket, pa se zmeniva za dostavnino."
       },
       "colors": {
         "primary": [
@@ -1281,7 +1379,8 @@
       "id": "matej_hall_three",
       "kind": "npc",
       "display_name": {
-        "en": "Matej — Hall Three custodian"
+        "en": "Matej — Hall Three custodian",
+        "sl": "Matej — skrbnik Hale tri"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1292,7 +1391,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "Friday is the handover. Before I return these keys, I want one inventory I can actually defend."
+        "en": "Friday is the handover. Before I return these keys, I want one inventory I can actually defend.",
+        "sl": "V petek je predaja. Preden vrnem ključe, hočem en popis, ki ga res lahko zagovarjam."
       },
       "colors": {
         "primary": [
@@ -1315,7 +1415,8 @@
       "id": "hall_three_machine_plate",
       "kind": "location",
       "display_name": {
-        "en": "Hall Three machine plates"
+        "en": "Hall Three machine plates",
+        "sl": "Tablice strojev v Hali tri"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -1326,7 +1427,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "Stamped plates carry serial numbers, service dates and layers of grime from years of use."
+        "en": "Stamped plates carry serial numbers, service dates and layers of grime from years of use.",
+        "sl": "Žigosane tablice nosijo serijske številke, datume servisov in plasti umazanije iz let uporabe."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -1337,7 +1439,8 @@
       "id": "hall_three_labelled_boxes",
       "kind": "location",
       "display_name": {
-        "en": "Hall Three labelled boxes"
+        "en": "Hall Three labelled boxes",
+        "sl": "Označene škatle v Hali tri"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -1348,7 +1451,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "Company labels overlap older names written directly onto cardboard and wooden cases."
+        "en": "Company labels overlap older names written directly onto cardboard and wooden cases.",
+        "sl": "Nalepke podjetij prekrivajo starejša imena, napisana kar na karton in lesene zaboje."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -1359,7 +1463,8 @@
       "id": "hall_three_worker",
       "kind": "npc",
       "display_name": {
-        "en": "Hall Three worker"
+        "en": "Hall Three worker",
+        "sl": "Delavec v Hali tri"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1370,7 +1475,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "We were told the hand tools would stay with us. Nobody bothered to put that promise on the official sheet."
+        "en": "We were told the hand tools would stay with us. Nobody bothered to put that promise on the official sheet.",
+        "sl": "Rekli so nam, da ročno orodje ostane nam. Te obljube se nihče ni potrudil zapisati na uradni list."
       },
       "colors": {
         "primary": [
@@ -1393,7 +1499,8 @@
       "id": "hall_three_key_hook",
       "kind": "location",
       "display_name": {
-        "en": "Hall Three inspection board"
+        "en": "Hall Three inspection board",
+        "sl": "Kontrolna tabla v Hali tri"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -1404,7 +1511,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "Behind the inspection board, a metal keyring hangs from a bent nail."
+        "en": "Behind the inspection board, a metal keyring hangs from a bent nail.",
+        "sl": "Za kontrolno tablo visi na skrivljenem žeblju kovinski obesek s ključi."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -1415,7 +1523,8 @@
       "id": "hall_three_night_guard",
       "kind": "npc",
       "display_name": {
-        "en": "Hall Three night guard"
+        "en": "Hall Three night guard",
+        "sl": "Nočni čuvaj Hale tri"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1426,7 +1535,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "Small cases, yes. Big machines, no. I wrote down what I saw, but nobody asked for the notebook."
+        "en": "Small cases, yes. Big machines, no. I wrote down what I saw, but nobody asked for the notebook.",
+        "sl": "Majhni zaboji, ja. Veliki stroji, ne. Zapisal sem, kar sem videl, ampak nihče ni vprašal za beležko."
       },
       "colors": {
         "primary": [
@@ -1449,7 +1559,8 @@
       "id": "hall_three_steel_cabinet",
       "kind": "location",
       "display_name": {
-        "en": "Hall Three steel cabinet"
+        "en": "Hall Three steel cabinet",
+        "sl": "Jeklena omara v Hali tri"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -1460,7 +1571,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "A narrow steel cabinet is wedged behind the machine line. Its lock is older than the surrounding equipment."
+        "en": "A narrow steel cabinet is wedged behind the machine line. Its lock is older than the surrounding equipment.",
+        "sl": "Za vrsto strojev je zagozdena ozka jeklena omara. Njena ključavnica je starejša od opreme okrog nje."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -1471,7 +1583,8 @@
       "id": "raeda_directory_entry",
       "kind": "clue",
       "display_name": {
-        "en": "Old telephone-directory entry"
+        "en": "Old telephone-directory entry",
+        "sl": "Star vpis v telefonskem imeniku"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -1482,7 +1595,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "A pencilled mark circles an old service address and a landline number under the Raeda name."
+        "en": "A pencilled mark circles an old service address and a landline number under the Raeda name.",
+        "sl": "S svinčnikom obkrožen star servisni naslov in številka stacionarnega telefona pod imenom Raeda."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -1493,7 +1607,8 @@
       "id": "raeda_successor_sign",
       "kind": "location",
       "display_name": {
-        "en": "Layered successor-company signs"
+        "en": "Layered successor-company signs",
+        "sl": "Plasti napisov podjetij naslednikov"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -1504,7 +1619,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "Newer plaques cover older lettering. Two unit numbers share the address that the directory lists as one Raeda service premise."
+        "en": "Newer plaques cover older lettering. Two unit numbers share the address that the directory lists as one Raeda service premise.",
+        "sl": "Novejše table prekrivajo starejše črke. Dve številki enot si delita naslov, ki ga imenik navaja kot en servisni prostor Raede."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -1515,7 +1631,8 @@
       "id": "marija_sever",
       "kind": "npc",
       "display_name": {
-        "en": "Marija Sever"
+        "en": "Marija Sever",
+        "sl": "Marija Sever"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1526,7 +1643,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "Addresses change more slowly than names. For a while we returned letters, then forwarded them, then returned them again under another company."
+        "en": "Addresses change more slowly than names. For a while we returned letters, then forwarded them, then returned them again under another company.",
+        "sl": "Naslovi se spreminjajo počasneje kot imena. Nekaj časa smo pisma vračali, potem preusmerjali, potem spet vračali pod drugim podjetjem."
       },
       "colors": {
         "primary": [
@@ -1549,7 +1667,8 @@
       "id": "mariborski_glas_archive",
       "kind": "location",
       "display_name": {
-        "en": "Mariborski Glas archive desk"
+        "en": "Mariborski Glas archive desk",
+        "sl": "Arhivska miza Mariborskega glasa"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -1560,7 +1679,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "Bound newspaper copies, classified pages and dated notices make it possible to compare when each business name actually appeared in print."
+        "en": "Bound newspaper copies, classified pages and dated notices make it possible to compare when each business name actually appeared in print.",
+        "sl": "Vezani izvodi časopisa, mali oglasi in datirana obvestila omogočajo primerjavo, kdaj se je ime posameznega podjetja res pojavilo v tisku."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -1571,7 +1691,8 @@
       "id": "maja_koren",
       "kind": "npc",
       "display_name": {
-        "en": "Maja Koren"
+        "en": "Maja Koren",
+        "sl": "Maja Koren"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1582,7 +1703,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "A changed company name is not a crime and an old address is not proof. If you want me involved, bring me a chronology I can defend."
+        "en": "A changed company name is not a crime and an old address is not proof. If you want me involved, bring me a chronology I can defend.",
+        "sl": "Spremenjeno ime podjetja ni kaznivo dejanje in star naslov ni dokaz. Če hočeš, da se vključim, mi prinesi kronologijo, ki jo lahko zagovarjam."
       },
       "colors": {
         "primary": [
@@ -1605,7 +1727,8 @@
       "id": "nika_vidmar",
       "kind": "npc",
       "display_name": {
-        "en": "Nika Vidmar"
+        "en": "Nika Vidmar",
+        "sl": "Nika Vidmar"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1616,7 +1739,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "A print without a date is only a picture. If you still have the negative, I can tell you whether the light matches the year you think it does."
+        "en": "A print without a date is only a picture. If you still have the negative, I can tell you whether the light matches the year you think it does.",
+        "sl": "Fotografija brez datuma je samo slika. Če imaš še negativ, ti lahko povem, ali se svetloba ujema z letom, za katerega misliš, da je."
       },
       "colors": {
         "primary": [
@@ -1632,14 +1756,28 @@
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
-        "source_version": 3
-      }
+        "source_version": 3,
+        "note": "",
+        "day_posts": "Marburgum II extension (ADR-081): an authored day so the person is somewhere else in the evening and still within reach; not in the original."
+      },
+      "day_posts": [
+        {
+          "from": "18:00",
+          "to": "09:00",
+          "offset_m": [
+            6.0,
+            3.0
+          ],
+          "activity": "lab_closed"
+        }
+      ]
     },
     {
       "id": "drago_potocnik",
       "kind": "npc",
       "display_name": {
-        "en": "Drago Potočnik"
+        "en": "Drago Potočnik",
+        "sl": "Drago Potočnik"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1650,7 +1788,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "Half this city remembers a blue hatchback. That is not the same as remembering which one. The yard is open if you came about a starter noise or a delivery that does not add up."
+        "en": "Half this city remembers a blue hatchback. That is not the same as remembering which one. The yard is open if you came about a starter noise or a delivery that does not add up.",
+        "sl": "Pol mesta se spominja modrega avtomobila. To ni isto kot spominjati se, katerega. Dvorišče je odprto, če si prišel zaradi zvoka zaganjalnika ali dostave, ki se ne izide."
       },
       "colors": {
         "primary": [
@@ -1666,14 +1805,28 @@
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
-        "source_version": 3
-      }
+        "source_version": 3,
+        "note": "",
+        "day_posts": "Marburgum II extension (ADR-081): an authored day so the person is somewhere else in the evening and still within reach; not in the original."
+      },
+      "day_posts": [
+        {
+          "from": "18:00",
+          "to": "06:00",
+          "offset_m": [
+            -3.2,
+            -2.6
+          ],
+          "activity": "at_the_cab_rank"
+        }
+      ]
     },
     {
       "id": "alenka_pahor",
       "kind": "npc",
       "display_name": {
-        "en": "Alenka Pahor"
+        "en": "Alenka Pahor",
+        "sl": "Alenka Pahor"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1684,7 +1837,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "Visiting hours are on the door. If you mean the man who stopped buying his paper, he sat in this waiting room this morning and would not say which ward."
+        "en": "Visiting hours are on the door. If you mean the man who stopped buying his paper, he sat in this waiting room this morning and would not say which ward.",
+        "sl": "Ure obiskov so na vratih. Če misliš moškega, ki je nehal kupovati časopis — zjutraj je sedel v tej čakalnici in ni hotel povedati, na kateri oddelek gre."
       },
       "colors": {
         "primary": [
@@ -1707,7 +1861,8 @@
       "id": "lara_mlinar",
       "kind": "npc",
       "display_name": {
-        "en": "Lara Mlinar"
+        "en": "Lara Mlinar",
+        "sl": "Lara Mlinar"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1718,7 +1873,8 @@
       "range_cm": 400,
       "placement": "unplaced",
       "dialogue": {
-        "en": "The last bus toward Tabor left while I was still on the steps. I am not getting into a stranger's car, and I am not sleeping at the stop either."
+        "en": "The last bus toward Tabor left while I was still on the steps. I am not getting into a stranger's car, and I am not sleeping at the stop either.",
+        "sl": "Zadnji avtobus proti Taboru je odpeljal, ko sem še stala na stopnicah. V tuj avto ne bom sedla, na postaji pa tudi ne bom spala."
       },
       "colors": {
         "primary": [
@@ -1741,7 +1897,8 @@
       "id": "sara_vidic",
       "kind": "npc",
       "display_name": {
-        "en": "Sara Vidic"
+        "en": "Sara Vidic",
+        "sl": "Sara Vidic"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1752,7 +1909,8 @@
       "range_cm": 400,
       "placement": "unplaced",
       "dialogue": {
-        "en": "The rehearsal room is two floors up and the amplifier is older than the band. Take a flyer if you came for the night. If you came about the volume, the neighbours already have my number."
+        "en": "The rehearsal room is two floors up and the amplifier is older than the band. Take a flyer if you came for the night. If you came about the volume, the neighbours already have my number.",
+        "sl": "Vadnica je dve nadstropji višje in ojačevalec je starejši od benda. Vzemi letak, če si prišel za večer. Če si prišel zaradi glasnosti, imajo sosedje mojo številko že."
       },
       "colors": {
         "primary": [
@@ -1775,7 +1933,8 @@
       "id": "ivana_zupan",
       "kind": "npc",
       "display_name": {
-        "en": "Ivana Zupan"
+        "en": "Ivana Zupan",
+        "sl": "Ivana Zupan"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1786,7 +1945,8 @@
       "range_cm": 400,
       "placement": "unplaced",
       "dialogue": {
-        "en": "The spare room is let to a student. He pays, mostly. The telephone is the argument. My husband kept old office letters in the storage cage, if that is what you actually came for."
+        "en": "The spare room is let to a student. He pays, mostly. The telephone is the argument. My husband kept old office letters in the storage cage, if that is what you actually came for.",
+        "sl": "Sobo oddajam študentu. Plačuje, večinoma. Prepiramo se zaradi telefona. Moj mož je hranil stara pisarniška pisma v kleti, če si res prišel po to."
       },
       "colors": {
         "primary": [
@@ -1809,7 +1969,8 @@
       "id": "tine_kolar",
       "kind": "npc",
       "display_name": {
-        "en": "Tine Kolar"
+        "en": "Tine Kolar",
+        "sl": "Tine Kolar"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1820,7 +1981,8 @@
       "range_cm": 400,
       "placement": "unplaced",
       "dialogue": {
-        "en": "I study, I pay the rent, and I use the phone after ten because that is when the line is cheap. The modem is loud. I unplug it when she knocks."
+        "en": "I study, I pay the rent, and I use the phone after ten because that is when the line is cheap. The modem is loud. I unplug it when she knocks.",
+        "sl": "Študiram, plačujem najemnino in telefon uporabljam po deseti, ker je takrat linija poceni. Modem je glasen. Ko potrka, ga izklopim."
       },
       "colors": {
         "primary": [
@@ -1843,7 +2005,8 @@
       "id": "franc_kos",
       "kind": "npc",
       "display_name": {
-        "en": "Franc Kos"
+        "en": "Franc Kos",
+        "sl": "Franc Kos"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1854,7 +2017,8 @@
       "range_cm": 400,
       "placement": "unplaced",
       "dialogue": {
-        "en": "The blue one by the school gate is mine. It starts. That is the whole advertisement. The papers in the glovebox are older than the pupils who keep asking whose car it is."
+        "en": "The blue one by the school gate is mine. It starts. That is the whole advertisement. The papers in the glovebox are older than the pupils who keep asking whose car it is.",
+        "sl": "Modri pri šolskih vratih je moj. Vžge. To je ves oglas. Papirji v predalu so starejši od učencev, ki sprašujejo, čigav je."
       },
       "colors": {
         "primary": [
@@ -1877,7 +2041,8 @@
       "id": "milena_ferk",
       "kind": "npc",
       "display_name": {
-        "en": "Milena Ferk"
+        "en": "Milena Ferk",
+        "sl": "Milena Ferk"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1888,7 +2053,8 @@
       "range_cm": 400,
       "placement": "unplaced",
       "dialogue": {
-        "en": "He says the old debt was paid in marks. The receipt in my till says tolars. Both can be true, and I am still short. If you can make the years agree, I will listen."
+        "en": "He says the old debt was paid in marks. The receipt in my till says tolars. Both can be true, and I am still short. If you can make the years agree, I will listen.",
+        "sl": "Pravi, da je stari dolg plačal v markah. Račun v moji blagajni pravi, da v tolarjih. Lahko drži oboje, pa mi še vedno manjka. Če spraviš leta v sklad, te bom poslušala."
       },
       "colors": {
         "primary": [
@@ -1911,7 +2077,8 @@
       "id": "under_paint_new_owner",
       "kind": "npc",
       "display_name": {
-        "en": "New storefront owner"
+        "en": "New storefront owner",
+        "sl": "Novi lastnik trgovine"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -1922,7 +2089,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "The old sign has to come down before we reopen. If you can help strip it, try not to make the wall worse than it already is."
+        "en": "The old sign has to come down before we reopen. If you can help strip it, try not to make the wall worse than it already is.",
+        "sl": "Stari napis mora dol, preden spet odpremo. Če pomagaš postrgati, poskusi, da zid ne bo še slabši, kot je."
       },
       "colors": {
         "primary": [
@@ -1945,7 +2113,8 @@
       "id": "under_paint_layer_one",
       "kind": "location",
       "display_name": {
-        "en": "Storefront sign — first hidden layer"
+        "en": "Storefront sign — first hidden layer",
+        "sl": "Napis na izložbi — prva skrita plast"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -1956,7 +2125,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "Fresh paint has lifted away from an older business name and a telephone number underneath."
+        "en": "Fresh paint has lifted away from an older business name and a telephone number underneath.",
+        "sl": "Sveža barva je odstopila od starejšega imena podjetja in telefonske številke pod njim."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -1967,7 +2137,8 @@
       "id": "under_paint_layer_two",
       "kind": "location",
       "display_name": {
-        "en": "Storefront sign — second hidden layer"
+        "en": "Storefront sign — second hidden layer",
+        "sl": "Napis na izložbi — druga skrita plast"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -1978,7 +2149,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "A second name emerges in older lettering. Part of the street number survives near the edge."
+        "en": "A second name emerges in older lettering. Part of the street number survives near the edge.",
+        "sl": "V starejših črkah se pokaže drugo ime. Ob robu je ohranjen del hišne številke."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -1989,7 +2161,8 @@
       "id": "under_paint_layer_three",
       "kind": "location",
       "display_name": {
-        "en": "Storefront sign — third hidden layer"
+        "en": "Storefront sign — third hidden layer",
+        "sl": "Napis na izložbi — tretja skrita plast"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -2000,7 +2173,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "The third layer carries faded opening hours and a telephone prefix from an earlier numbering scheme."
+        "en": "The third layer carries faded opening hours and a telephone prefix from an earlier numbering scheme.",
+        "sl": "Tretja plast nosi zbledel delovni čas in telefonsko predklicno številko iz prejšnjega sistema številčenja."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -2011,7 +2185,8 @@
       "id": "under_paint_layer_four",
       "kind": "location",
       "display_name": {
-        "en": "Storefront sign — oldest hidden layer"
+        "en": "Storefront sign — oldest hidden layer",
+        "sl": "Napis na izložbi — najstarejša skrita plast"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -2022,7 +2197,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "The oldest lettering is fragile but legible. The company name matches an address from Vera's records."
+        "en": "The oldest lettering is fragile but legible. The company name matches an address from Vera's records.",
+        "sl": "Najstarejše črke so krhke, a berljive. Ime podjetja se ujema z naslovom iz Verinih zapisov."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -2033,7 +2209,8 @@
       "id": "brane_sign_painter",
       "kind": "npc",
       "display_name": {
-        "en": "Brane — sign painter"
+        "en": "Brane — sign painter",
+        "sl": "Brane — črkoslikar"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -2044,7 +2221,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "I painted over one of those names myself. Which year? That's the problem. Jobs blur together unless somebody kept the advertisement."
+        "en": "I painted over one of those names myself. Which year? That's the problem. Jobs blur together unless somebody kept the advertisement.",
+        "sl": "Eno od teh imen sem prebarval sam. Katerega leta? V tem je težava. Dela se zlijejo, razen če je kdo shranil oglas."
       },
       "colors": {
         "primary": [
@@ -2060,14 +2238,28 @@
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
-        "source_version": 3
-      }
+        "source_version": 3,
+        "note": "",
+        "day_posts": "Marburgum II extension (ADR-081): an authored day so the person is somewhere else in the evening and still within reach; not in the original."
+      },
+      "day_posts": [
+        {
+          "from": "17:00",
+          "to": "21:00",
+          "offset_m": [
+            10.0,
+            0.0
+          ],
+          "activity": "looks_at_old_signs"
+        }
+      ]
     },
     {
       "id": "melje_yard_gate",
       "kind": "location",
       "display_name": {
-        "en": "Raeda Melje yard gate"
+        "en": "Raeda Melje yard gate",
+        "sl": "Vrata dvorišča Raede v Meljah"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -2078,7 +2270,8 @@
       "range_cm": 500,
       "placement": "pad",
       "dialogue": {
-        "en": "The old industrial gate opens onto the fictional Raeda transport yard. Layers of paint, patched asphalt and changing notices show repeated reuse; none of them is evidence by itself."
+        "en": "The old industrial gate opens onto the fictional Raeda transport yard. Layers of paint, patched asphalt and changing notices show repeated reuse; none of them is evidence by itself.",
+        "sl": "Stara industrijska vrata vodijo na izmišljeno transportno dvorišče Raede. Plasti barve, krpan asfalt in menjajoča se obvestila kažejo na večkratno ponovno rabo; nič od tega samo po sebi ni dokaz."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -2090,7 +2283,8 @@
       "id": "melje_dispatch_lockers",
       "kind": "location",
       "display_name": {
-        "en": "Melje dispatch lockers"
+        "en": "Melje dispatch lockers",
+        "sl": "Omarice odpreme v Meljah"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -2101,7 +2295,8 @@
       "range_cm": 400,
       "placement": "pad",
       "dialogue": {
-        "en": "A row of dented lockers still carries pencilled names, route numbers and shift notes. One metal card names Tone Vogrin."
+        "en": "A row of dented lockers still carries pencilled names, route numbers and shift notes. One metal card names Tone Vogrin.",
+        "sl": "Vrsta zvitih omaric še nosi s svinčnikom napisana imena, številke prog in zapiske o izmenah. Na eni kovinski kartici piše Tone Vogrin."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -2113,7 +2308,8 @@
       "id": "melje_kainach_trucks",
       "kind": "location",
       "display_name": {
-        "en": "Abandoned Kainach trucks"
+        "en": "Abandoned Kainach trucks",
+        "sl": "Zapuščena tovornjaka Kainach"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -2124,7 +2320,8 @@
       "range_cm": 500,
       "placement": "pad",
       "dialogue": {
-        "en": "Two weathered trucks retain readable serial plates. Their presence proves a vehicle can be documented here; it does not explain who owned the yard."
+        "en": "Two weathered trucks retain readable serial plates. Their presence proves a vehicle can be documented here; it does not explain who owned the yard.",
+        "sl": "Dva preperela tovornjaka imata še berljivi serijski tablici. Njuna navzočnost dokazuje, da je tu mogoče dokumentirati vozilo; ne pojasni pa, čigavo je bilo dvorišče."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -2136,7 +2333,8 @@
       "id": "melje_vehicle_log_shelf",
       "kind": "location",
       "display_name": {
-        "en": "Melje vehicle-log shelf"
+        "en": "Melje vehicle-log shelf",
+        "sl": "Polica z dnevniki vozil v Meljah"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -2147,7 +2345,8 @@
       "range_cm": 400,
       "placement": "pad",
       "dialogue": {
-        "en": "A dispatch shelf holds a surviving vehicle log with dates, service marks and handwritten route abbreviations."
+        "en": "A dispatch shelf holds a surviving vehicle log with dates, service marks and handwritten route abbreviations.",
+        "sl": "Na polici odpreme je ohranjen dnevnik vozil z datumi, servisnimi oznakami in ročno pisanimi okrajšavami prog."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -2159,7 +2358,8 @@
       "id": "melje_archive_boxes",
       "kind": "location",
       "display_name": {
-        "en": "Melje clearance boxes"
+        "en": "Melje clearance boxes",
+        "sl": "Škatle za odvoz v Meljah"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -2170,7 +2370,8 @@
       "range_cm": 400,
       "placement": "pad",
       "dialogue": {
-        "en": "Clearance boxes contain ordinary schedules, duplicate forms and worn office files. One box is marked for Hall Three rather than disposal."
+        "en": "Clearance boxes contain ordinary schedules, duplicate forms and worn office files. One box is marked for Hall Three rather than disposal.",
+        "sl": "Škatle za odvoz vsebujejo navadne razporede, dvojnike obrazcev in obrabljene pisarniške mape. Ena škatla je označena za Halo tri, ne za uničenje."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -2182,7 +2383,8 @@
       "id": "tabor_exchange_counter",
       "kind": "location",
       "display_name": {
-        "en": "Former Tabor exchange counter"
+        "en": "Former Tabor exchange counter",
+        "sl": "Nekdanje okence menjalnice na Taboru"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -2193,7 +2395,8 @@
       "range_cm": 400,
       "placement": "pad",
       "dialogue": {
-        "en": "An old counterfoil book survives among routine exchange-office records. The carbon receipt supplies the date and amount to look for."
+        "en": "An old counterfoil book survives among routine exchange-office records. The carbon receipt supplies the date and amount to look for.",
+        "sl": "Med navadnimi zapisi menjalnice je ohranjena stara knjiga talonov. Račun z indigom pove, kateri datum in znesek iskati."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -2205,7 +2408,8 @@
       "id": "irena_vogrin",
       "kind": "npc",
       "display_name": {
-        "en": "Irena Vogrin"
+        "en": "Irena Vogrin",
+        "sl": "Irena Vogrin"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -2216,7 +2420,8 @@
       "range_cm": 400,
       "placement": "pad",
       "dialogue": {
-        "en": "That counterfoil is familiar. The books were always cleaner than the transactions. I can tell you which contract number to ask for, not what conclusion to draw."
+        "en": "That counterfoil is familiar. The books were always cleaner than the transactions. I can tell you which contract number to ask for, not what conclusion to draw.",
+        "sl": "Ta talon mi je znan. Knjige so bile vedno čistejše od poslov. Povem ti lahko, katero številko pogodbe zahtevati, ne pa, kakšen sklep potegniti."
       },
       "colors": {
         "primary": [
@@ -2240,7 +2445,8 @@
       "id": "pohorska_bank_archive_desk",
       "kind": "location",
       "display_name": {
-        "en": "Pohorska banka archive desk"
+        "en": "Pohorska banka archive desk",
+        "sl": "Arhivska miza Pohorske banke"
       },
       "verb": "inspect",
       "godot_position_m": [
@@ -2251,7 +2457,8 @@
       "range_cm": 400,
       "placement": "pad",
       "dialogue": {
-        "en": "The fictional bank archive index lists an annual Raeda file and a Kainach-related reference. The file itself is restricted; knowing that it exists is not the same as reading it."
+        "en": "The fictional bank archive index lists an annual Raeda file and a Kainach-related reference. The file itself is restricted; knowing that it exists is not the same as reading it.",
+        "sl": "Kazalo arhiva izmišljene banke navaja letno mapo Raede in sklic, povezan s Kainachom. Mapa sama je zaprta; vedeti, da obstaja, ni isto kot jo prebrati."
       },
       "provenance": {
         "source": "original Marburgum project/data/interactions.json",
@@ -2263,7 +2470,8 @@
       "id": "milan_solar",
       "kind": "npc",
       "display_name": {
-        "en": "Milan Šolar"
+        "en": "Milan Šolar",
+        "sl": "Milan Šolar"
       },
       "verb": "talk",
       "godot_position_m": [
@@ -2274,7 +2482,8 @@
       "range_cm": 400,
       "placement": "original",
       "dialogue": {
-        "en": "I bought the Pristan lease from the owner the registry named. I also stood at the Melje gate in 1990. Both things are true. If you want the old access schedules, ask me directly."
+        "en": "I bought the Pristan lease from the owner the registry named. I also stood at the Melje gate in 1990. Both things are true. If you want the old access schedules, ask me directly.",
+        "sl": "Najem v Pristanu sem kupil od lastnika, ki ga je navajal register. Leta 1990 sem tudi stal pri vratih v Meljah. Oboje drži. Če hočeš stare razporede dostopov, me vprašaj naravnost."
       },
       "colors": {
         "primary": [
@@ -2326,8 +2535,20 @@
       },
       "provenance": {
         "source": "original Marburgum docs/MAIN_STORYLINE.md §4 and Chapter IV (Tone Vogrin, driver for Drago)",
-        "note": "Canonical character; position newly chosen beside Drago Potočnik's workshop (no original position exists)."
-      }
+        "note": "Canonical character; position newly chosen beside Drago Potočnik's workshop (no original position exists).",
+        "day_posts": "Marburgum II extension (ADR-081): an authored day so the person is somewhere else in the evening and still within reach; not in the original."
+      },
+      "day_posts": [
+        {
+          "from": "22:00",
+          "to": "05:00",
+          "offset_m": [
+            6.0,
+            0.0
+          ],
+          "activity": "waiting_for_a_fare"
+        }
+      ]
     },
     {
       "id": "andrej_mlakar",
@@ -2362,8 +2583,20 @@
       },
       "provenance": {
         "source": "original Marburgum docs/NARRATIVE_BIBLE.md (Andrej Mlakar, computer technician)",
-        "note": "Canonical character; position newly chosen on the Lent row beside the Mariborski Glas archive desk."
-      }
+        "note": "Canonical character; position newly chosen on the Lent row beside the Mariborski Glas archive desk.",
+        "day_posts": "Marburgum II extension (ADR-081): an authored day so the person is somewhere else in the evening and still within reach; not in the original."
+      },
+      "day_posts": [
+        {
+          "from": "19:00",
+          "to": "23:00",
+          "offset_m": [
+            7.0,
+            0.0
+          ],
+          "activity": "break_outside"
+        }
+      ]
     },
     {
       "id": "jozica_rozman",
@@ -2406,7 +2639,8 @@
     {
       "id": "kiosk_67",
       "name": {
-        "en": "Kiosk 67"
+        "en": "Kiosk 67",
+        "sl": "Kiosk 67"
       },
       "npc": "petra_kralj",
       "hours": {
@@ -2425,7 +2659,8 @@
         "clock": "real civil time on the server: CET, CEST from 01:00 UTC on the last Sunday of March to 01:00 UTC on the last Sunday of October"
       },
       "closed_message": {
-        "en": "The shutter is down. Petra still nods if you have something else to ask, but the counter is closed until morning."
+        "en": "The shutter is down. Petra still nods if you have something else to ask, but the counter is closed until morning.",
+        "sl": "Roleta je spuščena. Petra ti še vedno pokima, če imaš kaj drugega za vprašati, a okence je zaprto do jutra."
       },
       "max_purchase_quantity": 5,
       "stock_policy": "shared_finite",
@@ -2492,14 +2727,16 @@
   "areas": {
     "outside": {
       "name": {
-        "en": "Maribor"
+        "en": "Maribor",
+        "sl": "Maribor"
       }
     },
     "entries": [
       {
         "id": "lent",
         "name": {
-          "en": "Lent"
+          "en": "Lent",
+          "sl": "Lent"
         },
         "map": "/Game/Maps/Lent",
         "center_m": [
@@ -2524,14 +2761,16 @@
     {
       "id": "lent_first_catch",
       "name": {
-        "en": "Something in the Water"
+        "en": "Something in the Water",
+        "sl": "Nekaj v vodi"
       },
       "category": "story",
       "offer_target": "lent_angler",
       "story_family": "The City in the Ledger",
       "requires_completed": [],
       "summary": {
-        "en": "An ordinary Fishing assignment on the Drava has turned into a trail of old records, addresses and people."
+        "en": "An ordinary Fishing assignment on the Drava has turned into a trail of old records, addresses and people.",
+        "sl": "Navaden ribiški izziv na Dravi se je spremenil v sled starih zapisov, naslovov in ljudi."
       },
       "start_items": [
         {
@@ -2543,11 +2782,13 @@
         {
           "id": "catch_first_fish",
           "objective_text": {
-            "en": "Catch one ordinary fish from the nearby Drava spot, then show it to the riverside angler."
+            "en": "Catch one ordinary fish from the nearby Drava spot, then show it to the riverside angler.",
+            "sl": "Ujemi eno navadno ribo na bližnjem mestu ob Dravi, nato jo pokaži ribiču ob reki."
           },
           "complete_target": "lent_angler",
           "action": {
-            "en": "Show the catch"
+            "en": "Show the catch",
+            "sl": "Pokaži ulov"
           },
           "objective": {
             "type": "inventory_any",
@@ -2561,17 +2802,20 @@
           },
           "final": false,
           "completion_text": {
-            "en": "As you compare the catch, the angler points out something metallic caught in debris along the bank."
+            "en": "As you compare the catch, the angler points out something metallic caught in debris along the bank.",
+            "sl": "Ko primerjata ulov, ribič pokaže na nekaj kovinskega, ujetega v naplavinah ob bregu."
           }
         },
         {
           "id": "recover_cashbox",
           "objective_text": {
-            "en": "Inspect the debris beside the Drava and pull out the battered metal cashbox."
+            "en": "Inspect the debris beside the Drava and pull out the battered metal cashbox.",
+            "sl": "Preglej naplavine ob Dravi in izvleci pretolčeno kovinsko blagajnico."
           },
           "complete_target": "drava_cashbox_debris",
           "action": {
-            "en": "Pull out the cashbox"
+            "en": "Pull out the cashbox",
+            "sl": "Izvleci blagajnico"
           },
           "objective": {
             "type": "interaction",
@@ -2605,17 +2849,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "Inside are a water-damaged accounting page, a brass key, a torn photograph, a faded transport ticket, a carbon-copy receipt, pencilled initials and the mark R-90."
+            "en": "Inside are a water-damaged accounting page, a brass key, a torn photograph, a faded transport ticket, a carbon-copy receipt, pencilled initials and the mark R-90.",
+            "sl": "V njej so od vode poškodovan knjigovodski list, medeninast ključ, strgana fotografija, zbledela vozovnica, račun z indigom, s svinčnikom zapisane začetnice in oznaka R-90."
           }
         },
         {
           "id": "identify_address",
           "objective_text": {
-            "en": "Ask Petra Kralj at the K67 kiosk about the pencilled address found in the cashbox."
+            "en": "Ask Petra Kralj at the K67 kiosk about the pencilled address found in the cashbox.",
+            "sl": "Petro Kralj pri kiosku K67 vprašaj o naslovu, napisanem s svinčnikom, ki si ga našel v blagajnici."
           },
           "complete_target": "petra_kralj",
           "action": {
-            "en": "Ask about the address"
+            "en": "Ask about the address",
+            "sl": "Vprašaj o naslovu"
           },
           "objective": {
             "type": "interaction",
@@ -2623,17 +2870,20 @@
           },
           "final": false,
           "completion_text": {
-            "en": "Petra recognizes the old address format and points you toward a shuttered service room further along Lent."
+            "en": "Petra recognizes the old address format and points you toward a shuttered service room further along Lent.",
+            "sl": "Petra prepozna stari zapis naslova in te usmeri k zaprtemu servisnemu prostoru naprej po Lentu."
           }
         },
         {
           "id": "open_service_room",
           "objective_text": {
-            "en": "Find the shuttered service room and try the small brass key from the cashbox."
+            "en": "Find the shuttered service room and try the small brass key from the cashbox.",
+            "sl": "Poišči zaprti servisni prostor in poskusi z majhnim medeninastim ključem iz blagajnice."
           },
           "complete_target": "raeda_service_room",
           "action": {
-            "en": "Try the brass key"
+            "en": "Try the brass key",
+            "sl": "Poskusi z medeninastim ključem"
           },
           "objective": {
             "type": "interaction",
@@ -2647,17 +2897,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The key fits. Inside, an empty shelf leaves a clean rectangle on the wall where a blue binder stood until recently."
+            "en": "The key fits. Inside, an empty shelf leaves a clean rectangle on the wall where a blue binder stood until recently.",
+            "sl": "Ključ se prilega. Notri prazna polica pušča čist pravokotnik na steni, kjer je do nedavnega stal moder registrator."
           }
         },
         {
           "id": "meet_vera",
           "objective_text": {
-            "en": "Show the accounting page to Vera Horvat and ask what R-90 means."
+            "en": "Show the accounting page to Vera Horvat and ask what R-90 means.",
+            "sl": "Pokaži knjigovodski list Veri Horvat in jo vprašaj, kaj pomeni R-90."
           },
           "complete_target": "vera_horvat",
           "action": {
-            "en": "Show Vera the page"
+            "en": "Show Vera the page",
+            "sl": "Pokaži Veri list"
           },
           "objective": {
             "type": "interaction",
@@ -2671,7 +2924,8 @@
           ],
           "final": true,
           "completion_text": {
-            "en": "Vera recognizes the page. The records were supposed to be gone. R-90 is enough for her to know that at least part of the old Blue Ledger survived."
+            "en": "Vera recognizes the page. The records were supposed to be gone. R-90 is enough for her to know that at least part of the old Blue Ledger survived.",
+            "sl": "Vera list prepozna. Zapisi bi morali biti uničeni. R-90 ji zadošča, da ve, da je vsaj del stare Modre knjige preživel."
           }
         }
       ],
@@ -2679,10 +2933,12 @@
       "journal_entry": {
         "id": "blue_ledger_r90",
         "title": {
-          "en": "Blue Ledger — R-90"
+          "en": "Blue Ledger — R-90",
+          "sl": "Modra knjiga — R-90"
         },
         "text": {
-          "en": "Vera Horvat recognized the water-damaged accounting page from a late-1980s municipal-industrial records network. The pencilled address led to a shuttered service room where a blue binder had recently been removed. The mark R-90 may identify a surviving part of what office staff once called the Blue Ledger."
+          "en": "Vera Horvat recognized the water-damaged accounting page from a late-1980s municipal-industrial records network. The pencilled address led to a shuttered service room where a blue binder had recently been removed. The mark R-90 may identify a surviving part of what office staff once called the Blue Ledger.",
+          "sl": "Vera Horvat je od vode poškodovani knjigovodski list prepoznala kot del mreže občinsko-industrijskih zapisov iz poznih osemdesetih. S svinčnikom zapisani naslov je vodil do zaprtega servisnega prostora, iz katerega so pred kratkim odnesli moder registrator. Oznaka R-90 morda označuje ohranjeni del tega, kar je pisarniško osebje nekoč imenovalo Modra knjiga."
         }
       },
       "provenance": {
@@ -2695,25 +2951,29 @@
     {
       "id": "kiosk_67_customer_stopped_coming",
       "name": {
-        "en": "Kiosk 67 — The Customer Who Stopped Coming"
+        "en": "Kiosk 67 — The Customer Who Stopped Coming",
+        "sl": "Kiosk 67 — Stranka, ki je nehala prihajati"
       },
       "category": "side_story",
       "offer_target": "petra_kralj",
       "story_family": "The City in the Ledger",
       "requires_completed": [],
       "summary": {
-        "en": "Petra Kralj has noticed that one of Kiosk 67's regular customers abruptly stopped appearing. Following his ordinary daily route reveals a small personal crisis tied to the same industrial records network surfacing elsewhere in Maribor."
+        "en": "Petra Kralj has noticed that one of Kiosk 67's regular customers abruptly stopped appearing. Following his ordinary daily route reveals a small personal crisis tied to the same industrial records network surfacing elsewhere in Maribor.",
+        "sl": "Petra Kralj je opazila, da se je ena od stalnih strank Kioska 67 nenadoma nehala pojavljati. Sledenje njegovi navadni dnevni poti razkrije majhno osebno stisko, povezano z isto mrežo industrijskih zapisov, ki se pojavlja drugod po Mariboru."
       },
       "start_items": [],
       "stages": [
         {
           "id": "bus_stop",
           "objective_text": {
-            "en": "Ask the regular at the nearby bus stop when the missing customer was last seen."
+            "en": "Ask the regular at the nearby bus stop when the missing customer was last seen.",
+            "sl": "Stalnega obiskovalca na bližnji postaji vprašaj, kdaj je pogrešano stranko nazadnje videl."
           },
           "complete_target": "kiosk_67_bus_regular",
           "action": {
-            "en": "Ask about the customer"
+            "en": "Ask about the customer",
+            "sl": "Vprašaj o stranki"
           },
           "objective": {
             "type": "interaction",
@@ -2721,17 +2981,20 @@
           },
           "final": false,
           "completion_text": {
-            "en": "The bus-stop regular remembers him changing his routine and heading toward a café instead of home."
+            "en": "The bus-stop regular remembers him changing his routine and heading toward a café instead of home.",
+            "sl": "Stalni obiskovalec postaje se spomni, da je spremenil navade in šel proti kavarni namesto domov."
           }
         },
         {
           "id": "cafe",
           "objective_text": {
-            "en": "Speak to the café regular about the customer's recent visits."
+            "en": "Speak to the café regular about the customer's recent visits.",
+            "sl": "Z gostom kavarne se pogovori o strankinih zadnjih obiskih."
           },
           "complete_target": "kiosk_67_cafe_regular",
           "action": {
-            "en": "Ask what happened"
+            "en": "Ask what happened",
+            "sl": "Vprašaj, kaj se je zgodilo"
           },
           "objective": {
             "type": "interaction",
@@ -2739,17 +3002,20 @@
           },
           "final": false,
           "completion_text": {
-            "en": "The café regular says he was worried about money and had been asking about temporary work."
+            "en": "The café regular says he was worried about money and had been asking about temporary work.",
+            "sl": "Gost kavarne pravi, da ga je skrbel denar in da je spraševal po priložnostnem delu."
           }
         },
         {
           "id": "neighbour",
           "objective_text": {
-            "en": "Find the customer's neighbour and ask whether he returned home."
+            "en": "Find the customer's neighbour and ask whether he returned home.",
+            "sl": "Poišči strankinega soseda in ga vprašaj, ali se je vrnil domov."
           },
           "complete_target": "kiosk_67_neighbour",
           "action": {
-            "en": "Ask the neighbour"
+            "en": "Ask the neighbour",
+            "sl": "Vprašaj soseda"
           },
           "objective": {
             "type": "interaction",
@@ -2757,17 +3023,20 @@
           },
           "final": false,
           "completion_text": {
-            "en": "The neighbour says he never returned that evening and mentions a hospital visit."
+            "en": "The neighbour says he never returned that evening and mentions a hospital visit.",
+            "sl": "Sosed pravi, da se tisti večer ni vrnil, in omeni obisk v bolnišnici."
           }
         },
         {
           "id": "hospital",
           "objective_text": {
-            "en": "Find the missing customer and ask what happened."
+            "en": "Find the missing customer and ask what happened.",
+            "sl": "Poišči pogrešano stranko in jo vprašaj, kaj se je zgodilo."
           },
           "complete_target": "kiosk_67_customer",
           "action": {
-            "en": "Speak to the customer"
+            "en": "Speak to the customer",
+            "sl": "Govori s stranko"
           },
           "objective": {
             "type": "interaction",
@@ -2775,17 +3044,20 @@
           },
           "final": false,
           "completion_text": {
-            "en": "He is safe. While explaining where he worked, he recognizes initials in a Blue Ledger photograph from an old machine-hall records chain."
+            "en": "He is safe. While explaining where he worked, he recognizes initials in a Blue Ledger photograph from an old machine-hall records chain.",
+            "sl": "Na varnem je. Ko razlaga, kje je delal, na fotografiji iz Modre knjige prepozna začetnice iz stare verige zapisov strojne hale."
           }
         },
         {
           "id": "resolution",
           "objective_text": {
-            "en": "Decide how to handle the customer's unpaid kiosk tab and immediate problem."
+            "en": "Decide how to handle the customer's unpaid kiosk tab and immediate problem.",
+            "sl": "Odloči, kaj storiti s strankinim neplačanim računom v kiosku in njeno takojšnjo težavo."
           },
           "complete_target": "kiosk_67_customer",
           "action": {
-            "en": "Choose a response"
+            "en": "Choose a response",
+            "sl": "Izberi odziv"
           },
           "objective": {
             "type": "choice"
@@ -2797,7 +3069,8 @@
             {
               "id": "pay_tab",
               "label": {
-                "en": "Pay his kiosk tab yourself."
+                "en": "Pay his kiosk tab yourself.",
+                "sl": "Sam plačaj njegov račun v kiosku."
               },
               "money_delta": -20,
               "skill_xp": {
@@ -2805,13 +3078,15 @@
               },
               "outcome": "tab_paid",
               "completion_text": {
-                "en": "You cover the debt. Petra later notes that the customer has begun appearing at the kiosk again."
+                "en": "You cover the debt. Petra later notes that the customer has begun appearing at the kiosk again.",
+                "sl": "Dolg poravnaš. Petra pozneje opazi, da se je stranka spet začela oglašati pri kiosku."
               }
             },
             {
               "id": "find_work",
               "label": {
-                "en": "Help him find temporary work."
+                "en": "Help him find temporary work.",
+                "sl": "Pomagaj mu najti priložnostno delo."
               },
               "money_delta": 0,
               "skill_xp": {
@@ -2819,13 +3094,15 @@
               },
               "outcome": "temporary_work",
               "completion_text": {
-                "en": "You connect him with temporary work and give him room to recover without erasing the debt."
+                "en": "You connect him with temporary work and give him room to recover without erasing the debt.",
+                "sl": "Povežeš ga s priložnostnim delom in mu daš prostor, da si opomore, ne da bi dolg izbrisal."
               }
             },
             {
               "id": "erase_debt",
               "label": {
-                "en": "Ask Petra to erase the debt."
+                "en": "Ask Petra to erase the debt.",
+                "sl": "Prosi Petro, naj dolg izbriše."
               },
               "money_delta": 0,
               "skill_xp": {
@@ -2833,13 +3110,15 @@
               },
               "outcome": "debt_erased",
               "completion_text": {
-                "en": "Petra agrees to strike the old tab from her ledger."
+                "en": "Petra agrees to strike the old tab from her ledger.",
+                "sl": "Petra se strinja, da stari račun prečrta iz svoje knjige."
               }
             },
             {
               "id": "sell_object",
               "label": {
-                "en": "Help him sell an object to cover the debt."
+                "en": "Help him sell an object to cover the debt.",
+                "sl": "Pomagaj mu prodati predmet, da pokrije dolg."
               },
               "money_delta": 0,
               "skill_xp": {
@@ -2848,19 +3127,22 @@
               },
               "outcome": "object_sold",
               "completion_text": {
-                "en": "You arrange a small sale that covers the kiosk debt without charity."
+                "en": "You arrange a small sale that covers the kiosk debt without charity.",
+                "sl": "Urediš majhno prodajo, ki pokrije dolg v kiosku brez miloščine."
               }
             },
             {
               "id": "leave_alone",
               "label": {
-                "en": "Leave the matter alone."
+                "en": "Leave the matter alone.",
+                "sl": "Pusti zadevo pri miru."
               },
               "money_delta": 0,
               "skill_xp": {},
               "outcome": "left_alone",
               "completion_text": {
-                "en": "You decide not to intervene further. The customer remains absent from his old routine."
+                "en": "You decide not to intervene further. The customer remains absent from his old routine.",
+                "sl": "Odločiš se, da se ne boš več vmešaval. Stranka ostaja odsotna iz svojih starih navad."
               }
             }
           ],
@@ -2871,10 +3153,12 @@
       "journal_entry": {
         "id": "kiosk_67_missing_customer",
         "title": {
-          "en": "Kiosk 67 — The Customer Who Stopped Coming"
+          "en": "Kiosk 67 — The Customer Who Stopped Coming",
+          "sl": "Kiosk 67 — Stranka, ki je nehala prihajati"
         },
         "text": {
-          "en": "A missing regular from Kiosk 67 was traced through his bus stop, café, neighbour and hospital visit. He recognized initials connected to the Blue Ledger network; how his immediate problem was resolved is now part of the persistent mission record."
+          "en": "A missing regular from Kiosk 67 was traced through his bus stop, café, neighbour and hospital visit. He recognized initials connected to the Blue Ledger network; how his immediate problem was resolved is now part of the persistent mission record.",
+          "sl": "Pogrešano stalno stranko Kioska 67 si izsledil prek avtobusne postaje, kavarne, soseda in obiska v bolnišnici. Prepoznal je začetnice, povezane z mrežo Modre knjige; kako je bila rešena njegova takojšnja težava, je zdaj del trajnega zapisa misije."
         }
       },
       "provenance": {
@@ -2887,14 +3171,16 @@
     {
       "id": "lent_late_delivery",
       "name": {
-        "en": "Late Delivery"
+        "en": "Late Delivery",
+        "sl": "Zamujena dostava"
       },
       "category": "urban_delivery",
       "offer_target": "lent_dispatcher",
       "story_family": "Registered",
       "requires_completed": [],
       "summary": {
-        "en": "A delivery clerk in Lent handed you an overdue brown-paper parcel of spare parts for a workshop farther west along the Drava."
+        "en": "A delivery clerk in Lent handed you an overdue brown-paper parcel of spare parts for a workshop farther west along the Drava.",
+        "sl": "Uslužbenec dostave na Lentu ti je izročil zamujen paket v rjavem papirju z rezervnimi deli za delavnico dlje zahodno ob Dravi."
       },
       "start_items": [
         {
@@ -2906,11 +3192,13 @@
         {
           "id": "deliver_parcel",
           "objective_text": {
-            "en": "Deliver the brown-paper parcel to the West Lent mechanic. Walk the promenade or use the hatchback parked near the delivery clerk."
+            "en": "Deliver the brown-paper parcel to the West Lent mechanic. Walk the promenade or use the hatchback parked near the delivery clerk.",
+            "sl": "Paket v rjavem papirju dostavi mehaniku na zahodnem Lentu. Pojdi peš po nabrežju ali vzemi avto, parkiran pri uslužbencu dostave."
           },
           "complete_target": "lent_workshop_mechanic",
           "action": {
-            "en": "Hand over parcel"
+            "en": "Hand over parcel",
+            "sl": "Izroči paket"
           },
           "objective": {
             "type": "inventory_any",
@@ -2922,17 +3210,20 @@
           },
           "final": false,
           "completion_text": {
-            "en": "The mechanic opens the parcel, confirms the parts are finally here, and counts out the delivery fee."
+            "en": "The mechanic opens the parcel, confirms the parts are finally here, and counts out the delivery fee.",
+            "sl": "Mehanik odpre paket, potrdi, da so deli končno tu, in odšteje dostavnino."
           }
         },
         {
           "id": "resolve_fee",
           "objective_text": {
-            "en": "Decide how to handle the 90 delivery fee."
+            "en": "Decide how to handle the 90 delivery fee.",
+            "sl": "Odloči, kaj storiti z dostavnino 90."
           },
           "complete_target": "lent_workshop_mechanic",
           "action": {
-            "en": "Choose fee outcome"
+            "en": "Choose fee outcome",
+            "sl": "Izberi izid dostavnine"
           },
           "objective": {
             "type": "choice"
@@ -2941,19 +3232,22 @@
             {
               "id": "take_full_fee",
               "label": {
-                "en": "Take the full 90."
+                "en": "Take the full 90.",
+                "sl": "Vzemi vseh 90."
               },
               "money_delta": 90,
               "skill_xp": {},
               "outcome": "full_fee_taken",
               "completion_text": {
-                "en": "You take the full delivery fee. The clerk remains responsible for the delay."
+                "en": "You take the full delivery fee. The clerk remains responsible for the delay.",
+                "sl": "Vzameš celotno dostavnino. Za zamudo ostaja odgovoren uslužbenec."
               }
             },
             {
               "id": "leave_clerk_share",
               "label": {
-                "en": "Leave 30 for the clerk."
+                "en": "Leave 30 for the clerk.",
+                "sl": "Pusti 30 uslužbencu."
               },
               "money_delta": 60,
               "skill_xp": {
@@ -2961,7 +3255,8 @@
               },
               "outcome": "clerk_share_left",
               "completion_text": {
-                "en": "You leave 30 of the fee for the clerk and gain local goodwill."
+                "en": "You leave 30 of the fee for the clerk and gain local goodwill.",
+                "sl": "Uslužbencu pustiš 30 od dostavnine in si pridobiš lokalno naklonjenost."
               }
             }
           ],
@@ -2972,10 +3267,12 @@
       "journal_entry": {
         "id": "late_delivery",
         "title": {
-          "en": "Late Delivery"
+          "en": "Late Delivery",
+          "sl": "Zamujena dostava"
         },
         "text": {
-          "en": "The overdue parcel reached the West Lent workshop. The way the delivery fee was handled became part of the mission record and changed how the clerk remembers the run."
+          "en": "The overdue parcel reached the West Lent workshop. The way the delivery fee was handled became part of the mission record and changed how the clerk remembers the run.",
+          "sl": "Zamujeni paket je prispel v delavnico na zahodnem Lentu. Kako je bila razdeljena dostavnina, je postalo del zapisa misije in spremenilo, kako se uslužbenec spominja dostave."
         }
       },
       "provenance": {
@@ -2988,25 +3285,29 @@
     {
       "id": "hall_three_last_shift",
       "name": {
-        "en": "Last Shift — Keys to Hall Three"
+        "en": "Last Shift — Keys to Hall Three",
+        "sl": "Zadnja izmena — ključi Hale tri"
       },
       "category": "side_story",
       "offer_target": "matej_hall_three",
       "story_family": "The City in the Ledger",
       "requires_completed": [],
       "summary": {
-        "en": "Matej has to return the keys to Hall Three by Friday, but before the building changes hands he wants one last inventory of the tools, boxes and disputed equipment inside."
+        "en": "Matej has to return the keys to Hall Three by Friday, but before the building changes hands he wants one last inventory of the tools, boxes and disputed equipment inside.",
+        "sl": "Matej mora do petka vrniti ključe Hale tri, a preden stavba zamenja lastnika, hoče še zadnji popis orodja, škatel in sporne opreme v njej."
       },
       "start_items": [],
       "stages": [
         {
           "id": "photograph_plates",
           "objective_text": {
-            "en": "Photograph the identification plates on the remaining machines in Hall Three."
+            "en": "Photograph the identification plates on the remaining machines in Hall Three.",
+            "sl": "Fotografiraj identifikacijske tablice preostalih strojev v Hali tri."
           },
           "complete_target": "hall_three_machine_plate",
           "action": {
-            "en": "Photograph machine plates"
+            "en": "Photograph machine plates",
+            "sl": "Fotografiraj tablice strojev"
           },
           "objective": {
             "type": "interaction",
@@ -3020,17 +3321,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The plates are recorded. Several serial numbers do not match the handwritten inventory sheet Matej was given."
+            "en": "The plates are recorded. Several serial numbers do not match the handwritten inventory sheet Matej was given.",
+            "sl": "Tablice so zabeležene. Več serijskih številk se ne ujema z ročno pisanim popisnim listom, ki ga je dobil Matej."
           }
         },
         {
           "id": "sort_boxes",
           "objective_text": {
-            "en": "Check the labelled boxes and separate company stock from items marked with workers' names."
+            "en": "Check the labelled boxes and separate company stock from items marked with workers' names.",
+            "sl": "Preglej označene škatle in loči zalogo podjetja od predmetov z imeni delavcev."
           },
           "complete_target": "hall_three_labelled_boxes",
           "action": {
-            "en": "Sort labelled boxes"
+            "en": "Sort labelled boxes",
+            "sl": "Razvrsti označene škatle"
           },
           "objective": {
             "type": "interaction",
@@ -3038,17 +3342,20 @@
           },
           "final": false,
           "completion_text": {
-            "en": "Most boxes are clear, but a few carry old personal names over newer company labels."
+            "en": "Most boxes are clear, but a few carry old personal names over newer company labels.",
+            "sl": "Večina škatel je jasnih, nekaj pa jih nosi stara osebna imena pod novejšimi nalepkami podjetja."
           }
         },
         {
           "id": "check_ownership",
           "objective_text": {
-            "en": "Ask a Hall Three worker which disputed tools were personally owned, borrowed or promised to workers."
+            "en": "Ask a Hall Three worker which disputed tools were personally owned, borrowed or promised to workers.",
+            "sl": "Delavca v Hali tri vprašaj, katero sporno orodje je bilo osebna last, izposojeno ali obljubljeno delavcem."
           },
           "complete_target": "hall_three_worker",
           "action": {
-            "en": "Ask about the tools"
+            "en": "Ask about the tools",
+            "sl": "Vprašaj o orodju"
           },
           "objective": {
             "type": "interaction",
@@ -3056,17 +3363,20 @@
           },
           "final": false,
           "completion_text": {
-            "en": "The worker insists that several tools were promised to the crew when the hall closed, but the paperwork never recorded the agreement."
+            "en": "The worker insists that several tools were promised to the crew when the hall closed, but the paperwork never recorded the agreement.",
+            "sl": "Delavec vztraja, da je bilo več kosov orodja ob zaprtju hale obljubljenih ekipi, a dogovor ni bil nikoli zapisan."
           }
         },
         {
           "id": "find_keys",
           "objective_text": {
-            "en": "Find the missing Hall Three keyring before the handover."
+            "en": "Find the missing Hall Three keyring before the handover.",
+            "sl": "Pred predajo poišči manjkajoče ključe Hale tri."
           },
           "complete_target": "hall_three_key_hook",
           "action": {
-            "en": "Search for the keys"
+            "en": "Search for the keys",
+            "sl": "Poišči ključe"
           },
           "objective": {
             "type": "interaction",
@@ -3080,17 +3390,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The missing keyring is hanging behind an old inspection board, including one unlabelled steel-cabinet key."
+            "en": "The missing keyring is hanging behind an old inspection board, including one unlabelled steel-cabinet key.",
+            "sl": "Manjkajoči ključi visijo za staro kontrolno tablo, med njimi tudi neoznačen ključ jeklene omare."
           }
         },
         {
           "id": "talk_guard",
           "objective_text": {
-            "en": "Ask the night guard what has been leaving Hall Three after closing time."
+            "en": "Ask the night guard what has been leaving Hall Three after closing time.",
+            "sl": "Nočnega čuvaja vprašaj, kaj je po zaprtju odhajalo iz Hale tri."
           },
           "complete_target": "hall_three_night_guard",
           "action": {
-            "en": "Question the night guard"
+            "en": "Question the night guard",
+            "sl": "Izprašaj nočnega čuvaja"
           },
           "objective": {
             "type": "interaction",
@@ -3098,17 +3411,20 @@
           },
           "final": false,
           "completion_text": {
-            "en": "The guard has seen workers carrying small tool cases out, but says nobody has tried to move company machinery."
+            "en": "The guard has seen workers carrying small tool cases out, but says nobody has tried to move company machinery.",
+            "sl": "Čuvaj je videl delavce, ki so odnašali majhne kovčke z orodjem, a pravi, da ni nihče poskušal premakniti strojev podjetja."
           }
         },
         {
           "id": "open_cabinet",
           "objective_text": {
-            "en": "Try the unlabelled key on the locked steel cabinet behind the machine line."
+            "en": "Try the unlabelled key on the locked steel cabinet behind the machine line.",
+            "sl": "Neoznačeni ključ poskusi na zaklenjeni jekleni omari za vrsto strojev."
           },
           "complete_target": "hall_three_steel_cabinet",
           "action": {
-            "en": "Open steel cabinet"
+            "en": "Open steel cabinet",
+            "sl": "Odpri jekleno omaro"
           },
           "objective": {
             "type": "interaction",
@@ -3128,17 +3444,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "Inside is an old transport-maintenance book carrying Raeda Network routing marks and workshop references absent from the formal inventory."
+            "en": "Inside is an old transport-maintenance book carrying Raeda Network routing marks and workshop references absent from the formal inventory.",
+            "sl": "V njej je stara knjiga vzdrževanja prevoznih sredstev z oznakami poti mreže Raeda in sklici na delavnice, ki jih v uradnem popisu ni."
           }
         },
         {
           "id": "resolve_inventory",
           "objective_text": {
-            "en": "Decide how Matej should settle the disputed tools before Hall Three changes hands."
+            "en": "Decide how Matej should settle the disputed tools before Hall Three changes hands.",
+            "sl": "Odloči, kako naj Matej uredi sporno orodje, preden Hala tri zamenja lastnika."
           },
           "complete_target": "matej_hall_three",
           "action": {
-            "en": "Settle the inventory"
+            "en": "Settle the inventory",
+            "sl": "Uredi popis"
           },
           "objective": {
             "type": "choice"
@@ -3150,7 +3469,8 @@
             {
               "id": "formal_inventory",
               "label": {
-                "en": "Insist on the formal inventory."
+                "en": "Insist on the formal inventory.",
+                "sl": "Vztrajaj pri uradnem popisu."
               },
               "money_delta": 0,
               "skill_xp": {
@@ -3158,13 +3478,15 @@
               },
               "outcome": "hall_empty",
               "completion_text": {
-                "en": "The official inventory wins. Disputed tools stay with the property and Hall Three is cleared under the formal handover."
+                "en": "The official inventory wins. Disputed tools stay with the property and Hall Three is cleared under the formal handover.",
+                "sl": "Uradni popis zmaga. Sporno orodje ostane s premoženjem in Hala tri je izpraznjena po uradni predaji."
               }
             },
             {
               "id": "negotiate_settlement",
               "label": {
-                "en": "Negotiate a settlement with the workers."
+                "en": "Negotiate a settlement with the workers.",
+                "sl": "Izpogajaj dogovor z delavci."
               },
               "money_delta": 0,
               "skill_xp": {
@@ -3172,13 +3494,15 @@
               },
               "outcome": "cooperative_run",
               "completion_text": {
-                "en": "Matej records a negotiated settlement. Several tools remain with workers under a written cooperative arrangement."
+                "en": "Matej records a negotiated settlement. Several tools remain with workers under a written cooperative arrangement.",
+                "sl": "Matej zapiše izpogajan dogovor. Več kosov orodja ostane delavcem po pisnem zadružnem dogovoru."
               }
             },
             {
               "id": "buy_selected_tools",
               "label": {
-                "en": "Buy selected tools legitimately."
+                "en": "Buy selected tools legitimately.",
+                "sl": "Izbrano orodje kupi po pošteni poti."
               },
               "money_delta": -80,
               "skill_xp": {
@@ -3187,19 +3511,22 @@
               },
               "outcome": "small_workshops",
               "completion_text": {
-                "en": "You put money behind the disputed claims and document the sale. The tools later seed several small workshops."
+                "en": "You put money behind the disputed claims and document the sale. The tools later seed several small workshops.",
+                "sl": "Za sporne zahtevke daš denar in prodajo dokumentiraš. Orodje pozneje postane zametek več majhnih delavnic."
               }
             },
             {
               "id": "side_with_worker",
               "label": {
-                "en": "Let one worker take the disputed tools."
+                "en": "Let one worker take the disputed tools.",
+                "sl": "Pusti enemu delavcu, da vzame sporno orodje."
               },
               "money_delta": 0,
               "skill_xp": {},
               "outcome": "hall_sealed",
               "completion_text": {
-                "en": "You side with the worker despite the unresolved paperwork. The immediate dispute ends, but future trust around the hall is damaged."
+                "en": "You side with the worker despite the unresolved paperwork. The immediate dispute ends, but future trust around the hall is damaged.",
+                "sl": "Postaviš se na delavčevo stran kljub nerešenim papirjem. Takojšnji spor se konča, a zaupanje okrog hale je načeto."
               }
             }
           ],
@@ -3210,10 +3537,12 @@
       "journal_entry": {
         "id": "hall_three_last_shift",
         "title": {
-          "en": "Last Shift — Keys to Hall Three"
+          "en": "Last Shift — Keys to Hall Three",
+          "sl": "Zadnja izmena — ključi Hale tri"
         },
         "text": {
-          "en": "Hall Three's final inventory exposed ambiguous ownership claims, missing keys and an old Raeda Network transport-maintenance book hidden behind a machine. The settlement chosen for the disputed tools remains part of the industrial branch record."
+          "en": "Hall Three's final inventory exposed ambiguous ownership claims, missing keys and an old Raeda Network transport-maintenance book hidden behind a machine. The settlement chosen for the disputed tools remains part of the industrial branch record.",
+          "sl": "Zadnji popis Hale tri je razkril nejasne lastniške zahtevke, manjkajoče ključe in staro knjigo vzdrževanja prevoznih sredstev mreže Raeda, skrito za strojem. Izbrani dogovor o spornem orodju ostaja del zapisa industrijske veje."
         }
       },
       "provenance": {
@@ -3226,7 +3555,8 @@
     {
       "id": "raeda_names_no_longer_match",
       "name": {
-        "en": "Names That No Longer Match"
+        "en": "Names That No Longer Match",
+        "sl": "Imena, ki se ne ujemajo več"
       },
       "category": "story",
       "offer_target": "vera_horvat",
@@ -3235,18 +3565,21 @@
         "lent_first_catch"
       ],
       "summary": {
-        "en": "Vera's R-90 page points beyond the shuttered service room. Old addresses, changed company names, returned post and newspaper records may show how the Raeda Network was split among successor arrangements."
+        "en": "Vera's R-90 page points beyond the shuttered service room. Old addresses, changed company names, returned post and newspaper records may show how the Raeda Network was split among successor arrangements.",
+        "sl": "Verin list R-90 kaže dlje od zaprtega servisnega prostora. Stari naslovi, spremenjena imena podjetij, vrnjena pošta in časopisni zapisi lahko pokažejo, kako je bila mreža Raeda razdeljena med naslednike."
       },
       "start_items": [],
       "stages": [
         {
           "id": "trace_directory",
           "objective_text": {
-            "en": "Check the old telephone-directory entry Vera marked beside R-90."
+            "en": "Check the old telephone-directory entry Vera marked beside R-90.",
+            "sl": "Preveri stari vpis v telefonskem imeniku, ki ga je Vera označila ob R-90."
           },
           "complete_target": "raeda_directory_entry",
           "action": {
-            "en": "Copy the directory entry"
+            "en": "Copy the directory entry",
+            "sl": "Prepiši vpis v imeniku"
           },
           "objective": {
             "type": "interaction",
@@ -3260,17 +3593,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The directory still lists the old Raeda service address and a telephone number under a name no longer used on the building."
+            "en": "The directory still lists the old Raeda service address and a telephone number under a name no longer used on the building.",
+            "sl": "Imenik še vedno navaja stari servisni naslov Raede in telefonsko številko pod imenom, ki ga na stavbi ni več."
           }
         },
         {
           "id": "check_successor_sign",
           "objective_text": {
-            "en": "Compare the old directory entry with the businesses now using the Raeda address."
+            "en": "Compare the old directory entry with the businesses now using the Raeda address.",
+            "sl": "Stari vpis v imeniku primerjaj s podjetji, ki zdaj uporabljajo naslov Raede."
           },
           "complete_target": "raeda_successor_sign",
           "action": {
-            "en": "Compare the names"
+            "en": "Compare the names",
+            "sl": "Primerjaj imena"
           },
           "objective": {
             "type": "interaction",
@@ -3290,17 +3626,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The old Raeda name has been covered by newer company plates. Unit numbers and a pasted notice suggest the premises were split rather than transferred as one block."
+            "en": "The old Raeda name has been covered by newer company plates. Unit numbers and a pasted notice suggest the premises were split rather than transferred as one block.",
+            "sl": "Staro ime Raede so prekrile novejše table podjetij. Številke enot in nalepljeno obvestilo nakazujejo, da so prostore razdelili, ne prenesli v enem kosu."
           }
         },
         {
           "id": "trace_returned_mail",
           "objective_text": {
-            "en": "Ask Marija Sever what happened to post addressed to the old Raeda service name."
+            "en": "Ask Marija Sever what happened to post addressed to the old Raeda service name.",
+            "sl": "Marijo Sever vprašaj, kaj se je zgodilo s pošto, naslovljeno na staro servisno ime Raede."
           },
           "complete_target": "marija_sever",
           "action": {
-            "en": "Ask about returned mail"
+            "en": "Ask about returned mail",
+            "sl": "Vprašaj o vrnjeni pošti"
           },
           "objective": {
             "type": "interaction",
@@ -3314,17 +3653,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "Marija remembers repeated returns and forwarding instructions under different successor names. She keeps one undeliverable envelope as an example of the address transition."
+            "en": "Marija remembers repeated returns and forwarding instructions under different successor names. She keeps one undeliverable envelope as an example of the address transition.",
+            "sl": "Marija se spominja ponavljajočih se vračil in navodil za preusmeritev pod različnimi imeni naslednikov. Eno nevročljivo kuverto hrani kot primer menjave naslova."
           }
         },
         {
           "id": "check_kiosk_records",
           "objective_text": {
-            "en": "Ask Petra whether newspapers or classified notices mentioned the successor names."
+            "en": "Ask Petra whether newspapers or classified notices mentioned the successor names.",
+            "sl": "Petro vprašaj, ali so časopisi ali mali oglasi omenjali imena naslednikov."
           },
           "complete_target": "petra_kralj",
           "action": {
-            "en": "Check Petra's clippings"
+            "en": "Check Petra's clippings",
+            "sl": "Preglej Petrine izrezke"
           },
           "objective": {
             "type": "interaction",
@@ -3338,17 +3680,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "Petra finds a clipped notice that uses one successor name months before another source claims the old Raeda name disappeared."
+            "en": "Petra finds a clipped notice that uses one successor name months before another source claims the old Raeda name disappeared.",
+            "sl": "Petra najde izrezano obvestilo, ki eno ime naslednika uporablja mesece preden drug vir trdi, da je staro ime Raede izginilo."
           }
         },
         {
           "id": "compare_newspaper_archive",
           "objective_text": {
-            "en": "Compare Petra's clipping with the dated copies at the Mariborski Glas archive."
+            "en": "Compare Petra's clipping with the dated copies at the Mariborski Glas archive.",
+            "sl": "Petrin izrezek primerjaj z datiranimi izvodi v arhivu Mariborskega glasa."
           },
           "complete_target": "mariborski_glas_archive",
           "action": {
-            "en": "Check the archive"
+            "en": "Check the archive",
+            "sl": "Preglej arhiv"
           },
           "objective": {
             "type": "interaction",
@@ -3362,17 +3707,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The archive confirms the clipping date. The Raeda Network was broken into several successor arrangements whose names overlapped during the transition."
+            "en": "The archive confirms the clipping date. The Raeda Network was broken into several successor arrangements whose names overlapped during the transition.",
+            "sl": "Arhiv potrdi datum izrezka. Mreža Raeda je bila razbita na več naslednikov, katerih imena so se med prehodom prekrivala."
           }
         },
         {
           "id": "decide_maja",
           "objective_text": {
-            "en": "Maja Koren is nearby. Decide whether to tell her what the records show or keep the investigation private for now."
+            "en": "Maja Koren is nearby. Decide whether to tell her what the records show or keep the investigation private for now.",
+            "sl": "Maja Koren je v bližini. Odloči, ali ji poveš, kaj kažejo zapisi, ali preiskavo za zdaj obdržiš zase."
           },
           "complete_target": "maja_koren",
           "action": {
-            "en": "Decide what to tell Maja"
+            "en": "Decide what to tell Maja",
+            "sl": "Odloči, kaj povedati Maji"
           },
           "objective": {
             "type": "choice"
@@ -3381,7 +3729,8 @@
             {
               "id": "tell_maja",
               "label": {
-                "en": "Tell Maja what you have found."
+                "en": "Tell Maja what you have found.",
+                "sl": "Povej Maji, kaj si našel."
               },
               "money_delta": 0,
               "skill_xp": {},
@@ -3391,13 +3740,15 @@
                 "investigation_private": false
               },
               "completion_text": {
-                "en": "You give Maja the chronology but stress that the papers show overlapping successor arrangements, not proof of wrongdoing. She agrees to treat it as a lead, not a conclusion."
+                "en": "You give Maja the chronology but stress that the papers show overlapping successor arrangements, not proof of wrongdoing. She agrees to treat it as a lead, not a conclusion.",
+                "sl": "Maji izročiš kronologijo, a poudariš, da papirji kažejo prekrivajoče se naslednike, ne dokaza za nepravilnosti. Strinja se, da jo bo obravnavala kot sled, ne kot sklep."
               }
             },
             {
               "id": "keep_private",
               "label": {
-                "en": "Keep the investigation private for now."
+                "en": "Keep the investigation private for now.",
+                "sl": "Preiskavo za zdaj obdrži zase."
               },
               "money_delta": 0,
               "skill_xp": {},
@@ -3407,7 +3758,8 @@
                 "investigation_private": true
               },
               "completion_text": {
-                "en": "You keep the chronology out of the newspaper for now. Maja accepts that you are not ready to share the documents, but remembers the refusal."
+                "en": "You keep the chronology out of the newspaper for now. Maja accepts that you are not ready to share the documents, but remembers the refusal.",
+                "sl": "Kronologije za zdaj ne daš časopisu. Maja sprejme, da še nisi pripravljen deliti dokumentov, a si zavrnitev zapomni."
               }
             }
           ],
@@ -3418,10 +3770,12 @@
       "journal_entry": {
         "id": "blue_ledger_names_no_longer_match",
         "title": {
-          "en": "Blue Ledger — Names That No Longer Match"
+          "en": "Blue Ledger — Names That No Longer Match",
+          "sl": "Modra knjiga — Imena, ki se ne ujemajo več"
         },
         "text": {
-          "en": "The first Raeda addresses led through a telephone-directory copy, changed signage, returned post, kiosk records and a newspaper archive. Together they show that the network was divided among several successor arrangements rather than simply disappearing. Your decision about whether to brief Maja Koren is preserved with the investigation."
+          "en": "The first Raeda addresses led through a telephone-directory copy, changed signage, returned post, kiosk records and a newspaper archive. Together they show that the network was divided among several successor arrangements rather than simply disappearing. Your decision about whether to brief Maja Koren is preserved with the investigation.",
+          "sl": "Prvi naslovi Raede so vodili prek prepisa iz telefonskega imenika, spremenjenih napisov, vrnjene pošte, zapisov kioska in časopisnega arhiva. Skupaj kažejo, da je bila mreža razdeljena med več naslednikov, ne da je preprosto izginila. Tvoja odločitev, ali obvestiš Majo Koren, ostaja shranjena s preiskavo."
         }
       },
       "provenance": {
@@ -3434,25 +3788,29 @@
     {
       "id": "under_the_paint_four_names",
       "name": {
-        "en": "Under the Paint — Four Names on One Wall"
+        "en": "Under the Paint — Four Names on One Wall",
+        "sl": "Pod barvo — štiri imena na enem zidu"
       },
       "category": "side_story",
       "offer_target": "under_paint_new_owner",
       "story_family": "The City in the Ledger",
       "requires_completed": [],
       "summary": {
-        "en": "A new storefront owner wants an old painted sign removed. Each layer reveals an older business name, turning routine renovation into a reconstruction of who occupied the address and when."
+        "en": "A new storefront owner wants an old painted sign removed. Each layer reveals an older business name, turning routine renovation into a reconstruction of who occupied the address and when.",
+        "sl": "Novi lastnik trgovine hoče odstraniti star poslikan napis. Vsaka plast razkrije starejše ime podjetja in vsakdanjo prenovo spremeni v rekonstrukcijo tega, kdo je bil na naslovu in kdaj."
       },
       "start_items": [],
       "stages": [
         {
           "id": "reveal_first_name",
           "objective_text": {
-            "en": "Help strip the newest painted layer and photograph the first older business name before more paint is removed."
+            "en": "Help strip the newest painted layer and photograph the first older business name before more paint is removed.",
+            "sl": "Pomagaj postrgati najnovejšo plast barve in fotografiraj prvo starejše ime podjetja, preden odstranijo več barve."
           },
           "complete_target": "under_paint_layer_one",
           "action": {
-            "en": "Photograph first layer"
+            "en": "Photograph first layer",
+            "sl": "Fotografiraj prvo plast"
           },
           "objective": {
             "type": "interaction",
@@ -3466,17 +3824,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The first hidden name is photographed. Its lettering is newer than the wall beneath it and includes a different telephone number."
+            "en": "The first hidden name is photographed. Its lettering is newer than the wall beneath it and includes a different telephone number.",
+            "sl": "Prvo skrito ime je fotografirano. Njegove črke so novejše od zidu pod njim in vsebujejo drugo telefonsko številko."
           }
         },
         {
           "id": "reveal_second_name",
           "objective_text": {
-            "en": "Remove the next layer carefully and photograph the second hidden business name."
+            "en": "Remove the next layer carefully and photograph the second hidden business name.",
+            "sl": "Previdno odstrani naslednjo plast in fotografiraj drugo skrito ime podjetja."
           },
           "complete_target": "under_paint_layer_two",
           "action": {
-            "en": "Photograph second layer"
+            "en": "Photograph second layer",
+            "sl": "Fotografiraj drugo plast"
           },
           "objective": {
             "type": "interaction",
@@ -3490,17 +3851,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "A second business name appears beneath the first, with older typography and a partially visible street number."
+            "en": "A second business name appears beneath the first, with older typography and a partially visible street number.",
+            "sl": "Pod prvim se pokaže drugo ime podjetja, s starejšo tipografijo in delno vidno hišno številko."
           }
         },
         {
           "id": "reveal_third_name",
           "objective_text": {
-            "en": "Continue the removal and photograph the third business name before it is damaged."
+            "en": "Continue the removal and photograph the third business name before it is damaged.",
+            "sl": "Nadaljuj z odstranjevanjem in fotografiraj tretje ime podjetja, preden se poškoduje."
           },
           "complete_target": "under_paint_layer_three",
           "action": {
-            "en": "Photograph third layer"
+            "en": "Photograph third layer",
+            "sl": "Fotografiraj tretjo plast"
           },
           "objective": {
             "type": "interaction",
@@ -3514,17 +3878,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The third layer survives well enough to record a business name, telephone prefix and faded opening-hours panel."
+            "en": "The third layer survives well enough to record a business name, telephone prefix and faded opening-hours panel.",
+            "sl": "Tretja plast je dovolj ohranjena, da zabeležiš ime podjetja, telefonsko predklicno številko in zbledelo tablo z delovnim časom."
           }
         },
         {
           "id": "reveal_oldest_name",
           "objective_text": {
-            "en": "Expose and photograph the oldest surviving lettering on the wall."
+            "en": "Expose and photograph the oldest surviving lettering on the wall.",
+            "sl": "Odkrij in fotografiraj najstarejše ohranjene črke na zidu."
           },
           "complete_target": "under_paint_layer_four",
           "action": {
-            "en": "Photograph oldest layer"
+            "en": "Photograph oldest layer",
+            "sl": "Fotografiraj najstarejšo plast"
           },
           "objective": {
             "type": "interaction",
@@ -3538,17 +3905,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The oldest painted name matches an address in Vera Horvat's records, but the lettering alone does not establish the date."
+            "en": "The oldest painted name matches an address in Vera Horvat's records, but the lettering alone does not establish the date.",
+            "sl": "Najstarejše poslikano ime se ujema z naslovom v zapisih Vere Horvat, a črke same po sebi ne določijo datuma."
           }
         },
         {
           "id": "ask_brane",
           "objective_text": {
-            "en": "Show the documented lettering to Brane, the sign painter, and ask what he remembers."
+            "en": "Show the documented lettering to Brane, the sign painter, and ask what he remembers.",
+            "sl": "Dokumentirane črke pokaži črkoslikarju Branetu in ga vprašaj, česa se spominja."
           },
           "complete_target": "brane_sign_painter",
           "action": {
-            "en": "Ask Brane about the signs"
+            "en": "Ask Brane about the signs",
+            "sl": "Vprašaj Braneta o napisih"
           },
           "objective": {
             "type": "interaction",
@@ -3562,17 +3932,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "Brane remembers repainting over one of the middle names, but cannot place the year precisely. He points you toward old advertisements instead."
+            "en": "Brane remembers repainting over one of the middle names, but cannot place the year precisely. He points you toward old advertisements instead.",
+            "sl": "Brane se spomni, da je prebarval eno od vmesnih imen, a leta ne zna natančno določiti. Namesto tega te usmeri k starim oglasom."
           }
         },
         {
           "id": "check_maja_archive",
           "objective_text": {
-            "en": "Ask Maja Koren whether Mariborski Glas has advertisements from the businesses uncovered on the wall."
+            "en": "Ask Maja Koren whether Mariborski Glas has advertisements from the businesses uncovered on the wall.",
+            "sl": "Majo Koren vprašaj, ali ima Mariborski glas oglase podjetij, razkritih na zidu."
           },
           "complete_target": "maja_koren",
           "action": {
-            "en": "Compare archived advertisements"
+            "en": "Compare archived advertisements",
+            "sl": "Primerjaj arhivske oglase"
           },
           "objective": {
             "type": "interaction",
@@ -3604,17 +3977,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "Maja finds advertisements from two of the businesses. Their publication dates narrow the sequence but leave one transition unresolved."
+            "en": "Maja finds advertisements from two of the businesses. Their publication dates narrow the sequence but leave one transition unresolved.",
+            "sl": "Maja najde oglase dveh podjetij. Datumi njihove objave zožijo zaporedje, en prehod pa ostane nerazrešen."
           }
         },
         {
           "id": "ask_petra_phone",
           "objective_text": {
-            "en": "Ask Petra when the storefront telephone number changed."
+            "en": "Ask Petra when the storefront telephone number changed.",
+            "sl": "Petro vprašaj, kdaj se je spremenila telefonska številka trgovine."
           },
           "complete_target": "petra_kralj",
           "action": {
-            "en": "Ask about the old number"
+            "en": "Ask about the old number",
+            "sl": "Vprašaj o stari številki"
           },
           "objective": {
             "type": "interaction",
@@ -3628,17 +4004,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "Petra remembers the old number disappearing before the disputed lease date. Together with the advertisements and photographed lettering, the chronology is strong enough to challenge the lease claim."
+            "en": "Petra remembers the old number disappearing before the disputed lease date. Together with the advertisements and photographed lettering, the chronology is strong enough to challenge the lease claim.",
+            "sl": "Petra se spomni, da je stara številka izginila pred spornim datumom najema. Skupaj z oglasi in fotografiranimi črkami je kronologija dovolj trdna, da izpodbije zahtevek iz najemne pogodbe."
           }
         },
         {
           "id": "decide_sign_window",
           "objective_text": {
-            "en": "Return to the new owner and decide whether to preserve a small exposed window of the old sign layers or cover the wall completely."
+            "en": "Return to the new owner and decide whether to preserve a small exposed window of the old sign layers or cover the wall completely.",
+            "sl": "Vrni se k novemu lastniku in odloči, ali ohraniti majhno odprto okno starih plasti napisa ali zid v celoti prebarvati."
           },
           "complete_target": "under_paint_new_owner",
           "action": {
-            "en": "Decide what to preserve"
+            "en": "Decide what to preserve",
+            "sl": "Odloči, kaj ohraniti"
           },
           "objective": {
             "type": "choice"
@@ -3650,7 +4029,8 @@
             {
               "id": "preserve_layers",
               "label": {
-                "en": "Preserve a small window showing the older signs."
+                "en": "Preserve a small window showing the older signs.",
+                "sl": "Ohrani majhno okno s starejšimi napisi."
               },
               "money_delta": 0,
               "skill_xp": {
@@ -3658,13 +4038,15 @@
               },
               "outcome": "sign_window_preserved",
               "completion_text": {
-                "en": "The owner agrees to frame a small exposed section. Four names remain visible together as a permanent trace of the building's commercial history."
+                "en": "The owner agrees to frame a small exposed section. Four names remain visible together as a permanent trace of the building's commercial history.",
+                "sl": "Lastnik se strinja, da uokviri majhen odkrit del. Štiri imena ostanejo vidna skupaj kot trajna sled trgovske zgodovine stavbe."
               }
             },
             {
               "id": "cover_layers",
               "label": {
-                "en": "Finish the repaint and cover the old signs."
+                "en": "Finish the repaint and cover the old signs.",
+                "sl": "Dokončaj prebarvanje in prekrij stare napise."
               },
               "money_delta": 0,
               "skill_xp": {
@@ -3672,7 +4054,8 @@
               },
               "outcome": "sign_layers_documented_only",
               "completion_text": {
-                "en": "The wall is repainted. The physical layers disappear, but the photographs and corroborating records preserve the evidence."
+                "en": "The wall is repainted. The physical layers disappear, but the photographs and corroborating records preserve the evidence.",
+                "sl": "Zid je prebarvan. Fizične plasti izginejo, dokaze pa ohranijo fotografije in potrditveni zapisi."
               }
             }
           ],
@@ -3683,10 +4066,12 @@
       "journal_entry": {
         "id": "under_the_paint_four_names",
         "title": {
-          "en": "Under the Paint — Four Names on One Wall"
+          "en": "Under the Paint — Four Names on One Wall",
+          "sl": "Pod barvo — štiri imena na enem zidu"
         },
         "text": {
-          "en": "Four generations of storefront lettering were documented before repainting. Brane, Maja Koren and Petra Kralj helped establish a chronology, and the oldest hidden name proved that a company occupied the premises earlier than a disputed lease claims."
+          "en": "Four generations of storefront lettering were documented before repainting. Brane, Maja Koren and Petra Kralj helped establish a chronology, and the oldest hidden name proved that a company occupied the premises earlier than a disputed lease claims.",
+          "sl": "Pred prebarvanjem so bile dokumentirane štiri generacije napisov na izložbi. Brane, Maja Koren in Petra Kralj so pomagali sestaviti kronologijo, najstarejše skrito ime pa je dokazalo, da je bilo podjetje v prostorih prej, kot trdi sporni zahtevek iz najemne pogodbe."
         }
       },
       "provenance": {
@@ -3699,7 +4084,8 @@
     {
       "id": "raeda_last_shift",
       "name": {
-        "en": "The Last Shift"
+        "en": "The Last Shift",
+        "sl": "Zadnja izmena"
       },
       "category": "story",
       "offer_target": "matej_hall_three",
@@ -3708,18 +4094,21 @@
         "raeda_names_no_longer_match"
       ],
       "summary": {
-        "en": "Matej wants the surviving dispatch paperwork out of the Melje yard before clearance. The Blue Ledger lead depends on comparing ordinary lockers, truck plates, vehicle logs and a corrected property schedule rather than treating any one object as proof."
+        "en": "Matej wants the surviving dispatch paperwork out of the Melje yard before clearance. The Blue Ledger lead depends on comparing ordinary lockers, truck plates, vehicle logs and a corrected property schedule rather than treating any one object as proof.",
+        "sl": "Matej hoče ohranjene papirje odpreme spraviti z dvorišča v Meljah pred odvozom. Sled Modre knjige je odvisna od primerjave navadnih omaric, tablic tovornjakov, dnevnikov vozil in popravljenega seznama premoženja, ne od tega, da bi kateri koli predmet sam veljal za dokaz."
       },
       "start_items": [],
       "stages": [
         {
           "id": "yard_access",
           "objective_text": {
-            "en": "Go to the Melje transport yard and inspect the gate before the clearance proceeds."
+            "en": "Go to the Melje transport yard and inspect the gate before the clearance proceeds.",
+            "sl": "Pojdi na transportno dvorišče v Meljah in preglej vrata, preden se odvoz nadaljuje."
           },
           "complete_target": "melje_yard_gate",
           "action": {
-            "en": "Inspect the yard gate"
+            "en": "Inspect the yard gate",
+            "sl": "Preglej vrata dvorišča"
           },
           "objective": {
             "type": "interaction",
@@ -3727,17 +4116,20 @@
           },
           "final": false,
           "completion_text": {
-            "en": "The yard is accessible without force. Clearance notices and reused industrial fabric establish the setting, not guilt."
+            "en": "The yard is accessible without force. Clearance notices and reused industrial fabric establish the setting, not guilt.",
+            "sl": "Na dvorišče se pride brez sile. Obvestila o odvozu in ponovno uporabljeni industrijski objekti določajo prizorišče, ne krivde."
           }
         },
         {
           "id": "dispatch_lockers",
           "objective_text": {
-            "en": "Inspect the old dispatch lockers for names that connect the yard to Vera's 1990 records."
+            "en": "Inspect the old dispatch lockers for names that connect the yard to Vera's 1990 records.",
+            "sl": "Preglej stare omarice odpreme in poišči imena, ki povezujejo dvorišče z Verinimi zapisi iz leta 1990."
           },
           "complete_target": "melje_dispatch_lockers",
           "action": {
-            "en": "Inspect the lockers"
+            "en": "Inspect the lockers",
+            "sl": "Preglej omarice"
           },
           "objective": {
             "type": "interaction",
@@ -3751,17 +4143,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "One surviving locker card names Tone Vogrin, tying Irena's household to the drivers who expected the yard to remain operational."
+            "en": "One surviving locker card names Tone Vogrin, tying Irena's household to the drivers who expected the yard to remain operational.",
+            "sl": "Ena ohranjena kartica na omarici navaja Toneta Vogrina in povezuje Irenin dom z vozniki, ki so pričakovali, da bo dvorišče ostalo v obratovanju."
           }
         },
         {
           "id": "photograph_serials",
           "objective_text": {
-            "en": "Photograph the serial plates on the two abandoned Kainach trucks."
+            "en": "Photograph the serial plates on the two abandoned Kainach trucks.",
+            "sl": "Fotografiraj serijske tablice na zapuščenih tovornjakih Kainach."
           },
           "complete_target": "melje_kainach_trucks",
           "action": {
-            "en": "Photograph truck serials"
+            "en": "Photograph truck serials",
+            "sl": "Fotografiraj serijske številke"
           },
           "objective": {
             "type": "interaction",
@@ -3775,17 +4170,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The serial plates are documented. They establish that Kainach vehicles were physically present, contradicting the later claim that they never entered Raeda service."
+            "en": "The serial plates are documented. They establish that Kainach vehicles were physically present, contradicting the later claim that they never entered Raeda service.",
+            "sl": "Serijske tablice so dokumentirane. Dokazujejo, da so bila vozila Kainach fizično navzoča, kar je v nasprotju s poznejšo trditvijo, da nikoli niso bila v službi Raede."
           }
         },
         {
           "id": "recover_maintenance_log",
           "objective_text": {
-            "en": "Recover the yard vehicle log and compare its dates with the photographed truck plates."
+            "en": "Recover the yard vehicle log and compare its dates with the photographed truck plates.",
+            "sl": "Poišči dnevnik vozil z dvorišča in primerjaj njegove datume s fotografiranimi tablicami tovornjakov."
           },
           "complete_target": "melje_vehicle_log_shelf",
           "action": {
-            "en": "Recover vehicle log"
+            "en": "Recover vehicle log",
+            "sl": "Poišči dnevnik vozil"
           },
           "objective": {
             "type": "interaction",
@@ -3805,17 +4203,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The vehicle log records service and movement entries for the same Kainach serials. The contradiction is stronger, but it still does not prove why the property record changed."
+            "en": "The vehicle log records service and movement entries for the same Kainach serials. The contradiction is stronger, but it still does not prove why the property record changed.",
+            "sl": "Dnevnik vozil beleži servise in premike za iste serijske številke Kainach. Protislovje je močnejše, še vedno pa ne dokaže, zakaj se je zapis o premoženju spremenil."
           }
         },
         {
           "id": "move_boxes",
           "objective_text": {
-            "en": "Secure the clearance boxes marked for Hall Three before the remaining office papers are discarded."
+            "en": "Secure the clearance boxes marked for Hall Three before the remaining office papers are discarded.",
+            "sl": "Zavaruj škatle za odvoz, označene za Halo tri, preden zavržejo preostale pisarniške papirje."
           },
           "complete_target": "melje_archive_boxes",
           "action": {
-            "en": "Secure archive boxes"
+            "en": "Secure archive boxes",
+            "sl": "Zavaruj arhivske škatle"
           },
           "objective": {
             "type": "interaction",
@@ -3829,17 +4230,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The boxes are heavy with routine paperwork: duplicate schedules, shift sheets and obsolete forms. Their ordinariness is exactly why one altered schedule survived."
+            "en": "The boxes are heavy with routine paperwork: duplicate schedules, shift sheets and obsolete forms. Their ordinariness is exactly why one altered schedule survived.",
+            "sl": "Škatle so težke od rutinskih papirjev: podvojenih razporedov, listov izmen in zastarelih obrazcev. Prav zaradi te vsakdanjosti je preživel en spremenjen seznam."
           }
         },
         {
           "id": "find_yard_schedule",
           "objective_text": {
-            "en": "Bring the Melje clearance boxes to Matej and unpack the property schedules with him."
+            "en": "Bring the Melje clearance boxes to Matej and unpack the property schedules with him.",
+            "sl": "Škatle iz Melja prinesi Mateju in z njim razpakiraj sezname premoženja."
           },
           "complete_target": "matej_hall_three",
           "action": {
-            "en": "Unpack the clearance boxes"
+            "en": "Unpack the clearance boxes",
+            "sl": "Razpakiraj škatle za odvoz"
           },
           "objective": {
             "type": "inventory_any",
@@ -3867,17 +4271,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "Held to the light, the transferee line beneath white correction fluid reads 'Delavska prevozna zadruga (v ustanavljanju)'. PREHOD d.o.o. was typed over it."
+            "en": "Held to the light, the transferee line beneath white correction fluid reads 'Delavska prevozna zadruga (v ustanavljanju)'. PREHOD d.o.o. was typed over it.",
+            "sl": "Proti svetlobi se pod belim korekturnim lakom vrstica s prevzemnikom glasi 'Delavska prevozna zadruga (v ustanavljanju)'. Čez je natipkano PREHOD d.o.o."
           }
         },
         {
           "id": "show_vera",
           "objective_text": {
-            "en": "Take the corrected yard schedule, vehicle log and truck photographs to Vera."
+            "en": "Take the corrected yard schedule, vehicle log and truck photographs to Vera.",
+            "sl": "Popravljeni seznam z dvorišča, dnevnik vozil in fotografije tovornjakov odnesi Veri."
           },
           "complete_target": "vera_horvat",
           "action": {
-            "en": "Review the Melje evidence"
+            "en": "Review the Melje evidence",
+            "sl": "Preglej dokaze iz Melja"
           },
           "objective": {
             "type": "interaction",
@@ -3903,7 +4310,8 @@
           ],
           "final": true,
           "completion_text": {
-            "en": "Vera studies the correction and refuses the easy conclusion: 'A correction is not a crime. People corrected everything in 1990. Find me why.'"
+            "en": "Vera studies the correction and refuses the easy conclusion: 'A correction is not a crime. People corrected everything in 1990. Find me why.'",
+            "sl": "Vera preuči popravek in zavrne lahek sklep: 'Popravek ni kaznivo dejanje. Leta 1990 so ljudje popravljali vse. Najdi mi, zakaj.'"
           }
         }
       ],
@@ -3911,10 +4319,12 @@
       "journal_entry": {
         "id": "blue_ledger_last_shift",
         "title": {
-          "en": "Blue Ledger — The Last Shift"
+          "en": "Blue Ledger — The Last Shift",
+          "sl": "Modra knjiga — Zadnja izmena"
         },
         "text": {
-          "en": "The Melje yard preserved a driver locker card, Kainach truck serials, a vehicle log and a corrected property schedule. Beneath correction fluid, the transferee line still reads as a drivers' cooperative in founding before PREHOD d.o.o. was typed over it. Vera refuses to call the alteration a crime without motive or corroboration."
+          "en": "The Melje yard preserved a driver locker card, Kainach truck serials, a vehicle log and a corrected property schedule. Beneath correction fluid, the transferee line still reads as a drivers' cooperative in founding before PREHOD d.o.o. was typed over it. Vera refuses to call the alteration a crime without motive or corroboration.",
+          "sl": "Dvorišče v Meljah je ohranilo kartico voznikove omarice, serijske številke tovornjakov Kainach, dnevnik vozil in popravljen seznam premoženja. Pod korekturnim lakom se vrstica s prevzemnikom še vedno bere kot voznikova zadruga v ustanavljanju, preden je bilo čez natipkano PREHOD d.o.o. Vera spremembe brez motiva ali potrditve noče imenovati kaznivo dejanje."
         }
       },
       "provenance": {
@@ -3927,7 +4337,8 @@
     {
       "id": "raeda_city_for_sale",
       "name": {
-        "en": "The City for Sale"
+        "en": "The City for Sale",
+        "sl": "Mesto naprodaj"
       },
       "category": "story",
       "offer_target": "vera_horvat",
@@ -3936,18 +4347,21 @@
         "raeda_last_shift"
       ],
       "summary": {
-        "en": "Vera wants the corrected Melje schedule tested against money and public records. A Tabor exchange counterfoil, Irena's contract reference, newspaper classifieds, a restricted fictional bank-file locator and Milan Šolar's account begin to explain how PREHOD acquired a paper trail."
+        "en": "Vera wants the corrected Melje schedule tested against money and public records. A Tabor exchange counterfoil, Irena's contract reference, newspaper classifieds, a restricted fictional bank-file locator and Milan Šolar's account begin to explain how PREHOD acquired a paper trail.",
+        "sl": "Vera hoče popravljeni seznam iz Melja preveriti z denarjem in javnimi zapisi. Talon menjalnice na Taboru, Irenin sklic na pogodbo, mali oglasi v časopisu, kazalo zaprte mape izmišljene banke in pripoved Milana Šolarja začnejo pojasnjevati, kako je PREHOD prišel do papirne sledi."
       },
       "start_items": [],
       "stages": [
         {
           "id": "trace_counterfoil",
           "objective_text": {
-            "en": "Take the carbon-copy receipt from the Drava cashbox to the former Tabor exchange counter and find its counterfoil."
+            "en": "Take the carbon-copy receipt from the Drava cashbox to the former Tabor exchange counter and find its counterfoil.",
+            "sl": "Račun z indigom iz blagajnice z Drave odnesi k nekdanjemu okencu menjalnice na Taboru in poišči njegov talon."
           },
           "complete_target": "tabor_exchange_counter",
           "action": {
-            "en": "Find the exchange counterfoil"
+            "en": "Find the exchange counterfoil",
+            "sl": "Poišči talon menjalnice"
           },
           "objective": {
             "type": "interaction",
@@ -3967,17 +4381,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The counterfoil records a March 1990 Deutsche Mark payment by Prehod-Kainach. It supplies a date and amount, not an explanation."
+            "en": "The counterfoil records a March 1990 Deutsche Mark payment by Prehod-Kainach. It supplies a date and amount, not an explanation.",
+            "sl": "Talon beleži plačilo v nemških markah, ki ga je marca 1990 opravil Prehod-Kainach. Da datum in znesek, ne pa razlage."
           }
         },
         {
           "id": "meet_irena",
           "objective_text": {
-            "en": "Ask Irena Vogrin to identify the bookkeeping reference on the exchange counterfoil."
+            "en": "Ask Irena Vogrin to identify the bookkeeping reference on the exchange counterfoil.",
+            "sl": "Ireno Vogrin prosi, naj prepozna knjigovodski sklic na talonu menjalnice."
           },
           "complete_target": "irena_vogrin",
           "action": {
-            "en": "Ask Irena about the payment"
+            "en": "Ask Irena about the payment",
+            "sl": "Vprašaj Ireno o plačilu"
           },
           "objective": {
             "type": "interaction",
@@ -3997,17 +4414,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "Irena recognizes the bookkeeping convention and gives you the Kainach contract reference used by the office. She treats it as routine accounting and offers no accusation."
+            "en": "Irena recognizes the bookkeeping convention and gives you the Kainach contract reference used by the office. She treats it as routine accounting and offers no accusation.",
+            "sl": "Irena prepozna knjigovodsko pravilo in ti da številko pogodbe s Kainachom, ki jo je uporabljala pisarna. Obravnava jo kot rutinsko knjigovodstvo in nikogar ne obtožuje."
           }
         },
         {
           "id": "check_classifieds",
           "objective_text": {
-            "en": "Use the contract date to search Mariborski Glas classifieds for Prehod-Kainach and later Prehod notices."
+            "en": "Use the contract date to search Mariborski Glas classifieds for Prehod-Kainach and later Prehod notices.",
+            "sl": "Z datumom pogodbe preišči male oglase Mariborskega glasa za Prehod-Kainach in poznejša obvestila Prehoda."
           },
           "complete_target": "mariborski_glas_archive",
           "action": {
-            "en": "Search the classifieds"
+            "en": "Search the classifieds",
+            "sl": "Preišči male oglase"
           },
           "objective": {
             "type": "interaction",
@@ -4027,17 +4447,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "Dated classifieds first seek drivers with international experience, then advertise warehouse space in Pristan under the shorter Prehod name."
+            "en": "Dated classifieds first seek drivers with international experience, then advertise warehouse space in Pristan under the shorter Prehod name.",
+            "sl": "Datirani mali oglasi najprej iščejo voznike z mednarodnimi izkušnjami, potem pa pod krajšim imenom Prehod oglašujejo skladišče v Pristanu."
           }
         },
         {
           "id": "locate_bank_file",
           "objective_text": {
-            "en": "Check the fictional Pohorska banka archive index for the Raeda annual file referenced by the payment trail."
+            "en": "Check the fictional Pohorska banka archive index for the Raeda annual file referenced by the payment trail.",
+            "sl": "V kazalu arhiva izmišljene Pohorske banke preveri letno mapo Raede, na katero kaže sled plačil."
           },
           "complete_target": "pohorska_bank_archive_desk",
           "action": {
-            "en": "Check the archive index"
+            "en": "Check the archive index",
+            "sl": "Preveri kazalo arhiva"
           },
           "objective": {
             "type": "interaction",
@@ -4065,17 +4488,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "The index confirms a Raeda 1989 annual file and a related Kainach reference. The contents remain restricted, preserving a later corroboration route rather than handing over a magic answer."
+            "en": "The index confirms a Raeda 1989 annual file and a related Kainach reference. The contents remain restricted, preserving a later corroboration route rather than handing over a magic answer.",
+            "sl": "Kazalo potrdi letno mapo Raede za leto 1989 in povezan sklic na Kainach. Vsebina ostaja zaprta, kar ohranja poznejšo pot za potrditev, namesto da bi ti izročilo čudežen odgovor."
           }
         },
         {
           "id": "hear_milan",
           "objective_text": {
-            "en": "Meet Milan Šolar in Pristan and ask how he obtained the warehouse lease."
+            "en": "Meet Milan Šolar in Pristan and ask how he obtained the warehouse lease.",
+            "sl": "Milana Šolarja poišči v Pristanu in ga vprašaj, kako je prišel do najema skladišča."
           },
           "complete_target": "milan_solar",
           "action": {
-            "en": "Hear Milan's account"
+            "en": "Hear Milan's account",
+            "sl": "Poslušaj Milanovo pripoved"
           },
           "objective": {
             "type": "interaction",
@@ -4089,17 +4515,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "Milan says he paid the entity the registry named, that he stood at the Melje gate in 1990, and that real jobs depended on the transport business. His account complicates the ownership dispute instead of resolving it."
+            "en": "Milan says he paid the entity the registry named, that he stood at the Melje gate in 1990, and that real jobs depended on the transport business. His account complicates the ownership dispute instead of resolving it.",
+            "sl": "Milan pravi, da je plačal subjektu, ki ga je navajal register, da je leta 1990 stal pri vratih v Meljah in da so od transportnega posla odvisna prava delovna mesta. Njegova pripoved spor o lastništvu zaplete, namesto da bi ga razrešila."
           }
         },
         {
           "id": "check_k67_concession",
           "objective_text": {
-            "en": "Ask Petra whether Kiosk 67 also sits inside the old Raeda property network."
+            "en": "Ask Petra whether Kiosk 67 also sits inside the old Raeda property network.",
+            "sl": "Petro vprašaj, ali je tudi Kiosk 67 del stare mreže premoženja Raede."
           },
           "complete_target": "petra_kralj",
           "action": {
-            "en": "Check the K67 concession"
+            "en": "Check the K67 concession",
+            "sl": "Preveri koncesijo K67"
           },
           "objective": {
             "type": "interaction",
@@ -4113,17 +4542,20 @@
           ],
           "final": false,
           "completion_text": {
-            "en": "Petra produces a concession copy showing that K67 traces back to Raeda Aprovizacija. The settlement is no longer abstract: any broad property ruling could touch her livelihood."
+            "en": "Petra produces a concession copy showing that K67 traces back to Raeda Aprovizacija. The settlement is no longer abstract: any broad property ruling could touch her livelihood.",
+            "sl": "Petra pokaže kopijo koncesije, po kateri K67 izvira iz Raede Aprovizacije. Poravnava ni več abstraktna: vsaka široka odločitev o premoženju bi lahko posegla v njen kruh."
           }
         },
         {
           "id": "decide_milan",
           "objective_text": {
-            "en": "Return to Milan and decide whether to treat him as a working source or keep the investigation at arm's length."
+            "en": "Return to Milan and decide whether to treat him as a working source or keep the investigation at arm's length.",
+            "sl": "Vrni se k Milanu in odloči, ali ga obravnavaš kot sodelujoč vir ali preiskavo držiš na razdalji."
           },
           "complete_target": "milan_solar",
           "action": {
-            "en": "Decide how to work with Milan"
+            "en": "Decide how to work with Milan",
+            "sl": "Odloči, kako sodelovati z Milanom"
           },
           "objective": {
             "type": "choice"
@@ -4132,7 +4564,8 @@
             {
               "id": "trust_milan",
               "label": {
-                "en": "Treat Milan as a working source."
+                "en": "Treat Milan as a working source.",
+                "sl": "Milana obravnavaj kot sodelujoč vir."
               },
               "money_delta": 0,
               "skill_xp": {
@@ -4144,13 +4577,15 @@
                 "milan_kept_at_distance": false
               },
               "completion_text": {
-                "en": "You tell Milan exactly which records you are testing and accept his offer to help locate old access schedules. Cooperation may open later evidence, but it also ties the investigation more closely to his interests."
+                "en": "You tell Milan exactly which records you are testing and accept his offer to help locate old access schedules. Cooperation may open later evidence, but it also ties the investigation more closely to his interests.",
+                "sl": "Milanu natančno poveš, katere zapise preverjaš, in sprejmeš njegovo ponudbo, da pomaga najti stare razporede dostopov. Sodelovanje lahko odpre poznejše dokaze, a preiskavo tudi tesneje veže na njegove interese."
               }
             },
             {
               "id": "keep_milan_at_distance",
               "label": {
-                "en": "Keep Milan at a distance."
+                "en": "Keep Milan at a distance.",
+                "sl": "Milana drži na razdalji."
               },
               "money_delta": 0,
               "skill_xp": {
@@ -4162,7 +4597,8 @@
                 "milan_kept_at_distance": true
               },
               "completion_text": {
-                "en": "You keep the document trail separate from Milan's files for now. Worker and cultural contacts will have less reason to suspect that the investigation is being steered by the developer."
+                "en": "You keep the document trail separate from Milan's files for now. Worker and cultural contacts will have less reason to suspect that the investigation is being steered by the developer.",
+                "sl": "Sled dokumentov za zdaj ločiš od Milanovih map. Delavski in kulturni stiki bodo imeli manj razloga za sum, da preiskavo usmerja investitor."
               }
             }
           ],
@@ -4173,10 +4609,12 @@
       "journal_entry": {
         "id": "blue_ledger_city_for_sale",
         "title": {
-          "en": "Blue Ledger — The City for Sale"
+          "en": "Blue Ledger — The City for Sale",
+          "sl": "Modra knjiga — Mesto naprodaj"
         },
         "text": {
-          "en": "The first Mark payment, a Kainach contract reference and dated Prehod classifieds establish a chronology that public records alone could not show. Pohorska banka's fictional archive index confirms that a Raeda annual file exists but remains restricted. Milan Šolar says he bought the Pristan lease from the registered owner and stood at the Melje gate in 1990. Your decision to trust him or keep him at a distance is now part of the investigation."
+          "en": "The first Mark payment, a Kainach contract reference and dated Prehod classifieds establish a chronology that public records alone could not show. Pohorska banka's fictional archive index confirms that a Raeda annual file exists but remains restricted. Milan Šolar says he bought the Pristan lease from the registered owner and stood at the Melje gate in 1990. Your decision to trust him or keep him at a distance is now part of the investigation.",
+          "sl": "Prvo plačilo v markah, sklic na pogodbo s Kainachom in datirani mali oglasi Prehoda vzpostavijo kronologijo, ki je javni zapisi sami ne bi mogli pokazati. Kazalo arhiva izmišljene Pohorske banke potrdi, da letna mapa Raede obstaja, a ostaja zaprta. Milan Šolar pravi, da je najem v Pristanu kupil od vpisanega lastnika in da je leta 1990 stal pri vratih v Meljah. Tvoja odločitev, ali mu zaupaš ali ga držiš na razdalji, je zdaj del preiskave."
         }
       },
       "provenance": {
@@ -5118,5 +5556,12 @@
         }
       }
     ]
+  },
+  "localization": {
+    "cultures": [
+      "en",
+      "sl"
+    ],
+    "note": "Every player-facing catalogue string carries en and sl. The Slovene for the original content (pre ADR-081) was drafted in Marburgum II on 20 November 2026 and awaits a native review; the runtime shows sl when the interface culture is Slovene (ADR-081)."
   }
 }

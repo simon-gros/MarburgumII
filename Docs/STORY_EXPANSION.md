@@ -119,6 +119,8 @@ Irena is not revealed early: the recorder trail points at "a driver from the yar
 | Photograph objective | catalogue, mission logic and rules | A stage completed by photographing a subject, never by talking. |
 | `DecidePhotograph`, `HandlePhotograph`, `[P]` | server rules, world authority, player controller | Server-validated photographs in one commit with any stage they complete. |
 | World store schema 6 (`discoveries`) | `MarburgumWorldStore` | First-photograph XP paid once per subject per character; schema 1–5 documents load unchanged. |
+| Slovene catalogue text at runtime | catalogue `sl` on every string, generated `SloveneText`, `Localized()` at every display site | The game's original missions, people and items in Slovene when the interface is Slovene, switching live from Settings. The Slovene for the pre-existing content is a drafted translation awaiting a native review; `mb2 validate gameplay` fails on any string without one. |
+| Day posts | catalogue `day_posts`, `FDayPost`, `AMarburgumNpc` walks, `UpdatePosts` | Seven named people (Petra, Vera, Andrej, Brane, Drago, Tone, Nika) move to an evening post up to 10 m away by the Marburgum clock and stroll there and back with the template walk. The walk replicates once (from, to, start time) and every machine computes the same stroll. Each post is checked at server start for dry, level ground and a clear straight way, tried mirrored, otherwise dropped and logged. Someone spoken to on the way stops for the conversation. |
 | Pinned-objective guidance | `MarburgumPinnedObjective` | "Vera Horvat · 45 m north-east", the photo subject's aim point for photographs, and "on a temporary floor until that district is built" for pad places. |
 | NPC presentation contract | `MarburgumNpcContract.h` | Asset paths and the angler's cycle as a pure function of the server clock (unit-tested). |
 
@@ -155,8 +157,8 @@ Captures: [the angler's grip](Captures/story-npc/angler-grip.jpg), [on the bank]
 
 ## 9. Not done, limits and blockers
 
-- **Named residents do not walk schedules yet.** People turn, talk and fish, but stay at their posts so a story-critical contact is always where the objective says. Walking routines on the pedestrian walk graph need named people to become server-moved characters (like the street people), with a reachability rule for mission contacts. That is the next NPC step, not done here.
-- **Catalogue text is English in game.** The new content carries Slovene (`sl`) alongside English in the catalogue, but the runtime still shows catalogue text in English, as it already did for all mission text. New interface text (photograph prompt, notifications, guidance) is in the localization gather.
+- **Named residents keep a short day, not a city-wide routine.** Seven people walk to an evening post within 10 m and back; everyone is at their authored post in the working morning, so a contact is always near where the objective points, and the guidance line follows them. Routines across the city on the pedestrian walk graph (home, work, café) would need named people to become server-moved characters like the street people, with a reachability rule for mission contacts; not done.
+- **Slovene catalogue text is a draft.** All 470 catalogue strings now show in Slovene with a Slovene interface; the translation of the pre-existing content was written in this pass and needs a native speaker's review. Interface strings added in this pass (photograph prompt, notifications, guidance) are in the localization gather but still need their `Game.po` entries.
 - **No facial animation or camera framing** in conversations; the body turns and gestures.
 - **Chapters V–XI** remain blocked as in §1.1.
 - **Tabor and Melje are temporary floors**: Jožica Rozman and the Prehod sign stand on the ADR-052 pads, and the guidance line says so.

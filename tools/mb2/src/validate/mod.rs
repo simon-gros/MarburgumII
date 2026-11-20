@@ -32,7 +32,10 @@ const CHECKS: [(&str, &str, Check); 11] = [
 ];
 
 pub fn run(which: &str) -> u8 {
-    let selected: Vec<_> = CHECKS.iter().filter(|(name, _, _)| which == "all" || which == *name).collect();
+    let selected: Vec<_> = CHECKS
+        .iter()
+        .filter(|(name, _, _)| which == "all" || which == *name)
+        .collect();
     if selected.is_empty() {
         eprintln!("Unknown check '{which}'; use ui-ontology, chat, gameplay, vehicles, combat, street, lights, python-free, scripts, accounts, history or all.");
         return 2;

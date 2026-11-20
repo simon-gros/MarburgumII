@@ -281,7 +281,7 @@ void UMarburgumLocationBanner::Describe(FName AreaId, const FMarburgumPlace& Pla
     if (Area)
     {
         KindLabel->SetText(LOCTEXT("District", "DISTRICT"));
-        NameLabel->SetText(FText::FromString(Area->DisplayName));
+        NameLabel->SetText(FText::FromString(MarburgumII::Gameplay::Localized(Area->DisplayName)));
         NoteLabel->SetText(Placed && !Placed->Note.IsEmpty() ? Placed->Note : LOCTEXT("Period", "Maribor  ·  1990s"));
     }
     else if (!AreaId.IsNone())
@@ -297,7 +297,7 @@ void UMarburgumLocationBanner::Describe(FName AreaId, const FMarburgumPlace& Pla
         const bool bQuarter = District->Kind == TEXT("quarter");
         KindLabel->SetText(bQuarter ? LOCTEXT("Quarter", "QUARTER")
             : District->Kind == TEXT("local_community") ? LOCTEXT("LocalCommunity", "LOCAL COMMUNITY") : LOCTEXT("Settlement", "SETTLEMENT"));
-        NameLabel->SetText(FText::FromString(District->DisplayName));
+        NameLabel->SetText(FText::FromString(MarburgumII::Gameplay::Localized(District->DisplayName)));
         NoteLabel->SetText(bQuarter ? LOCTEXT("Period", "Maribor  ·  1990s") : LOCTEXT("Municipality", "Municipality of Maribor  ·  1990s"));
     }
     else if (!Place.District.IsEmpty())

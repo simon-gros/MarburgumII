@@ -227,6 +227,7 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
     // Bites and catches are the server's dice; nothing a client sends feeds them.
     Rolls.Initialize(static_cast<int32>(FDateTime::UtcNow().GetTicks() & 0x7fffffff));
     SpawnAuthoredContent(InWorld);
+    InWorld.GetTimerManager().SetTimer(PostsTimer, FTimerDelegate::CreateUObject(this, &UMarburgumWorldAuthority::UpdatePosts), 1.f, true);
     InWorld.GetTimerManager().SetTimer(ShopTimer, FTimerDelegate::CreateUObject(this, &UMarburgumWorldAuthority::ApplyShops),
         ShopHoursCheckSeconds, true);
     if (FParse::Param(FCommandLine::Get(), TEXT("MB2NetRate")))
@@ -327,6 +328,7 @@ void UMarburgumWorldAuthority::Deinitialize()
         World->GetTimerManager().ClearTimer(LocationTimer);
         World->GetTimerManager().ClearTimer(FishingTimer);
         World->GetTimerManager().ClearTimer(ShopTimer);
+        World->GetTimerManager().ClearTimer(PostsTimer);
         World->GetTimerManager().ClearTimer(NetRateTimer);
     }
     Casts.Reset();
@@ -1156,6 +1158,31 @@ void UMarburgumWorldAuthority::EndCast(AMarburgumPlayerController& Player, EMarb
     State->SetFishingAuthority(Status);
 }
 
+void UMarburgumWorldAuthority::UpdatePosts()
+{
+    // Named people keep their day by the Marburgum clock (ADR-081).
+    const int32 Minute = MarburgumII::Clock::MarburgumAt(MarburgumII::ServerClock::Now()).MinuteOfDay();
+    for (TActorIterator<AMarburgumNpc> It(GetWorld()); It; ++It)
+    {
+        const MarburgumII::Gameplay::FInteractableDefinition* Entry =
+            It->GetCatalogueId().IsNone() ? nullptr : MarburgumII::Gameplay::FindInteractable(It->GetCatalogueId().ToString());
+        if (!Entry || Entry->PostCount == 0 || It->GetPostCount() < 2)
+        {
+            continue;
+        }
+        const int32 Want = MarburgumII::Gameplay::DayPostAt(Entry->Posts, Entry->PostCount, Minute) + 1;
+        if (Want != It->GetCurrentPost())
+        {
+            It->GoToPostAuthority(Want);
+            if (It->GetCurrentPost() == Want)
+            {
+                UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=npc_post id=%s post=%s minute=%d"), InteractLogPrefix, Entry->Id,
+                    Want == 0 ? TEXT("authored_spot") : Entry->Posts[Want - 1].Activity, Minute);
+            }
+        }
+    }
+}
+
 void UMarburgumWorldAuthority::TickFishing()
 {
     if (Casts.IsEmpty())
@@ -1397,7 +1424,7 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
         // People stand on their feet; a place marker sits half sunk so it reads as a post, crate or sign.
         const FVector At = Ground.ImpactPoint + FVector(0.0, 0.0, bPerson ? 0.0 : 25.0);
         // Everyone faces the river (the original's -z in Unreal's -X) unless the angler shows otherwise; a person whose
-        // original spot puts a wall in their face turns to the clearest way instead (ADR-081).
+        // original spot puts a wall within 15 m in their face turns to the clearest way instead (ADR-081).
         FRotator Facing = Angler ? Angler->GetActorRotation() : FRotator(0.0, 180.0, 0.0);
         if (bPerson)
         {
@@ -1405,10 +1432,10 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
             const auto Clearance = [&InWorld, &Params, &Chest](const FRotator& Way)
             {
                 FHitResult Hit;
-                return InWorld.LineTraceSingleByChannel(Hit, Chest, Chest + Way.Vector() * 1000.0, ECC_Visibility, Params)
-                    ? Hit.Distance : 1000.0;
+                return InWorld.LineTraceSingleByChannel(Hit, Chest, Chest + Way.Vector() * 2500.0, ECC_Visibility, Params)
+                    ? Hit.Distance : 2500.0;
             };
-            if (Clearance(Facing) < 800.0)
+            if (Clearance(Facing) < 1500.0)
             {
                 FRotator Best = Facing;
                 double BestClear = Clearance(Facing);
@@ -1438,6 +1465,50 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
         Placed->SetCatalogueIdAuthority(FName(Entry.Id));
         Placed->FinishSpawning(Spot);
         ++Spawned;
+
+        // A person's day (ADR-081): each post on dry, walkable ground, reached from the authored spot by a straight
+        // stroll that crosses no water and no wall; a post that is not is tried mirrored, then dropped and reported.
+        if (AMarburgumNpc* Person = Cast<AMarburgumNpc>(Placed); Person && Entry.PostCount > 0)
+        {
+            TArray<FVector> Points = { At };
+            FCollisionQueryParams Sweep(SCENE_QUERY_STAT(MarburgumNpcPost), false, Person);
+            for (int32 PostIndex = 0; PostIndex < Entry.PostCount; ++PostIndex)
+            {
+                const FDayPost& Post = Entry.Posts[PostIndex];
+                bool bResolved = false;
+                for (const double Mirror : { 1.0, -1.0 })
+                {
+                    // Original plan: east is Unreal +Y, south is Unreal -X.
+                    const FVector PostPlanned = At + FVector(-Post.OffsetSouthM * Mirror, Post.OffsetEastM * Mirror, 0.0) * 100.0;
+                    FHitResult PostGround;
+                    if (!FindGround(PostPlanned, PostGround) || IsWet(PostGround.ImpactPoint) || PostGround.ImpactNormal.Z < 0.8
+                        || FMath::Abs(PostGround.ImpactPoint.Z - At.Z) > 150.0 || (Water && Water->IsWetWay(At, PostGround.ImpactPoint)))
+                    {
+                        continue;
+                    }
+                    FHitResult Blocked;
+                    if (InWorld.SweepSingleByChannel(Blocked, At + FVector(0.0, 0.0, 100.0), PostGround.ImpactPoint + FVector(0.0, 0.0, 100.0),
+                            FQuat::Identity, ECC_Pawn, FCollisionShape::MakeSphere(30.0), Sweep))
+                    {
+                        continue;
+                    }
+                    Points.Add(PostGround.ImpactPoint);
+                    bResolved = true;
+                    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=npc_post_resolved id=%s post=%s at=%.0f,%.0f,%.0f mirrored=%d"),
+                        InteractLogPrefix, Entry.Id, Post.Activity, PostGround.ImpactPoint.X, PostGround.ImpactPoint.Y, PostGround.ImpactPoint.Z,
+                        Mirror < 0.0 ? 1 : 0);
+                    break;
+                }
+                if (!bResolved)
+                {
+                    // Keep the indices aligned with the catalogue: an unreachable post is the authored spot.
+                    Points.Add(At);
+                    UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=npc_post_dropped id=%s post=%s reason=no_clear_dry_way"),
+                        InteractLogPrefix, Entry.Id, Post.Activity);
+                }
+            }
+            Person->SetPostsAuthority(Points);
+        }
 
         // A development start a few steps inland of it, facing it (?MB2Start=mission_<id>), like the fight cast's.
         // Where inland is the river on the new map, the first dry side round it.

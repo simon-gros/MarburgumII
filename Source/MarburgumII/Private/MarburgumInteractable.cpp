@@ -2,6 +2,7 @@
 
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Internationalization/Internationalization.h"
 #include "MarburgumGameplayContract.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
@@ -56,9 +57,9 @@ void AMarburgumInteractable::ConfigureFromCatalogue()
         return;
     }
     InteractableId = CatalogueId;
-    DisplayName = FText::FromString(Entry->DisplayName);
-    Verb = FText::FromString(Entry->Verb);
-    Dialogue = FText::FromString(Entry->Dialogue);
+    DisplayName = FText::FromString(MarburgumII::Gameplay::Localized(Entry->DisplayName));
+    Verb = FText::FromString(MarburgumII::Gameplay::Localized(Entry->Verb));
+    Dialogue = FText::FromString(MarburgumII::Gameplay::Localized(Entry->Dialogue));
     InteractionRange = Entry->RangeCm;
     bTestFixture = false;
     const MarburgumII::Gameplay::FShopDefinition* Shop = MarburgumII::Gameplay::FindShopKeptBy(CatalogueId.ToString());
@@ -71,6 +72,15 @@ void AMarburgumInteractable::ConfigureFromCatalogue()
 void AMarburgumInteractable::BeginPlay()
 {
     Super::BeginPlay();
+    // The interface language can change in Settings while playing: names, verbs and lines follow it (ADR-081).
+    CultureHandle = FInternationalization::Get().OnCultureChanged().AddWeakLambda(this, [this]()
+    {
+        if (!CatalogueId.IsNone())
+        {
+            ConfigureFromCatalogue();
+            OnChanged().Broadcast(this);
+        }
+    });
     if (!HasAuthority() && RemainingStock >= 0)
     {
         OnChanged().Broadcast(this);
@@ -106,6 +116,12 @@ void AMarburgumInteractable::OnRep_Shop()
 void AMarburgumInteractable::OnRep_RemainingStock()
 {
     OnChanged().Broadcast(this);
+}
+
+void AMarburgumInteractable::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    FInternationalization::Get().OnCultureChanged().Remove(CultureHandle);
+    Super::EndPlay(EndPlayReason);
 }
 
 FMarburgumInteractableChanged& AMarburgumInteractable::OnChanged()

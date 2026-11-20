@@ -10,6 +10,10 @@
 namespace MarburgumII::Npc
 {
     inline constexpr const TCHAR* BodyMeshPath = TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple");
+    /** The template's walk, for a person strolling between posts (ADR-081). */
+    inline constexpr const TCHAR* WalkClipPath = TEXT("/Game/Characters/Mannequins/Anims/Unarmed/Walk/MF_Unarmed_Walk_Fwd.MF_Unarmed_Walk_Fwd");
+    /** A person strolls between posts at this pace. */
+    inline constexpr double StrollCmPerSecond = 120.0;
     /** The template's standing idle; everyone who is not doing anything else breathes in it. */
     inline constexpr const TCHAR* IdleClipPath = TEXT("/Game/Characters/Mannequins/Anims/Unarmed/MM_Idle.MM_Idle");
 

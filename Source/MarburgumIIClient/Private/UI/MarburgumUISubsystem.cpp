@@ -802,13 +802,13 @@ namespace
     FText ItemDisplayName(FName ItemId)
     {
         const MarburgumII::Gameplay::FItemDefinition* Item = MarburgumII::Gameplay::FindItem(ItemId.ToString());
-        return Item ? FText::FromString(Item->DisplayName) : FText::FromName(ItemId);
+        return Item ? FText::FromString(MarburgumII::Gameplay::Localized(Item->DisplayName)) : FText::FromName(ItemId);
     }
 
     FText MissionDisplayName(FName MissionId)
     {
         const MarburgumII::Gameplay::FMissionDefinition* Mission = MarburgumII::Gameplay::FindMission(MissionId.ToString());
-        return Mission ? FText::FromString(Mission->Name) : FText::FromName(MissionId);
+        return Mission ? FText::FromString(MarburgumII::Gameplay::Localized(Mission->Name)) : FText::FromName(MissionId);
     }
 
     /** "European chub, Common roach or European perch" for a stage's inventory_any objective, or its required items. */
@@ -925,7 +925,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         {
             const FSkillDefinition* Skill = FindSkill(Award.SkillId.ToString());
             Feed->Push(FName(*(Key.ToString() + TEXT(".xp.") + Award.SkillId.ToString())), LOCTEXT("XpKind", "SKILL"),
-                FText::Format(LOCTEXT("XpGained", "{0} +{1} XP. [K] Skills."), FText::FromString(Skill ? Skill->DisplayName : Award.SkillId.ToString()),
+                FText::Format(LOCTEXT("XpGained", "{0} +{1} XP. [K] Skills."), FText::FromString(MarburgumII::Gameplay::Localized(Skill ? Skill->DisplayName : Award.SkillId.ToString())),
                     FText::AsNumber(Award.Xp)), MarburgumUI::ETone::Accent, false, EMarburgumGlyph::Skill);
         }
     };
@@ -935,7 +935,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
     {
         Feed->Push(FName(*(Key.ToString() + TEXT(".photo"))), LOCTEXT("PhotoKind", "PHOTOGRAPH"),
             FText::Format(LOCTEXT("Photographed", "{0}. {1} The print is in your inventory; saved by the server."),
-                FText::FromString(Photo->DisplayName), FText::FromString(Photo->Note)), MarburgumUI::ETone::Success, false, EMarburgumGlyph::Item);
+                FText::FromString(MarburgumII::Gameplay::Localized(Photo->DisplayName)), FText::FromString(MarburgumII::Gameplay::Localized(Photo->Note))), MarburgumUI::ETone::Success, false, EMarburgumGlyph::Item);
         if (Receipt.Effect == EMarburgumInteractionEffect::Photographed)
         {
             PushRewards();
@@ -977,7 +977,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
             const FSkillDefinition* Skill = FindSkill(Award.SkillId.ToString());
             Feed->Push(FName(*(Key.ToString() + TEXT(".xp.") + Award.SkillId.ToString())), LOCTEXT("XpKind", "SKILL"),
                 FText::Format(LOCTEXT("FirstPurchaseXp", "First purchase here: {0} +{1} XP. [K] Skills."),
-                    FText::FromString(Skill ? Skill->DisplayName : Award.SkillId.ToString()), FText::AsNumber(Award.Xp)), MarburgumUI::ETone::Accent, false, EMarburgumGlyph::Skill);
+                    FText::FromString(MarburgumII::Gameplay::Localized(Skill ? Skill->DisplayName : Award.SkillId.ToString())), FText::AsNumber(Award.Xp)), MarburgumUI::ETone::Accent, false, EMarburgumGlyph::Skill);
         }
         return;
     }
@@ -1007,7 +1007,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
             Done = Receipt.Effect == EMarburgumInteractionEffect::MissionCompleted ? Now : (Now && Now > Mission->Stages ? Now - 1 : nullptr);
         }
         const FMissionChoiceDefinition* Choice = Done && !Receipt.Choice.IsNone() ? FindChoice(*Done, Receipt.Choice.ToString()) : nullptr;
-        const FString Told = Choice ? Choice->CompletionText : Done ? Done->CompletionText : TEXT("");
+        const FString Told = MarburgumII::Gameplay::Localized(Choice ? Choice->CompletionText : Done ? Done->CompletionText : TEXT(""));
         if (!Choice)
         {
             PushSaid();
@@ -1022,7 +1022,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
             Feed->Push(Key, LOCTEXT("MissionCompletedKind", "MISSION COMPLETED"),
                 Mission && *Mission->JournalEntryId
                     ? FText::Format(LOCTEXT("MissionCompletedEntry", "{0}. Journal entry added: {1}."), MissionDisplayName(Receipt.MissionId),
-                        FText::FromString(Mission->JournalEntryTitle))
+                        FText::FromString(MarburgumII::Gameplay::Localized(Mission->JournalEntryTitle)))
                     : FText::Format(LOCTEXT("MissionCompleted", "{0}. Saved by the server."), MissionDisplayName(Receipt.MissionId)),
                 MarburgumUI::ETone::Success, false, EMarburgumGlyph::Check);
         }
@@ -1125,7 +1125,7 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
     case EMarburgumInteractionReason::ShopClosed:
     {
         const FShopDefinition* Shop = Subject && !Subject->GetShopId().IsNone() ? FindShop(Subject->GetShopId().ToString()) : nullptr;
-        Message = Shop ? FText::FromString(Shop->ClosedMessage) : LOCTEXT("ShopClosed", "The counter is closed. Nothing was changed.");
+        Message = Shop ? FText::FromString(MarburgumII::Gameplay::Localized(Shop->ClosedMessage)) : LOCTEXT("ShopClosed", "The counter is closed. Nothing was changed.");
         Tone = MarburgumUI::ETone::Info;
         break;
     }

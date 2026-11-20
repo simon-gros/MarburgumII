@@ -49,7 +49,10 @@ const NPC_RULES: [(&str, &str, f64); 9] = [
 ];
 
 fn constant(contract: &str, name: &str) -> Option<f64> {
-    let pattern = Regex::new(&format!(r"inline constexpr (?:float|int32|double) {name} = ([0-9.]+)f?;")).unwrap();
+    let pattern = Regex::new(&format!(
+        r"inline constexpr (?:float|int32|double) {name} = ([0-9.]+)f?;"
+    ))
+    .unwrap();
     pattern.captures(contract).and_then(|c| c[1].parse().ok())
 }
 
@@ -65,7 +68,11 @@ fn npc_rows(contract: &str, problems: &mut Problems) -> Vec<String> {
     };
     let body = &contract[start..];
     let end = body.find("\n    };").unwrap_or(body.len());
-    body[..end].split("\n        {\n").skip(1).map(str::to_string).collect()
+    body[..end]
+        .split("\n        {\n")
+        .skip(1)
+        .map(str::to_string)
+        .collect()
 }
 
 fn field<'a>(row: &'a str, name: &str) -> &'a str {
@@ -73,14 +80,22 @@ fn field<'a>(row: &'a str, name: &str) -> &'a str {
     row.find(&key)
         .map(|at| {
             let rest = &row[at + key.len()..];
-            let end = if rest.starts_with('{') { rest.find('}').map_or(rest.len(), |e| e + 1) } else { rest.find(",\n").unwrap_or(rest.len()) };
+            let end = if rest.starts_with('{') {
+                rest.find('}').map_or(rest.len(), |e| e + 1)
+            } else {
+                rest.find(",\n").unwrap_or(rest.len())
+            };
             rest[..end].trim()
         })
         .unwrap_or("")
 }
 
 fn quoted(text: &str) -> String {
-    Regex::new(r#"TEXT\("([^"]*)"\)"#).unwrap().captures(text).map(|c| c[1].to_string()).unwrap_or_default()
+    Regex::new(r#"TEXT\("([^"]*)"\)"#)
+        .unwrap()
+        .captures(text)
+        .map(|c| c[1].to_string())
+        .unwrap_or_default()
 }
 
 /// A number, or a named default from the contract.
@@ -90,7 +105,10 @@ fn number(contract: &str, text: &str) -> Option<f64> {
 }
 
 fn numbers(text: &str) -> Vec<f64> {
-    text.trim_matches(|c| c == '{' || c == '}' || char::is_whitespace(c)).split(',').filter_map(|n| n.trim().parse().ok()).collect()
+    text.trim_matches(|c| c == '{' || c == '}' || char::is_whitespace(c))
+        .split(',')
+        .filter_map(|n| n.trim().parse().ok())
+        .collect()
 }
 
 pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
@@ -102,44 +120,98 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
         return Vec::new();
     }
 
-    for (rules, table) in [(&data["rules"], &RULES[..]), (&data["rules"], &NPC_RULES[..])] {
+    for (rules, table) in [
+        (&data["rules"], &RULES[..]),
+        (&data["rules"], &NPC_RULES[..]),
+    ] {
         for (key, name, factor) in table {
             let want = rules[key].as_f64().map(|v| v * factor);
             let have = constant(&contract, name);
-            problems.expect(matches!((want, have), (Some(w), Some(h)) if close(w, h)), format!("rule {key}: data {want:?} vs contract {name} {have:?}"));
+            problems.expect(
+                matches!((want, have), (Some(w), Some(h)) if close(w, h)),
+                format!("rule {key}: data {want:?} vs contract {name} {have:?}"),
+            );
         }
     }
     let rule = |key: &str| data["rules"][key].as_f64().unwrap_or(f64::NAN);
-    problems.expect(rule("stagger_msec") < rule("fist_cooldown_msec"), "a jab's stagger outlasts its cooldown (stun-lock)");
-    problems.expect(rule("heavy_stagger_msec") < rule("heavy_cooldown_msec"), "a heavy swing's stagger outlasts its cooldown (stun-lock)");
+    problems.expect(
+        rule("stagger_msec") < rule("fist_cooldown_msec"),
+        "a jab's stagger outlasts its cooldown (stun-lock)",
+    );
+    problems.expect(
+        rule("heavy_stagger_msec") < rule("heavy_cooldown_msec"),
+        "a heavy swing's stagger outlasts its cooldown (stun-lock)",
+    );
 
     let defaults = &data["npc_defaults"];
-    for (key, name, factor) in [("damage", "DefaultNpcDamage", 1.0), ("reach", "DefaultNpcReachCm", 100.0),
-        ("attack_interval_msec", "DefaultAttackIntervalSeconds", 0.001), ("pursuit_range", "DefaultPursuitRangeCm", 100.0)]
-    {
+    for (key, name, factor) in [
+        ("damage", "DefaultNpcDamage", 1.0),
+        ("reach", "DefaultNpcReachCm", 100.0),
+        (
+            "attack_interval_msec",
+            "DefaultAttackIntervalSeconds",
+            0.001,
+        ),
+        ("pursuit_range", "DefaultPursuitRangeCm", 100.0),
+    ] {
         let want = defaults[key].as_f64().map(|v| v * factor);
         let have = constant(&contract, name);
-        problems.expect(matches!((want, have), (Some(w), Some(h)) if close(w, h)), format!("npc default {key}: data {want:?} vs contract {name} {have:?}"));
+        problems.expect(
+            matches!((want, have), (Some(w), Some(h)) if close(w, h)),
+            format!("npc default {key}: data {want:?} vs contract {name} {have:?}"),
+        );
     }
 
-    let json: Vec<&Value> = data["npcs"].as_array().map(|a| a.iter().collect()).unwrap_or_default();
+    let json: Vec<&Value> = data["npcs"]
+        .as_array()
+        .map(|a| a.iter().collect())
+        .unwrap_or_default();
     let cpp = npc_rows(&contract, problems);
-    let json_ids: Vec<&str> = json.iter().map(|n| n["id"].as_str().unwrap_or("")).collect();
+    let json_ids: Vec<&str> = json
+        .iter()
+        .map(|n| n["id"].as_str().unwrap_or(""))
+        .collect();
     let cpp_ids: Vec<String> = cpp.iter().map(|r| quoted(field(r, "Id"))).collect();
-    problems.expect(json_ids == cpp_ids, format!("NPC order mismatch: data {json_ids:?} vs contract {cpp_ids:?}"));
+    problems.expect(
+        json_ids == cpp_ids,
+        format!("NPC order mismatch: data {json_ids:?} vs contract {cpp_ids:?}"),
+    );
     let mut hostiles = 0;
     for (npc, row) in json.iter().zip(&cpp) {
         let id = npc["id"].as_str().unwrap_or("?");
-        problems.expect(npc["name"].as_str() == Some(quoted(field(row, "Name")).as_str()), format!("{id}: name differs"));
+        problems.expect(
+            npc["name"].as_str() == Some(quoted(field(row, "Name")).as_str()),
+            format!("{id}: name differs"),
+        );
         let role = npc["role"].as_str().unwrap_or("");
-        let cpp_role = match field(row, "Role") { "RoleHostile" => "hostile", "RoleCivilian" => "civilian", other => other };
-        problems.expect(role == cpp_role, format!("{id}: role data {role} vs contract {cpp_role}"));
-        problems.expect(role == "hostile" || role == "civilian", format!("{id}: unknown role {role}"));
+        let cpp_role = match field(row, "Role") {
+            "RoleHostile" => "hostile",
+            "RoleCivilian" => "civilian",
+            other => other,
+        };
+        problems.expect(
+            role == cpp_role,
+            format!("{id}: role data {role} vs contract {cpp_role}"),
+        );
+        problems.expect(
+            role == "hostile" || role == "civilian",
+            format!("{id}: unknown role {role}"),
+        );
         hostiles += usize::from(role == "hostile");
-        let position: Vec<f64> = npc["position"].as_array().map(|a| a.iter().filter_map(Value::as_f64).collect()).unwrap_or_default();
+        let position: Vec<f64> = npc["position"]
+            .as_array()
+            .map(|a| a.iter().filter_map(Value::as_f64).collect())
+            .unwrap_or_default();
         let cpp_position = numbers(field(row, "GodotPosition"));
-        problems.expect(position.len() == 3 && position.iter().zip(&cpp_position).all(|(a, b)| close(*a, *b)) && cpp_position.len() == 3,
-            format!("{id}: position data {position:?} vs contract {cpp_position:?}"));
+        problems.expect(
+            position.len() == 3
+                && position
+                    .iter()
+                    .zip(&cpp_position)
+                    .all(|(a, b)| close(*a, *b))
+                && cpp_position.len() == 3,
+            format!("{id}: position data {position:?} vs contract {cpp_position:?}"),
+        );
         for (key, name, factor, default) in [
             ("facing", "GodotFacing", 1.0, None),
             ("vitality", "Vitality", 1.0, None),
@@ -147,35 +219,84 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
             ("scale", "Scale", 1.0, None),
             ("damage", "Damage", 1.0, Some("damage")),
             ("reach", "ReachCm", 100.0, Some("reach")),
-            ("attack_interval_msec", "AttackIntervalSeconds", 0.001, Some("attack_interval_msec")),
-            ("pursuit_range", "PursuitRangeCm", 100.0, Some("pursuit_range")),
+            (
+                "attack_interval_msec",
+                "AttackIntervalSeconds",
+                0.001,
+                Some("attack_interval_msec"),
+            ),
+            (
+                "pursuit_range",
+                "PursuitRangeCm",
+                100.0,
+                Some("pursuit_range"),
+            ),
         ] {
-            let want = npc[key].as_f64().or_else(|| default.and_then(|d| defaults[d].as_f64())).map(|v| v * factor);
+            let want = npc[key]
+                .as_f64()
+                .or_else(|| default.and_then(|d| defaults[d].as_f64()))
+                .map(|v| v * factor);
             let have = number(&contract, field(row, name));
-            problems.expect(matches!((want, have), (Some(w), Some(h)) if close(w, h)), format!("{id}: {key} data {want:?} vs contract {name} {have:?}"));
+            problems.expect(
+                matches!((want, have), (Some(w), Some(h)) if close(w, h)),
+                format!("{id}: {key} data {want:?} vs contract {name} {have:?}"),
+            );
         }
-        for (key, name) in [("primary_color", "PrimaryColor"), ("secondary_color", "SecondaryColor")] {
-            let want = npc[key].as_str().map(|c| c.trim_start_matches('#').to_lowercase());
+        for (key, name) in [
+            ("primary_color", "PrimaryColor"),
+            ("secondary_color", "SecondaryColor"),
+        ] {
+            let want = npc[key]
+                .as_str()
+                .map(|c| c.trim_start_matches('#').to_lowercase());
             let have = field(row, name).trim_start_matches("0x").to_lowercase();
-            problems.expect(want.as_deref() == Some(have.as_str()), format!("{id}: {key} data {want:?} vs contract {have}"));
+            problems.expect(
+                want.as_deref() == Some(have.as_str()),
+                format!("{id}: {key} data {want:?} vs contract {have}"),
+            );
         }
     }
     problems.expect(hostiles >= 1, "no hostile NPC: nobody can fight back");
-    problems.expect(json_ids.contains(&"lent_drunk"), "the Lent drinker is missing");
+    problems.expect(
+        json_ids.contains(&"lent_drunk"),
+        "the Lent drinker is missing",
+    );
 
     // Nothing of San Andreas' wanted system: the ontology excludes it, and the contract never names it.
-    let excluded: Vec<&str> = ontology["excluded_features"].as_array().map(|a| a.iter().filter_map(|e| e["mechanic"].as_str()).collect()).unwrap_or_default();
-    for mechanic in ["wanted_stars", "wanted_level_or_heat", "police_pursuit_or_chase"] {
-        problems.expect(excluded.contains(&mechanic), format!("ui ontology no longer excludes {mechanic}"));
+    let excluded: Vec<&str> = ontology["excluded_features"]
+        .as_array()
+        .map(|a| a.iter().filter_map(|e| e["mechanic"].as_str()).collect())
+        .unwrap_or_default();
+    for mechanic in [
+        "wanted_stars",
+        "wanted_level_or_heat",
+        "police_pursuit_or_chase",
+    ] {
+        problems.expect(
+            excluded.contains(&mechanic),
+            format!("ui ontology no longer excludes {mechanic}"),
+        );
     }
     let lowered = contract.to_lowercase();
-    problems.expect(!lowered.contains("wanted") && !lowered.contains("police"), "the combat contract names a wanted level or police");
+    problems.expect(
+        !lowered.contains("wanted") && !lowered.contains("police"),
+        "the combat contract names a wanted level or police",
+    );
 
     // The player's guard and swings travel in the move stream, simulated the same way on both ends: the guard as
     // a held flag, swings as a request count serialized in every move (a one-move flag can be skipped).
-    problems.expect(movement.contains("FLAG_Custom_1"), "movement does not carry the guard flag (FLAG_Custom_1)");
-    problems.expect(movement.contains("Ar << SwingRequest;"), "movement does not serialize the swing request count in its move data");
-    problems.expect(!movement.contains("FLAG_Custom_2") && !movement.contains("FLAG_Custom_3"), "swings must not ride a one-move flag");
+    problems.expect(
+        movement.contains("FLAG_Custom_1"),
+        "movement does not carry the guard flag (FLAG_Custom_1)",
+    );
+    problems.expect(
+        movement.contains("Ar << SwingRequest;"),
+        "movement does not serialize the swing request count in its move data",
+    );
+    problems.expect(
+        !movement.contains("FLAG_Custom_2") && !movement.contains("FLAG_Custom_3"),
+        "swings must not ride a one-move flag",
+    );
 
     vec![format!(
         "Combat contract OK: {} rules and {} people ({} hostile) match {DATA}; wanted level and police excluded.",

@@ -21,7 +21,10 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     let mut staged = 0;
     for name in &names {
         let path = root.join("scripts").join(name);
-        problems.expect(executable(&path), format!("scripts/{name} is not executable (git update-index --chmod=+x)"));
+        problems.expect(
+            executable(&path),
+            format!("scripts/{name} is not executable (git update-index --chmod=+x)"),
+        );
         let body = std::fs::read_to_string(&path).unwrap_or_default();
         // Wrappers that exec another smoke (daylight runs weather's) inherit its stamp.
         if body.contains("    staged)") && !body.contains("exec \"$repo_root/scripts/") {
@@ -35,7 +38,9 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
 #[cfg(unix)]
 fn executable(path: &Path) -> bool {
     use std::os::unix::fs::PermissionsExt;
-    std::fs::metadata(path).map(|meta| meta.permissions().mode() & 0o111 != 0).unwrap_or(false)
+    std::fs::metadata(path)
+        .map(|meta| meta.permissions().mode() & 0o111 != 0)
+        .unwrap_or(false)
 }
 
 /// Windows checkouts carry no mode bits; the Linux CI job checks them.

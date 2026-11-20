@@ -1,5 +1,7 @@
 #include "MarburgumGameplayContract.h"
 #include "MarburgumNpcContract.h"
+#include "Internationalization/Culture.h"
+#include "Internationalization/Internationalization.h"
 #include "Misc/AutomationTest.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -90,6 +92,65 @@ bool FMarburgumPhotoCatalogueTest::RunTest(const FString& Parameters)
             }
         }
     }
+    return true;
+}
+
+#endif
+
+#if WITH_DEV_AUTOMATION_TESTS
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumDayPostTest, "Marburgum.Shared.Npc.DayPosts",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::ServerContext
+        | EAutomationTestFlags::CommandletContext | EAutomationTestFlags::ProductFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumSloveneTextTest, "Marburgum.Shared.Gameplay.SloveneText",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::ServerContext
+        | EAutomationTestFlags::CommandletContext | EAutomationTestFlags::ProductFilter)
+
+bool FMarburgumDayPostTest::RunTest(const FString& Parameters)
+{
+    using namespace MarburgumII::Gameplay;
+    const FDayPost Posts[] = { { 19 * 60, 7 * 60, 6.0, 0.0, TEXT("night") }, { 12 * 60, 13 * 60, 0.0, 4.0, TEXT("lunch") } };
+    TestEqual(TEXT("morning at the authored spot"), DayPostAt(Posts, 2, 10 * 60), int32(INDEX_NONE));
+    TestEqual(TEXT("lunch"), DayPostAt(Posts, 2, 12 * 60 + 30), 1);
+    TestEqual(TEXT("lunch ends at 13:00"), DayPostAt(Posts, 2, 13 * 60), int32(INDEX_NONE));
+    TestEqual(TEXT("evening, past midnight"), DayPostAt(Posts, 2, 23 * 60), 0);
+    TestEqual(TEXT("after midnight"), DayPostAt(Posts, 2, 3 * 60), 0);
+    TestEqual(TEXT("night ends at 07:00"), DayPostAt(Posts, 2, 7 * 60), int32(INDEX_NONE));
+    // Authored people with a day are all within reach of their spot, and at it in the working morning (the smokes rely on it).
+    for (const FInteractableDefinition& Entry : Interactables)
+    {
+        for (int32 Index = 0; Index < Entry.PostCount; ++Index)
+        {
+            const FDayPost& Post = Entry.Posts[Index];
+            TestTrue(*FString::Printf(TEXT("%s post %d within 15 m"), Entry.Id, Index), FMath::Sqrt(Post.OffsetEastM * Post.OffsetEastM + Post.OffsetSouthM * Post.OffsetSouthM) <= 15.0);
+        }
+        TestEqual(*FString::Printf(TEXT("%s at the authored spot at 10:00"), Entry.Id), DayPostAt(Entry.Posts, Entry.PostCount, 10 * 60), int32(INDEX_NONE));
+    }
+    return true;
+}
+
+bool FMarburgumSloveneTextTest::RunTest(const FString& Parameters)
+{
+    using namespace MarburgumII::Gameplay;
+    for (const FTextTranslation& Entry : SloveneText)
+    {
+        TestTrue(*FString::Printf(TEXT("Slovene for \"%s\""), Entry.English), Entry.Slovene && *Entry.Slovene);
+    }
+    const FString Before = FInternationalization::Get().GetCurrentLanguage()->GetName();
+    FInternationalization::Get().SetCurrentLanguage(TEXT("en"));
+    TestEqual(TEXT("English stays English"), FString(Localized(TEXT("Fishing rod"))), FString(TEXT("Fishing rod")));
+    if (FInternationalization::Get().SetCurrentLanguage(TEXT("sl")))
+    {
+        TestEqual(TEXT("Slovene item"), FString(Localized(TEXT("Fishing rod"))), FString(TEXT("Ribiška palica")));
+        TestEqual(TEXT("Slovene verb"), FString(Localized(TEXT("Talk"))), FString(TEXT("Govori")));
+        TestEqual(TEXT("Unknown text unchanged"), FString(Localized(TEXT("not in the catalogue"))), FString(TEXT("not in the catalogue")));
+    }
+    else
+    {
+        AddWarning(TEXT("The sl culture is not available in this build; only the table was checked."));
+    }
+    FInternationalization::Get().SetCurrentLanguage(Before);
     return true;
 }
 

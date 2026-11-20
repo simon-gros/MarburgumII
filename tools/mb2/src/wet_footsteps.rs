@@ -53,7 +53,10 @@ pub fn read_wav(bytes: &[u8]) -> Result<Vec<f64>, String> {
             if !format_ok {
                 return Err("expected mono 16-bit PCM at 44.1 kHz".into());
             }
-            return Ok(bytes[body..body + size].chunks_exact(2).map(|s| i16::from_le_bytes([s[0], s[1]]) as f64 / 32768.0).collect());
+            return Ok(bytes[body..body + size]
+                .chunks_exact(2)
+                .map(|s| i16::from_le_bytes([s[0], s[1]]) as f64 / 32768.0)
+                .collect());
         }
         at = body + size + (size & 1);
     }
@@ -150,13 +153,23 @@ pub fn run() -> u8 {
 fn generate(root: &Path) -> Result<(), String> {
     std::fs::create_dir_all(root.join(OUTPUT)).map_err(|e| e.to_string())?;
     for variant in 0..VARIANTS {
-        let source = root.join(SOURCE).join(format!("footstep_concrete_{variant:03}.wav"));
-        let dry = read_wav(&std::fs::read(&source).map_err(|e| format!("{}: {e}", source.display()))?)
-            .map_err(|e| format!("{}: {e}", source.display()))?;
+        let source = root
+            .join(SOURCE)
+            .join(format!("footstep_concrete_{variant:03}.wav"));
+        let dry =
+            read_wav(&std::fs::read(&source).map_err(|e| format!("{}: {e}", source.display()))?)
+                .map_err(|e| format!("{}: {e}", source.display()))?;
         let wet = wet_step(&dry, 0x5157_6E65_7400 + variant as u64);
-        let target = root.join(OUTPUT).join(format!("footstep_concrete_wet_{variant:03}.wav"));
-        std::fs::write(&target, write_wav(&wet)).map_err(|e| format!("{}: {e}", target.display()))?;
-        println!("Wrote {} ({:.3} s)", target.strip_prefix(root).unwrap_or(&target).display(), wet.len() as f64 / RATE as f64);
+        let target = root
+            .join(OUTPUT)
+            .join(format!("footstep_concrete_wet_{variant:03}.wav"));
+        std::fs::write(&target, write_wav(&wet))
+            .map_err(|e| format!("{}: {e}", target.display()))?;
+        println!(
+            "Wrote {} ({:.3} s)",
+            target.strip_prefix(root).unwrap_or(&target).display(),
+            wet.len() as f64 / RATE as f64
+        );
     }
     Ok(())
 }

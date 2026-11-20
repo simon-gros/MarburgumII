@@ -316,7 +316,7 @@ void UMarburgumInteractionPrompt::RefreshAuthored(const AMarburgumInteractable& 
     auto ItemName = [](const FName& Item)
     {
         const FItemDefinition* Definition = FindItem(Item.ToString());
-        return FText::FromString(Definition ? Definition->DisplayName : Item.ToString());
+        return FText::FromString(MarburgumII::Gameplay::Localized(Definition ? Definition->DisplayName : Item.ToString()));
     };
     switch (Mode)
     {
@@ -339,18 +339,18 @@ void UMarburgumInteractionPrompt::RefreshAuthored(const AMarburgumInteractable& 
         switch (Action)
         {
         case EPlanAction::StartMission:
-            Detail = FText::Format(LOCTEXT("Offer", "Has a job for you  \u00B7  {0}"), FText::FromString(Mission->Name));
+            Detail = FText::Format(LOCTEXT("Offer", "Has a job for you  \u00B7  {0}"), FText::FromString(MarburgumII::Gameplay::Localized(Mission->Name)));
             break;
         case EPlanAction::CompleteStage:
-            Verb = FText::FromString(Stage->Action);
-            Detail = FText::Format(LOCTEXT("StageReady", "{0}  \u00B7  next step"), FText::FromString(Mission->Name));
+            Verb = FText::FromString(MarburgumII::Gameplay::Localized(Stage->Action));
+            Detail = FText::Format(LOCTEXT("StageReady", "{0}  \u00B7  next step"), FText::FromString(MarburgumII::Gameplay::Localized(Mission->Name)));
             break;
         case EPlanAction::ChoiceRequired:
-            Verb = FText::FromString(Stage->Action);
-            Detail = FText::Format(LOCTEXT("ChoiceDue", "{0}  \u00B7  a decision is yours to make"), FText::FromString(Mission->Name));
+            Verb = FText::FromString(MarburgumII::Gameplay::Localized(Stage->Action));
+            Detail = FText::Format(LOCTEXT("ChoiceDue", "{0}  \u00B7  a decision is yours to make"), FText::FromString(MarburgumII::Gameplay::Localized(Mission->Name)));
             break;
         case EPlanAction::RequirementNotMet:
-            Verb = FText::FromString(Stage->Action);
+            Verb = FText::FromString(MarburgumII::Gameplay::Localized(Stage->Action));
             Detail = Stage->Objective == EObjectiveType::InventoryAny
                 ? FText::Format(LOCTEXT("NeedsAny", "Bring {0} first."), ItemName(Preview.MissingItem))
                 : FText::Format(LOCTEXT("Needs", "You need {0} for this."), ItemName(Preview.MissingItem));
@@ -361,7 +361,7 @@ void UMarburgumInteractionPrompt::RefreshAuthored(const AMarburgumInteractable& 
         {
             const FMissionDefinition* Before = FindMission(Preview.Prerequisite.ToString());
             Detail = FText::Format(LOCTEXT("Later", "Not yet. Finish \u201C{0}\u201D first."),
-                FText::FromString(Before ? Before->Name : Preview.Prerequisite.ToString()));
+                FText::FromString(MarburgumII::Gameplay::Localized(Before ? Before->Name : Preview.Prerequisite.ToString())));
             Tone = ETone::Neutral;
             break;
         }
@@ -502,8 +502,8 @@ bool UMarburgumInteractionPrompt::RefreshPhoto(const AMarburgumPlayerController&
         return true;
     }
     LastSignature = Signature;
-    ApplyTo(*Body, FText::FromString(Frame.Subject->DisplayName), false, LOCTEXT("PhotographVerb", "Photograph"),
-        bHeld ? LOCTEXT("PhotoHeld", "Already documented; you hold the print.") : FText::FromString(Frame.Subject->Note),
+    ApplyTo(*Body, FText::FromString(MarburgumII::Gameplay::Localized(Frame.Subject->DisplayName)), false, LOCTEXT("PhotographVerb", "Photograph"),
+        bHeld ? LOCTEXT("PhotoHeld", "Already documented; you hold the print.") : FText::FromString(MarburgumII::Gameplay::Localized(Frame.Subject->Note)),
         bHeld ? ETone::Neutral : ETone::Accent, !bHeld, EMarburgumGlyph::Info);
     KeyLabel->SetText(LOCTEXT("PhotoKey", "P"));
     return true;
