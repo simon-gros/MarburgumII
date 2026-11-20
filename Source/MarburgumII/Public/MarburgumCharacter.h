@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "MarburgumCombatTypes.h"
+#include "MarburgumInteractionTypes.h"
 #include "MarburgumCharacter.generated.h"
 
 class AMarburgumVehicle;
@@ -82,6 +83,16 @@ public:
     /** Presentation evidence: the playing swim clip is treading water, upright, not the stroke. */
     bool IsTreadingWater() const;
 
+    // ---- Fishing (ADR-048, presentation ADR-080) ----
+
+    /** Server: the owner's line is in the water (Waiting), something is on (Bite), or neither (None). */
+    void SetFishingPoseAuthority(EMarburgumFishingPhase Phase);
+    EMarburgumFishingPhase GetFishingPose() const { return FishingPose; }
+    /** Presentation evidence: the rod is drawn in the right hand. */
+    bool IsRodInHand() const;
+    /** Presentation evidence: a fishing clip (cast, wait or reel) is playing on this body. */
+    bool IsFishingClipPlaying() const;
+
     // ---- Vehicles (ADR-039) ----
 
     AMarburgumVehicle* GetSeatedVehicle() const { return Seating.Vehicle; }
@@ -149,6 +160,30 @@ private:
 
     void UpdateSwimPresentation();
     void UpdateFightPresentation();
+    void UpdateFishingPresentation();
+
+    /**
+     * How the body holds a rod (ADR-080): None, Waiting or Bite, set by the server whenever the owner's fishing status
+     * changes, public so everyone nearby sees the cast, the wait and the bite. The status (spot, attempt, catch) stays
+     * the owner's.
+     */
+    UPROPERTY(Replicated)
+    EMarburgumFishingPhase FishingPose = EMarburgumFishingPhase::None;
+
+    UPROPERTY(VisibleAnywhere, Category = "Marburgum|Character")
+    TObjectPtr<UStaticMeshComponent> Rod;
+
+    UPROPERTY(Transient)
+    TObjectPtr<UAnimSequenceBase> FishClips[3];
+
+    UPROPERTY(Transient)
+    TObjectPtr<UAnimMontage> FishMontage;
+
+    /** The fishing clip on this body (0 cast, 1 wait, 2 reel), the cast's time left, and whether this machine has drawn
+     *  this body before (one first seen mid-wait does not cast again). */
+    int32 ShownFishClip = INDEX_NONE;
+    float CastRemaining = 0.f;
+    bool bFishingSeen = false;
 
     UPROPERTY(Replicated)
     FMarburgumFightPose FightPose;

@@ -1,5 +1,7 @@
 #include "MarburgumPlayerState.h"
 
+#include "MarburgumCharacter.h"
+
 #include "Net/UnrealNetwork.h"
 
 void AMarburgumPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -215,6 +217,11 @@ void AMarburgumPlayerState::SetFishingAuthority(const FMarburgumFishingStatus& I
     Fishing = InFishing;
     // A bite lasts under two seconds; it must not wait for the next scheduled update.
     ForceNetUpdate();
+    // The status itself is the owner's; how the body holds the rod is everyone's to see (ADR-080).
+    if (AMarburgumCharacter* Body = Cast<AMarburgumCharacter>(GetPawn()))
+    {
+        Body->SetFishingPoseAuthority(Fishing.Phase);
+    }
     OnFishingChanged().Broadcast(this);
 }
 

@@ -8,7 +8,9 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Engine/SkeletalMesh.h"
+#include "Engine/StaticMesh.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerInput.h"
@@ -21,6 +23,7 @@
 #include "MarburgumFightPresentation.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumNetworkContract.h"
+#include "MarburgumNpcContract.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
 #include "MarburgumStreetSubsystem.h"
@@ -126,6 +129,16 @@ AMarburgumCharacter::AMarburgumCharacter(const FObjectInitializer& ObjectInitial
         TreadClip = Tread.Object;
     }
 
+    // A rod in the right hand while the line is out, and the hold, cast, wait and reel clips the riverside angler uses
+    // (ADR-080). Every body is on the mannequin skeleton, so fishing_rod_r is on every body.
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> RodMesh(MarburgumII::Npc::RodMeshPath);
+    Rod = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rod"));
+    Rod->SetupAttachment(Body, MarburgumII::Npc::RodSocket);
+    Rod->SetStaticMesh(RodMesh.Succeeded() ? RodMesh.Object : nullptr);
+    Rod->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    Rod->SetGenerateOverlapEvents(false);
+    Rod->SetVisibility(false);
+
     // The original game's enter and exit clips, generated onto the mannequin skeleton (ADR-039).
     static ConstructorHelpers::FObjectFinder<UAnimSequenceBase> Enter(MarburgumII::Vehicles::EnterClipPath);
     if (Enter.Succeeded())
@@ -143,6 +156,7 @@ void AMarburgumCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(AMarburgumCharacter, Seating);
+    DOREPLIFETIME(AMarburgumCharacter, FishingPose);
     // The owner draws its own prediction from its movement component.
     DOREPLIFETIME_CONDITION(AMarburgumCharacter, FightPose, COND_SkipOwner);
 }
@@ -165,6 +179,7 @@ void AMarburgumCharacter::Tick(float DeltaSeconds)
     {
         UpdateSwimPresentation();
         UpdateFightPresentation();
+        UpdateFishingPresentation();
         const float Target = SwimMontage && !bTreading ? SwimLiftCm : 0.f;
         SwimLift = FMath::FInterpConstantTo(SwimLift, Target, DeltaSeconds, SwimLiftCmPerSecond);
         if (!Seating.Vehicle)
@@ -420,6 +435,84 @@ void AMarburgumCharacter::UpdateDrivingCamera(float DeltaSeconds)
     const FRotator Wanted(-static_cast<float>(CameraPitchDegrees), Vehicle->GetActorRotation().Yaw, 0.f);
     const FRotator Delta = (Wanted - Current).GetNormalized();
     Owner->SetControlRotation(FRotator(Current.Pitch + Delta.Pitch * Weight, Current.Yaw + Delta.Yaw * Weight, 0.f));
+}
+
+void AMarburgumCharacter::SetFishingPoseAuthority(EMarburgumFishingPhase Phase)
+{
+    check(HasAuthority());
+    if (FishingPose != Phase)
+    {
+        FishingPose = Phase;
+        ForceNetUpdate();
+    }
+}
+
+bool AMarburgumCharacter::IsRodInHand() const
+{
+    return Rod && Rod->IsVisible() && Rod->GetStaticMesh() && Rod->GetAttachSocketName() == MarburgumII::Npc::RodSocket;
+}
+
+bool AMarburgumCharacter::IsFishingClipPlaying() const
+{
+    const UAnimInstance* Anim = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
+    return Anim && FishMontage && Anim->Montage_IsPlaying(FishMontage);
+}
+
+void AMarburgumCharacter::UpdateFishingPresentation()
+{
+    namespace Npc = MarburgumII::Npc;
+    UAnimInstance* Anim = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
+    if (!Anim)
+    {
+        return;
+    }
+    if (!FishClips[0])
+    {
+        FishClips[0] = LoadObject<UAnimSequenceBase>(nullptr, Npc::FishCastClipPath);
+        FishClips[1] = LoadObject<UAnimSequenceBase>(nullptr, Npc::FishWaitClipPath);
+        FishClips[2] = LoadObject<UAnimSequenceBase>(nullptr, Npc::FishReelClipPath);
+    }
+    // A seat and the water own the body; the server ends the line there anyway.
+    const bool bFishing = FishingPose != EMarburgumFishingPhase::None && !Seating.Vehicle && !GetCharacterMovement()->IsSwimming();
+    Rod->SetVisibility(bFishing);
+    if (!bFishing)
+    {
+        if (FishMontage)
+        {
+            Anim->Montage_Stop(SwimBlendSeconds, FishMontage);
+            FishMontage = nullptr;
+        }
+        ShownFishClip = INDEX_NONE;
+        CastRemaining = 0.f;
+        bFishingSeen = true;
+        return;
+    }
+    CastRemaining = FMath::Max(CastRemaining - (GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.f), 0.f);
+    // 0 cast, 1 wait, 2 reel. From standing to a line in the water is a cast; a body first seen already fishing (a
+    // late join, a body coming into view) starts at the wait. A bite reels.
+    int32 Want = 1;
+    if (FishingPose == EMarburgumFishingPhase::Bite)
+    {
+        Want = 2;
+    }
+    else if (ShownFishClip == INDEX_NONE && bFishingSeen)
+    {
+        Want = 0;
+        CastRemaining = FishClips[0] ? FishClips[0]->GetPlayLength() : 0.f;
+    }
+    else if (ShownFishClip == 0 && CastRemaining > 0.f)
+    {
+        Want = 0;
+    }
+    bFishingSeen = true;
+    if (Want != ShownFishClip || !FishMontage || !Anim->Montage_IsPlaying(FishMontage))
+    {
+        if (UAnimSequenceBase* Clip = FishClips[Want])
+        {
+            FishMontage = Anim->PlaySlotAnimationAsDynamicMontage(Clip, SwimSlot, SwimBlendSeconds, SwimBlendSeconds, 1.f, Want == 0 ? 1 : 1000);
+        }
+        ShownFishClip = Want;
+    }
 }
 
 void AMarburgumCharacter::UpdateSwimPresentation()
