@@ -1,38 +1,24 @@
 name: Validate historical research archives
 
+# Runs on every push and pull request, like Source validation, so each revision has both results (ADR-077).
+# `mb2 validate history` checks this file keeps no path filter.
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - "art_reference/**"
-      - "Data/History/**"
-      - "tools/historical_*"
-      - "tools/validate_historical_archives.py"
-      - "tests/python/test_historical_*"
-      - ".github/workflows/historical-archives.yml"
   push:
-    branches: [main]
-    paths:
-      - "art_reference/**"
-      - "Data/History/**"
-      - "tools/historical_*"
-      - "tools/validate_historical_archives.py"
-      - "tests/python/test_historical_*"
-      - ".github/workflows/historical-archives.yml"
+  pull_request:
 
 permissions:
   contents: read
 
 jobs:
   historical-catalogues:
+    name: Historical archive catalogues, rules and imagery metadata
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Validate catalogue structure, source references and rights metadata
-        run: python3 tools/validate_historical_archives.py
-      - name: Run legacy historical schema regression tests
-        run: python3 -m unittest discover -s tests/python -p 'test_historical_*.py' -v
+      - run: rustc --version && cargo --version
+      # Catalogue structure, unique stable IDs, rule citations, imagery metadata, manifest rights and no media binaries.
+      - run: cargo run --release --manifest-path tools/mb2/Cargo.toml -- validate history
+      # Rule/imagery contract tests and the 20 November 2026 expansion regression tests.
+      - run: cargo test --release --manifest-path tools/mb2/Cargo.toml -- history::

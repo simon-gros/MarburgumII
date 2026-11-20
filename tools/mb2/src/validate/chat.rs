@@ -55,7 +55,10 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     expect(client_rules.contains("MarburgumIIShared") && client_rules.contains("\"MarburgumII\""), "client module must link common runtime contracts");
     expect(client_rules.contains("\"UMG\""), "UMG dependency must remain client-only");
     expect(!game_rules.contains("\"UMG\""), "dedicated-server common module cannot link UMG");
-    expect(view.contains("PRIVATE") && view.contains("ONLINE") && view.contains("HandleTextCommitted"),
+    // The labels are localized (LOCTEXT), so check the behaviour: a channel toggle and /w both reach the private
+    // send, and the online list is built from the replicated player array.
+    expect(view.contains("HandleTextCommitted") && view.contains("CycleChannel()") && view.contains("SendPrivateChat(")
+        && view.contains("SendGeneralChat(") && view.contains("RebuildOnline()") && view.contains("GameState->PlayerArray"),
         "native UI must expose private/general composition and player discovery");
     expect(design.to_lowercase().contains("personal") && design.to_lowercase().contains("three"),
         "real 3-client test and owner acceptance must remain specified");

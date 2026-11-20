@@ -48,17 +48,17 @@ All item-linked protected media remain reference-only. None of these additions i
 Run from repository root:
 
 ```bash
-python3 tools/validate_historical_archives.py
-python3 -m unittest discover -s tests/python -p 'test_historical_*.py' -v
+scripts/mb2.sh validate history
+cargo test --manifest-path tools/mb2/Cargo.toml -- history::
 ```
 
-GitHub Actions [historical-archives.yml](../.github/workflows/historical-archives.yml) validates schema, unique stable IDs, rule citations, imagery metadata, source manifest and absence of committed media binaries for catalogue-related changes.
+GitHub Actions [historical-archives.yml](../.github/workflows/historical-archives.yml) validates schema, unique stable IDs, rule citations, imagery metadata, source manifest and absence of committed media binaries on every push and pull request, alongside Source validation, whose `mb2 validate all` includes the same check. The tooling is Rust (`tools/mb2/src/history.rs`, [ADR-077](DECISIONS.md)); the repository stays Python-free under ADR-018.
 
-The optional [reference downloader](../tools/fetch_art_reference.py) only processes explicitly `auto_fetch=yes` manifest records and writes to `~/marburgum-data/art-reference/licensed/` by default, outside Git. Downloading does not approve an image for inclusion in commercial builds. Restricted media and archival rasters are never included automatically.
+The optional reference downloader, `scripts/mb2.sh fetch-art-reference [--output <dir>] [--force]`, only processes explicitly `auto_fetch=yes` manifest records, over HTTPS only, and writes to `~/marburgum-data/art-reference/licensed/` by default, outside Git. Downloading does not approve an image for inclusion in commercial builds. Restricted media and archival rasters are never included automatically.
 
 ## Integration and research-completeness warning, 20 November morning
 
-The latest [historical archive workflow](https://github.com/simon-gros/MarburgumII/actions/runs/44680469864) **passed**, while [whole-repository source CI](https://github.com/simon-gros/MarburgumII/actions/runs/44680469847) **failed** at `mb2 validate all`. Imported Python validators/tests and Python CI contradict ADR-018's enforced Python-free rule; see [ADR-077](DECISIONS.md). The commands above describe current implementation, **not accepted tooling compliance**. Restore same-revision full CI and archive-schema coverage without disabling either check.
+At `8fd4aaf` the [historical archive workflow](https://github.com/simon-gros/MarburgumII/actions/runs/44680469864) **passed**, while [whole-repository source CI](https://github.com/simon-gros/MarburgumII/actions/runs/44680469847) **failed** at `mb2 validate all`, because the imported Python validators, tests and CI contradicted ADR-018. **Resolved by [ADR-077](DECISIONS.md):** every check, test and the downloader were ported to Rust `mb2`, and both workflows now run on every revision. Archive integration still requires both to pass on the same SHA.
 
 **P1 curation gate:** All **246 art records** and **six unverified imagery/cartographic leads** require triage by depicted/publication date, exact geographic coverage, source licence, derivative permission and historical inferences. Prioritize Lent/bridge/river/shopfront/1990s street assets. Distinguish 2026 survey photos, nineteenth-century cadastral maps and 2006 orthoimagery from 1990s evidence. Do not use archive media as TRELLIS prompts or shipped textures without explicit asset-specific rights and owner approval. Produce evidence-linked, reviewable world-state overrides rather than bulk unreviewed image imports.
 

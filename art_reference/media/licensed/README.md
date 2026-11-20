@@ -17,9 +17,9 @@ files/
 Run:
 
 ```bash
-python tools/fetch_art_reference.py
+scripts/mb2.sh fetch-art-reference            # or: --output <dir> [--force]
 ```
 
-The script downloads only `auto_fetch=yes` rows, follows the catalogue IDs for filenames, and writes SHA-256 checksums. It does **not** turn a reference photograph into a game asset licence. The original creator, source and licence remain attached to every file through this manifest.
+The command downloads only `auto_fetch=yes` rows, over HTTPS only, into `~/marburgum-data/art-reference/licensed/` by default, follows the catalogue IDs for filenames, and writes SHA-256 checksums. It does **not** turn a reference photograph into a game asset licence. The original creator, source and licence remain attached to every file through this manifest.
 
 For 1991 Večer/Kamra photographs that Wikimedia Commons currently presents under CC BY-SA while the Kamra-derived catalogue records CC BY-NC, the archive takes the conservative approach: preserve the link and metadata, but do not auto-fetch or redistribute until the discrepancy is resolved.

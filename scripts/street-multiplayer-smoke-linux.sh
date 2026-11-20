@@ -219,71 +219,10 @@ else
     fi
 fi
 
-python3 - "$out" "$sha" "$case_name" "$expect_clock" << 'PY'
-import json, re, sys
-out, sha, case_name, expect_clock = sys.argv[1:5]
-text = open(out + "/server.log", errors="replace").read()
-lines = text.splitlines()
-
-def scenario_lines(name):
-    found = []
-    for ln in lines:
-        if f"name={name} " in ln and "event=scenario" in ln and "phase=" not in ln:
-            found.append(ln)
-    return found
-
-def field(ln, key):
-    m = re.search(rf"(?:^|\s){key}=(\S+)", ln)
-    return m.group(1) if m else ""
-
-rows = []
-ok = True
-if case_name == "night":
-    wanted = ("night",)
-else:
-    wanted = ("solo", "A", "B", "C_apart", "C_back", "D", "E_dropped", "E", "cap", "cap_drop")
-for name in wanted:
-    found = scenario_lines(name)
-    ln = found[-1] if found else ""
-    state = field(ln, "state")
-    passed = field(ln, "pass") == "1"
-    if name in ("D", "cap"):
-        accepted = state in ("settled", "constrained") and "over_cap" not in text
-    elif name in ("E_dropped", "cap_drop"):
-        accepted = state == "lifecycle" and passed
-    else:
-        accepted = state == "settled" and passed
-    ok = ok and accepted and bool(ln)
-    rows.append({"name": name, "state": state or "missing", "pass": passed, "accepted": accepted, "line": ln})
-
-clients = []
-for name in ("client-a.log", "client-b.log", "client-b2.log", "client-c.log"):
-    path = out + "/" + name
-    try:
-        body = open(path, errors="replace").read().splitlines()
-    except FileNotFoundError:
-        continue
-    watches = [ln for ln in body if "event=crowd_watch" in ln]
-    last = watches[-1] if watches else ""
-    clients.append({"log": name, "watches": len(watches), "last": last})
-
-net = [ln for ln in lines if "event=net_rate" in ln]
-clock_ok = any(expect_clock in ln and "offset=+2" in ln for ln in lines)
-ok = ok and clock_ok
-summary = {
-    "sha": sha,
-    "case": case_name,
-    "clock_ok": clock_ok,
-    "ok": ok,
-    "scenarios": rows,
-    "clients": clients,
-    "net_rate_last": net[-1] if net else "",
-    "net_rate_samples": len(net),
-}
-open(out + "/summary.json", "w").write(json.dumps(summary, indent=2))
-print(json.dumps(summary, indent=2))
-sys.exit(0 if ok else 1)
-PY
-status=$?
+# Scenario verdicts, client watch lines and net-rate samples into $out/summary.json.
+status=0
+"$repo_root/scripts/mb2.sh" crowd-summary "$out" "$sha" "$case_name" "$expect_clock" || status=$?
+# Which build ran: the staged trees' stamp, or build_fresh: NO with the reason (scripts/build-stamp.sh).
+[[ "$mode" == staged ]] && { "$repo_root/scripts/build-stamp.sh" check > "$out/build-stamp.txt" 2>&1 || echo "WARNING: the staged build is not fresh; see $out/build-stamp.txt" >&2; }
 echo "summary_status=$status"
 exit "$status"

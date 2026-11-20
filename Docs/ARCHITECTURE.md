@@ -1,6 +1,6 @@
 # Architecture — initial baseline
 
-**Morning integration warning:** Source CI fails after the imported Python archive tooling contradicts accepted ADR-018; archive-only CI passes. Owner decision is pending in [ADR-077](DECISIONS.md). Only five ADR-076 shell doors have editor walks; a packaged build is not yet staged door acceptance. See [morning review](DEVELOPMENT_REVIEW_2026-11-20_MORNING.md).
+**Morning integration warning:** Source CI failed after the imported Python archive tooling contradicted accepted ADR-018. [ADR-077](DECISIONS.md) resolved this by porting the tooling to Rust `mb2`; both workflows now run on every revision. Only five ADR-076 shell doors have editor walks; a packaged build is not yet staged door acceptance. See [morning review](DEVELOPMENT_REVIEW_2026-11-20_MORNING.md).
 
 ## Engine invariant
 

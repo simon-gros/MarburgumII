@@ -2,8 +2,10 @@
 //! and helpers the smoke-test scripts call). None of it compiles or runs Unreal; it checks sources and
 //! files around the native build. Exit codes: 0 ok, 1 check failed, 2 usage error or blocked.
 
+mod crowd_summary;
 mod engine;
 mod generate;
+mod history;
 mod movement_check;
 mod playtest;
 mod render_probe;
@@ -19,7 +21,7 @@ use std::process::ExitCode;
 const USAGE: &str = "\
 Usage: mb2 <command>
 
-  validate <ui-ontology|chat|gameplay|vehicles|combat|street|lights|python-free|scripts|accounts|all>
+  validate <ui-ontology|chat|gameplay|vehicles|combat|street|lights|python-free|scripts|accounts|history|all>
                          Source-only contract checks (no Unreal build).
   generate gameplay      Write MarburgumGameplayCatalogue.h from Data/Gameplay/gameplay.v0.1.json.
   generate wet-footsteps Write the wet-street footsteps (SourceArt/Audio/Footsteps/Generated) from the dry ones.
@@ -40,7 +42,12 @@ Usage: mb2 <command>
   movement-check <server log> <client log> <role> <character key> <honest|adversary> <DefaultGame.ini>
                          ADR-019 bound on how far a Lent smoke walker moved on the server.
   survey-views <walk graph> [seed]
-                         The visual survey's fixed cameras as one MB2ViewShots string (ADR-072).";
+                         The visual survey's fixed cameras as one MB2ViewShots string (ADR-072).
+  crowd-summary <out dir> <sha> <day|night> <expected clock>
+                         Verdict and summary.json of scripts/street-multiplayer-smoke-linux.sh.
+  fetch-art-reference [--output <dir>] [--force]
+                         Download the auto_fetch=yes rows of the licensed art-reference manifest (HTTPS only,
+                         outside Git by default) and write their SHA-256 checksums (ADR-077).";
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -65,6 +72,8 @@ fn main() -> ExitCode {
         ["movement-check", server, client, role, key, kind, ini] => movement_check::run(server, client, role, key, kind, ini),
         ["survey-views", graph] => survey_views::run(graph, None),
         ["survey-views", graph, seed] => survey_views::run(graph, Some(seed)),
+        ["crowd-summary", out, sha, case_name, clock] => crowd_summary::run(out, sha, case_name, clock),
+        ["fetch-art-reference", rest @ ..] => history::fetch(rest),
         _ => {
             eprintln!("{USAGE}");
             2
