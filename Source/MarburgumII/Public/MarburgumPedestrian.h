@@ -87,6 +87,15 @@ public:
     void StartAt(int32 InAttractor, int32 Slot, double Now);
     /** Server, before anyone sees them: just out of a door, walking to the place's node. */
     void ComeOutAt(int32 InAttractor);
+    /**
+     * Test fixture (-MB2BridgeCross only): walk these existing graph nodes in order, using the edges that join them.
+     * The first node is where they already stand.
+     */
+    void SetScriptedRoute(const TArray<int32>& Nodes);
+    bool IsScriptedRoute() const { return bScriptedRoute; }
+    bool IsScriptedDone() const { return bScriptedDone; }
+    int32 GetWalkEdge() const { return Edge; }
+    int32 GetWalkNode() const { return ToNode; }
 
     /**
      * Server, smoke tests only (-MB2StreetProbe): stand still watching At for Seconds, jumping clear of cars or
@@ -186,6 +195,11 @@ private:
     bool bLost = false;
     /** A smoke-test probe that does not jump clear of cars. */
     bool bNeverDodges = false;
+    /** -MB2BridgeCross: the nodes still to walk, and whether the last one was reached. */
+    TArray<int32> ScriptedRoute;
+    int32 ScriptedCursor = 0;
+    bool bScriptedRoute = false;
+    bool bScriptedDone = false;
     double LastProgressSeconds = 0.0;
     int32 TurnBacks = 0;
     /** The edge already reversed for a fight or the river. A second block holds instead of shuffling. */

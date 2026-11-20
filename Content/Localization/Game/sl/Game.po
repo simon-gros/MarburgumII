@@ -4,8 +4,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Game\n"
-"POT-Creation-Date: 2026-11-20 01:53\n"
-"PO-Revision-Date: 2026-11-20 01:53\n"
+"POT-Creation-Date: 2026-11-20 02:11\n"
+"PO-Revision-Date: 2026-11-20 02:11\n"
 "Language-Team: \n"
 "Language: sl\n"
 "MIME-Version: 1.0\n"
@@ -1595,296 +1595,345 @@ msgctxt "MarburgumConnection,FaultUnknown"
 msgid "Not connected"
 msgstr "Brez povezave"
 
+#. Key:	CloseDoor
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(168)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(168)
+msgctxt "MarburgumInteractionPrompt,CloseDoor"
+msgid "Close"
+msgstr "Zapri"
+
+#. Key:	OpenDoor
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(168)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(168)
+msgctxt "MarburgumInteractionPrompt,OpenDoor"
+msgid "Open"
+msgstr "Odpri"
+
+#. Key:	RoomDoorTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(170)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(170)
+msgctxt "MarburgumInteractionPrompt,RoomDoorTitle"
+msgid "Door"
+msgstr "Vrata"
+
+#. Key:	StreetDoorTitle
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(170)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(170)
+msgctxt "MarburgumInteractionPrompt,StreetDoorTitle"
+msgid "Front door"
+msgstr "Vhodna vrata"
+
+#. Key:	DoorBlocked
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(171)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(171)
+msgctxt "MarburgumInteractionPrompt,DoorBlocked"
+msgid "Someone is in the doorway"
+msgstr "Nekdo stoji med vrati"
+
+#. Key:	RoomDoorDetail
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(172)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(172)
+msgctxt "MarburgumInteractionPrompt,RoomDoorDetail"
+msgid "Inside door"
+msgstr "Notranja vrata"
+
+#. Key:	StreetDoorDetail
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(172)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(172)
+msgctxt "MarburgumInteractionPrompt,StreetDoorDetail"
+msgid "Front door"
+msgstr "Vhodna vrata"
+
 #. Key:	DefaultVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(208)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(208)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(233)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(233)
 msgctxt "MarburgumInteractionPrompt,DefaultVerb"
 msgid "Use"
 msgstr "Uporabi"
 
 #. Key:	Stock
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(215)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(215)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(240)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(240)
 msgctxt "MarburgumInteractionPrompt,Stock"
 msgid "{0} left  ·  shared by everyone on this server"
 msgstr "Preostalo: {0}  ·  skupna zaloga za vse na tem strežniku"
 
 #. Key:	WaitingVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(218)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(218)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(243)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(243)
 msgctxt "MarburgumInteractionPrompt,WaitingVerb"
 msgid "Waiting for the server"
 msgstr "Čakanje na strežnik"
 
 #. Key:	Waiting
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(219)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(219)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(244)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(244)
 msgctxt "MarburgumInteractionPrompt,Waiting"
 msgid "Request sent. Nothing changes until the server confirms it."
 msgstr "Zahteva poslana. Nič se ne spremeni, dokler je strežnik ne potrdi."
 
 #. Key:	EmptyVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(224)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(224)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(249)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(249)
 msgctxt "MarburgumInteractionPrompt,EmptyVerb"
 msgid "Empty"
 msgstr "Prazno"
 
 #. Key:	Empty
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(225)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(225)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(250)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(250)
 msgctxt "MarburgumInteractionPrompt,Empty"
 msgid "Nothing left to take. The server keeps this count for every player."
 msgstr "Ničesar več ne moreš vzeti. Strežnik hrani to število za vsakega igralca."
 
 #. Key:	Unknown
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(230)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(230)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(255)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(255)
 msgctxt "MarburgumInteractionPrompt,Unknown"
 msgid "Waiting for the server's count."
 msgstr "Čakanje na podatek o številu s strežnika."
 
 #. Key:	NoCharacter
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(235)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(235)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(260)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(260)
 msgctxt "MarburgumInteractionPrompt,NoCharacter"
 msgid "No character selected for this connection; the server will refuse."
 msgstr "Za to povezavo ni izbran noben lik; strežnik bo zahtevo zavrnil."
 
 #. Key:	InspectVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(271)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(271)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(296)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(296)
 msgctxt "MarburgumInteractionPrompt,InspectVerb"
 msgid "Inspect"
 msgstr "Preglej"
 
 #. Key:	TalkVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(271)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(271)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(296)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(296)
 msgctxt "MarburgumInteractionPrompt,TalkVerb"
 msgid "Talk"
 msgstr "Pogovori se"
 
 #. Key:	NpcNoCharacter
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(289)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(289)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(314)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(314)
 msgctxt "MarburgumInteractionPrompt,NpcNoCharacter"
 msgid "No character selected for this connection; the server will refuse."
 msgstr "Za to povezavo ni izbran noben lik; strežnik bo zahtevo zavrnil."
 
 #. Key:	NpcUnknown
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(293)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(293)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(318)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(318)
 msgctxt "MarburgumInteractionPrompt,NpcUnknown"
 msgid "Waiting for the server's record of your missions."
 msgstr "Čakanje na strežniški zapis tvojih nalog."
 
 #. Key:	Offer
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(301)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(301)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(326)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(326)
 msgctxt "MarburgumInteractionPrompt,Offer"
 msgid "Has a job for you  ·  {0}"
 msgstr "Ima delo zate  ·  {0}"
 
 #. Key:	StageReady
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(305)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(305)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(330)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(330)
 msgctxt "MarburgumInteractionPrompt,StageReady"
 msgid "{0}  ·  next step"
 msgstr "{0}  ·  naslednji korak"
 
 #. Key:	ChoiceDue
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(309)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(309)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(334)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(334)
 msgctxt "MarburgumInteractionPrompt,ChoiceDue"
 msgid "{0}  ·  a decision is yours to make"
 msgstr "{0}  ·  odločitev je tvoja"
 
 #. Key:	NeedsAny
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(314)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(314)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(339)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(339)
 msgctxt "MarburgumInteractionPrompt,NeedsAny"
 msgid "Bring {0} first."
 msgstr "Najprej prinesi: {0}."
 
 #. Key:	Needs
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(315)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(315)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(340)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(340)
 msgctxt "MarburgumInteractionPrompt,Needs"
 msgid "You need {0} for this."
 msgstr "Za to potrebuješ: {0}."
 
 #. Key:	Later
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(322)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(322)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(347)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(347)
 msgctxt "MarburgumInteractionPrompt,Later"
 msgid "Not yet. Finish “{0}” first."
 msgstr "Še ne. Najprej dokončaj »{0}«."
 
 #. Key:	Idle
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(328)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(328)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(353)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(353)
 msgctxt "MarburgumInteractionPrompt,Idle"
 msgid "Nothing more to discuss for now."
 msgstr "Za zdaj se ni več o čem pogovarjati."
 
 #. Key:	IdlePlace
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(328)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(328)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(353)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(353)
 msgctxt "MarburgumInteractionPrompt,IdlePlace"
 msgid "Nothing more to find here for now."
 msgstr "Za zdaj tu ni več kaj najti."
 
 #. Key:	CounterUnknown
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(337)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(337)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(362)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(362)
 msgctxt "MarburgumInteractionPrompt,CounterUnknown"
 msgid "[B] Counter"
 msgstr "[B] Pult"
 
 #. Key:	CounterOpen
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(338)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(338)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(363)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(363)
 msgctxt "MarburgumInteractionPrompt,CounterOpen"
 msgid "[B] Counter, open"
 msgstr "[B] Pult, odprt"
 
 #. Key:	CounterClosed
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(339)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(339)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(364)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(364)
 msgctxt "MarburgumInteractionPrompt,CounterClosed"
 msgid "[B] Counter, closed"
 msgstr "[B] Pult, zaprt"
 
 #. Key:	WithCounter
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(340)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(340)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(365)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(365)
 msgctxt "MarburgumInteractionPrompt,WithCounter"
 msgid "{0}  ·  {1}"
 msgstr "{0}  ·  {1}"
 
 #. Key:	StrikeVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(373)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(373)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(398)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(398)
 msgctxt "MarburgumInteractionPrompt,StrikeVerb"
 msgid "Strike!"
 msgstr "Zategni!"
 
 #. Key:	Bite
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(374)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(374)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(399)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(399)
 msgctxt "MarburgumInteractionPrompt,Bite"
 msgid "Something has taken the bait. Strike now."
 msgstr "Nekaj je prijelo vabo. Zdaj zategni."
 
 #. Key:	WaitVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(379)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(379)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(404)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(404)
 msgctxt "MarburgumInteractionPrompt,WaitVerb"
 msgid "Wait for a bite"
 msgstr "Počakaj, da zagrize"
 
 #. Key:	LineIn
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(380)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(380)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(405)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(405)
 msgctxt "MarburgumInteractionPrompt,LineIn"
 msgid "Line in the water. Striking before a bite loses the cast; walking off ends it."
 msgstr "Vrvica je v vodi. Če zategneš, preden kaj zagrize, zapraviš met; če odideš, ga prekineš."
 
 #. Key:	FishVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(385)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(385)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(410)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(410)
 msgctxt "MarburgumInteractionPrompt,FishVerb"
 msgid "Fish"
 msgstr "Lovi ribe"
 
 #. Key:	NoRod
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(386)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(386)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(411)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(411)
 msgctxt "MarburgumInteractionPrompt,NoRod"
 msgid "You need a fishing rod."
 msgstr "Potrebuješ ribiško palico."
 
 #. Key:	CastVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(392)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(392)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(417)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(417)
 msgctxt "MarburgumInteractionPrompt,CastVerb"
 msgid "Cast"
 msgstr "Vrzi trnek"
 
 #. Key:	Cast
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(393)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(393)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(418)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(418)
 msgctxt "MarburgumInteractionPrompt,Cast"
 msgid "Cast your line and wait for a bite, then strike."
 msgstr "Vrzi trnek in počakaj, da kaj zagrize, nato zategni."
 
 #. Key:	VehicleWaiting
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(416)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(416)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(441)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(441)
 msgctxt "MarburgumInteractionPrompt,VehicleWaiting"
 msgid "Request sent. You move only when the server confirms it."
 msgstr "Zahteva poslana. Premakneš se šele, ko jo strežnik potrdi."
 
 #. Key:	ExitVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(422)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(422)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(447)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(447)
 msgctxt "MarburgumInteractionPrompt,ExitVerb"
 msgid "Get out"
 msgstr "Izstopi"
 
 #. Key:	Driving
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(424)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(424)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(449)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(449)
 msgctxt "MarburgumInteractionPrompt,Driving"
 msgid "[W] Throttle  ·  [S] Brake / reverse  ·  [A][D] Steer  ·  [Shift] Handbrake"
 msgstr "[W] Plin  ·  [S] Zavora / vzvratno  ·  [A][D] Krmiljenje  ·  [Shift] Ročna zavora"
 
 #. Key:	Riding
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(425)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(425)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(450)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(450)
 msgctxt "MarburgumInteractionPrompt,Riding"
 msgid "Riding as a passenger. The driver has the wheel."
 msgstr "Voziš se kot sopotnik. Za volanom je voznik."
 
 #. Key:	DriveVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(430)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(430)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(455)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(455)
 msgctxt "MarburgumInteractionPrompt,DriveVerb"
 msgid "Drive"
 msgstr "Vozi"
 
 #. Key:	RideVerb
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(430)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(430)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(455)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(455)
 msgctxt "MarburgumInteractionPrompt,RideVerb"
 msgid "Get in"
 msgstr "Vstopi"
 
 #. Key:	DriverSeat
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(431)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(431)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(456)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(456)
 msgctxt "MarburgumInteractionPrompt,DriverSeat"
 msgid "Driver's seat"
 msgstr "Voznikov sedež"
 
 #. Key:	PassengerSeat
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(431)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(431)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(456)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(456)
 msgctxt "MarburgumInteractionPrompt,PassengerSeat"
 msgid "Passenger seat"
 msgstr "Sedež za sopotnika"
 
 #. Key:	Key
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(46)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(46)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(47)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(47)
 msgctxt "MarburgumInteractionPrompt,Key"
 msgid "E"
 msgstr "E"
 
 #. Key:	Fixture
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(60)
-#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(60)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(61)
+#: Source/MarburgumIIClient/Private/UI/MarburgumInteractionPrompt.cpp(61)
 msgctxt "MarburgumInteractionPrompt,Fixture"
 msgid "TEST FIXTURE"
 msgstr "PREIZKUSNI OBJEKT"
@@ -2274,72 +2323,79 @@ msgctxt "MarburgumJournalPanel,Title"
 msgid "Cases and errands"
 msgstr "Primeri in opravki"
 
+#. Key:	BannerClock
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(241)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(241)
+msgctxt "MarburgumLocationBanner,BannerClock"
+msgid "{0}  ·  {1}"
+msgstr "{0}  ·  {1}"
+
 #. Key:	District
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(279)
-#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(279)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(283)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(283)
 msgctxt "MarburgumLocationBanner,District"
 msgid "DISTRICT"
 msgstr "PREDEL"
 
 #. Key:	Period
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(281)
-#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(281)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(285)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(285)
 msgctxt "MarburgumLocationBanner,Period"
 msgid "Maribor  ·  1990s"
 msgstr "Maribor  ·  90. leta 20. stoletja"
 
 #. Key:	Unknown
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(286)
-#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(286)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(290)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(290)
 msgctxt "MarburgumLocationBanner,Unknown"
 msgid "PLACE"
 msgstr "KRAJ"
 
 #. Key:	Unregistered
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(288)
-#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(288)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(292)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(292)
 msgctxt "MarburgumLocationBanner,Unregistered"
 msgid "Not registered in this client version"
 msgstr "Ni zabeleženo v tej različici odjemalca"
 
 #. Key:	Quarter
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(294)
-#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(294)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(298)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(298)
 msgctxt "MarburgumLocationBanner,Quarter"
 msgid "QUARTER"
 msgstr "MESTNA ČETRT"
 
 #. Key:	LocalCommunity
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(295)
-#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(295)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(299)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(299)
 msgctxt "MarburgumLocationBanner,LocalCommunity"
 msgid "LOCAL COMMUNITY"
 msgstr "KRAJEVNA SKUPNOST"
 
 #. Key:	Settlement
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(295)
-#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(295)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(299)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(299)
 msgctxt "MarburgumLocationBanner,Settlement"
 msgid "SETTLEMENT"
 msgstr "NASELJE"
 
 #. Key:	Municipality
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(297)
-#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(297)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(301)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(301)
 msgctxt "MarburgumLocationBanner,Municipality"
 msgid "Municipality of Maribor  ·  1990s"
 msgstr "Občina Maribor  ·  90. leta 20. stoletja"
 
 #. Key:	City
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(307)
-#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(307)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(311)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(311)
 msgctxt "MarburgumLocationBanner,City"
 msgid "CITY"
 msgstr "MESTO"
 
 #. Key:	Outside
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(309)
-#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(309)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(313)
+#: Source/MarburgumIIClient/Private/UI/MarburgumLocationBanner.cpp(313)
 msgctxt "MarburgumLocationBanner,Outside"
 msgid "Outside the named districts"
 msgstr "Zunaj poimenovanih predelov"
@@ -3464,6 +3520,13 @@ msgctxt "MarburgumSystemMenu,Back"
 msgid "Back"
 msgstr "Nazaj"
 
+#. Key:	MenuClock
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(153)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(153)
+msgctxt "MarburgumSystemMenu,MenuClock"
+msgid "Maribor  ·  {0}  ·  {1}"
+msgstr "Maribor  ·  {0}  ·  {1}"
+
 #. Key:	LeaveTitle
 #. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(181)
 #: Source/MarburgumIIClient/Private/UI/MarburgumSystemMenu.cpp(181)
@@ -4373,6 +4436,13 @@ msgstr "Riba je ušla. Po prijemu zategni prej."
 msgctxt "MarburgumUISubsystem,Cancelled"
 msgid "You reeled in. Fishing needs you to stand still on the bank."
 msgstr "Navil si vrvico. Za ribolov moraš stati pri miru na bregu."
+
+#. Key:	ItemsOr
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(833)
+#: Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(833)
+msgctxt "MarburgumUISubsystem,ItemsOr"
+msgid "{0} or {1}"
+msgstr "{0} ali {1}"
 
 #. Key:	Said
 #. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumUISubsystem.cpp(859)

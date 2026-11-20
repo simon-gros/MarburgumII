@@ -1,6 +1,6 @@
 # Original Marburgum → MarburgumII parity register
 
-**Status:** Baseline 8 November; reconciled through **ADR-070 on 19 November 2026** ([current audit](DEVELOPMENT_REVIEW_2026-11-19.md); [earlier baseline](DEVELOPMENT_REVIEW_2026-11-12.md)). Recorded engineering functionality is not an owner-accepted release.
+**Status:** Original-game parity baseline reconciled through **ADR-075 and packaged multiplayer evidence on 20 November 2026** ([current review](DEVELOPMENT_REVIEW_2026-11-20.md), [QA report](QA_AUDIT_2026-11-19.md), [visual backlog](VISUAL_QUALITY_BACKLOG.md)). Implemented functionality is not owner-approved release content.
 **Companion data:** [`Data/Parity/source-matrix.v0.1.json`](../Data/Parity/source-matrix.v0.1.json).  
 **Authority:** [Vision](VISION.md), [Ontology](ONTOLOGY.md), [Network architecture](NETWORK_ARCHITECTURE.md), [Decisions](DECISIONS.md) and [Roadmap](ROADMAP.md).
 
@@ -18,7 +18,7 @@ Changes made explicitly in this restart take precedence: **Unreal Engine 5.8.3**
 | --- | --- | --- | --- |
 | `world_geography` | Marburgum geography and district identity | Stage 1 nine-window world; Stage 3 streaming | `/Game/World/lent` nine-window 1,536 m level, 870 shells, surveyed paving, 422 swim volumes and ADR-053/054 map passes/distant ring; place names on the location banner (register quarters/villages, OSM streets and squares, bespoke heritage landmarks, ADR-063; today's names, not yet 1990s); editor-qualified but no World Partition/current packaged performance or owner sign-off |
 | `historical_state` | 1990s culture and period correctness | Stage 3 | Legacy design retained; implementation pending |
-| `characters_population` | Characters, NPCs and virtual population | Stage 1 street slice; Stage 3 population | Angler/three authored fighters plus server-replicated incident-reacting pedestrians (ADR-041/044), by the hour (ADR-067), by district from the original's zones (ADR-068) and drawn to the original's bus stops, cafés, shops and sights (ADR-069); editor district/places smokes; ADR-070 blocked-path/chase fixes untested in their commit; not staged two-client density acceptance |
+| `characters_population` | Characters, NPCs and virtual population | Stage 1 street slice; Stage 3 population | Server-owned incidental pedestrian groups, district/hour scheduling and 239 destinations (ADR-067–069), local/shared crowds and graph loading (ADR-073–075). Editor Stari most route 283 m each way. Clean staged 2–3-client population tests **partly pass**, opposite banks **11/28 timed out**, owner acceptance open. |
 | `skills` | Skill progression | Stage 2 | Original 0–1990 XP curve with durable Fishing/Reputation advancement and first Skills (K) UMG view (ADR-047); editor mission/restart proof, broader skills/professions still unimplemented |
 | `fishing` | Fishing | Stage 2 | Server-owned Drava cast/bite/strike/catch and original weighted species, durable catch/hand-in (ADR-047/048); editor mission smoke; no current packaged two-client/audio/animation qualification |
 | `missions_story` | Missions, story and evidence | Stage 1 start; Stage 2–5 completion/expansion | All eight original mission flows, choices, item/clue custody, money/XP and restart persistence editor-tested (ADR-049–052); Melje/Tabor use temporary pads; no staged/owner approval |
@@ -35,6 +35,8 @@ Changes made explicitly in this restart take precedence: **Unreal Engine 5.8.3**
 | `network_persistence` | Dedicated authoritative MMORPG world | Stage 0–4 | Dedicated server/clients, dev world store, plus editor-tested HTTPS account/character and single-use world tickets (ADR-055); production email/storage/operations and high load unproven |
 
 The companion JSON contains the original source paths and explicit migration rules for all 17 current domain entries. This table is **not** a claim that the whole content catalogue, source assets, data imports, maps, or network services have been ported.
+
+**Overnight parity gate:** The QA correction series strengthened persisted/server authority, admission and UMG behavior, but added no general housing/traffic/profession economy. ADR-072's [visual quality register](VISUAL_QUALITY_BACKLOG.md) is the active missing-art inventory. ADR-073–075 preserve original street population semantics and improve multi-viewer counts/bridge walks; they do not establish daily named NPC routines, 1990s source accuracy or large-shard capacity. [Current review](DEVELOPMENT_REVIEW_2026-11-20.md).
 
 ## Current launch map and conditional future replacement
 

@@ -11,6 +11,7 @@
 #include "MarburgumCharacter.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumMissionLogic.h"
+#include "MarburgumDoor.h"
 #include "MarburgumInteractable.h"
 #include "MarburgumVehicle.h"
 #include "MarburgumVehicleContract.h"
@@ -157,6 +158,30 @@ void UMarburgumInteractionPrompt::Refresh()
         if (const AMarburgumVehicle* Car = Controller->FindVehicleCandidate(Seat))
         {
             RefreshVehicle(*Car, Seat, false, Controller->IsVehicleRequestPending());
+            return;
+        }
+        if (const AMarburgumDoor* Door = Cast<AMarburgumDoor>(Controller->FindUseCandidate()))
+        {
+            const bool bOpening = Door->IsOpen();
+            // Closing waits for the swing to be clear; say so instead of letting E do nothing.
+            const bool bBlocked = bOpening && !Door->IsSwingClear();
+            const FText Verb = bOpening ? LOCTEXT("CloseDoor", "Close") : LOCTEXT("OpenDoor", "Open");
+            const FText Title = !Door->GetPlaceName().IsEmpty() ? FText::FromString(Door->GetPlaceName())
+                : (Door->IsStreetDoor() ? LOCTEXT("StreetDoorTitle", "Front door") : LOCTEXT("RoomDoorTitle", "Door"));
+            const FText Detail = bBlocked ? LOCTEXT("DoorBlocked", "Someone is in the doorway")
+                : (Door->IsStreetDoor() ? LOCTEXT("StreetDoorDetail", "Front door") : LOCTEXT("RoomDoorDetail", "Inside door"));
+            const FString Signature = FString::Printf(TEXT("door|%s|%d|%d|%d"), *Door->GetBuildingId().ToString(), bOpening ? 1 : 0, bBlocked ? 1 : 0,
+                Door->GetUniqueID());
+            if (Signature != LastSignature)
+            {
+                LastSignature = Signature;
+                Shown = const_cast<AMarburgumDoor*>(Door);
+                ApplyTo(*Door, Title, false, Verb, Detail, bBlocked ? ETone::Warning : ETone::Neutral, !bBlocked, EMarburgumGlyph::Door);
+            }
+            else if (Card->GetVisibility() == ESlateVisibility::Collapsed)
+            {
+                Card->SetVisibility(ESlateVisibility::HitTestInvisible);
+            }
             return;
         }
     }

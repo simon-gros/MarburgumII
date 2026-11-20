@@ -6,6 +6,8 @@
 **Companion vocabulary:** [`Data/Ontology/core.v0.1.json`](../Data/Ontology/core.v0.1.json)  
 **Status:** Proposed semantic model. This document does **not** assert that any listed gameplay system, historical reconstruction, persistent service, or map has been implemented in MarburgumII.
 
+**Engineering status note (20 November 2026):** The [current development review](DEVELOPMENT_REVIEW_2026-11-20.md) and [QA audit](QA_AUDIT_2026-11-19.md) describe which account, mission, AI and persistent-world terms have working implementations and which remain incomplete. This document is a semantic baseline only; an entity definition does not certify a shipped feature, a passing multi-client test or owner acceptance.
+
 ## 1. Purpose and identity
 
 This ontology defines what exists **in the game world**, what relationships can hold between those things, and what facts or events can change persistent state. It is a domain language for design documents, content catalogues, data contracts, save migrations, Unreal gameplay code, future deterministic Rust routines, C# validation tools, and UI. It is **not** an Unreal class diagram, an implementation roadmap, a database schema, or an import of legacy source code.

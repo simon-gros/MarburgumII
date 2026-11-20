@@ -11,6 +11,7 @@ This is editor-build evidence (`UnrealEditor -game` clients and `-server`), **no
 | --- | --- |
 | Branch | `feat/ui-hud-major-overhaul`, from `origin/main` `9090d35` (ADR-074). The Grok pedestrian-AI branch was not merged or touched. |
 | Head verified | `2444aaf` (code), plus this documentation commit |
+| Merged | Into `main` on 20 November 2026 with a merge commit (no rebase, so the commit IDs here stay valid), after `main` had moved 29 commits on (ADR-076 interiors, the bridge and crowd tests, the Grok pedestrian fixes, docs). The evidence above is from the branch before that merge. |
 | Engine | Unreal Engine **5.8.3** source build, engine-bundled clang |
 | Host / GPU | CachyOS Linux 6.18.60 x86_64; NVIDIA GeForce RTX 5080, driver 620.70.06 |
 | Rendering | `-RenderOffScreen -windowed -ForceRes`, `FScreenshotRequest` with UI: the composited window, UMG included |

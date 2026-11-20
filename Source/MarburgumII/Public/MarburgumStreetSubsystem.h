@@ -135,6 +135,10 @@ private:
      */
     void StepProbe();
     void StepProbeFinder();
+    /** -MB2BridgeCross: one person walks an existing bridge route from one bank to the other. */
+    void StepBridgeCross(double Now);
+    /** -MB2CrowdMatrix: place the connected players and record the five population scenarios. Not used in Shipping. */
+    void StepCrowdMatrix(double Now);
     /**
      * -MB2StreetProbe, ADR-046: once a player is about, a person on the pavement nearest the river is scared
      * from the land side, so running straight away would be into the Drava, and is watched for a while.
@@ -202,5 +206,43 @@ private:
     TWeakObjectPtr<AMarburgumPedestrian> WaterProbe;
     double WaterProbeUntil = 0.0;
     bool bWaterProbeSwam = false;
+    bool bBridgeCross = false;
+    bool bBridgeCrossDone = false;
+    TWeakObjectPtr<AMarburgumPedestrian> BridgeCross;
+    TArray<int32> BridgeRoute;
+    int32 BridgeLeg = 0;
+    double BridgeWaitUntil = -1.0;
+    double BridgeCrossStart = 0.0;
+    double BridgeCrossLog = 0.0;
+    int32 ZoneLookups = 0;
+    int32 ZoneCacheHits = 0;
+    double ZoneLookupSeconds = 0.0;
+    bool bCrowdMatrix = false;
+    uint8 CrowdPhase = 0;
+    double CrowdPhaseSince = -1.0;
+    bool bCrowdPlaced = false;
+    int32 CrowdBudgetChanges = 0;
+    int32 CrowdLastTarget = -1;
+    int32 CrowdMaxPeople = 0;
+    bool bCrowdNight = false;
+    /** How long a placed scenario may wait before it is settled, constrained, or timed out. */
+    double CrowdSettleSeconds = 90.0;
+    double CrowdSampleAt = -1.0;
+    int32 CrowdStable = 0;
+    int32 CrowdHitStable = 0;
+    int32 CrowdLastPeople = -1;
+    int32 CrowdLastHits = 0;
+    int32 CrowdSpawnTries = 0;
+    int32 CrowdSpawnHits = 0;
+    int32 CrowdSpawnMisses = 0;
+    int32 CrowdRejectNode = 0;
+    int32 CrowdRejectComponent = 0;
+    int32 CrowdRejectBand = 0;
+    int32 CrowdRejectActivity = 0;
+    int32 CrowdRejectCollision = 0;
+    int32 CrowdDespawnHome = 0;
+    int32 CrowdDespawnCull = 0;
+    double CrowdStepMs = 0.0;
+    int32 CrowdStepN = 0;
     FVector WaterProbeStart = FVector::ZeroVector;
 };

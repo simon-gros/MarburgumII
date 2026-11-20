@@ -1,6 +1,6 @@
 # Fresh Builds and Assets for Every Owner Playtest
 
-**Status:** A source-level fail-closed freshness guard and unit tests are present; real Unreal Engine **5.8.3** build/cook/package and launch qualification **has not yet been demonstrated**. A local playtest may be approved only when the exact build and source/asset snapshot have been verified.
+**Status (20 November 2026):** The fail-closed build/asset guard, executable hashing and process-group cleanup are implemented. Separately, a **clean UE 5.8.3 Development package of `c967c46`** was created and used for real multi-client crowd tests; the staged night pair settled but daytime opposite-bank population failed (11/28). This does **not** demonstrate end-to-end qualification of the generic `mb2 playtest` example profile, the entire game or owner approval.
 
 ## Principle
 
@@ -32,6 +32,10 @@ The normal clean-SHA/client-server seal must now include **the complete nine-win
 Include generated **post-IK swim/tread, car enter/exit and fight animation assets** (ADR-042/043), combat impact audio, original-game geometry/rights manifests and any locally ignored sources. A content change to one window, bridge, walk graph or source height/surface input invalidates the previous seal. Distinguish a fixture game map `/Game/Maps/Lent` from the production-candidate default `/Game/World/lent`, and never reuse the older map's screenshots as nine-window acceptance.
 
 **Current evidence distinction:** the nine-window ray/capsule verification and street/combat/vehicle/swim regression are recorded in **editor mode** at ADR-045; the ambient street smoke is one-client editor-only; the combat packaged two-client smoke predates later animation changes. A complete new packaged build with full nine-window two/three-client scenarios, load/memory and owner approval is **not yet documented as qualified**. Attach run-mode, source/cook/asset checksums, exact map, server/client logs and personal owner outcome to the acceptance package.
+
+## Latest Development package evidence — 20 November 2026
+
+The clean `c967c46` Client/Server executable hashes are recorded in [AI evidence](AI_GAMEPLAY.md). The staged nighttime crowd settled at two and the daytime matrix settled most shared/district/cap cases, **but opposite banks timed out at 11/28, script exit 1**. The earlier QA package's 13/14 staged smokes belong to different source/asset snapshots. For every playtest keep the exact commit, sealed cooked data, build stamps, server/client logs and explicit owner outcome. See [current review](DEVELOPMENT_REVIEW_2026-11-20.md).
 
 ## Microsoft TRELLIS asset freshness (ADR-071)
 

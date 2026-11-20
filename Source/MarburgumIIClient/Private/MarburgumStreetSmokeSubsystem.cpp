@@ -1,5 +1,6 @@
 #include "MarburgumStreetSmokeSubsystem.h"
 
+#include "Camera/CameraActor.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -55,7 +56,9 @@ bool UMarburgumStreetSmokeSubsystem::ShouldCreateSubsystem(UObject* Outer) const
     return false; // Test harnesses and capture tools never run in a player build.
 #else
     const UGameInstance* GameInstance = Cast<UGameInstance>(Outer);
-    return GameInstance && !GameInstance->IsDedicatedServerInstance() && FParse::Param(FCommandLine::Get(), TEXT("MB2StreetSmoke"));
+    return GameInstance && !GameInstance->IsDedicatedServerInstance()
+        && (FParse::Param(FCommandLine::Get(), TEXT("MB2StreetSmoke")) || FParse::Param(FCommandLine::Get(), TEXT("MB2BridgeWatch"))
+            || FParse::Param(FCommandLine::Get(), TEXT("MB2CrowdWatch")));
 #endif
 }
 
@@ -66,6 +69,8 @@ void UMarburgumStreetSmokeSubsystem::Initialize(FSubsystemCollectionBase& Collec
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetTimeout="), TimeoutSeconds);
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetCount="), CountSeconds);
     FParse::Value(FCommandLine::Get(), TEXT("MB2StreetShotAfterMove="), ShotAfterMoveSeconds);
+    bBridgeWatch = FParse::Param(FCommandLine::Get(), TEXT("MB2BridgeWatch"));
+    bCrowdWatch = FParse::Param(FCommandLine::Get(), TEXT("MB2CrowdWatch"));
     StartSeconds = FPlatformTime::Seconds();
     TickerHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UMarburgumStreetSmokeSubsystem::Tick), 0.f);
     MB2_STREET_SMOKE_LOG("event=start shot=%d count_s=%.0f", ShotPrefix.IsEmpty() ? 0 : 1, CountSeconds);
@@ -217,10 +222,122 @@ void UMarburgumStreetSmokeSubsystem::Report(const TCHAR* Event, double Now)
         MostWatching, MostDown, MostGathered, MostDodging, NearestSpawnCm == TNumericLimits<double>::Max() ? -1.0 : NearestSpawnCm / 100.0);
 }
 
+void UMarburgumStreetSmokeSubsystem::WatchCrowd(double Now)
+{
+    UWorld* World = GetWorld();
+    if (!World || Now - CrowdWatchLog < 2.0)
+    {
+        return;
+    }
+    CrowdWatchLog = Now;
+    const AMarburgumCharacter* Character = Body();
+    const FVector At = Character ? Character->GetActorLocation() : FVector::ZeroVector;
+    TArray<FString> Ids;
+    int32 Near = 0;
+    for (TActorIterator<AMarburgumPedestrian> It(World); It; ++It)
+    {
+        if (Character && FVector::Dist2D(It->GetActorLocation(), At) > 8000.0)
+        {
+            continue;
+        }
+        ++Near;
+        Ids.Add(It->GetNpcId().ToString());
+    }
+    Ids.Sort();
+    MB2_STREET_SMOKE_LOG("event=crowd_watch at=%.0f,%.0f people=%d ids=%s", At.X, At.Y, Near, *FString::Join(Ids, TEXT(",")));
+}
+
+void UMarburgumStreetSmokeSubsystem::WatchBridge(double Now)
+{
+    UWorld* World = GetWorld();
+    if (!World)
+    {
+        return;
+    }
+    if (PassAt > 0.0)
+    {
+        if (Now >= PassAt || PendingShot.IsEmpty() || IFileManager::Get().FileExists(*PendingShot))
+        {
+            Pass();
+        }
+        return;
+    }
+    if (Now - StartSeconds > TimeoutSeconds)
+    {
+        Fail(TEXT("bridge watch timed out"));
+        return;
+    }
+    AMarburgumPedestrian* Walker = nullptr;
+    for (TActorIterator<AMarburgumPedestrian> It(World); It; ++It)
+    {
+        if (It->GetNpcId() == TEXT("bridge_cross"))
+        {
+            Walker = *It;
+            break;
+        }
+    }
+    if (!Walker)
+    {
+        return;
+    }
+    const FVector At = Walker->GetActorLocation();
+    if (!bBridgeSeen)
+    {
+        bBridgeSeen = true;
+        BridgeFirstAt = At;
+        MB2_STREET_SMOKE_LOG("event=bridge_watch result=seen at=%.0f,%.0f,%.0f", At.X, At.Y, At.Z);
+    }
+    if (Now - BridgeWatchLog >= 2.0)
+    {
+        BridgeWatchLog = Now;
+        MB2_STREET_SMOKE_LOG("event=bridge_watch result=walking at=%.0f,%.0f,%.0f moved_m=%.1f", At.X, At.Y, At.Z, FVector::Dist2D(At, BridgeFirstAt) / 100.0);
+    }
+    const double Moved = FVector::Dist2D(At, BridgeFirstAt);
+    auto Look = [&](const TCHAR* Label)
+    {
+        if (APlayerController* Viewer = World->GetFirstPlayerController())
+        {
+            if (ACameraActor* Camera = World->SpawnActor<ACameraActor>())
+            {
+                const FVector Eye = At + FVector(-900.0, -700.0, 420.0);
+                Camera->SetActorLocationAndRotation(Eye, (At - Eye).Rotation());
+                Viewer->SetViewTarget(Camera);
+            }
+        }
+        Shot(Label);
+        MB2_STREET_SMOKE_LOG("event=bridge_watch result=shot label=%s at=%.0f,%.0f,%.0f moved_m=%.1f", Label, At.X, At.Y, At.Z, Moved / 100.0);
+    };
+    if (!bBridgeShot && Moved > 2000.0)
+    {
+        bBridgeShot = true;
+        Look(TEXT("start"));
+    }
+    if (bBridgeShot && Moved > 8000.0 && BridgeShots < 2)
+    {
+        BridgeShots = 2;
+        Look(TEXT("deck"));
+    }
+    if (BridgeShots >= 2 && Moved > 18000.0 && BridgeShots < 3)
+    {
+        BridgeShots = 3;
+        Look(TEXT("far"));
+    }
+}
+
 bool UMarburgumStreetSmokeSubsystem::Tick(float DeltaTime)
 {
     if (bDone)
     {
+        return true;
+    }
+    if (bCrowdWatch)
+    {
+        WatchCrowd(FPlatformTime::Seconds());
+        return true;
+    }
+    if (bBridgeWatch)
+    {
+        WatchBridge(FPlatformTime::Seconds());
         return true;
     }
     const double Now = FPlatformTime::Seconds();

@@ -42,6 +42,10 @@ public:
 
 private:
     bool Tick(float DeltaTime);
+    /** -MB2BridgeWatch: follow the server's bridge_cross pedestrian and photograph it once it has moved. */
+    void WatchBridge(double Now);
+    /** -MB2CrowdWatch: log the pedestrians this client can see. The script owns the lifetime. */
+    void WatchCrowd(double Now);
     bool Bind();
     void Run(double Now);
     /** -MB2StreetCount: stand and count. */
@@ -94,5 +98,13 @@ private:
     FString PendingShot;
     double PassAt = 0.0;
     bool bDone = false;
+    bool bBridgeWatch = false;
+    bool bBridgeSeen = false;
+    bool bBridgeShot = false;
+    int32 BridgeShots = 0;
+    FVector BridgeFirstAt = FVector::ZeroVector;
+    double BridgeWatchLog = 0.0;
+    bool bCrowdWatch = false;
+    double CrowdWatchLog = 0.0;
     TArray<FString> Problems;
 };

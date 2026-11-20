@@ -11,7 +11,10 @@
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "FileHelpers.h"
 #include "MarburgumBuildingMesher.h"
+#include "MarburgumInteriorCore.h"
+#include "MarburgumInteriorSubsystem.h"
 #include "MarburgumLitWindows.h"
+#include "Materials/Material.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "MeshDescription.h"
 #include "MeshDescriptionBuilder.h"
@@ -357,6 +360,53 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
     }
     MB::FindPartyWalls(Footprints);
 
+    // The street door is cut where the building's ground floor opens (ADR-076), and only there. The layout is
+    // the game's own, from the same file prepared the same way; a footprint whose cleaned outline or party walls
+    // differ from the layout's keeps a painted door rather than a hole the rooms do not line up with.
+    {
+        std::vector<MarburgumInteriors::FPlan> Plans;
+        int32 Cut = 0;
+        int32 Mismatched = 0;
+        if (UMarburgumInteriorSubsystem::ReadPlans(Plans, nullptr))
+        {
+            TMap<FString, int32> ById;
+            for (int32 Index = 0; Index < static_cast<int32>(Plans.size()); ++Index)
+            {
+                ById.Add(UTF8_TO_TCHAR(Plans[static_cast<size_t>(Index)].Id.c_str()), Index);
+            }
+            for (MB::FFootprint& Footprint : Footprints)
+            {
+                const int32* Found = ById.Find(UTF8_TO_TCHAR(Footprint.Id.c_str()));
+                if (!Found)
+                {
+                    continue;
+                }
+                const MarburgumInteriors::FPlan& Plan = Plans[static_cast<size_t>(*Found)];
+                bool bSame = Plan.bShell && Plan.Outline.size() == Footprint.Outline.size() && Plan.Party.size() == Footprint.Party.size();
+                for (size_t P = 0; bSame && P < Plan.Outline.size(); ++P)
+                {
+                    bSame = std::fabs(Plan.Outline[P].X - Footprint.Outline[P].X) < 1.0e-6 && std::fabs(Plan.Outline[P].Y - Footprint.Outline[P].Y) < 1.0e-6
+                        && (Plan.Party[P] != 0) == Footprint.Party[P];
+                }
+                const MarburgumInteriors::FLayout Layout = MarburgumInteriors::Generate(Plan);
+                if (Layout.Status != MarburgumInteriors::EStatus::Eligible)
+                {
+                    continue;
+                }
+                if (!bSame)
+                {
+                    ++Mismatched;
+                    UE_LOG(LogMarburgumFacades, Warning, TEXT("MB2FACADE %hs interior_mismatch: outline or party walls differ from the layout; no door cut"), Footprint.Id.c_str());
+                    continue;
+                }
+                Footprint.DoorEdge = Layout.EntranceEdge;
+                Footprint.DoorSill = Layout.Openings[0].Z0;
+                ++Cut;
+            }
+        }
+        UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE street_doors cut=%d mismatched=%d"), Cut, Mismatched);
+    }
+
     UMaterialInterface* Parent = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Marburgum/Materials/Masters/M_Building.M_Building"));
     UMaterialInstanceConstant* Frame = Parent ? EnsureMaterial(TEXT("MI_facade_frame"), Parent, FLinearColor(0.22f, 0.14f, 0.09f), 0.58f) : nullptr;
     // The glass is the window glass's (ADR-066), which lights each pane's household at night; by day it is the same tint.
@@ -399,6 +449,21 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
             MaterialPackages.AddUnique(Shade->GetOutermost());
         }
     }
+    // The ground floors (ADR-076) instance the same plaster, socle and trim. A master without the instanced usage
+    // renders as the engine's default checker in a game, where usage cannot be added on the fly.
+    for (UMaterialInterface* Used : { Parent, Plaster })
+    {
+        UMaterial* Base = Used ? Used->GetMaterial() : nullptr;
+        if (Base && !Base->bUsedWithInstancedStaticMeshes)
+        {
+            Base->Modify();
+            Base->bUsedWithInstancedStaticMeshes = true;
+            Base->PostEditChange();
+            Base->MarkPackageDirty();
+            MaterialPackages.AddUnique(Base->GetOutermost());
+            UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE %s used_with_instanced_static_meshes=1"), *Base->GetPathName());
+        }
+    }
     if (!bCheckOnly)
     {
         UEditorLoadingAndSavingUtils::SavePackages(MaterialPackages, false);
@@ -431,7 +496,8 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
         UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE %s roof=%s corners=%d party=%d gables=%d windows=%d bands=%d triangles=%d closed=%d strict=%d open_edges=%d volume_m3=%.0f"),
             *Id, UTF8_TO_TCHAR(Mesh.RoofMethod.c_str()), static_cast<int32>(Footprint.Outline.size()), Mesh.PartyWalls, Mesh.Gables, Mesh.Windows, Mesh.Bands,
             static_cast<int32>(Mesh.Triangles.size()), Check.bClosed ? 1 : 0, Check.bStrict ? 1 : 0, Check.StrictOpenEdges, Check.Volume);
-        if (!Check.bStrict || Check.Volume <= 0.0)
+        // A street doorway is an intentional opening. bStrict is the old watertight shell; bClosed allows that one hole.
+        if (!Check.bClosed || Check.Volume <= 0.0)
         {
             ++Open;
             continue;

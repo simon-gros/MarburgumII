@@ -1,6 +1,6 @@
 # Gameplay AI — status and backlog
 
-Audit of the AI that is actually in the repository on 2026-11-19, through ADR-070 (base commit `d2e083ce`). This is not a claim that Marburgum II runs Unreal Behavior Trees, StateTree, EQS or MassEntity. It does not. The living street, the fights and the missions are server-owned C++ with shared pure rules. Replacing that with the engine AI framework would be a new architecture and needs approval.
+Current AI evidence reconciled on 20 November 2026, through ADR-075 and the clean `c967c46` staged crowd test. The original audit was made at `d2e083ce` (ADR-070). This is not a claim that Marburgum II runs Unreal Behavior Trees, StateTree, EQS or MassEntity. It does not. The living street, the fights and the missions are server-owned C++ with shared pure rules. Replacing that with the engine AI framework would be a new architecture and needs approval.
 
 Statuses: **FIX NOW** (done in this pass where marked), **IMPROVE NOW**, **TO BE DONE**, **NEEDS VERIFICATION**, **REQUIRES APPROVAL**.
 
@@ -42,9 +42,9 @@ There is no behavior tree, no perception component, no navigation mesh, and no W
 | Mission NPCs that walk, wait or react | **REQUIRES APPROVAL** | `AMarburgumNpc` is a stationary interactable. Moving the angler or Petra is player-facing. |
 | New mission framework | **REQUIRES APPROVAL** | The eight missions already have prerequisites, stages, choices, one reward and restart. Do not replace them. |
 | Mission sites in Melje and Tabor on real ground | **TO BE DONE** | Logic is done. The sites are temporary floors (ADR-052). |
-| Packaged two-client mission and street qualification | **TO BE DONE** | Editor smokes exist. Not a fresh packaged suite. |
-| Side pieces of the walk graph, including a bridge piece | **PARTLY FIXED** (ADR-074) | The file's largest piece is 12,335 of 13,098. Loading used to leave 5,926, because the sweep at a bridgehead hit the paving and the landscape. It now leaves 9,145 of 12,946 and the largest piece reaches both banks (`cross_river=1`, bridge edges 185/185, no new wet edges). The 14 m piece was not given a new edge. |
-| Distance-based think rates, pooling, relevance budgets beyond cull | **TO BE DONE** | Population is capped and culled. No measurement of think cost at the cap in this pass. |
+| Packaged two-client mission and street qualification | **PARTIAL** | Clean 2–3-client population tests exist, but opposite-bank settlement failed at 11/28 staged and a complete packaged mission/incident matrix remains open. |
+| Side pieces of the walk graph, including a bridge piece | **EXPLAINED** (ADR-074, audit on the same branch) | The file's largest piece is 12,335. Of those, 121 nodes are dropped (no ground, no room, or wet). The rest were split by sweeps. After the loader steps past the bridge mesh and the paving volume, and past an upward face of the landscape, the loaded largest piece is 11,719 and still reaches both banks. The 23 edges still blocked hit building meshes (`w*`) or a steep landscape face. Wet edges stay 0. The 14 m piece was not given a new edge. `-MB2WalkGraphAudit=<dir>` writes the rejected nodes and edges. |
+| Distance-based think rates, pooling, relevance budgets beyond cull | **TO BE DONE** | A 48-pedestrian null-RHI cap scenario measured 0.87 ms per street step and server output 15.2–15.8 KB/s for three clients; no broad production performance qualification follows. |
 | Owner playtest of street and combat | **REQUIRES APPROVAL** | ADR-008. This pass did not play the game. |
 
 ## What was checked and left alone
@@ -59,6 +59,39 @@ There is no behavior tree, no perception component, no navigation mesh, and no W
 Editor automation on 2026-11-19, after the modules were rebuilt (binaries 21:51, run 21:53, log `Saved/AIRules/rules.log`, exit 0; repeated at 21:54, log `Saved/Automation/adr070-rules-rebuilt.log`, exit 0): `Marburgum.Gameplay.CombatRules` Success, `Marburgum.Gameplay.StreetRules` Success. That covers the blocked-chase give-up, a clear blow still landing, and reverse-once / hold. It is not a rendered street or combat smoke, not a packaged two-client run, and not an owner playtest. A visit that used the whole 30 s without arriving did not log `visit_given_up`, and a second think before the street step could log `went_in` again. Both are fixed in source and still need a rendered places smoke.
 
 
+## Runtime check, 20 November 2026, `fix/grok-quality-2026-11-19`
+
+An earlier editor run (`Saved/BridgeCross/20261119T232455Z`) only walked one 28 m span (5 nodes, 26.7 s). That is not a full crossing.
+
+The fixture now requires the Stari most deck near the origin, at least 180 m, from pavement past one end to pavement past the other, then the same route back. Editor server and one offscreen client, port 27851, `/Game/World/lent`, `scripts/bridge-cross-linux.sh`, evidence `Saved/BridgeCross/20261119T233511Z`. South to north: 38 nodes, 283 m, from (−139.2, −12.4, 16.2) m to (141.3, −2.0, 13.2) m, **273.3 s**, `arrived`. North to south: the same 38 nodes reversed, **272.5 s**, back to (−138.6, −12.3, 17.1) m, `arrived_both`. Neither leg was wet or lost. Height stayed on the deck. The client logged the same motion and wrote `bridge-start.png` (20 m along), `bridge-deck.png` (80 m) and `bridge-far.png` (180 m). It did not stay up for the return; the server did. The client process was stopped after `arrived_both` (exit 143) so the harness would not wait out its own timeout. The script still required both arrivals and a client walking log, and it exited 0.
+
+Two null-RHI clients on port 27852 at 00:26 Marburgum time, both read as `residential_blocks`. One player alone wanted 2. With both connected the budget stayed 2, split 1 and 1, and two people were in the world (`Saved/StreetMulti/20261119Ttwo/server.log`). They did not each bring a street. Night density only. Not a commercial-versus-residential pair, not a separation, not opposite banks, not a disconnect.
+
+During the crossing the district lookup ran 156 times, 155 from the 5 m / 3 m hold, and the one search took 0.09 ms. One player.
+
+## Multiplayer matrix, 20 November 2026, `73b6ed6`
+
+The earlier editor matrix (`Saved/StreetMulti/20261119T235248Z`, on `1c8dcf7`) closed each scene after 15 seconds and called a budget a pass. It is not the qualification below. The runner now keeps a scene until the count has held, the spawns have stalled under the target, or 90 seconds run out. The clock argument is `1996-06-18`, which is Tuesday 18 June 1996 in Maribor, not a 2026 instant that only mirrors there.
+
+Night, two clients together in `residential_blocks`, 02:00, clear. Two runs, `Saved/StreetMulti/20261120T001454Z` and `20261120T001525Z`. Both settled at wants 1 and 1, target 2, 2 people, max 2. Each client saw the same two pedestrians. Not 4.
+
+Day, port 27856, null RHI, 10:00, clear, places off. `Saved/StreetMulti/20261120T001658Z`. The script exited 1 because the banks timed out.
+
+| Scenario | State | What was alive |
+| --- | --- | --- |
+| One player, commercial | Settled | 18 of 18 |
+| Commercial and houses | Settled | 18 and 8, 26 people |
+| Two players on one shopping street | Settled | 18, split 9 and 9, not 36 |
+| Apart, then back | Settled | 26, then 18 again |
+| Opposite banks | Timeout | Blocks and school, wants 12 and 16. After 91 s, 14 of 28 were alive. 4,222 tries: 3,284 found no pavement node, 886 fell outside the spawn band, none were a collision. The north viewer was logged 85 m from the nearest stored node. Still spawning, so this is not a hard stall and not a pass |
+| Disconnect, then return | Settled | One viewer, then 24 of 24 |
+| Three old-town players | Settled | Target 48, 48 alive, and the most alive at once was 48 |
+| One of those three leaves | Lifecycle | Target fell to 40. 39 were alive 12 s later. Still never over 48 |
+
+`-MB2NetRate`, null RHI, over the whole day run: server out 0–16.9 KB/s. With three clients and 46–48 people, server out was 15.2–15.8 KB/s and the busiest client 6.2–6.8 KB/s. A street step at the cap averaged 0.87 ms. District lookups were 5,820 of 5,834 from the hold, 0.69 ms in `NearestNode` altogether.
+
+The same scenes on a fresh Development package of `c967c46` (`dirty=0`, packaged 2026-11-20T01:31:07Z, server `4e188292c0a3345bf9167ac0f6baaf741a98e0d63d1dd3c79d6de38429fd1c51`, client `9d9782b9986501eec6c246d59d24420aba82ed7479ddbda886ec3a4aa3caced8`) agreed. Staged night, `Saved/StreetMulti/20261120T013134Z`, settled at 2. Staged day, `Saved/StreetMulti/20261120T013156Z`: solo, the two districts, the shared street, apart, back, and the reconnect settled. Three old-town players held 48, and after one left the target was 40 with 40 alive. The banks timed out again, 11 of 28 after 90 s, 3,364 of 4,242 tries with no pavement node and no collision reject. The script exited 1 for that timeout. Not an owner playtest.
+
 ## Next verified delivery
 
-**P0: execute and integrate existing fixes before adding behavior.** Run the previously unexecuted `Marburgum.Gameplay.CombatRules` and `Marburgum.Gameplay.StreetRules` cases on a clean UE 5.8.3 checkout, then render blocked-pavement, blocked-chase, crowd-pass-lane and river-boundary probes. Recheck ADR-068 zone mixing and ADR-069 place visiting at day/night/Sunday plus body/run-over answers. On genuinely freshly cooked Linux Client/Server binaries, test two independent clients on the same crowd, one other client in a different zone, transitions, disconnection and resumption; capture source and cooked asset hashes, server-owned state, screenshots, logs, CPU/replication metrics and failures. Escalate reproducible defects to small fixes with negative controls; record outstanding route-search, traffic/perception and author-NPC behavior separately. Mark a row owner-accepted only after an actual owner playtest. See [19 November review](DEVELOPMENT_REVIEW_2026-11-19.md) and [roadmap](ROADMAP.md).
+**P0: close the opposite-bank crowd settlement regression, not the testing gap.** The strict daytime editor test timed out at 14/28, and a fresh Development package of `c967c46` reproduced **11/28** after 90 seconds; 3,364/4,242 staged spawn attempts found no eligible pavement node. Inspect the actual viewer/zone graph locality, candidate band and spawn sampling before implementing a narrow measured fix with negative controls. Then rerun complete editor and staged day/night multi-client matrices, preserving passing shared shopping (18), night (2), different districts, reconnect and three-player cap (48). Follow with current-package incidents, mission/combat/chase/vehicle regressions and rendered evidence. Personal owner approval remains a separate gate. [20 November review](DEVELOPMENT_REVIEW_2026-11-20.md) · [Roadmap](ROADMAP.md).

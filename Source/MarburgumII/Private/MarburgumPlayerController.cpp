@@ -6,6 +6,7 @@
 #include "MarburgumCombatContract.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumCharacter.h"
+#include "MarburgumDoor.h"
 #include "MarburgumInteractable.h"
 #include "MarburgumMissionLogic.h"
 #include "MarburgumNetworkContract.h"
@@ -203,6 +204,46 @@ AMarburgumInteractable* AMarburgumPlayerController::FindInteractionCandidate() c
     return Best;
 }
 
+AActor* AMarburgumPlayerController::FindUseCandidate() const
+{
+    const APawn* Body = GetPawn();
+    UWorld* World = GetWorld();
+    if (!Body || !World)
+    {
+        return nullptr;
+    }
+    const FVector At = Body->GetActorLocation();
+    AActor* Best = nullptr;
+    double BestDistanceSquared = TNumericLimits<double>::Max();
+    // Doors are measured from the middle of the doorway, not the hinge, and a door behind the body counts for
+    // more distance than one ahead, so the door a person faces wins between two that are both in reach.
+    const FVector Facing = Body->GetActorForwardVector().GetSafeNormal2D();
+    for (TActorIterator<AMarburgumDoor> It(World); It; ++It)
+    {
+        if (!It->IsWithinReach(At))
+        {
+            continue;
+        }
+        const FVector ToDoor = It->GetDoorwayCentre() - At;
+        const double Behind = FVector::DotProduct(ToDoor.GetSafeNormal2D(), Facing) < 0.0 ? 2.0 : 1.0;
+        const double DistanceSquared = ToDoor.SizeSquared2D() * Behind;
+        if (DistanceSquared < BestDistanceSquared)
+        {
+            Best = *It;
+            BestDistanceSquared = DistanceSquared;
+        }
+    }
+    if (AMarburgumInteractable* Interactable = FindInteractionCandidate())
+    {
+        const double DistanceSquared = FVector::DistSquared(At, Interactable->GetActorLocation());
+        if (DistanceSquared <= FMath::Square(Interactable->InteractionRange) && DistanceSquared < BestDistanceSquared)
+        {
+            Best = Interactable;
+        }
+    }
+    return Best;
+}
+
 void AMarburgumPlayerController::RequestInteract()
 {
     FGuid Pending;
@@ -225,6 +266,11 @@ void AMarburgumPlayerController::RequestInteract()
         RequestEnterVehicle(Car, Seat);
         return;
     }
+    if (AMarburgumDoor* Door = Cast<AMarburgumDoor>(FindUseCandidate()))
+    {
+        ServerToggleDoor(Door);
+        return;
+    }
     if (AMarburgumInteractable* Target = FindInteractionCandidate())
     {
         // A decision due here is made in the choice panel, which sends the choice itself.
@@ -236,6 +282,14 @@ void AMarburgumPlayerController::RequestInteract()
             return;
         }
         SubmitInteraction(FGuid::NewGuid(), Target);
+    }
+}
+
+void AMarburgumPlayerController::SubmitDoorToggle(AMarburgumDoor* Door)
+{
+    if (IsLocalController() && Door)
+    {
+        ServerToggleDoor(Door);
     }
 }
 
@@ -357,6 +411,35 @@ bool AMarburgumPlayerController::GetPendingInteraction(FGuid& OutOperationId, TW
     OutOperationId = PendingOperationId;
     OutTarget = PendingTarget;
     return true;
+}
+
+void AMarburgumPlayerController::ServerToggleDoor_Implementation(AMarburgumDoor* Door)
+{
+    UWorld* World = GetWorld();
+    const APawn* Body = GetPawn();
+    if (!World || !Body || !Door || !AdmitRequest(TEXT("door")))
+    {
+        return;
+    }
+    if (const AMarburgumCharacter* Character = Cast<AMarburgumCharacter>(Body))
+    {
+        if (Character->GetSeatedVehicle())
+        {
+            return;
+        }
+    }
+    // A little slack for the client's view of its own position running ahead of the server's.
+    if (!Door->IsWithinReach(Body->GetActorLocation(), 50.f))
+    {
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=door_refused player=%d building=%s reason=reach"),
+            MarburgumII::Gameplay::InteractLogPrefix, PlayerState ? PlayerState->GetPlayerId() : -1, *Door->GetBuildingId().ToString());
+        return;
+    }
+    const bool bWasOpen = Door->IsOpen();
+    const bool bMoved = Door->ToggleAuthority();
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=%s player=%d building=%s"), MarburgumII::Gameplay::InteractLogPrefix,
+        !bMoved ? TEXT("door_refused_blocked") : (bWasOpen ? TEXT("door_closing") : TEXT("door_opening")),
+        PlayerState ? PlayerState->GetPlayerId() : -1, *Door->GetBuildingId().ToString());
 }
 
 void AMarburgumPlayerController::ServerRequestInteraction_Implementation(FGuid OperationId, AMarburgumInteractable* Target)

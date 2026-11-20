@@ -8,6 +8,7 @@
 #include "MarburgumInteractionTypes.h"
 #include "MarburgumPlayerController.generated.h"
 
+class AMarburgumDoor;
 class AMarburgumInteractable;
 class AMarburgumVehicle;
 
@@ -69,8 +70,17 @@ public:
      */
     AMarburgumInteractable* FindInteractionCandidate() const;
 
+    /** Client: the nearer of a door and an interactable, each inside its own range. Cars are decided first. */
+    AActor* FindUseCandidate() const;
+
     /** Client: request the current candidate with a fresh operation id (bound to E). */
     void RequestInteract();
+
+    /**
+     * Client: ask the server to swing Door, without the reach check E makes here first. Test drivers use it to show
+     * that the server refuses a door out of reach; the server checks everything either way.
+     */
+    void SubmitDoorToggle(AMarburgumDoor* Door);
 
     /**
      * Client: submit an interaction request with an explicit operation id. Re-submitting the same id
@@ -158,6 +168,10 @@ protected:
     /** The server decides; the client only names the operation and the target it chose. */
     UFUNCTION(Server, Reliable)
     void ServerRequestInteraction(FGuid OperationId, AMarburgumInteractable* Target);
+
+    /** The server checks the distance and swings the door. A swing already going reverses. */
+    UFUNCTION(Server, Reliable)
+    void ServerToggleDoor(AMarburgumDoor* Door);
 
     /**
      * The client names the decision; the server checks it is due, affordable and in reach. Ids travel as text, not

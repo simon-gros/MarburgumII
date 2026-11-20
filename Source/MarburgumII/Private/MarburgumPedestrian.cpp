@@ -774,12 +774,62 @@ bool AMarburgumPedestrian::Rejoin()
     return true;
 }
 
+void AMarburgumPedestrian::SetScriptedRoute(const TArray<int32>& Nodes)
+{
+    ScriptedRoute = Nodes;
+    ScriptedCursor = 1;
+    bScriptedRoute = Nodes.Num() >= 2;
+    bScriptedDone = false;
+    if (!bScriptedRoute)
+    {
+        return;
+    }
+    const FMarburgumWalkGraph& Graph = Street()->GetGraph();
+    const TArray<int32>& Touching = Graph.Touching(Nodes[0]);
+    for (const int32 Candidate : Touching)
+    {
+        if (Graph.Other(Candidate, Nodes[0]) == Nodes[1])
+        {
+            Edge = Candidate;
+            ToNode = Nodes[1];
+            ScriptedCursor = 2;
+            bRejoining = false;
+            return;
+        }
+    }
+    bLost = true;
+}
+
 void AMarburgumPedestrian::TakeNextEdge(int32 Node, bool bFleeing)
 {
     const FMarburgumWalkGraph& Graph = Street()->GetGraph();
     const TArray<int32>& Touching = Graph.Touching(Node);
     if (Touching.IsEmpty())
     {
+        bLost = true;
+        return;
+    }
+    if (bScriptedRoute)
+    {
+        if (ScriptedCursor >= ScriptedRoute.Num())
+        {
+            bScriptedDone = true;
+            Stop();
+            return;
+        }
+        const int32 Want = ScriptedRoute[ScriptedCursor];
+        for (const int32 Candidate : Touching)
+        {
+            if (Graph.Other(Candidate, Node) == Want)
+            {
+                Edge = Candidate;
+                ToNode = Want;
+                ++ScriptedCursor;
+                bRejoining = false;
+                ReversedEdge = INDEX_NONE;
+                return;
+            }
+        }
         bLost = true;
         return;
     }
@@ -852,12 +902,16 @@ void AMarburgumPedestrian::StepWalk(double Now, double DeltaSeconds)
     HeadingYaw = FRotator::NormalizeAxis(HeadingYaw + Random.FRandRange(-1.f, 1.f) * HeadingDriftDegreesPerSecond * DeltaSeconds * 10.0);
     if (FVector::Dist2D(Here, Graph.GetNodes()[ToNode].Location) < NodeArriveCm)
     {
-        // Something here that draws them in: a bus stop, an open café, a sight.
-        if (TryVisit(ToNode, Now))
+        // Something here that draws them in: a bus stop, an open café, a sight. A scripted crossing does not go in.
+        if (!bScriptedRoute && TryVisit(ToNode, Now))
         {
             return;
         }
         TakeNextEdge(ToNode, false);
+        if (bScriptedDone)
+        {
+            return;
+        }
     }
     // Nobody walks into a fight, whatever they made of it, or into the river: turn back once, then hold.
     FVector Goal = EdgeGoal();
