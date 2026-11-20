@@ -1,6 +1,14 @@
 # Integrated multiplayer pass — 20 November 2026
 
-Staged Client/Server evidence for one package that already contains ADR-079 through ADR-083. Not an owner playtest, and not a claim that the game is release-ready.
+Staged Client/Server evidence for packages that already contain ADR-079 through ADR-083. Not an owner playtest, and not a claim that the game is release-ready.
+
+Three runs, in order:
+
+1. Full suite on the `44106bc` package: 17 of 21 passed (tables below).
+2. Full suite on the `34d6711` package, which has the door and photograph fixes: 20 of 21 passed. Only `door` failed, because of the smoke's setup.
+3. Door smoke alone on the `35b6944` package, which only changes the door smoke harness: PASS.
+
+See [Follow-up runs](#follow-up-runs).
 
 ## Build
 
@@ -46,6 +54,41 @@ A source compile was not treated as a packaged result. The runner refuses a stal
 | condition | **FAIL** | server restore is correct; the winded HUD check failed |
 | swim | PASS | save and restart |
 
+## Follow-up runs
+
+### Full suite on `34d6711`
+
+`34d6711` (fix: door use follows the camera; photographs carry the look) changes two things. `FindUseCandidate` now biases toward the control rotation's yaw instead of the body's forward vector. `ServerRequestPhotograph` now carries compressed pitch and yaw, and the server clamps the pitch. Reach, swing, the blocked-door refusal, and the photograph eye, range and sight trace are unchanged.
+
+| | |
+| --- | --- |
+| Packaged commit | `34d6711f0080e935dcede393e7bc536ff29e7590`, dirty=0, Development, packaged 2026-11-20T20:55:11Z, `build_fresh: yes` |
+| Server sha256 | `b55cb4213971960ea9210f299d7c93efb22abdf66c4062c98c60158f1b5e769c` |
+| Client sha256 | `776c3c69d25b8b2af1e48a56b063e70c99ddcb068103bfa75197d4488d411d6f` |
+| Cooked identity | `98243c00ab89d18f7635932977b1b80f931403f170a7d04f740408bd3f03d4d6` |
+| Evidence | `Saved/Integrated/20261120T205609Z` |
+
+**20 of 21 passed.** Every smoke that passed in the first run passed again. Changes from the first run:
+
+- **story and story-sl: now PASS.** The server framed all six shots, each `off=0.0`: `kvik_lettering` (view pitch 13.8°), `velika_kavarna_lettering` (13.6°), `vodni_stolp`, `sodni_stolp`, `stari_most` and `prehod_sign_melje`. `photo-sinagoga` and `photo-sinagoga-again` passed in both English and Slovene.
+- **condition: PASS this time, but not fixed.** Client `R2` passed `restored_hud_not_winded` (`Saved/ConditionSmoke/20261120T213217Z`). Neither commit touches the condition widget or the smoke. The race described below is still there, and this run happened to land the widget refresh first.
+- **door: still FAIL** (`Saved/DoorSmoke/20261120T210524Z`). The smoke placed the vine museum rival outside the door's reach, so the run failed on the setup and not on the door code.
+
+### Door smoke on `35b6944`
+
+`35b6944` (test: door smoke rival stands within reach of the doorway) changes only `MarburgumDoorSmokeSubsystem.cpp`. The rival now stands 80 cm out from the doorway centre and 70 cm aside, outside the swing. The `use_candidate` line now logs the distance, the height difference and the reach.
+
+| | |
+| --- | --- |
+| Packaged commit | `35b6944e7edccab253f3358d62b196c4b640d1b2`, dirty=0, Development, packaged 2026-11-20T21:40:25Z, `build_fresh: yes` |
+| Server sha256 | `b55cb4213971960ea9210f299d7c93efb22abdf66c4062c98c60158f1b5e769c`, identical to `34d6711` |
+| Client sha256 | `77a76ae1cad36b8713d37b8a84cd4326ab49bdd9164d9263408ce2c0afa9e34c` |
+| Evidence | `Saved/DoorSmoke/20261120T214055Z`, port 28120 |
+
+**PASS.** All roles passed for Hotel Lent (`r1539756`) and the lagged vine museum (`w539479841`, `-PktLag=120 -PktLagVariance=40 -PktLoss=1`): rival, late-join observer, tourist stream out and back, walker, the observer after the building emptied, and the observer after a restart. On both buildings the server counted at least one opening, closing, `refused_in_swing` and `refused_reach`. The rival's use candidates were the vine museum at `street_dist_cm=108` and Hotel Lent at `street_dist_cm=114`, both within `reach_cm=160`.
+
+The full suite was not run again on `35b6944`, and there is no need to. The only change from `34d6711` is in the door smoke subsystem, and the server binary is byte-identical. Every smoke except `door` already passed on `34d6711`.
+
 ## Crowd (ADR-079)
 
 Null RHI, `/Game/World/lent`, Tuesday 18 June 1996, clear, places off. Day `Saved/StreetMulti` via `street-day.out`. Opposite ends (`D`) settled **28/28 in 20 s** (wants 12+16, residential_blocks and school, 0 collision rejects). Shared shopping street (`B`) settled at **18**, not 36. Separate commercial and houses (`A`) settled at **18+8**. Rejoin settled at 24. Three old-town clients settled at **48** (street step average **0.28 ms** over 452 steps). After one left, the lifecycle sample was **38 alive against a target of 40**, still under the cap of 48, and the harness marked that sample pass. Night settled at **2**; both clients reported `Street_3` and `Street_4`. The script also required `cross_river=1`, `bridge_edges=185/185` and `edges_wet=0` before either matrix.
@@ -64,13 +107,15 @@ The account smoke (`Saved/AccountSmoke/20261120T180815Z`) passed the existing ti
 
 `Marburgum.Net.StrictEncryption` was not re-run in the editor in this pass (this worktree has no editor binary). It remains the tamper, wrong-key and plaintext-after-key test. This pass does not claim an independent AES-GCM nonce or replay proof.
 
-## Failures left open
+## Failures in the first run
 
-**Vine museum doors, lagged clients.** Hotel Lent (`r1539756`) passed: walker, rival, blocked swing, out-of-range refusal, late joiner, stream out to `w158684433` and back, empty-building reset, restart. The vine museum (`w539479841`) ran with `-PktLag=120 -PktLagVariance=40 -PktLoss=1`. Its rival failed `rival_street_door_not_the_use_candidate` and the close never started (`street_door_did_not_start_closing=open`). The lagged walker then failed `reversal_not_seen=open`. Reproduce: `MB2_DOOR_PORT=28120 scripts/door-smoke-linux.sh staged`.
+These were the failures on the `44106bc` package. The door and photograph failures are resolved (see [Follow-up runs](#follow-up-runs)). The winded HUD race is still open.
 
-**Lettering photographs.** Nika's Then and Now shots of Vodni stolp, Sodni stolp and Stari most were applied, with one Photography XP grant each. Brane stayed on `shoot_kvik`. `kvik_lettering`, `velika_kavarna_lettering` and (in English) `sinagoga` were rejected `nothing_in_frame`. Slovene stored a `sinagoga` discovery and 175 Photography XP against 150 in English, and still failed the same client checks. No second grant of a print that did succeed was seen. Reproduce: `MB2_STORY_PORT=28131 scripts/story-smoke-linux.sh staged` and the same with `MB2_STORY_CLIENT_ARGS=-culture=sl`.
+**Vine museum doors, lagged clients (resolved by `34d6711` and `35b6944`).** Hotel Lent (`r1539756`) passed: walker, rival, blocked swing, out-of-range refusal, late joiner, stream out to `w158684433` and back, empty-building reset, restart. The vine museum (`w539479841`) ran with `-PktLag=120 -PktLagVariance=40 -PktLoss=1`. Its rival failed `rival_street_door_not_the_use_candidate` and the close never started (`street_door_did_not_start_closing=open`). The lagged walker then failed `reversal_not_seen=open`. Reproduce: `MB2_DOOR_PORT=28120 scripts/door-smoke-linux.sh staged`.
 
-**Winded HUD after restart.** The dedicated server reloaded the runner winded (`runner_restored_from_store=1`). The client player state at ready was `stamina=0 winded=1`, and the first breath back matched the server. The smoke still failed `restored_hud_not_winded` on that same ready tick. Persistence is right; the HUD did not show it in time. Reproduce: `MB2_CONDITION_PORT=28107 scripts/condition-smoke-linux.sh staged`.
+**Lettering photographs (resolved by `34d6711`).** Nika's Then and Now shots of Vodni stolp, Sodni stolp and Stari most were applied, with one Photography XP grant each. Brane stayed on `shoot_kvik`. `kvik_lettering`, `velika_kavarna_lettering` and (in English) `sinagoga` were rejected `nothing_in_frame`. Slovene stored a `sinagoga` discovery and 175 Photography XP against 150 in English, and still failed the same client checks. No second grant of a print that did succeed was seen. Reproduce: `MB2_STORY_PORT=28131 scripts/story-smoke-linux.sh staged` and the same with `MB2_STORY_CLIENT_ARGS=-culture=sl`.
+
+**Winded HUD after restart (still open, intermittent).** The dedicated server reloaded the runner winded (`runner_restored_from_store=1`). The client player state at ready was `stamina=0 winded=1`, and the first breath back matched the server. The smoke still failed `restored_hud_not_winded` on that same ready tick. Persistence is right; the HUD did not show it in time. The smoke ticker and the condition widget's `Refresh` are not ordered, so on the frame after bind the smoke can read the widget flag before the widget has adopted the replicated state. It passed on `34d6711` by timing alone. The fix belongs in how the widget adopts a newly known winded state, or in a smoke that waits for `Refresh`, not in the condition itself. Reproduce: `MB2_CONDITION_PORT=28107 scripts/condition-smoke-linux.sh staged`.
 
 The engine's generic hello `Failure` is shown to the player as "This world could not admit your character. It may already be in the world." That text is the wrong reason for an encryption failure.
 
