@@ -52,12 +52,12 @@ namespace
         TEXT("r.Shadow.DistanceScale"), TEXT("r.ShadowQuality"), TEXT("r.ContactShadows"),
         // Anti-aliasing and resolution
         TEXT("r.AntiAliasingMethod"), TEXT("r.ScreenPercentage"), TEXT("r.TemporalAA.Upsampling"), TEXT("r.TSR.History.ScreenPercentage"),
-        TEXT("r.DynamicRes.OperationMode"), TEXT("r.PostProcessAAQuality"), TEXT("r.VSync"), TEXT("t.MaxFPS"),
+        TEXT("r.DynamicRes.OperationMode"), TEXT("r.VSync"), TEXT("t.MaxFPS"),
         // Geometry
         TEXT("r.Nanite"), TEXT("r.Nanite.ProjectEnabled"), TEXT("r.ViewDistanceScale"), TEXT("r.StaticMeshLODDistanceScale"),
         TEXT("r.HZBOcclusion"), TEXT("foliage.DensityScale"), TEXT("grass.DensityScale"),
         // Lights, ray tracing, materials
-        TEXT("r.MegaLights.Enable"), TEXT("r.RayTracing"), TEXT("r.RayTracing.Enable"), TEXT("r.Substrate"),
+        TEXT("r.MegaLights.EnableForProject"), TEXT("r.MegaLights.Allowed"), TEXT("r.RayTracing"), TEXT("r.RayTracing.Enable"), TEXT("r.Substrate"),
         // Sky, fog, water
         TEXT("r.VolumetricFog"), TEXT("r.VolumetricCloud"), TEXT("r.SkyAtmosphere"), TEXT("r.Water.SingleLayer"),
         // Exposure and post-processing
