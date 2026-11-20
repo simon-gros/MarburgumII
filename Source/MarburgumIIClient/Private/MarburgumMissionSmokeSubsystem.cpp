@@ -509,9 +509,14 @@ void UMarburgumMissionSmokeSubsystem::TickChoice(double Now)
         return;
     }
     case 2:
-    {
         if (Now - StepSeconds < ToastSettleSeconds) return;
+        // The capture is taken at the end of a frame: choose a moment later, or the panel has closed before it is drawn.
         Shot(TEXT("choice"));
+        Advance(6, Now);
+        return;
+    case 6:
+    {
+        if (Now - StepSeconds < 1.0) return;
         const FMissionDefinition* Mission = FindMission(MissionId.ToString());
         const FMarburgumMissionState* Saved = State->FindMission(MissionId);
         const FMissionStageDefinition* Stage = Mission && Saved ? FindStage(*Mission, Saved->StageId.ToString()) : nullptr;

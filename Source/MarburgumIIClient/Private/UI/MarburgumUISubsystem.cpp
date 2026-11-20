@@ -524,6 +524,16 @@ bool UMarburgumUISubsystem::ToggleInventory()
     return ToggleScreen(EMarburgumScreen::Inventory);
 }
 
+bool UMarburgumUISubsystem::ShowInventoryItem(FName ItemId)
+{
+    if (!Inventory || (!Inventory->IsOpen() && !ToggleInventory()))
+    {
+        return false;
+    }
+    Inventory->Select(ItemId);
+    return true;
+}
+
 
 bool UMarburgumUISubsystem::ToggleJournal()
 {

@@ -55,6 +55,8 @@ public:
 
     /** Show or hide the inventory_view for the admitted local player (I key). False if not mounted yet. */
     bool ToggleInventory();
+    /** Opens the Inventory (if it is not open) on ItemId's card. */
+    bool ShowInventoryItem(FName ItemId);
     bool IsInventoryOpen() const;
 
     /** Show or hide the journal_panel (J key). Opening one management screen closes the others. */

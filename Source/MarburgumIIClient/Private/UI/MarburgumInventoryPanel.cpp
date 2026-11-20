@@ -311,6 +311,12 @@ void UMarburgumInventoryPanel::Rebuild()
     ShowDetail(TileItems.Contains(SelectedItem) ? SelectedItem : TileItems[0]);
 }
 
+void UMarburgumInventoryPanel::Select(FName ItemId)
+{
+    SelectedItem = ItemId;
+    Rebuild();
+}
+
 void UMarburgumInventoryPanel::ShowDetail(FName ItemId)
 {
     using namespace MarburgumII::Gameplay;

@@ -161,7 +161,8 @@ namespace MarburgumStoryProps
                 Kit.Box(FVector(4.0, 40.0, 100.0 + Year * 5.2), FVector(30.0, 22.0, 5.0), Year % 2 ? LedgerBlue : LedgerGreen);
             }
             Kit.Text(FVector(-28.2, 0.0, 74.0), TEXT("FOTO VIDMAR"), 9.f, Paper);
-            Kit.Text(FVector(-28.2, 0.0, 62.0), TEXT("NAROČILA 1990"), 6.f, Paper);
+            // The engine text font has no Latin Extended-A (no Č): the label keeps to what it can draw.
+            Kit.Text(FVector(-28.2, 0.0, 62.0), TEXT("ARHIV 1978 - 1991"), 6.f, Paper);
         }
 
         /** An opal-glass light table with a loupe, a contact sheet's worth of film on it and a lamp over it. */

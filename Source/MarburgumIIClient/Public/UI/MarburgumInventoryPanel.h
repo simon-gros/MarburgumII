@@ -31,6 +31,8 @@ public:
     /** Scrolls the grid by Lines lines (mouse wheel, Page Up/Down). */
     void Scroll(float Lines);
     UWidget* GetPreferredFocus() const;
+    /** Shows ItemId's card, as if its tile had been chosen (the UI capture tour's `inventory:<item>` step). */
+    void Select(FName ItemId);
 
 protected:
     virtual void NativeOnInitialized() override;

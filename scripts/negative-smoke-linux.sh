@@ -245,7 +245,7 @@ step f37-show nika_vidmar stage_completed
 choice f37-scrap nika_vidmar nika_frame_37 lab_safe
 step n6-vera vera_horvat stage_completed $(shot n6-vera)
 step n6-glas mariborski_glas_archive stage_completed $(shot n6-glas)
-tour n6-ui journal,inventory
+tour n6-ui journal,inventory:frame_37_print,inventory:zupan_contact_sheet,inventory:chronology_frame_37
 case "$outcome" in
     temporary_work)
         step n6-albin kiosk_67_customer stage_completed $(shot n6-albin)
