@@ -27,12 +27,13 @@ using namespace MarburgumUI;
 namespace
 {
     constexpr float RefreshSeconds = 0.1f;
-    constexpr float CardWidth = 440.f;
-    constexpr float KeyCapSize = 44.f;
+    constexpr float MaxCardWidth = 420.f;
+    constexpr float MinCardWidth = 260.f;
+    constexpr float KeyCapSize = 40.f;
     constexpr float GapAboveTarget = 24.f;
     constexpr float EdgeMargin = 24.f;
-    // Fallback position when the object's top is not on screen: above the lower edge, clear of chat.
-    constexpr float FallbackBottomOffset = 168.f;
+    // Fallback position when the object's top is not on screen: above the lower edge, clear of the subtitles.
+    constexpr float FallbackBottomOffset = 200.f;
 }
 
 void UMarburgumInteractionPrompt::NativeOnInitialized()
@@ -41,16 +42,19 @@ void UMarburgumInteractionPrompt::NativeOnInitialized()
     const FTokens& T = Tokens();
     FBuilder B(*WidgetTree);
 
-    KeyLabel = B.Text(LOCTEXT("Key", "E"), ETypeRole::Heading, T.Color.TextPrimary);
+    // One eligible verb: its key, its glyph and verb, the subject and one line of what it will do.
+    KeyLabel = B.Text(LOCTEXT("Key", "E"), ETypeRole::Heading, T.Color.TextOnAccent);
     KeyCap = B.Surface(ESurfaceKind::Raised, Pad(0.f), KeyLabel);
     FBuilder::Align(KeyCap, HAlign_Center, VAlign_Center);
     USizeBox* KeySize = WidgetTree->ConstructWidget<USizeBox>();
-    KeySize->SetWidthOverride(KeyCapSize);
-    KeySize->SetHeightOverride(KeyCapSize);
+    KeySize->SetWidthOverride(KeyCapSize * T.TextScale);
+    KeySize->SetHeightOverride(KeyCapSize * T.TextScale);
     KeySize->SetContent(KeyCap);
 
     UVerticalBox* Text = B.Column();
     UHorizontalBox* VerbLine = B.Row();
+    VerbGlyph = B.Glyph(EMarburgumGlyph::Use, T.Color.Accent, T.Icon.Small);
+    FBuilder::Inline(VerbLine, VerbGlyph, T.Space.XS + 2.f);
     VerbLabel = B.Text(FText::GetEmpty(), ETypeRole::Overline, T.Color.Accent);
     FBuilder::Inline(VerbLine, VerbLabel, T.Space.S, true);
     FixturePill = B.Pill(LOCTEXT("Fixture", "TEST FIXTURE"), ETone::Warning);
@@ -59,17 +63,19 @@ void UMarburgumInteractionPrompt::NativeOnInitialized()
     SubjectLabel = B.Text(FText::GetEmpty(), ETypeRole::Heading);
     SubjectLabel->SetAutoWrapText(true);
     FBuilder::Stack(Text, SubjectLabel, T.Space.XXS);
-    DetailLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption);
+    DetailLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextSecondary);
     DetailLabel->SetAutoWrapText(true);
     FBuilder::Stack(Text, DetailLabel, 0.f);
 
     UHorizontalBox* Line = B.Row();
-    FBuilder::Inline(Line, KeySize, T.Space.L);
+    FBuilder::Inline(Line, KeySize, T.Space.L, false, true);
     FBuilder::Inline(Line, Text, 0.f, true);
 
-    Card = B.Surface(ESurfaceKind::Overlay, Pad(T.Space.L, T.Space.M), Line);
+    Card = B.Surface(ESurfaceKind::Overlay, FMargin(T.Space.M, T.Space.M, T.Space.L, T.Space.M), Line);
+    Card->SetBrush(RoundedBrush(T.Color.Overlay, T.Radius.Large, T.Color.BorderStrong.CopyWithNewOpacity(0.8f), T.BorderWidth));
     USizeBox* Width = WidgetTree->ConstructWidget<USizeBox>();
-    Width->SetWidthOverride(CardWidth);
+    Width->SetMaxDesiredWidth(MaxCardWidth * T.TextScale);
+    Width->SetMinDesiredWidth(MinCardWidth);
     Width->SetContent(Card);
     Placement = Width;
 
@@ -110,7 +116,7 @@ void UMarburgumInteractionPrompt::Place()
     const float AppScale = FSlateApplication::IsInitialized() ? FMath::Max(FSlateApplication::Get().GetApplicationScale(), KINDA_SMALL_NUMBER) : 1.f;
     const float Scale = UWidgetLayoutLibrary::GetViewportScale(this);
     const FVector2D Viewport = UWidgetLayoutLibrary::GetViewportSize(this) / FMath::Max(Scale * AppScale, KINDA_SMALL_NUMBER);
-    const FVector2D Size(CardWidth, Card->GetDesiredSize().Y);
+    const FVector2D Size = Placement->GetDesiredSize();
 
     FVector Origin;
     FVector Extent;
@@ -231,7 +237,7 @@ void UMarburgumInteractionPrompt::Refresh()
         break;
     }
 
-    Apply(*Target, Verb, Detail, Tone, bKeyActive);
+    Apply(*Target, Verb, Detail, Tone, bKeyActive, EMarburgumGlyph::Item);
 }
 
 void UMarburgumInteractionPrompt::RefreshAuthored(const AMarburgumInteractable& Target, const AMarburgumPlayerController& Controller,
@@ -333,7 +339,8 @@ void UMarburgumInteractionPrompt::RefreshAuthored(const AMarburgumInteractable& 
                                   : LOCTEXT("CounterClosed", "[B] Counter, closed");
         Detail = Detail.IsEmpty() ? Counter : FText::Format(LOCTEXT("WithCounter", "{0}  ·  {1}"), Detail, Counter);
     }
-    Apply(Target, Verb, Detail, Tone, bKeyActive);
+    Apply(Target, Verb, Detail, Tone, bKeyActive,
+        !Target.GetShopId().IsNone() ? EMarburgumGlyph::Shop : bPerson ? EMarburgumGlyph::Talk : EMarburgumGlyph::Inspect);
 }
 
 void UMarburgumInteractionPrompt::RefreshFishing(const AMarburgumInteractable& Spot, const AMarburgumPlayerState* State, bool bWaiting)
@@ -385,7 +392,7 @@ void UMarburgumInteractionPrompt::RefreshFishing(const AMarburgumInteractable& S
         Verb = LOCTEXT("CastVerb", "Cast");
         Detail = LOCTEXT("Cast", "Cast your line and wait for a bite, then strike.");
     }
-    Apply(Spot, Verb, Detail, Tone, bKeyActive);
+    Apply(Spot, Verb, Detail, Tone, bKeyActive, EMarburgumGlyph::Fish);
 }
 
 void UMarburgumInteractionPrompt::RefreshVehicle(const AMarburgumVehicle& Vehicle, FName Seat, bool bSeated, bool bWaiting)
@@ -423,28 +430,49 @@ void UMarburgumInteractionPrompt::RefreshVehicle(const AMarburgumVehicle& Vehicl
         Verb = bDriver ? LOCTEXT("DriveVerb", "Drive") : LOCTEXT("RideVerb", "Get in");
         Detail = bDriver ? LOCTEXT("DriverSeat", "Driver's seat") : LOCTEXT("PassengerSeat", "Passenger seat");
     }
-    ApplyTo(Vehicle, Vehicle.GetDisplayName(), false, Verb, Detail, Tone, bKeyActive);
+    ApplyTo(Vehicle, Vehicle.GetDisplayName(), false, Verb, Detail, Tone, bKeyActive, EMarburgumGlyph::Car);
 }
 
-void UMarburgumInteractionPrompt::Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, ETone Tone, bool bKeyActive)
+void UMarburgumInteractionPrompt::Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, ETone Tone, bool bKeyActive,
+    EMarburgumGlyph Icon)
 {
     ApplyTo(Target, Target.DisplayName.IsEmpty() ? FText::FromName(Target.InteractableId) : Target.DisplayName, Target.bTestFixture, Verb,
-        Detail, Tone, bKeyActive);
+        Detail, Tone, bKeyActive, Icon);
 }
 
 void UMarburgumInteractionPrompt::ApplyTo(const AActor& Target, const FText& Subject, bool bFixture, const FText& Verb, const FText& Detail,
-    ETone Tone, bool bKeyActive)
+    ETone Tone, bool bKeyActive, EMarburgumGlyph Icon)
 {
     const FTokens& T = Tokens();
+    const FLinearColor VerbColor = Tone == ETone::Neutral ? T.Color.TextSecondary : ToneColor(Tone);
     VerbLabel->SetText(MarburgumUI::Caps(Verb));
-    VerbLabel->SetColorAndOpacity(FSlateColor(Tone == ETone::Neutral ? T.Color.TextSecondary : ToneColor(Tone)));
+    VerbLabel->SetColorAndOpacity(FSlateColor(VerbColor));
+    VerbGlyph->SetGlyph(Icon);
+    VerbGlyph->SetColor(VerbColor);
     SubjectLabel->SetText(Subject);
     DetailLabel->SetText(Detail);
+    DetailLabel->SetVisibility(Detail.IsEmpty() ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
     FixturePill->SetVisibility(bFixture ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
-    KeyCap->SetBrush(RoundedBrush(bKeyActive ? T.Color.Accent : T.Color.Raised, T.Radius.Medium,
+    // An unavailable verb keeps its key but drawn hollow: the key does nothing useful right now.
+    KeyCap->SetBrush(RoundedBrush(bKeyActive ? T.Color.Accent : T.Color.Sunken, T.Radius.Medium,
         bKeyActive ? T.Color.AccentPressed : T.Color.BorderStrong, T.BorderWidth));
     KeyLabel->SetColorAndOpacity(FSlateColor(bKeyActive ? T.Color.TextOnAccent : T.Color.TextMuted));
-    Card->SetVisibility(ESlateVisibility::HitTestInvisible);
+    Card->SetVisibility(Suppressed ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
+}
+
+void UMarburgumInteractionPrompt::SetSuppressed(bool bInSuppressed)
+{
+    if (Suppressed == bInSuppressed)
+    {
+        return;
+    }
+    Suppressed = bInSuppressed;
+    // Re-applied on the next refresh: a blocking screen owns the keys, so no prompt may promise one.
+    LastSignature.Reset();
+    if (Suppressed)
+    {
+        Card->SetVisibility(ESlateVisibility::Collapsed);
+    }
 }
 
 #undef LOCTEXT_NAMESPACE

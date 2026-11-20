@@ -2,7 +2,10 @@
 
 #include "Blueprint/WidgetTree.h"
 #include "Components/Border.h"
+#include "Components/HorizontalBox.h"
 #include "Components/Image.h"
+#include "Components/Overlay.h"
+#include "Components/OverlaySlot.h"
 #include "Components/SafeZone.h"
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
@@ -23,11 +26,13 @@ using namespace MarburgumUI;
 
 namespace
 {
-    constexpr float TopOffset = 56.f;
-    constexpr float MinWidth = 360.f;
-    constexpr float FadeInSeconds = 0.35f;
-    constexpr float HoldSeconds = 3.2f;
-    constexpr float FadeOutSeconds = 0.8f;
+    constexpr float TopOffset = 40.f;
+    constexpr float BandWidth = 880.f;
+    constexpr float FadeInSeconds = 0.45f;
+    constexpr float HoldSeconds = 3.4f;
+    constexpr float FadeOutSeconds = 0.9f;
+    /** The title settles from slightly above as it fades in (none with reduced motion). */
+    constexpr float SettleOffset = 10.f;
 
     void Center(UWidget* Child)
     {
@@ -44,49 +49,74 @@ void UMarburgumLocationBanner::NativeOnInitialized()
     const FTokens& T = Tokens();
     FBuilder B(*WidgetTree);
 
+    // A title card in the manner of a documentary's place caption: the kind between two copper hairlines, the name in
+    // the serif, the street and landmark under it, and one quiet line of date, time and weather. No box: a soft band
+    // of shade keeps it legible over a bright sky without walling off the street.
     UVerticalBox* Column = B.Column();
+    UHorizontalBox* KindLine = B.Row();
+    FBuilder::Inline(KindLine, B.Rule(T.Color.Hairline, 1.f, 36.f), T.Space.M);
     KindLabel = B.Text(FText::GetEmpty(), ETypeRole::Overline, T.Color.Accent);
-    FBuilder::Stack(Column, KindLabel, T.Space.XS);
-    Center(KindLabel);
-    NameLabel = B.Text(FText::GetEmpty(), ETypeRole::Title);
-    FBuilder::Stack(Column, NameLabel, T.Space.XS);
+    FBuilder::Inline(KindLine, KindLabel, T.Space.M);
+    FBuilder::Inline(KindLine, B.Rule(T.Color.Hairline, 1.f, 36.f), 0.f);
+    FBuilder::Stack(Column, KindLine, T.Space.XS);
+    Center(KindLine);
+    NameLabel = B.Text(FText::GetEmpty(), ETypeRole::PlaceTitle);
+    NameLabel->SetShadowOffset(FVector2D(0.f, 1.f));
+    NameLabel->SetShadowColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.55f));
+    FBuilder::Stack(Column, NameLabel, T.Space.XXS);
     Center(NameLabel);
     // The street or square, then the landmark (ADR-063): collapsed when the player is on none.
-    StreetLabel = B.Text(FText::GetEmpty(), ETypeRole::BodyStrong);
+    StreetLabel = B.Text(FText::GetEmpty(), ETypeRole::Subheading, T.Color.TextPrimary);
     StreetLabel->SetJustification(ETextJustify::Center);
     StreetLabel->SetVisibility(ESlateVisibility::Collapsed);
-    FBuilder::Stack(Column, StreetLabel, T.Space.XS);
+    FBuilder::Stack(Column, StreetLabel, T.Space.XXS);
     Center(StreetLabel);
-    LandmarkLabel = B.Text(FText::GetEmpty(), ETypeRole::Body, T.Color.Accent);
+    LandmarkLabel = B.Text(FText::GetEmpty(), ETypeRole::Quote, T.Color.Accent);
     LandmarkLabel->SetJustification(ETextJustify::Center);
     LandmarkLabel->SetVisibility(ESlateVisibility::Collapsed);
     FBuilder::Stack(Column, LandmarkLabel, T.Space.XS);
     Center(LandmarkLabel);
-    UWidget* Rule = B.Rule(T.Color.Accent, 2.f, 64.f);
-    FBuilder::Stack(Column, Rule, T.Space.S);
-    Center(Rule);
-    NoteLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption);
-    NoteLabel->SetJustification(ETextJustify::Center);
-    FBuilder::Stack(Column, NoteLabel, T.Space.XS);
-    Center(NoteLabel);
-    // The world clock's 1990s date and time (ADR-064), kept current while the banner is up.
-    ClockLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextSecondary);
-    ClockLabel->SetJustification(ETextJustify::Center);
+    FBuilder::Stack(Column, B.Spacer(1.f, T.Space.XS), 0.f);
+    // The world clock's 1990s date and time (ADR-064) and the server's weather (ADR-061) on one line.
+    UHorizontalBox* Meta = B.Row();
+    UTextBlock* ClockText = nullptr;
+    FBuilder::Inline(Meta, B.GlyphText(EMarburgumGlyph::Clock, FText::GetEmpty(), ETypeRole::Caption, T.Color.TextSecondary, &ClockText, 14.f),
+        T.Space.L);
+    ClockLabel = ClockText;
     ClockLabel->SetVisibility(ESlateVisibility::Collapsed);
-    FBuilder::Stack(Column, ClockLabel, 0.f);
-    Center(ClockLabel);
     WeatherLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextSecondary);
-    WeatherLabel->SetJustification(ETextJustify::Center);
     WeatherLabel->SetVisibility(ESlateVisibility::Collapsed);
-    FBuilder::Stack(Column, WeatherLabel, 0.f);
-    Center(WeatherLabel);
+    FBuilder::Inline(Meta, WeatherLabel, 0.f);
+    FBuilder::Stack(Column, Meta, T.Space.XXS);
+    Center(Meta);
+    // The area's provenance note (e.g. fictional route names), quietly, so a label is never passed off as history.
+    NoteLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextMuted);
+    NoteLabel->SetJustification(ETextJustify::Center);
+    NoteLabel->SetAutoWrapText(true);
+    FBuilder::Stack(Column, NoteLabel, 0.f);
+    Center(NoteLabel);
 
-    Card = B.Surface(ESurfaceKind::Overlay, Pad(T.Space.XXL, T.Space.L), Column);
+    UBorder* Content = B.Surface(ESurfaceKind::Base, FMargin(T.Space.XXXL, T.Space.L, T.Space.XXXL, T.Space.L), Column, false);
+    Content->SetBrushColor(FLinearColor::Transparent);
+    FBuilder::Align(Content, HAlign_Center, VAlign_Center);
+
+    UOverlay* Stackup = WidgetTree->ConstructWidget<UOverlay>();
+    UOverlaySlot* ShadeSlot = Stackup->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::HorizontalBand,
+        T.Color.Backdrop.CopyWithNewOpacity(T.bHighContrast ? 0.88f : 0.62f)));
+    ShadeSlot->SetHorizontalAlignment(HAlign_Fill);
+    ShadeSlot->SetVerticalAlignment(VAlign_Fill);
+    UOverlaySlot* ContentSlot = Stackup->AddChildToOverlay(Content);
+    ContentSlot->SetHorizontalAlignment(HAlign_Fill);
+    ContentSlot->SetVerticalAlignment(VAlign_Center);
+
     USizeBox* Width = WidgetTree->ConstructWidget<USizeBox>();
-    Width->SetMinDesiredWidth(MinWidth);
-    Width->SetContent(Card);
+    Width->SetMaxDesiredWidth(BandWidth);
+    Width->SetMinDesiredWidth(BandWidth * 0.6f);
+    Width->SetContent(Stackup);
+    Card = B.Surface(ESurfaceKind::Base, Pad(0.f), Width, false);
+    Card->SetBrushColor(FLinearColor::Transparent);
 
-    UBorder* Anchor = B.Surface(ESurfaceKind::Base, FMargin(0.f, TopOffset, 0.f, 0.f), Width, false);
+    UBorder* Anchor = B.Surface(ESurfaceKind::Base, FMargin(0.f, TopOffset, 0.f, 0.f), Card, false);
     Anchor->SetBrushColor(FLinearColor::Transparent);
     FBuilder::Align(Anchor, HAlign_Center, VAlign_Top);
 
@@ -304,8 +334,14 @@ void UMarburgumLocationBanner::Show()
 void UMarburgumLocationBanner::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
     Super::NativeTick(MyGeometry, InDeltaTime);
-    // Kept current between banners too, so the line is right the moment one comes up.
-    UpdateClock();
+    // Kept current between banners too, so the line is right the moment one comes up; the clock reads in minutes,
+    // so once a second is plenty (QA U14: no string work every frame).
+    SinceClock += InDeltaTime;
+    if (SinceClock >= 1.f || ClockLabel->GetVisibility() == ESlateVisibility::Collapsed)
+    {
+        SinceClock = 0.f;
+        UpdateClock();
+    }
     if (Elapsed < 0.f)
     {
         return;
@@ -318,9 +354,17 @@ void UMarburgumLocationBanner::NativeTick(const FGeometry& MyGeometry, float InD
         Card->SetVisibility(ESlateVisibility::Collapsed);
         return;
     }
+    if (Tokens().bReducedMotion)
+    {
+        // Reduced motion: on and off without a fade or slide; the hold is unchanged.
+        Card->SetRenderOpacity(1.f);
+        Card->SetRenderTranslation(FVector2D::ZeroVector);
+        return;
+    }
     const float In = FMath::Clamp(Elapsed / FadeInSeconds, 0.f, 1.f);
     const float Out = FMath::Clamp((Total - Elapsed) / FadeOutSeconds, 0.f, 1.f);
     Card->SetRenderOpacity(FMath::InterpEaseOut(0.f, 1.f, FMath::Min(In, Out), 2.f));
+    Card->SetRenderTranslation(FVector2D(0.f, -SettleOffset * (1.f - FMath::InterpEaseOut(0.f, 1.f, In, 3.f))));
 }
 
 #undef LOCTEXT_NAMESPACE

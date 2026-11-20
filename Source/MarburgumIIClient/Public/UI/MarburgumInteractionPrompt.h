@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "UI/MarburgumUITheme.h"
+#include "UI/MarburgumUIWidgets.h"
 #include "MarburgumInteractionPrompt.generated.h"
 
 class UBorder;
@@ -30,6 +31,10 @@ class MARBURGUMIICLIENT_API UMarburgumInteractionPrompt : public UUserWidget
 {
     GENERATED_BODY()
 
+public:
+    /** While a blocking screen or the chat composer owns the keys, no prompt may promise one (UI-P0B). */
+    void SetSuppressed(bool bInSuppressed);
+
 protected:
     virtual void NativeOnInitialized() override;
     virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
@@ -40,9 +45,10 @@ private:
         const AMarburgumPlayerState* State, bool bWaiting);
     void RefreshFishing(const AMarburgumInteractable& Spot, const AMarburgumPlayerState* State, bool bWaiting);
     void RefreshVehicle(const AMarburgumVehicle& Vehicle, FName Seat, bool bSeated, bool bWaiting);
-    void Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone, bool bKeyActive);
+    void Apply(const AMarburgumInteractable& Target, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone, bool bKeyActive,
+        EMarburgumGlyph Icon);
     void ApplyTo(const AActor& Target, const FText& Subject, bool bFixture, const FText& Verb, const FText& Detail, MarburgumUI::ETone Tone,
-        bool bKeyActive);
+        bool bKeyActive, EMarburgumGlyph Icon);
     void Place();
 
     UPROPERTY(Transient) TObjectPtr<UBorder> Card;
@@ -50,11 +56,13 @@ private:
     UPROPERTY(Transient) TObjectPtr<UBorder> KeyCap;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> KeyLabel;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> VerbLabel;
+    UPROPERTY(Transient) TObjectPtr<UMarburgumGlyph> VerbGlyph;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> SubjectLabel;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> DetailLabel;
     UPROPERTY(Transient) TObjectPtr<UBorder> FixturePill;
 
     float SinceRefresh = 0.f;
+    bool Suppressed = false;
     FString LastSignature;
     TWeakObjectPtr<AActor> Shown;
 };

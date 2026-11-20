@@ -100,4 +100,6 @@ private:
     bool bHasShown = false;
     /** Seconds since the current banner appeared; negative while hidden. */
     float Elapsed = -1.f;
+    /** Seconds since the clock line was last refreshed. */
+    float SinceClock = 0.f;
 };
