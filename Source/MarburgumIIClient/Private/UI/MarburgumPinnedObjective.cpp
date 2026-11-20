@@ -81,7 +81,7 @@ void UMarburgumPinnedObjective::NativeOnInitialized()
     FBuilder::Inline(Line, B.Rule(T.Color.Accent, 1.f, 2.f), T.Space.M, false, false);
     FBuilder::Inline(Line, Column, 0.f, true, false);
 
-    UBorder* Content = B.Surface(ESurfaceKind::Base, FMargin(T.Space.L, T.Space.M, T.Space.XXL, T.Space.M), Line, false);
+    UBorder* Content = B.Surface(ESurfaceKind::Base, FMargin(T.Space.L, T.Space.XL, T.Space.XXXL, T.Space.XL), Line, false);
     Content->SetBrushColor(FLinearColor::Transparent);
     UOverlay* Stack = WidgetTree->ConstructWidget<UOverlay>();
     UOverlaySlot* ShadeSlot = Stack->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::SoftFadeRight,

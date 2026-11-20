@@ -93,7 +93,7 @@ void UMarburgumPlayerCondition::NativeOnInitialized()
     FBuilder::Stack(Column, Bars, 0.f);
 
     // The shade runs well past the values so they never sit on its faded tail over a bright street.
-    UBorder* Content = B.Surface(ESurfaceKind::Base, FMargin(T.Space.L, T.Space.M, T.Space.XXXL * 2.f, T.Space.M), Column, false);
+    UBorder* Content = B.Surface(ESurfaceKind::Base, FMargin(T.Space.L, T.Space.L, T.Space.XXXL * 2.f, T.Space.L), Column, false);
     Content->SetBrushColor(FLinearColor::Transparent);
     UOverlay* ClusterStack = WidgetTree->ConstructWidget<UOverlay>();
     UOverlaySlot* ShadeSlot = ClusterStack->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::SoftFadeRight,
@@ -260,7 +260,7 @@ void UMarburgumPlayerCondition::Refresh(float DeltaTime)
             WaitingLabel->SetVisibility(ESlateVisibility::HitTestInvisible);
             Bars->SetVisibility(ESlateVisibility::Collapsed);
             ShowState(EState::None, 0);
-            Cluster->SetRenderOpacity(bSuppressed ? 0.f : 1.f);
+            FBuilder::Fade(Cluster, bSuppressed ? 0.f : 1.f);
         }
         return;
     }
@@ -356,7 +356,7 @@ void UMarburgumPlayerCondition::Refresh(float DeltaTime)
     bResting = QuietFor >= QuietSeconds;
     const float Target = bSuppressed ? 0.f : bResting ? 0.f : 1.f;
     Opacity = T.bReducedMotion ? Target : FMath::FInterpConstantTo(Opacity, Target, DeltaTime, 1.f / FadeSeconds);
-    Cluster->SetRenderOpacity(Opacity);
+    FBuilder::Fade(Cluster, Opacity);
 }
 
 #undef LOCTEXT_NAMESPACE

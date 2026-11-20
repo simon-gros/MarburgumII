@@ -1,6 +1,7 @@
 #include "UI/MarburgumUIWidgets.h"
 
 #include "Components/PanelSlot.h"
+#include "Engine/Texture2D.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Rendering/DrawElements.h"
 #include "UI/MarburgumUITheme.h"
@@ -410,77 +411,101 @@ int32 SMarburgumMeter::OnPaint(const FPaintArgs& Args, const FGeometry& Allotted
 
 // ------------------------------------------------------------------------------------------------ SMarburgumScrim
 
+namespace
+{
+    // One soft alpha mask per scrim shape, white with the falloff in alpha, drawn stretched and sampled bilinearly: smooth in
+    // both directions at any size and resolution, where stacked gradient slices showed as stripes.
+    constexpr int32 ScrimMaskSize = 64;
+
+    float ScrimBand(float X, float Edge)
+    {
+        return FMath::SmoothStep(0.f, Edge, X) * FMath::SmoothStep(0.f, Edge, 1.f - X);
+    }
+
+    float ScrimFadeOut(float X)
+    {
+        return 1.f - FMath::SmoothStep(0.3f, 1.f, X);
+    }
+
+    float ScrimAlpha(EMarburgumScrimShape Shape, float U, float V)
+    {
+        switch (Shape)
+        {
+        case EMarburgumScrimShape::HorizontalBand: return ScrimBand(U, 0.22f);
+        case EMarburgumScrimShape::VerticalBand: return ScrimBand(V, 0.25f);
+        case EMarburgumScrimShape::FadeDown: return 1.f - FMath::SmoothStep(0.f, 1.f, V);
+        case EMarburgumScrimShape::FadeUp: return FMath::SmoothStep(0.f, 1.f, V);
+        case EMarburgumScrimShape::FadeRight: return ScrimFadeOut(U);
+        case EMarburgumScrimShape::FadeLeft: return ScrimFadeOut(1.f - U);
+        case EMarburgumScrimShape::SoftBand: return ScrimBand(U, 0.24f) * ScrimBand(V, 0.24f);
+        case EMarburgumScrimShape::SoftFadeRight: return ScrimFadeOut(U) * ScrimBand(V, 0.24f);
+        }
+        return 1.f;
+    }
+
+    UTexture2D* ScrimMask(EMarburgumScrimShape Shape)
+    {
+        // Rooted for the life of the process: masks are tiny, shared by every scrim, and must outlive any widget.
+        static UTexture2D* Masks[8] = {};
+        const int32 Index = static_cast<int32>(Shape);
+        if (Index < 0 || Index >= UE_ARRAY_COUNT(Masks))
+        {
+            return nullptr;
+        }
+        if (!Masks[Index])
+        {
+            UTexture2D* Mask = UTexture2D::CreateTransient(ScrimMaskSize, ScrimMaskSize, PF_B8G8R8A8);
+            if (!Mask || !Mask->GetPlatformData() || Mask->GetPlatformData()->Mips.IsEmpty())
+            {
+                return nullptr;
+            }
+            Mask->Filter = TF_Bilinear;
+            Mask->AddressX = TA_Clamp;
+            Mask->AddressY = TA_Clamp;
+            Mask->SRGB = false;
+            Mask->LODGroup = TEXTUREGROUP_UI;
+            FTexture2DMipMap& Mip = Mask->GetPlatformData()->Mips[0];
+            uint8* Pixels = static_cast<uint8*>(Mip.BulkData.Lock(LOCK_READ_WRITE));
+            for (int32 Y = 0; Y < ScrimMaskSize; ++Y)
+            {
+                for (int32 X = 0; X < ScrimMaskSize; ++X)
+                {
+                    // Texel centres, so the outermost texels reach (almost) zero and the edges never show.
+                    const float U = (X + 0.5f) / ScrimMaskSize;
+                    const float V = (Y + 0.5f) / ScrimMaskSize;
+                    uint8* Texel = Pixels + (Y * ScrimMaskSize + X) * 4;
+                    Texel[0] = Texel[1] = Texel[2] = 255;
+                    Texel[3] = static_cast<uint8>(FMath::RoundToInt(255.f * FMath::Clamp(ScrimAlpha(Shape, U, V), 0.f, 1.f)));
+                }
+            }
+            Mip.BulkData.Unlock();
+            Mask->UpdateResource();
+            Mask->AddToRoot();
+            Masks[Index] = Mask;
+        }
+        return Masks[Index];
+    }
+}
+
 void SMarburgumScrim::Construct(const FArguments& InArgs)
 {
     Shape = InArgs._Shape;
     Color = InArgs._Color;
+    Mask.DrawAs = ESlateBrushDrawType::Image;
+    Mask.Tiling = ESlateBrushTileType::NoTile;
+    Mask.ImageSize = FVector2D(ScrimMaskSize, ScrimMaskSize);
+    Mask.SetResourceObject(ScrimMask(Shape));
 }
 
 int32 SMarburgumScrim::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect,
     FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
 {
-    const FVector2f Local = AllottedGeometry.GetLocalSize();
     const FLinearColor Solid = Color * InWidgetStyle.GetColorAndOpacityTint();
-    const FLinearColor Clear = Solid.CopyWithNewOpacity(0.f);
-    TArray<FSlateGradientStop> Stops;
-    // Orient_Vertical lays the stops out along X (vertical bands of colour); Orient_Horizontal along Y.
-    EOrientation Orientation = Orient_Vertical;
-    switch (Shape)
+    if (Solid.A <= 0.004f || !Mask.GetResourceObject())
     {
-    case EMarburgumScrimShape::HorizontalBand:
-        Stops = { FSlateGradientStop(FVector2f(0.f, 0.f), Clear), FSlateGradientStop(FVector2f(Local.X * 0.22f, 0.f), Solid),
-            FSlateGradientStop(FVector2f(Local.X * 0.78f, 0.f), Solid), FSlateGradientStop(FVector2f(Local.X, 0.f), Clear) };
-        Orientation = Orient_Vertical;
-        break;
-    case EMarburgumScrimShape::VerticalBand:
-        Stops = { FSlateGradientStop(FVector2f(0.f, 0.f), Clear), FSlateGradientStop(FVector2f(0.f, Local.Y * 0.25f), Solid),
-            FSlateGradientStop(FVector2f(0.f, Local.Y * 0.75f), Solid), FSlateGradientStop(FVector2f(0.f, Local.Y), Clear) };
-        Orientation = Orient_Horizontal;
-        break;
-    case EMarburgumScrimShape::FadeDown:
-        Stops = { FSlateGradientStop(FVector2f(0.f, 0.f), Solid), FSlateGradientStop(FVector2f(0.f, Local.Y), Clear) };
-        Orientation = Orient_Horizontal;
-        break;
-    case EMarburgumScrimShape::FadeUp:
-        Stops = { FSlateGradientStop(FVector2f(0.f, 0.f), Clear), FSlateGradientStop(FVector2f(0.f, Local.Y), Solid) };
-        Orientation = Orient_Horizontal;
-        break;
-    case EMarburgumScrimShape::FadeRight:
-        Stops = { FSlateGradientStop(FVector2f(0.f, 0.f), Solid), FSlateGradientStop(FVector2f(Local.X * 0.55f, 0.f), Solid.CopyWithNewOpacity(Solid.A * 0.7f)),
-            FSlateGradientStop(FVector2f(Local.X, 0.f), Clear) };
-        Orientation = Orient_Vertical;
-        break;
-    case EMarburgumScrimShape::FadeLeft:
-        Stops = { FSlateGradientStop(FVector2f(0.f, 0.f), Clear), FSlateGradientStop(FVector2f(Local.X * 0.45f, 0.f), Solid.CopyWithNewOpacity(Solid.A * 0.7f)),
-            FSlateGradientStop(FVector2f(Local.X, 0.f), Solid) };
-        Orientation = Orient_Vertical;
-        break;
-    case EMarburgumScrimShape::SoftBand:
-    case EMarburgumScrimShape::SoftFadeRight:
-    {
-        // A gradient runs along one axis only, so the soft top and bottom come from horizontal slices, each the
-        // horizontal gradient scaled by a smooth vertical falloff (no visible steps at 16 slices).
-        constexpr int32 Slices = 16;
-        const float SliceHeight = Local.Y / Slices;
-        for (int32 Index = 0; Index < Slices; ++Index)
-        {
-            const float Centre = (Index + 0.5f) / Slices;
-            const float Falloff = FMath::SmoothStep(0.f, 0.32f, Centre) * FMath::SmoothStep(0.f, 0.32f, 1.f - Centre);
-            const FLinearColor Row = Solid.CopyWithNewOpacity(Solid.A * Falloff);
-            const FLinearColor RowClear = Row.CopyWithNewOpacity(0.f);
-            TArray<FSlateGradientStop> RowStops = Shape == EMarburgumScrimShape::SoftBand
-                ? TArray<FSlateGradientStop>{ FSlateGradientStop(FVector2f(0.f, 0.f), RowClear), FSlateGradientStop(FVector2f(Local.X * 0.22f, 0.f), Row),
-                    FSlateGradientStop(FVector2f(Local.X * 0.78f, 0.f), Row), FSlateGradientStop(FVector2f(Local.X, 0.f), RowClear) }
-                : TArray<FSlateGradientStop>{ FSlateGradientStop(FVector2f(0.f, 0.f), Row),
-                    FSlateGradientStop(FVector2f(Local.X * 0.55f, 0.f), Row.CopyWithNewOpacity(Row.A * 0.7f)), FSlateGradientStop(FVector2f(Local.X, 0.f), RowClear) };
-            FSlateDrawElement::MakeGradient(OutDrawElements, LayerId,
-                AllottedGeometry.ToPaintGeometry(FVector2f(Local.X, SliceHeight + 0.5f), FSlateLayoutTransform(FVector2f(0.f, SliceHeight * Index))),
-                MoveTemp(RowStops), Orient_Vertical);
-        }
         return LayerId;
     }
-    }
-    FSlateDrawElement::MakeGradient(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(), MoveTemp(Stops), Orientation);
+    FSlateDrawElement::MakeBox(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(), &Mask, ESlateDrawEffect::None, Solid);
     return LayerId;
 }
 
@@ -775,6 +800,184 @@ TSharedRef<SWidget> UMarburgumScrim::RebuildWidget()
 }
 
 void UMarburgumScrim::ReleaseSlateResources(bool bReleaseChildren)
+{
+    Super::ReleaseSlateResources(bReleaseChildren);
+    Slate.Reset();
+}
+
+// ------------------------------------------------------------------------------------------------ SMarburgumMapPlate
+
+namespace
+{
+    // The plate in unit coordinates of its own box (x right, y down). Not a survey: a recognisable drawing of the Drava
+    // flowing east past Lent, with the Old Bridge (Stari most) and the Main Bridge (Glavni most) crossing it.
+    const FVector2f RiverCentre[] = {
+        { 0.18f, 0.70f }, { 0.30f, 0.67f }, { 0.42f, 0.69f }, { 0.52f, 0.74f }, { 0.62f, 0.76f }, { 0.72f, 0.72f },
+        { 0.82f, 0.64f }, { 0.92f, 0.61f }, { 1.04f, 0.63f } };
+    constexpr float RiverHalfWidth = 0.024f;
+    struct FPlateBridge { float X; const TCHAR* Name; };
+    const FPlateBridge Bridges[] = { { 0.555f, TEXT("STARI MOST") }, { 0.745f, TEXT("GLAVNI MOST") } };
+
+    FVector2f CatmullRom(const FVector2f& P0, const FVector2f& P1, const FVector2f& P2, const FVector2f& P3, float T)
+    {
+        const float T2 = T * T;
+        const float T3 = T2 * T;
+        return 0.5f * ((2.f * P1) + (-P0 + P2) * T + (2.f * P0 - 5.f * P1 + 4.f * P2 - P3) * T2 + (-P0 + 3.f * P1 - 3.f * P2 + P3) * T3);
+    }
+
+    /** The river's centre line, smoothed: Steps points per control span. */
+    TArray<FVector2f> RiverLine(int32 Steps)
+    {
+        TArray<FVector2f> Out;
+        const int32 Count = UE_ARRAY_COUNT(RiverCentre);
+        for (int32 Index = 0; Index + 1 < Count; ++Index)
+        {
+            const FVector2f& P0 = RiverCentre[FMath::Max(0, Index - 1)];
+            const FVector2f& P1 = RiverCentre[Index];
+            const FVector2f& P2 = RiverCentre[Index + 1];
+            const FVector2f& P3 = RiverCentre[FMath::Min(Count - 1, Index + 2)];
+            for (int32 Step = 0; Step < Steps; ++Step)
+            {
+                Out.Add(CatmullRom(P0, P1, P2, P3, static_cast<float>(Step) / Steps));
+            }
+        }
+        Out.Add(RiverCentre[Count - 1]);
+        return Out;
+    }
+
+    /** The centre line's y at x (the line runs left to right). */
+    float RiverY(const TArray<FVector2f>& Line, float X)
+    {
+        for (int32 Index = 0; Index + 1 < Line.Num(); ++Index)
+        {
+            if (X >= Line[Index].X && X <= Line[Index + 1].X)
+            {
+                const float Alpha = (X - Line[Index].X) / FMath::Max(1e-4f, Line[Index + 1].X - Line[Index].X);
+                return FMath::Lerp(Line[Index].Y, Line[Index + 1].Y, Alpha);
+            }
+        }
+        return Line.Num() > 0 ? Line.Last().Y : 0.5f;
+    }
+}
+
+int32 SMarburgumMapPlate::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect,
+    FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
+{
+    const MarburgumUI::FTokens& T = MarburgumUI::Tokens();
+    const FVector2f Size = AllottedGeometry.GetLocalSize();
+    if (Size.X < 8.f || Size.Y < 8.f)
+    {
+        return LayerId;
+    }
+    const float Tint = InWidgetStyle.GetColorAndOpacityTint().A;
+    const float Hair = FMath::Max(1.f, AllottedGeometry.Scale);
+    const auto At = [&Size](float X, float Y) { return FVector2f(X * Size.X, Y * Size.Y); };
+    const auto Ink = [&T, Tint](float Alpha) { return T.Color.TextPrimary.CopyWithNewOpacity(Alpha * Tint); };
+    const auto Line = [&](TArray<FVector2f> Points, const FLinearColor& Color, float Thickness, int32 Layer)
+    {
+        FSlateDrawElement::MakeLines(OutDrawElements, Layer, AllottedGeometry.ToPaintGeometry(), MoveTemp(Points), ESlateDrawEffect::None,
+            Color, true, Thickness);
+    };
+    const auto Label = [&](const FString& Text, MarburgumUI::ETypeRole Role, float X, float Y, const FLinearColor& Color, int32 Layer)
+    {
+        FSlateDrawElement::MakeText(OutDrawElements, Layer, AllottedGeometry.ToPaintGeometry(FVector2f(400.f, 40.f), FSlateLayoutTransform(At(X, Y))),
+            Text, MarburgumUI::Font(Role), ESlateDrawEffect::None, Color);
+    };
+
+    // Graticule: three meridians and two parallels, ticked with their (rounded) coordinates.
+    const float Meridians[] = { 0.36f, 0.62f, 0.88f };
+    const TCHAR* Longitudes[] = { TEXT("15°38′E"), TEXT("15°39′E"), TEXT("15°40′E") };
+    for (int32 Index = 0; Index < UE_ARRAY_COUNT(Meridians); ++Index)
+    {
+        Line({ At(Meridians[Index], 0.08f), At(Meridians[Index], 0.94f) }, Ink(0.035f), Hair, LayerId);
+        Label(Longitudes[Index], MarburgumUI::ETypeRole::Overline, Meridians[Index] + 0.006f, 0.08f, Ink(0.16f), LayerId + 1);
+    }
+    const float Parallels[] = { 0.30f, 0.86f };
+    const TCHAR* Latitudes[] = { TEXT("46°34′N"), TEXT("46°33′N") };
+    for (int32 Index = 0; Index < UE_ARRAY_COUNT(Parallels); ++Index)
+    {
+        Line({ At(0.20f, Parallels[Index]), At(0.97f, Parallels[Index]) }, Ink(0.035f), Hair, LayerId);
+        Label(Latitudes[Index], MarburgumUI::ETypeRole::Overline, 0.905f, Parallels[Index] - 0.035f, Ink(0.16f), LayerId + 1);
+    }
+
+    // The river: two banks and a faint fill of parallel strokes between them.
+    const TArray<FVector2f> Centre = RiverLine(12);
+    TArray<FVector2f> North;
+    TArray<FVector2f> South;
+    for (const FVector2f& Point : Centre)
+    {
+        North.Add(At(Point.X, Point.Y - RiverHalfWidth));
+        South.Add(At(Point.X, Point.Y + RiverHalfWidth));
+    }
+    for (int32 Stroke = 1; Stroke < 4; ++Stroke)
+    {
+        TArray<FVector2f> Water;
+        for (const FVector2f& Point : Centre)
+        {
+            Water.Add(At(Point.X, Point.Y - RiverHalfWidth + RiverHalfWidth * 0.5f * Stroke));
+        }
+        Line(MoveTemp(Water), T.Color.Info.CopyWithNewOpacity(0.07f * Tint), Hair, LayerId);
+    }
+    Line(North, Ink(0.22f), 1.5f * Hair, LayerId + 1);
+    Line(South, Ink(0.22f), 1.5f * Hair, LayerId + 1);
+    Label(TEXT("D R A V A"), MarburgumUI::ETypeRole::Quote, 0.84f, RiverY(Centre, 0.86f) + RiverHalfWidth + 0.012f, Ink(0.28f), LayerId + 1);
+
+    // The Lent waterfront and the streets climbing north from it into the old town, with two cross streets.
+    TArray<FVector2f> Quay;
+    for (const FVector2f& Point : Centre)
+    {
+        if (Point.X >= 0.34f && Point.X <= 0.80f)
+        {
+            Quay.Add(At(Point.X, Point.Y - RiverHalfWidth - 0.028f));
+        }
+    }
+    Line(Quay, Ink(0.14f), Hair, LayerId);
+    const float Streets[] = { 0.40f, 0.47f, 0.53f, 0.60f, 0.67f, 0.73f };
+    for (int32 Index = 0; Index < UE_ARRAY_COUNT(Streets); ++Index)
+    {
+        const float X = Streets[Index];
+        const float Lean = (Index % 2 == 0 ? -0.012f : 0.010f);
+        Line({ At(X, RiverY(Centre, X) - RiverHalfWidth - 0.028f), At(X + Lean, 0.34f + 0.03f * (Index % 3)) }, Ink(0.10f), Hair, LayerId);
+    }
+    Line({ At(0.39f, 0.52f), At(0.55f, 0.50f), At(0.74f, 0.53f) }, Ink(0.10f), Hair, LayerId);
+    Line({ At(0.42f, 0.42f), At(0.58f, 0.40f), At(0.71f, 0.43f) }, Ink(0.08f), Hair, LayerId);
+
+    // The bridges, with their names on the south bank.
+    for (const FPlateBridge& Bridge : Bridges)
+    {
+        const float Y = RiverY(Centre, Bridge.X);
+        const float Half = RiverHalfWidth + 0.022f;
+        Line({ At(Bridge.X - 0.004f, Y - Half), At(Bridge.X - 0.004f, Y + Half) }, Ink(0.34f), 1.5f * Hair, LayerId + 1);
+        Line({ At(Bridge.X + 0.004f, Y - Half), At(Bridge.X + 0.004f, Y + Half) }, Ink(0.34f), 1.5f * Hair, LayerId + 1);
+        Label(Bridge.Name, MarburgumUI::ETypeRole::Overline, Bridge.X - 0.03f, Y + Half + 0.012f, Ink(0.24f), LayerId + 1);
+    }
+
+    // Lent, marked in copper on the quay between the bridges.
+    const float LentX = 0.50f;
+    const FVector2f Mark = At(LentX, RiverY(Centre, LentX) - RiverHalfWidth - 0.028f);
+    TArray<FVector2f> Ring;
+    const float Radius = 7.f;
+    for (int32 Index = 0; Index <= 24; ++Index)
+    {
+        const float Angle = 2.f * PI * Index / 24.f;
+        Ring.Add(Mark + FVector2f(FMath::Cos(Angle), FMath::Sin(Angle)) * Radius);
+    }
+    const FLinearColor Copper = T.Color.Accent.CopyWithNewOpacity(0.85f * Tint);
+    Line(MoveTemp(Ring), Copper, 1.5f * Hair, LayerId + 2);
+    Line({ Mark - FVector2f(0.f, Radius), Mark - FVector2f(0.f, Radius + 38.f) }, Copper, Hair, LayerId + 2);
+    FSlateDrawElement::MakeText(OutDrawElements, LayerId + 2,
+        AllottedGeometry.ToPaintGeometry(FVector2f(200.f, 30.f), FSlateLayoutTransform(Mark + FVector2f(8.f, -Radius - 46.f))),
+        FString(TEXT("LENT")), MarburgumUI::Font(MarburgumUI::ETypeRole::Overline), ESlateDrawEffect::None, Copper);
+    return LayerId + 2;
+}
+
+TSharedRef<SWidget> UMarburgumMapPlate::RebuildWidget()
+{
+    Slate = SNew(SMarburgumMapPlate);
+    return Slate.ToSharedRef();
+}
+
+void UMarburgumMapPlate::ReleaseSlateResources(bool bReleaseChildren)
 {
     Super::ReleaseSlateResources(bReleaseChildren);
     Slate.Reset();

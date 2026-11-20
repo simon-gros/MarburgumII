@@ -117,6 +117,9 @@ namespace MarburgumUI
         static void Align(UBorder* Border, EHorizontalAlignment Horizontal, EVerticalAlignment Vertical);
 
         static void StyleButton(UButton* Button, EButtonKind Kind);
+        /** Render opacity for fades. A fully faded widget is also hidden: a rounded box's outline ignores the draw opacity
+         *  and would otherwise stay on screen as an empty frame. */
+        static void Fade(UWidget* Widget, float Opacity);
         static void SetPillTone(UBorder* Pill, UTextBlock* Label, ETone Tone);
 
     private:

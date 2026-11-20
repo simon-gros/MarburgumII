@@ -98,13 +98,13 @@ void UMarburgumChatWidget::BuildPanel()
     UVerticalBox* RecentColumn = B.Column();
     RecentLines = B.Column();
     FBuilder::Stack(RecentColumn, RecentLines, T.Space.XS);
-    FBuilder::Stack(RecentColumn, B.KeyHint(FText::FromString(TEXT("Enter")), LOCTEXT("ChatHint", "Chat")), 0.f);
+    FBuilder::Stack(RecentColumn, B.KeyHint(FText::AsCultureInvariant(TEXT("Enter")), LOCTEXT("ChatHint", "Chat")), 0.f);
     UOverlay* RecentStack = WidgetTree->ConstructWidget<UOverlay>();
     UOverlaySlot* ShadeSlot = RecentStack->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::SoftFadeRight,
         T.Color.Backdrop.CopyWithNewOpacity(T.bHighContrast ? 0.88f : 0.62f)));
     ShadeSlot->SetHorizontalAlignment(HAlign_Fill);
     ShadeSlot->SetVerticalAlignment(VAlign_Fill);
-    UBorder* RecentPad = B.Surface(ESurfaceKind::Base, FMargin(T.Space.M, T.Space.M, T.Space.XXXL, T.Space.M), RecentColumn, false);
+    UBorder* RecentPad = B.Surface(ESurfaceKind::Base, FMargin(T.Space.M, T.Space.L, T.Space.XXXL, T.Space.L), RecentColumn, false);
     RecentPad->SetBrushColor(FLinearColor::Transparent);
     RecentStack->AddChildToOverlay(RecentPad);
     RecentFade = RecentStack;
@@ -155,9 +155,9 @@ void UMarburgumChatWidget::BuildPanel()
     FBuilder::Inline(InputRow, Composer, 0.f, true, false);
     FBuilder::Stack(Open, InputRow, T.Space.S);
     UHorizontalBox* Hints = B.Row();
-    FBuilder::Inline(Hints, B.KeyHint(FText::FromString(TEXT("Enter")), LOCTEXT("Send", "Send")), T.Space.L);
-    FBuilder::Inline(Hints, B.KeyHint(FText::FromString(TEXT("Tab")), LOCTEXT("Channel", "General / Private")), T.Space.L);
-    FBuilder::Inline(Hints, B.KeyHint(FText::FromString(TEXT("Esc")), LOCTEXT("Leave", "Back to the street")), 0.f);
+    FBuilder::Inline(Hints, B.KeyHint(FText::AsCultureInvariant(TEXT("Enter")), LOCTEXT("Send", "Send")), T.Space.L);
+    FBuilder::Inline(Hints, B.KeyHint(FText::AsCultureInvariant(TEXT("Tab")), LOCTEXT("Channel", "General / Private")), T.Space.L);
+    FBuilder::Inline(Hints, B.KeyHint(FText::AsCultureInvariant(TEXT("Esc")), LOCTEXT("Leave", "Close")), 0.f);
     FBuilder::Stack(Open, Hints, 0.f);
     OpenView = B.Surface(ESurfaceKind::Overlay, Pad(T.Space.M), Open);
     Body->AddChild(OpenView);
@@ -323,7 +323,7 @@ void UMarburgumChatWidget::NativeTick(const FGeometry& MyGeometry, float InDelta
     if (!FMath::IsNearlyEqual(Target, RecentOpacity, 0.01f) || (Target == 0.f && RecentOpacity != 0.f))
     {
         RecentOpacity = Target;
-        RecentFade->SetRenderOpacity(RecentOpacity);
+        FBuilder::Fade(RecentFade, RecentOpacity);
         const bool bMarker = Unread > 0 && RecentOpacity <= 0.f;
         UnreadChip->SetVisibility(bMarker ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
     }
@@ -488,7 +488,7 @@ void UMarburgumChatWidget::SetComposing(bool bInComposing)
         RecentOpacity = 1.f;
         if (RecentFade)
         {
-            RecentFade->SetRenderOpacity(1.f);
+            FBuilder::Fade(RecentFade, 1.f);
         }
         if (bShowingOnline)
         {

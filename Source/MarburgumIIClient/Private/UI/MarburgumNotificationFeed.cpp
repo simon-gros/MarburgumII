@@ -56,7 +56,7 @@ void UMarburgumNotificationFeed::NativeOnInitialized()
     LineLabel->SetShadowOffset(FVector2D(0.f, 1.f));
     LineLabel->SetShadowColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.6f));
     FBuilder::Stack(Said, LineLabel, 0.f);
-    UBorder* SaidPad = B.Surface(ESurfaceKind::Base, FMargin(T.Space.XXXL * 1.5f, T.Space.M), Said, false);
+    UBorder* SaidPad = B.Surface(ESurfaceKind::Base, FMargin(T.Space.XXXL * 1.5f, T.Space.L), Said, false);
     SaidPad->SetBrushColor(FLinearColor::Transparent);
     UOverlay* SaidStack = WidgetTree->ConstructWidget<UOverlay>();
     UOverlaySlot* ShadeSlot = SaidStack->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::SoftBand,
@@ -180,13 +180,13 @@ void UMarburgumNotificationFeed::NativeTick(const FGeometry& MyGeometry, float I
         }
         if (T.bReducedMotion)
         {
-            Widget->SetRenderOpacity(1.f);
+            FBuilder::Fade(Widget, 1.f);
             continue;
         }
         const double Remaining = Entries[Index].LifeSeconds - Age;
         const float FadeIn = FMath::Clamp(static_cast<float>(Age / Fade), 0.f, 1.f);
         const float FadeOut = FMath::Clamp(static_cast<float>(Remaining / (Fade * 2.0)), 0.f, 1.f);
-        Widget->SetRenderOpacity(FMath::Min(FadeIn, FadeOut));
+        FBuilder::Fade(Widget, FMath::Min(FadeIn, FadeOut));
         // New toasts slide in from the edge they live on.
         Widget->SetRenderTranslation(FVector2D(16.f * (1.f - FMath::InterpEaseOut(0.f, 1.f, FadeIn, 3.f)), 0.f));
     }
@@ -210,7 +210,7 @@ void UMarburgumNotificationFeed::NativeTick(const FGeometry& MyGeometry, float I
         {
             const float In = FMath::Clamp(static_cast<float>(Age / 0.25), 0.f, 1.f);
             const float Out = FMath::Clamp(static_cast<float>((SubtitleLife - Age) / 0.4), 0.f, 1.f);
-            Subtitle->SetRenderOpacity(FMath::Min(In, Out));
+            FBuilder::Fade(Subtitle, FMath::Min(In, Out));
         }
     }
     if (SubtitleShown < 0.0 && Lines.Num() > 0)

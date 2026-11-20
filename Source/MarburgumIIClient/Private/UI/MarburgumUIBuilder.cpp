@@ -141,6 +141,27 @@ namespace MarburgumUI
         return Box;
     }
 
+    void FBuilder::Fade(UWidget* Widget, float Opacity)
+    {
+        if (!Widget)
+        {
+            return;
+        }
+        Widget->SetRenderOpacity(Opacity);
+        const ESlateVisibility Current = Widget->GetVisibility();
+        if (Opacity <= 0.01f)
+        {
+            if (Current != ESlateVisibility::Collapsed && Current != ESlateVisibility::Hidden)
+            {
+                Widget->SetVisibility(ESlateVisibility::Hidden);
+            }
+        }
+        else if (Current == ESlateVisibility::Hidden)
+        {
+            Widget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+        }
+    }
+
     void FBuilder::StyleButton(UButton* Button, EButtonKind Kind)
     {
         const FTokens& T = Tokens();

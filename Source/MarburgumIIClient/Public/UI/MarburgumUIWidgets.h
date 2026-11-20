@@ -111,6 +111,8 @@ public:
 private:
     EMarburgumScrimShape Shape = EMarburgumScrimShape::HorizontalBand;
     FLinearColor Color;
+    /** The shape's shared alpha mask (a rooted 64 x 64 texture), tinted with Color. */
+    FSlateBrush Mask;
 };
 
 DECLARE_DELEGATE(FMarburgumSelectableEvent);
@@ -238,6 +240,39 @@ private:
     TSharedPtr<SMarburgumScrim> Slate;
     EMarburgumScrimShape Shape = EMarburgumScrimShape::HorizontalBand;
     FLinearColor Color = FLinearColor(0.f, 0.f, 0.f, 0.6f);
+};
+
+/**
+ * The title screens' documentary plate: a survey-style drawing of the Drava through Maribor (river banks, the Old and
+ * Main bridges, the Lent waterfront and the streets above it, a graticule with its coordinates) in faint lines, with
+ * Lent marked in copper. Vector-drawn, so it is sharp at any resolution and needs no texture. Decorative only.
+ */
+class MARBURGUMIICLIENT_API SMarburgumMapPlate : public SLeafWidget
+{
+public:
+    SLATE_BEGIN_ARGS(SMarburgumMapPlate) {}
+    SLATE_END_ARGS()
+
+    void Construct(const FArguments& InArgs) {}
+    virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect,
+        FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
+    virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(1.f, 1.f); }
+};
+
+/** UMG face of SMarburgumMapPlate. */
+UCLASS()
+class MARBURGUMIICLIENT_API UMarburgumMapPlate : public UWidget
+{
+    GENERATED_BODY()
+
+public:
+    virtual void ReleaseSlateResources(bool bReleaseChildren) override;
+
+protected:
+    virtual TSharedRef<SWidget> RebuildWidget() override;
+
+private:
+    TSharedPtr<SMarburgumMapPlate> Slate;
 };
 
 /** UMG face of SMarburgumSelectable; its one child is the row's content. */

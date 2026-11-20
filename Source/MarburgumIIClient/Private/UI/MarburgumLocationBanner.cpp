@@ -100,7 +100,8 @@ void UMarburgumLocationBanner::NativeOnInitialized()
     FBuilder::Stack(Column, NoteLabel, 0.f);
     Center(NoteLabel);
 
-    UBorder* Content = B.Surface(ESurfaceKind::Base, FMargin(T.Space.XXXL, T.Space.L, T.Space.XXXL, T.Space.L), Column, false);
+    // Room above and below the lines: the band fades out over its outer quarter, and text belongs on the solid part.
+    UBorder* Content = B.Surface(ESurfaceKind::Base, FMargin(T.Space.XXXL, T.Space.XXL, T.Space.XXXL, T.Space.XXL), Column, false);
     Content->SetBrushColor(FLinearColor::Transparent);
     FBuilder::Align(Content, HAlign_Center, VAlign_Center);
 
@@ -361,13 +362,13 @@ void UMarburgumLocationBanner::NativeTick(const FGeometry& MyGeometry, float InD
     if (Tokens().bReducedMotion)
     {
         // Reduced motion: on and off without a fade or slide; the hold is unchanged.
-        Card->SetRenderOpacity(1.f);
+        FBuilder::Fade(Card, 1.f);
         Card->SetRenderTranslation(FVector2D::ZeroVector);
         return;
     }
     const float In = FMath::Clamp(Elapsed / FadeInSeconds, 0.f, 1.f);
     const float Out = FMath::Clamp((Total - Elapsed) / FadeOutSeconds, 0.f, 1.f);
-    Card->SetRenderOpacity(FMath::InterpEaseOut(0.f, 1.f, FMath::Min(In, Out), 2.f));
+    FBuilder::Fade(Card, FMath::InterpEaseOut(0.f, 1.f, FMath::Min(In, Out), 2.f));
     Card->SetRenderTranslation(FVector2D(0.f, -SettleOffset * (1.f - FMath::InterpEaseOut(0.f, 1.f, In, 3.f))));
 }
 
