@@ -1,6 +1,6 @@
 # Original Marburgum → MarburgumII parity register
 
-**Status:** Original-game parity baseline reconciled through **ADR-075 and packaged multiplayer evidence on 20 November 2026**, with the story rows updated for ADR-081 (on `main`) and ADR-084 (branch `feat/story-chapter-vi`), with the story rows updated for ADR-081 (on `main`) and ADR-084 (branch `feat/story-chapter-vi`) ([current review](DEVELOPMENT_REVIEW_2026-11-20.md), [QA report](QA_AUDIT_2026-11-19.md), [visual backlog](VISUAL_QUALITY_BACKLOG.md)). Implemented functionality is not owner-approved release content.
+**Status:** Original-game parity baseline reconciled through **ADR-075 and packaged multiplayer evidence on 20 November 2026**, with the story rows updated for ADR-081 and ADR-084 (both on `main`), with the story rows updated for ADR-081 (on `main`) and ADR-084 (branch `feat/story-chapter-vi`) ([current review](DEVELOPMENT_REVIEW_2026-11-20.md), [QA report](QA_AUDIT_2026-11-19.md), [visual backlog](VISUAL_QUALITY_BACKLOG.md)). Implemented functionality is not owner-approved release content.
 **Companion data:** [`Data/Parity/source-matrix.v0.1.json`](../Data/Parity/source-matrix.v0.1.json).  
 **Authority:** [Vision](VISION.md), [Ontology](ONTOLOGY.md), [Network architecture](NETWORK_ARCHITECTURE.md), [Decisions](DECISIONS.md) and [Roadmap](ROADMAP.md).
 

@@ -1,6 +1,6 @@
 # Story, NPC and progression expansion (ADR-081)
 
-**Status:** Chapter IV and the people and Photography pass (ADR-081) are on `main`; **Chapter VI *The Negative* and the Frame 37 side story (ADR-084) are on branch `feat/story-chapter-vi`**. Both **await the owner's in-game playtest and approval** (ADR-008). Nothing here is accepted release content. Test results are in [§8](#8-tests-and-evidence) and [§10.7](#107-tests-and-evidence-chapter-vi); what is not done is in [§9](#9-not-done-limits-and-blockers) and [§10.8](#108-not-done-limits-and-provisional-parts-chapter-vi).
+**Status:** Chapter IV and the people and Photography pass (ADR-081) are on `main`; **Chapter VI *The Negative* and the Frame 37 side story (ADR-084) are on `main` too**, merged on the owner's instruction before playing. Both **await the owner's in-game playtest and approval** (ADR-008). Nothing here is accepted release content. Test results are in [§8](#8-tests-and-evidence) and [§10.7](#107-tests-and-evidence-chapter-vi); what is not done is in [§9](#9-not-done-limits-and-blockers) and [§10.8](#108-not-done-limits-and-provisional-parts-chapter-vi).
 
 **Status (20 November evening):** Chapter IV *Voices on Tape*, outcome-dependent Maja branch, Nika/Brane side stories, server-judged Photography and animated/fishing NPC presentation are implemented. `9e11f2c` ran **44/44** editor automation plus staged story/eight original mission/shop/combat/Lent/interaction smoke PASS; later `9b88369` staged runs recorded English/Slovene content and NPC evening post behavior. These are scoped packaged tests, **not owner approval or a single all-feature latest-head release**. The specialisations in §7 remain a proposal and may not revive generated talent trees. [Current review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md).
 **Sources:** original [`MAIN_STORYLINE.md`](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/MAIN_STORYLINE.md), [`NARRATIVE_BIBLE.md`](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/NARRATIVE_BIBLE.md), [`SIDE_STORY_BIBLE.md`](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/SIDE_STORY_BIBLE.md), [`SKILLING_ROADMAP.md`](https://github.com/simon-gros/magna-raedarum-marburgum/blob/main/docs/SKILLING_ROADMAP.md) and `project/data/{missions,npcs,interactions,skills}.json`, compared with `Data/Gameplay/gameplay.v0.1.json`, the [parity register](LEGACY_PARITY.md) and the [roadmap](ROADMAP.md).
@@ -176,7 +176,7 @@ Captures: [the angler's grip](Captures/story-npc/angler-grip.jpg), [on the bank]
 
 ## 10. Chapter VI — *The Negative* (ADR-084)
 
-**Status:** implemented on branch `feat/story-chapter-vi`, **awaiting the owner's playtest** (ADR-008). Default mid-decade (1993–96) variant only.
+**Status:** implemented on branch `feat/story-chapter-vi` and merged to `main` on the owner's instruction (20 November); **awaiting the owner's playtest** (ADR-008). Default mid-decade (1993–96) variant only.
 **Narrative authority:** original `MAIN_STORYLINE.md` Chapter VI, §3 (the pencilled initials, Stefan Zupan behind the camera), §7 (16 February 1990), and `SIDE_STORY_BIBLE.md` 3.1, 3.21, 3.23 and 3.25.
 
 ### 10.1 What the player does
