@@ -1,7 +1,7 @@
 # Ontology of User Interface and HUD — MarburgumII
 
 **Version:** 0.1.0 — 8 November 2026  
-**Status:** Normative *design vocabulary*, not itself proof of a particular implementation. Actual Linux UE 5.8.3 UMG screenshots, server-fed modules and multiplayer tests are separately documented in the [UI roadmap](UI_HUD_ROADMAP.md).  
+**Status:** Normative *design vocabulary*, not itself proof of a particular implementation. Actual Linux UE 5.8.3 UMG screenshots, server-fed modules and multiplayer tests are separately documented in the [UI roadmap](UI_HUD_ROADMAP.md) and, for the November 2026 overhaul, the [overhaul evidence](UI_OVERHAUL_EVIDENCE.md).  
 **Companion catalogue:** [`Data/Ontology/ui_hud.v0.1.json`](../Data/Ontology/ui_hud.v0.1.json).  
 **Underlying game ontology:** [`ONTOLOGY.md`](ONTOLOGY.md) and [`core.v0.1.json`](../Data/Ontology/core.v0.1.json).  
 **Implementation plan:** [`UI_HUD_ROADMAP.md`](UI_HUD_ROADMAP.md); [existing visual contract](UI_HUD_DESIGN.md).  
