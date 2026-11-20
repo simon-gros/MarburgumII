@@ -1187,7 +1187,7 @@ Closes QA 2026-11-19 **AR1** and mitigates **AR13** at Simon's request ("address
 
 **Evidence.** See [STORY_EXPANSION.md](STORY_EXPANSION.md) §8 for the commands and revisions. Owner playtest: **not yet**.
 
-## ADR-082 — Lumen uses hardware ray tracing, with mesh distance fields as its software fallback (owner decision 2026-11-20; implemented and measured on `feat/gfx-03-lumen-rt`; not on `main`, owner review open)
+## ADR-082 — Lumen uses hardware ray tracing, with mesh distance fields as its software fallback (owner decision 2026-11-20; implemented and measured, merged to `main` on the owner's instruction 2026-11-21; owner playtest open)
 
 **Context.** GFX-00 ([GFX00_BASELINE.md](GFX00_BASELINE.md)) found the shipped renderer with no global illumination at all (`r.DynamicGlobalIlluminationMethod=0`, nothing baked) and showed that Lumen cannot be tried by a run-time switch: software Lumen needs mesh distance fields built (`r.GenerateMeshDistanceFields=0` today) and hardware Lumen needs ray tracing in the project (`r.RayTracing=0`). The report asked the owner to choose one before GFX-03.
 

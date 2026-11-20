@@ -1,7 +1,7 @@
 # GFX-03 — Lumen with hardware ray tracing and mesh distance fields
 
 **20 November 2026 · branch `feat/gfx-03-lumen-rt` · [Graphics roadmap](GRAPHICS_ROADMAP.md) GFX-03 · [ADR-082](DECISIONS.md) · baseline: [GFX00_BASELINE.md](GFX00_BASELINE.md).**
-**State: implemented, packaged and measured on one high-end GPU (RTX 5080), uncontended. Not owner-approved; no owner playtest yet. Not on `main`.**
+**State: implemented, packaged and measured on one high-end GPU (RTX 5080), uncontended; merged to `main` on the owner's instruction (21 November). No owner playtest yet.**
 
 ## What changed
 
