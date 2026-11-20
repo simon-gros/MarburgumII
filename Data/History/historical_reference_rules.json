@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "note": "Production constraints derived from the canonical Art Reference Archive. These rules do not grant redistribution rights and do not replace item-level source inspection. They make archive evidence visible to automated validation and Unreal review without forcing non-geospatial evidence into historical_overrides.json.",
+  "game_period": {
+    "start_year": 1990,
+    "end_year": 1999
+  },
+  "source_catalog": "art_reference/CATALOG.csv",
+  "rules": [
+    {
+      "id": "zlat-lisica-1990-91-event-graphics",
+      "kind": "art_direction",
+      "domain": "event_graphics",
+      "location": "Mariborsko Pohorje / citywide sports promotion",
+      "years": {
+        "start": 1990,
+        "end": 1991
+      },
+      "confidence": "high",
+      "review_required": false,
+      "ref_ids": [
+        "MAR-1990-ZLATA-LISICA-91-POSTER-001"
+      ],
+      "requirements": [
+        "Use 99 x 69 cm as one evidenced transition-period poster-scale reference for Zlata lisica / winter-sport promotion.",
+        "Keep the source chronology explicit: catalogued as 1990 material advertising the 12-13 January 1991 World Cup event."
+      ],
+      "prohibitions": [
+        "Do not infer venue geometry, crowd layout or physical event infrastructure from this poster.",
+        "Do not reproduce the protected poster artwork or sponsor marks pixel-for-pixel in shipped textures."
+      ],
+      "review_targets": [
+        "signage",
+        "poster_surfaces",
+        "sports_event_dressing"
+      ]
+    },
+    {
+      "id": "sng-lulu-1990-poster-envelope",
+      "kind": "art_direction",
+      "domain": "cultural_graphics",
+      "location": "SNG Maribor / Center",
+      "years": {
+        "start": 1990,
+        "end": 1990
+      },
+      "confidence": "high",
+      "review_required": false,
+      "ref_ids": [
+        "MAR-1990-SNG-LULU-001"
+      ],
+      "requirements": [
+        "Allow a 193 x 58 cm two-sheet large-format poster envelope when dressing SNG/central cultural poster surfaces in 1990.",
+        "Preserve the possibility of tall multi-sheet cultural posters instead of normalizing every notice to modern one-sheet dimensions."
+      ],
+      "prohibitions": [
+        "Do not copy the protected Lulu artwork into shipped textures.",
+        "Do not extrapolate this one 1990 design as the visual style for all SNG graphics across the decade."
+      ],
+      "review_targets": [
+        "sng_signage",
+        "cultural_posters",
+        "foyer_dressing"
+      ]
+    },
+    {
+      "id": "sng-don-juan-1993-poster-envelope",
+      "kind": "art_direction",
+      "domain": "cultural_graphics",
+      "location": "SNG Maribor / Center",
+      "years": {
+        "start": 1993,
+        "end": 1993
+      },
+      "confidence": "high",
+      "review_required": false,
+      "ref_ids": [
+        "MAR-1993-SNG-DON-JUAN-001"
+      ],
+      "requirements": [
+        "Allow a 199 x 68 cm two-sheet large-format poster envelope when dressing SNG/central cultural poster surfaces in 1993.",
+        "Use this separate mid-decade reference to prevent the 1990 Lulu proportions/style from becoming the only SNG poster assumption."
+      ],
+      "prohibitions": [
+        "Do not copy the protected Don Juan artwork into shipped textures.",
+        "Do not treat poster graphics as architectural evidence for SNG facade or interior finishes."
+      ],
+      "review_targets": [
+        "sng_signage",
+        "cultural_posters",
+        "foyer_dressing"
+      ]
+    },
+    {
+      "id": "mariborska-knjiznica-1999-computerisation",
+      "kind": "world_state",
+      "domain": "institutional_technology",
+      "location": "Mariborska knjižnica network",
+      "years": {
+        "start": 1999,
+        "end": 1999
+      },
+      "confidence": "high",
+      "review_required": true,
+      "ref_ids": [
+        "MAR-1999-LIBRARY-COMPUTERS-001"
+      ],
+      "requirements": [
+        "Treat active computerisation as part of the 1999 Mariborska knjižnica world state rather than presenting every branch as pre-digital.",
+        "Use the source as authority for the transition itself and inspect the underlying article/photographs before selecting exact computer props."
+      ],
+      "prohibitions": [
+        "Do not assert an exact computer model, monitor, desk layout, cabling scheme or room finish unless the item-level source visibly proves it.",
+        "Do not back-propagate the 1999 computerised state unchanged into earlier years of the decade."
+      ],
+      "review_targets": [
+        "library_interiors",
+        "office_props",
+        "institutional_technology"
+      ]
+    },
+    {
+      "id": "mariborski-tisk-1995-97-company-transition",
+      "kind": "world_state",
+      "domain": "industrial_identity",
+      "location": "Mariborski tisk / MA-TISK premises, Maribor",
+      "years": {
+        "start": 1995,
+        "end": 1999
+      },
+      "confidence": "high",
+      "review_required": true,
+      "ref_ids": [
+        "MAR-1995-97-MARIBORSKI-TISK-001"
+      ],
+      "requirements": [
+        "Represent the 1995 bankruptcy of GZP Mariborski tisk as an industrial/company-state break rather than keeping one static identity through the decade.",
+        "From 1997 onward, MA-TISK may be used as the successor company identity at the documented premises once site-level signage/visual evidence is separately verified."
+      ],
+      "prohibitions": [
+        "Do not use the source page's 6 July 2000 photograph as direct 1990s visual evidence.",
+        "Do not infer exact 1995-1999 facade, signage, machinery or workforce appearance from the retrospective chronology alone."
+      ],
+      "review_targets": [
+        "industrial_signage",
+        "company_world_state",
+        "printing_industry",
+        "mission_context"
+      ]
+    }
+  ]
+}

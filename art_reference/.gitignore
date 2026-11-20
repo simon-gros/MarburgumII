@@ -1,0 +1,18 @@
+# Local/restricted archival binaries remain outside Git by default.
+# The curated media/licensed and media/reference-only trees are intentionally versioned.
+media/photographs/**
+media/video/**
+media/audio/**
+media/documents/**
+media/maps/**
+media/contact_sheets/**
+media/local/**
+media/_cache/**
+
+# Optional local working exports / thumbnails.
+_cache/
+exports/
+*.tmp
+
+# The migrated repository carries a manifest only, never downloaded imagery by default.
+media/licensed/files/

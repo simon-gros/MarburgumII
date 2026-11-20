@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "note": "Metadata-only historical orthophoto/map products; imported into Marburgum II from the original Marburgum's unmerged PR #329 on 20 November 2026. Unknown values remain null or 'unknown'. These records do not establish rights or period-specific imagery. Raw rasters are not included. See Docs/HISTORICAL_ARCHIVES.md.",
+  "game_period": {
+    "start_year": 1990,
+    "end_year": 1999
+  },
+  "products": [
+    {
+      "id": "gurs-dof-bw-1997-2001",
+      "title": "GURS archival black-and-white orthophotos",
+      "kind": "orthophoto",
+      "publisher": "Geodetska uprava Republike Slovenije (GURS)",
+      "date_range": {
+        "start": "1997",
+        "end": "2001"
+      },
+      "georeference_accuracy_m": null,
+      "coverage": "national archival series; Maribor coverage expected but per-sheet dates unverified",
+      "resolution_m": null,
+      "license": "unknown",
+      "known_distortions": "unknown",
+      "absence_presence_reliability": "unknown",
+      "access": "Announced as available on geo-portal.si (2025-01-16); exact access route and terms not yet verified",
+      "source_urls": [
+        "https://www.geo-portal.si/"
+      ],
+      "verified": false
+    },
+    {
+      "id": "gurs-dof-colour-2006",
+      "title": "GURS colour orthophoto 2006",
+      "kind": "orthophoto",
+      "publisher": "Geodetska uprava Republike Slovenije (GURS)",
+      "date_range": {
+        "start": "2006",
+        "end": "2006"
+      },
+      "georeference_accuracy_m": null,
+      "coverage": "national series; Maribor coverage expected but unverified",
+      "resolution_m": null,
+      "license": "unknown",
+      "known_distortions": "unknown",
+      "absence_presence_reliability": "unknown",
+      "access": "Announced as available on geo-portal.si (2025-01-16); exact access route and terms not yet verified. Postdates the game period, so absence claims are only indirect evidence for 1990-1999.",
+      "source_urls": [
+        "https://www.geo-portal.si/"
+      ],
+      "verified": false
+    },
+    {
+      "id": "ezkn-historical-cadastral-plans",
+      "title": "eZKN digitized historical cadastral plans",
+      "kind": "cadastral_map",
+      "publisher": "Geodetska uprava Republike Slovenije (GURS)",
+      "date_range": {
+        "start": null,
+        "end": null
+      },
+      "georeference_accuracy_m": null,
+      "coverage": "Maribor cadastral municipalities; per-sheet coverage unverified",
+      "resolution_m": null,
+      "license": "unknown",
+      "known_distortions": "unknown",
+      "absence_presence_reliability": "unknown",
+      "access": "Franciscan and later cadastral plans viewable via eZKN; download terms unverified",
+      "source_urls": [
+        "https://geohub.gov.si/ghapp/ezkn/"
+      ],
+      "verified": false
+    }
+  ]
+}
