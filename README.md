@@ -12,7 +12,8 @@
     <a href="#the-world"><strong>Explore the world</strong></a> ·
     <a href="#development-progress"><strong>Development progress</strong></a> ·
     <a href="#building-from-source"><strong>Build the game</strong></a> ·
-    <a href="Docs/ROADMAP.md"><strong>Roadmap</strong></a>
+    <a href="Docs/ROADMAP.md"><strong>Roadmap</strong></a> ·
+    <a href="Docs/GRAPHICS_ROADMAP.md"><strong>Graphics</strong></a>
   </p>
   <img src="Docs/Captures/visual-audit/survey-air-lent.jpg" width="920" alt="In-engine editor-mode capture of pedestrians and destinations in the developing Maribor world">
   <p><sub>In-engine nine-window visual survey · November 2026 · Development capture, not final game art.</sub></p>
@@ -156,7 +157,7 @@ The server owns meaningful gameplay mutations, NPC destinations, combat resoluti
 
 **P0:** Resolve the reproducible opposite-bank crowd timeout without weakening settlement checks; rerun the entire day/night matrix on clean matched Client/Server builds. Then close full account/mission/vehicle regressions, secure admission-ticket audience design, test the revised UI at varied resolutions and obtain a personal owner playtest.
 
-**P1:** Follow the [visual-quality backlog](Docs/VISUAL_QUALITY_BACKLOG.md) for original Marburgum trees, street furniture, period signage, mission props and landmark art. **Microsoft TRELLIS remains the selected image-to-3D workflow (ADR-071), not Hunyuan3D.**
+**P1:** Follow the [graphics and rendering roadmap](Docs/GRAPHICS_ROADMAP.md) and [visual-quality backlog](Docs/VISUAL_QUALITY_BACKLOG.md) for original Marburgum trees, street furniture, period signage, mission props and landmark art. **Microsoft TRELLIS remains the selected image-to-3D workflow (ADR-071), not Hunyuan3D.**
 
 [Full roadmap](Docs/ROADMAP.md) · [20 November review](Docs/DEVELOPMENT_REVIEW_2026-11-20.md) · [AI backlog](Docs/AI_GAMEPLAY.md)
 
@@ -165,10 +166,10 @@ The server owns meaningful gameplay mutations, NPC destinations, combat resoluti
 | Area | Documents |
 | --- | --- |
 | **Game design** | [Vision](Docs/VISION.md) · [Ontology](Docs/ONTOLOGY.md) · [Original-game parity](Docs/LEGACY_PARITY.md) |
-| **Roadmaps and status** | [Milestones](Docs/ROADMAP.md) · [UI/HUD](Docs/UI_HUD_ROADMAP.md) · [20 November review](Docs/DEVELOPMENT_REVIEW_2026-11-20.md) · [AI backlog](Docs/AI_GAMEPLAY.md) |
+| **Roadmaps and status** | [Milestones](Docs/ROADMAP.md) · [Graphics](Docs/GRAPHICS_ROADMAP.md) · [UI/HUD](Docs/UI_HUD_ROADMAP.md) · [20 November review](Docs/DEVELOPMENT_REVIEW_2026-11-20.md) · [AI backlog](Docs/AI_GAMEPLAY.md) |
 | **Engineering** | [QA audit](Docs/QA_AUDIT_2026-11-19.md) · [Development](Docs/DEVELOPMENT.md) · [Architecture](Docs/ARCHITECTURE.md) · [Networking](Docs/NETWORK_ARCHITECTURE.md) · [Decision log](Docs/DECISIONS.md) · [Fresh owner playtests](Docs/PLAYTEST_FRESHNESS.md) |
 | **Player experience** | [First launch](Docs/FIRST_LAUNCH_ONTOLOGY.md) · [UI/HUD design](Docs/UI_HUD_DESIGN.md) · [UI ontology](Docs/UI_HUD_ONTOLOGY.md) · [Chat](Docs/CHAT.md) |
-| **Art and world** | [Visual backlog](Docs/VISUAL_QUALITY_BACKLOG.md) · [Map and licensing strategy](Docs/WORLD_MAP_ADOPTION.md) · [Character](Docs/CHARACTER_PROTAGONIST.md) · [Microsoft TRELLIS image-to-3D workflow](Docs/ASSET_GENERATION_TRELLIS.md) · [Rendering](Docs/RENDERING_NVIDIA.md) |
+| **Art and world** | [Graphics roadmap](Docs/GRAPHICS_ROADMAP.md) · [Visual backlog](Docs/VISUAL_QUALITY_BACKLOG.md) · [Map and licensing strategy](Docs/WORLD_MAP_ADOPTION.md) · [Character](Docs/CHARACTER_PROTAGONIST.md) · [Microsoft TRELLIS image-to-3D workflow](Docs/ASSET_GENERATION_TRELLIS.md) · [Rendering](Docs/RENDERING_NVIDIA.md) |
 | **Test evidence** | [Districts](Docs/STAGE1_STREET_DISTRICTS_EVIDENCE.md) · [Destinations](Docs/STAGE1_STREET_PLACES_EVIDENCE.md) · [Street incidents](Docs/STAGE1_STREET_EVIDENCE.md) · [Mission play](Docs/STAGE1_LENT_EVIDENCE.md) · [Driving](Docs/STAGE1_VEHICLE_EVIDENCE.md) |
 
 Gameplay and ontology data live under `Data/`. Native game code is in `Source/`, tooling in `tools/` and `native/`, and scripts in `scripts/`. Rust/.NET CI **does not substitute for an Unreal package or a visual gameplay test**.
