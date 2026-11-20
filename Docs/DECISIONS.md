@@ -1231,3 +1231,6 @@ Simon asked to encrypt the traffic. This also closes the server half of QA **AR1
     - the admitted client joins through the recording relay. Its 4,050 datagrams carry the ticket once, in the hello, which serves as the scan's own control, and no `/Game/World/lent`, `MarburgumGameMode`, character name or body;
     - no ticket or key appears in any server or service log, and no encryption token in the rendered clients' logs.
   - Unencrypted control: through the same relay, a development session showed the map path in 10 server datagrams, the game mode in 2, and the character key in the client's login.
+  - **Packaged:** Development Client and Server from `44106bc`, clean, fresh stamp, 2,322 packages cooked.
+    - Staged account smoke PASS (`Saved/AccountSmoke/20261120T164656Z`): every check above; the relay carried 4,124 datagrams with the ticket once in the hello and none of the four strings.
+    - The development-key smokes on the same pair, unencrypted through the same packet component: door, net, interaction, chat, mission, vehicle and combat all PASS.
