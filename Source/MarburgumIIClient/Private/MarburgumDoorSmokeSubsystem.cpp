@@ -35,6 +35,16 @@ namespace MarburgumDoorSmoke
     constexpr double ShotTimeoutSeconds = 10.0;
     /** A capsule's distance from a door's doorway that puts it in the leaf's swing. */
     constexpr double InSwingCm = 70.0;
+    /** Who counts as at the door before the walker and the rival start. */
+    constexpr double AtDoorCm = 3000.0;
+    /** The tourist is away once this far from its street door: past the 40 m interior radius, with margin. */
+    constexpr double AwayCm = 6000.0;
+    /** And back once this close. */
+    constexpr double BackCm = 1500.0;
+    /** Away, the building must leave the client within this long; back, stream in again within this long. */
+    constexpr double StreamAnswerSeconds = 10.0;
+    /** The server's move away and back, from the tourist's arrival (UMarburgumDoorTour waits less, dwells less). */
+    constexpr double TourLegSeconds = 60.0;
 
     double DistanceToSegment2D(const FVector& P, const FVector& A, const FVector& B)
     {
@@ -87,6 +97,113 @@ void UMarburgumDoorSmokeSubsystem::Deinitialize()
 {
     FTSTicker::GetCoreTicker().RemoveTicker(TickerHandle);
     Super::Deinitialize();
+}
+
+int32 UMarburgumDoorSmokeSubsystem::PeopleAtDoor() const
+{
+    const UWorld* World = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr;
+    int32 People = 0;
+    if (World && !Route.IsEmpty())
+    {
+        for (TActorIterator<AMarburgumCharacter> It(World); It; ++It)
+        {
+            People += FVector::Dist2D(It->GetActorLocation(), Route[0]) < AtDoorCm ? 1 : 0;
+        }
+    }
+    return People;
+}
+
+void UMarburgumDoorSmokeSubsystem::CheckExpected(const TCHAR* Event)
+{
+    const FString States = DoorStates();
+    TArray<FString> Each;
+    States.ParseIntoArray(Each, TEXT(","));
+    bool bMatch = !Each.IsEmpty();
+    if (ExpectStates == TEXT("open") || ExpectStates == TEXT("closed"))
+    {
+        for (const FString& State : Each)
+        {
+            bMatch &= State == ExpectStates;
+        }
+    }
+    else if (!ExpectStates.IsEmpty())
+    {
+        bMatch = States == ExpectStates;
+    }
+    MB2_DOOR_SMOKE_LOG("event=%s states=%s expect=%s match=%d", Event, *States, ExpectStates.IsEmpty() ? TEXT("-") : *ExpectStates, bMatch ? 1 : 0);
+    Expect(bMatch, FString::Printf(TEXT("%s_doors=%s"), Event, *States));
+}
+
+bool UMarburgumDoorSmokeSubsystem::TickTour(double Now)
+{
+    const UWorld* World = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr;
+    const APawn* Body = Controller.IsValid() ? Controller->GetPawn() : nullptr;
+    const UMarburgumInteriorSubsystem* Interiors = World ? World->GetSubsystem<UMarburgumInteriorSubsystem>() : nullptr;
+    if (!Body || !Interiors)
+    {
+        return true; // between pawns, or the session is going
+    }
+    const double FromHome = FVector::Dist2D(Body->GetActorLocation(), HomeCentre);
+    if (Step == EStep::TourAway)
+    {
+        if (FromHome < AwayCm)
+        {
+            if (Now - StepSeconds > TourLegSeconds)
+            {
+                Fail(FString::Printf(TEXT("tourist_never_moved_away distance_cm=%.0f"), FromHome));
+            }
+            return true;
+        }
+        if (TourSeconds <= 0.0)
+        {
+            TourSeconds = Now;
+            MB2_DOOR_SMOKE_LOG("event=away distance_cm=%.0f doors_relevant=%d", FromHome, BuildingDoors().Num());
+        }
+        if (!Interiors->IsStreamed(Building))
+        {
+            MB2_DOOR_SMOKE_LOG("event=streamed_out seconds=%.2f doors_relevant=%d", Now - TourSeconds, BuildingDoors().Num());
+            TourSeconds = 0.0;
+            Advance(EStep::TourBack, Now);
+        }
+        else if (Now - TourSeconds > StreamAnswerSeconds)
+        {
+            Fail(TEXT("building_still_streamed_while_away"));
+        }
+        return true;
+    }
+    // TourBack: home again, the building streamed and its street door relevant, then the doors must be as left.
+    if (FromHome > BackCm)
+    {
+        if (Now - StepSeconds > TourLegSeconds)
+        {
+            Fail(FString::Printf(TEXT("tourist_never_came_back distance_cm=%.0f"), FromHome));
+        }
+        return true;
+    }
+    if (TourSeconds <= 0.0)
+    {
+        TourSeconds = Now;
+        MB2_DOOR_SMOKE_LOG("event=back distance_cm=%.0f", FromHome);
+    }
+    if (!Interiors->IsStreamed(Building) || !StreetDoor())
+    {
+        if (Now - TourSeconds > StreamAnswerSeconds)
+        {
+            Fail(FString::Printf(TEXT("building_not_back streamed=%d street_door=%d"), Interiors->IsStreamed(Building) ? 1 : 0, StreetDoor() ? 1 : 0));
+        }
+        return true;
+    }
+    // Let the doors' replicated states arrive, then compare.
+    if (Now - TourSeconds < StreamAnswerSeconds * 0.4)
+    {
+        return true;
+    }
+    MB2_DOOR_SMOKE_LOG("event=streamed_in seconds=%.2f", Now - TourSeconds);
+    CheckExpected(TEXT("tour_back"));
+    Face(HomeCentre);
+    Shot(TEXT("tourist-back"));
+    Advance(EStep::Done, Now);
+    return true;
 }
 
 TArray<AMarburgumDoor*> UMarburgumDoorSmokeSubsystem::BuildingDoors() const
@@ -262,6 +379,10 @@ bool UMarburgumDoorSmokeSubsystem::Tick(float DeltaTime)
         // Standing still for a capture is not being stuck.
         LastProgressSeconds = Now;
     }
+    if (Step == EStep::TourAway || Step == EStep::TourBack)
+    {
+        return TickTour(Now);
+    }
     if (!Bind())
     {
         return true;
@@ -280,15 +401,14 @@ bool UMarburgumDoorSmokeSubsystem::Tick(float DeltaTime)
         {
             Advance(EStep::Observe, Now);
         }
+        else if (Role == TEXT("tourist"))
+        {
+            Advance(EStep::TourHome, Now);
+        }
         else
         {
             // Both players at the door before anything moves, so each sees the other's requests.
-            int32 People = 0;
-            for (TActorIterator<AMarburgumCharacter> It(Local->GetWorld()); It; ++It)
-            {
-                ++People;
-            }
-            if (People < 2)
+            if (PeopleAtDoor() < 2)
             {
                 return true;
             }
@@ -592,26 +712,23 @@ bool UMarburgumDoorSmokeSubsystem::Tick(float DeltaTime)
         {
             return true;
         }
-        const FString States = DoorStates();
-        TArray<FString> Each;
-        States.ParseIntoArray(Each, TEXT(","));
-        bool bMatch = true;
-        if (ExpectStates == TEXT("open") || ExpectStates == TEXT("closed"))
-        {
-            for (const FString& State : Each)
-            {
-                bMatch &= State == ExpectStates;
-            }
-        }
-        else if (!ExpectStates.IsEmpty())
-        {
-            bMatch = States == ExpectStates;
-        }
-        MB2_DOOR_SMOKE_LOG("event=observed states=%s expect=%s match=%d", *States, ExpectStates.IsEmpty() ? TEXT("-") : *ExpectStates, bMatch ? 1 : 0);
-        Expect(bMatch, FString::Printf(TEXT("doors=%s"), *States));
+        CheckExpected(TEXT("observed"));
         Face(DoorCentre);
         Shot(TEXT("observer"));
         Advance(EStep::Done, Now);
+        return true;
+    }
+    // ---- tourist ----
+    if (Step == EStep::TourHome)
+    {
+        // At home first: the doors as the walker left them, before the server moves us away.
+        if (Now - StepSeconds < 3.0)
+        {
+            return true;
+        }
+        HomeCentre = DoorCentre;
+        CheckExpected(TEXT("tour_home"));
+        Advance(EStep::TourAway, Now);
         return true;
     }
     if (Step == EStep::Done && PendingShot.IsEmpty() && ShotLabel.IsEmpty())

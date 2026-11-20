@@ -21,6 +21,9 @@ class AMarburgumPlayerController;
  *          it while the walker stands in the swing (the server must refuse); asks for a room door from outside
  *          its reach (refused); leaves.
  * observer joins later and reports every door of the building, which must match -MB2DoorExpect=open|closed|<list>.
+ * tourist  joins at the building while the walker holds it (character key ending in -tour). A server started with
+ *          -MB2DoorTour=<away id> moves it to that building's door and back (UMarburgumDoorTour). Away, the building
+ *          must leave this client (rooms unbuilt); back, it must stream in again with doors matching -MB2DoorExpect.
  *
  * Options: -MB2DoorBuilding=<id> -MB2DoorShot=<path prefix> -MB2DoorTimeout=<s> -MB2DoorHold=<s> -MB2DoorExpect=...
  */
@@ -53,11 +56,21 @@ private:
         FarDoor,
         // observer
         Observe,
+        // tourist
+        TourHome,
+        TourAway,
+        TourBack,
         Done
     };
 
     bool Tick(float DeltaTime);
+    /** The tourist's steps away from the building, where Bind() cannot hold (the building is not streamed). */
+    bool TickTour(double Now);
     bool Bind();
+    /** People within reach of the street door: the players of a test running at another building do not count. */
+    int32 PeopleAtDoor() const;
+    /** The door states against -MB2DoorExpect; logs and records the result under Event. */
+    void CheckExpected(const TCHAR* Event);
     AMarburgumDoor* StreetDoor() const;
     TArray<AMarburgumDoor*> BuildingDoors() const;
     FString DoorStates() const;
@@ -103,4 +116,7 @@ private:
     double ShotRequestedSeconds = 0.0;
     TArray<FString> Problems;
     bool bDone = false;
+    /** The tourist's street door, kept for when its actor is out of relevancy. */
+    FVector HomeCentre = FVector::ZeroVector;
+    double TourSeconds = 0.0;
 };
