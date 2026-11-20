@@ -106,8 +106,13 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode lamps
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumVisualFixes -unattended -nop4 -nosplash -nullrhi
 # Read-only world and asset audit into Saved/VisualAudit/<name>; -Probe="X,Y;..." lists every surface under a point
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumWorldAudit -Out="$PWD/Saved/VisualAudit/<name>" -unattended -nop4 -nosplash -nullrhi
-# Rendered survey of all nine windows (42 views, per-view frame stats in stats.tsv); MB2_SURVEY_VIEWS for close-ups
+# Rendered survey of all nine windows (42 views, per-view frame/GPU percentiles and VRAM in stats.tsv, the renderer's
+# settings and render inventory in render_config.json); MB2_SURVEY_VIEWS for close-ups, MB2_SURVEY_PLAYER_VIEW=1 for the HUD
 MB2_SURVEY_PORT=27891 ./scripts/visual-survey-linux.sh editor <name>
+# GFX-00 rendering baseline: the survey plus river/quay/roof cameras and the HUD view at morning, noon, dusk, night,
+# overcast, rain noon and rain night, and at the Hotel Lent door; baseline.csv/json in Saved/GfxBaseline/<name>.
+# MB2_GFX_SCENES=noon,night for a subset. staged = the packaged builds (the only numbers a frame budget may use).
+MB2_SURVEY_PORT=27891 ./scripts/gfx-baseline-linux.sh staged <name>
 # Fixed-camera screenshots of a level for before/after evidence (centimetres; name@eye@target@fov;...)
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor" "$PWD/MarburgumII.uproject" /Game/World/lent -game -RenderOffScreen -windowed -ForceRes -ResX=1920 -ResY=1080 \
     "-MB2ViewShots=overview@-6000,-6000,11000@17000,-6000,2000@60" -MB2ViewShotDir=/abs/dir

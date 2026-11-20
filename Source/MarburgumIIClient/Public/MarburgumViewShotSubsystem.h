@@ -17,9 +17,17 @@ class ACameraActor;
  * camera is switched to each view in turn, the HUD is removed, and one screenshot per view is written
  * as <dir>/<name>.png. The process exits 0 when every view was written, 1 otherwise.
  *
- * While each view settles, frame, game-thread, render-thread and GPU times, RHI draw calls and primitives are
- * averaged from the second second on and logged as "MB2VIEWSHOT stats view=..." and written to <dir>/stats.tsv,
- * so two builds can be compared view by view (editor -game numbers compare with each other, not with a package).
+ * A view whose eye is `player` ("name@player@player@0") keeps the player's own third-person camera and the HUD, and
+ * its screenshot includes the interface (GFX-00 character and HUD views). The HUD is removed for good at the first
+ * fixed view, so player views go first.
+ *
+ * While each view settles, frame, game-thread, render-thread, RHI-thread and GPU times, RHI draw calls and
+ * primitives are sampled from the second second on and logged as "MB2VIEWSHOT stats view=..." and written to
+ * <dir>/stats.tsv: means first (the original columns), then p50/p95/p99, VRAM in use and its budget, texture memory
+ * and the process's resident memory, so two builds can be compared view by view (editor -game numbers compare with
+ * each other, not with a package). -MB2ViewShotSettle=<seconds> (default 2.5, at most 30) lengthens each view for
+ * more samples. At the first view the renderer's configuration and the level's render inventory are written to
+ * <dir>/render_config.json (MarburgumRenderAudit).
  */
 UCLASS()
 class MARBURGUMIICLIENT_API UMarburgumViewShotSubsystem : public UGameInstanceSubsystem
@@ -38,6 +46,7 @@ private:
         FVector Eye;
         FVector Target;
         float Fov = 60.f;
+        bool bPlayer = false;
     };
 
     bool Tick(float DeltaTime);
@@ -52,17 +61,20 @@ private:
     int32 Current = -1;
     double StartSeconds = 0.0;
     double ViewSeconds = 0.0;
+    double SettleSeconds = 2.5;
+    bool bWidgetsRemoved = false;
+    bool bAudited = false;
     FString PendingFile;
     bool bRequested = false;
     bool bFinished = false;
 
     struct FStats
     {
-        int32 Frames = 0;
-        double FrameMs = 0.0;
-        double GameMs = 0.0;
-        double RenderMs = 0.0;
-        double GpuMs = 0.0;
+        TArray<float> FrameMs;
+        TArray<float> GameMs;
+        TArray<float> RenderMs;
+        TArray<float> RhiMs;
+        TArray<float> GpuMs;
         double Draws = 0.0;
         double Primitives = 0.0;
     };

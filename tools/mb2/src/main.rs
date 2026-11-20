@@ -5,6 +5,7 @@
 mod crowd_summary;
 mod engine;
 mod generate;
+mod gfx_baseline;
 mod history;
 mod movement_check;
 mod playtest;
@@ -44,6 +45,8 @@ Usage: mb2 <command>
                          ADR-019 bound on how far a Lent smoke walker moved on the server.
   survey-views <walk graph> [seed]
                          The visual survey's fixed cameras as one MB2ViewShots string (ADR-072).
+  gfx-views              The graphics roadmap's extra cameras (river, quay, roofs) as an MB2ViewShots string.
+  gfx-baseline <dir>     GFX-00: baseline.csv and baseline.json from scripts/gfx-baseline-linux.sh's scenes.
   crowd-summary <out dir> <sha> <day|night> <expected clock>
                          Verdict and summary.json of scripts/street-multiplayer-smoke-linux.sh.
   fetch-art-reference [--output <dir>] [--force]
@@ -85,6 +88,8 @@ fn main() -> ExitCode {
         }
         ["survey-views", graph] => survey_views::run(graph, None),
         ["survey-views", graph, seed] => survey_views::run(graph, Some(seed)),
+        ["gfx-views"] => gfx_baseline::print_views(),
+        ["gfx-baseline", dir] => gfx_baseline::run(dir),
         ["crowd-summary", out, sha, case_name, clock] => {
             crowd_summary::run(out, sha, case_name, clock)
         }
