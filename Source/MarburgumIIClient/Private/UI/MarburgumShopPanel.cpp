@@ -8,6 +8,7 @@
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
+#include "Components/WrapBox.h"
 #include "GameFramework/Pawn.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumInteractable.h"
@@ -22,7 +23,7 @@ using namespace MarburgumUI;
 
 namespace
 {
-    constexpr float PanelWidth = 620.f;
+    constexpr float PanelWidth = 660.f;
 
     const MarburgumII::Gameplay::FShopDefinition* ShopOf(const AMarburgumInteractable* Keeper)
     {
@@ -36,36 +37,40 @@ void UMarburgumShopPanel::NativeOnInitialized()
     const FTokens& T = Tokens();
     FBuilder B(*WidgetTree);
 
+    // A counter card: the shop as an archival heading with its hours, the keeper's line, what you can spend, and one
+    // numbered line per offer with its price, buy-back and shelf as chips. Every trade waits for the server's receipt.
     UVerticalBox* Column = B.Column();
     UHorizontalBox* Header = B.Row();
-    UVerticalBox* Titles = B.Column();
-    FBuilder::Stack(Titles, B.Text(LOCTEXT("Overline", "COUNTER"), ETypeRole::Overline, T.Color.Accent), T.Space.XXS);
-    ShopLabel = B.Text(FText::GetEmpty(), ETypeRole::Title);
-    ShopLabel->SetAutoWrapText(true);
-    FBuilder::Stack(Titles, ShopLabel, T.Space.XXS);
-    HoursLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextMuted);
-    FBuilder::Stack(Titles, HoursLabel, 0.f);
-    FBuilder::Inline(Header, Titles, T.Space.M, true);
-    FBuilder::Inline(Header, B.Text(LOCTEXT("Close", "[B] Leave the counter"), ETypeRole::Caption, T.Color.TextMuted), 0.f, false, false);
+    FBuilder::Inline(Header, B.GlyphText(EMarburgumGlyph::Shop, LOCTEXT("Overline", "COUNTER"), ETypeRole::Overline, T.Color.Accent, nullptr, 14.f),
+        T.Space.M, true);
+    FBuilder::Inline(Header, B.KeyHint(FText::AsCultureInvariant(TEXT("B")), LOCTEXT("Close", "Leave the counter")), 0.f);
     FBuilder::Stack(Column, Header, T.Space.S);
-    StatusLabel = B.Text(FText::GetEmpty(), ETypeRole::Body);
-    StatusLabel->SetWrapTextAt(PanelWidth - 2.f * T.Space.XL);
-    FBuilder::Stack(Column, StatusLabel, T.Space.XS);
-    MoneyLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption);
-    FBuilder::Stack(Column, MoneyLabel, T.Space.M);
-    FBuilder::Stack(Column, B.Rule(T.Color.Border, 1.f), T.Space.M);
+    ShopLabel = B.Text(FText::GetEmpty(), ETypeRole::PlaceTitle);
+    ShopLabel->SetAutoWrapText(true);
+    FBuilder::Stack(Column, ShopLabel, T.Space.XXS);
+    UTextBlock* Hours = nullptr;
+    FBuilder::Stack(Column, B.GlyphText(EMarburgumGlyph::Clock, FText::GetEmpty(), ETypeRole::Caption, T.Color.TextSecondary, &Hours, 14.f), T.Space.M);
+    HoursLabel = Hours;
+    StatusLabel = B.Text(FText::GetEmpty(), ETypeRole::Quote);
+    StatusLabel->SetAutoWrapText(true);
+    FBuilder::Stack(Column, StatusLabel, T.Space.S);
+    UTextBlock* Money = nullptr;
+    FBuilder::Stack(Column, B.GlyphText(EMarburgumGlyph::Coin, FText::GetEmpty(), ETypeRole::Label, T.Color.TextPrimary, &Money, 16.f), T.Space.L);
+    MoneyLabel = Money;
+    FBuilder::Stack(Column, B.SectionTitle(LOCTEXT("Shelves", "ON THE SHELVES"), T.Color.Accent), T.Space.S);
     Rows = B.Column();
-    FBuilder::Stack(Column, Rows, T.Space.S);
-    UTextBlock* Hint = B.Text(LOCTEXT("Hint", "Press a number to buy one. Hold Shift with the number to sell one back. Petra sets the prices."),
+    FBuilder::Stack(Column, Rows, T.Space.M);
+    UHorizontalBox* Keys = B.Row();
+    FBuilder::Inline(Keys, B.KeyHint(FText::AsCultureInvariant(TEXT("1–6")), LOCTEXT("Buy", "Buy one")), T.Space.XL);
+    FBuilder::Inline(Keys, B.KeyHint(FText::AsCultureInvariant(TEXT("Shift + 1–6")), LOCTEXT("Sell", "Sell one back")), 0.f);
+    FBuilder::Stack(Column, Keys, T.Space.S);
+    UTextBlock* Hint = B.Text(LOCTEXT("Hint", "The counter sets the prices. A trade counts once the server confirms it."),
         ETypeRole::Caption, T.Color.TextMuted);
-    Hint->SetWrapTextAt(PanelWidth - 2.f * T.Space.XL);
+    Hint->SetAutoWrapText(true);
     FBuilder::Stack(Column, Hint, 0.f);
 
     UBorder* Panel = B.Surface(ESurfaceKind::Panel, Pad(T.Space.XL), Column);
-    USizeBox* Width = WidgetTree->ConstructWidget<USizeBox>();
-    Width->SetWidthOverride(PanelWidth);
-    Width->SetContent(Panel);
-    UBorder* Anchor = B.Surface(ESurfaceKind::Base, FMargin(0.f), Width, false);
+    UBorder* Anchor = B.Surface(ESurfaceKind::Base, Pad(T.Space.XL), B.Bounded(Panel, PanelWidth), false);
     Anchor->SetBrushColor(FLinearColor::Transparent);
     FBuilder::Align(Anchor, HAlign_Center, VAlign_Center);
     USafeZone* Safe = WidgetTree->ConstructWidget<USafeZone>();
@@ -145,8 +150,8 @@ void UMarburgumShopPanel::Rebuild()
     StatusLabel->SetText(!Subject->IsShopKnown() ? LOCTEXT("Unknown", "Petra is still counting the shelves.")
         : bShownOpen ? LOCTEXT("Open", "Petra looks up from the counter.")
                      : FText::FromString(Definition->ClosedMessage));
-    StatusLabel->SetColorAndOpacity(bShownOpen ? T.Color.TextPrimary : T.Color.TextMuted);
-    MoneyLabel->SetText(FText::Format(LOCTEXT("Money", "You have {0} money."), FText::AsNumber(Money)));
+    StatusLabel->SetColorAndOpacity(bShownOpen ? T.Color.TextSecondary : T.Color.TextMuted);
+    MoneyLabel->SetText(FText::Format(LOCTEXT("Money", "You have {0} money"), FText::AsNumber(Money)));
 
     for (int32 Index = 0; Index < Definition->OfferCount; ++Index)
     {
@@ -158,28 +163,36 @@ void UMarburgumShopPanel::Rebuild()
         const bool bCanSell = bShownOpen && Held > 0 && MarburgumII::Retail::BuysBack(Offer);
         ++LineCount;
 
-        TArray<FString> Facts;
-        Facts.Add(FString::Printf(TEXT("%d money"), Offer.BuyPrice));
+        UHorizontalBox* Line = B.Row();
+        FBuilder::Inline(Line, B.KeyCap(FText::AsNumber(Index + 1), bCanBuy || bCanSell), T.Space.M, false, false);
+        UVerticalBox* Words = B.Column();
+        UTextBlock* Name = B.Text(FText::FromString(Item ? Item->DisplayName : Offer.Item), ETypeRole::BodyStrong,
+            bCanBuy || bCanSell ? T.Color.TextPrimary : T.Color.TextMuted);
+        Name->SetAutoWrapText(true);
+        FBuilder::Stack(Words, Name, T.Space.XS);
+        UWrapBox* Chips = WidgetTree->ConstructWidget<UWrapBox>();
+        Chips->SetInnerSlotPadding(FVector2D(T.Space.XS, T.Space.XS));
+        Chips->AddChildToWrapBox(B.Chip(EMarburgumGlyph::Coin, FText::Format(LOCTEXT("Price", "{0} money"), FText::AsNumber(Offer.BuyPrice)),
+            bShownOpen && Money >= Offer.BuyPrice ? ETone::Accent : ETone::Neutral));
         if (MarburgumII::Retail::BuysBack(Offer))
         {
-            Facts.Add(FString::Printf(TEXT("takes back for %d"), Offer.SellPrice));
+            Chips->AddChildToWrapBox(B.Chip(EMarburgumGlyph::Trade, FText::Format(LOCTEXT("TakesBack", "Takes back for {0}"),
+                FText::AsNumber(Offer.SellPrice)), ETone::Info));
         }
-        Facts.Add(Shelf < 0 ? FString(TEXT("shelf unknown")) : Shelf == 0 ? FString(TEXT("sold out")) : FString::Printf(TEXT("%d on the shelf"), Shelf));
+        Chips->AddChildToWrapBox(Shelf < 0 ? B.Chip(EMarburgumGlyph::Info, LOCTEXT("ShelfUnknown", "Shelf unknown"), ETone::Neutral)
+            : Shelf == 0 ? B.Chip(EMarburgumGlyph::Close, LOCTEXT("SoldOut", "Sold out"), ETone::Warning)
+                         : B.Chip(EMarburgumGlyph::Inventory, FText::Format(LOCTEXT("OnShelf", "{0} on the shelf"), FText::AsNumber(Shelf)), ETone::Neutral));
         if (Held > 0)
         {
-            Facts.Add(FString::Printf(TEXT("you hold %d"), Held));
+            Chips->AddChildToWrapBox(B.Chip(EMarburgumGlyph::Check, FText::Format(LOCTEXT("Held", "You hold {0}"), FText::AsNumber(Held)), ETone::Success));
         }
-
-        UHorizontalBox* Line = B.Row();
-        UBorder* Key = B.Surface(ESurfaceKind::Raised, Pad(T.Space.S, T.Space.XXS),
-            B.Text(FText::AsNumber(Index + 1), ETypeRole::Heading, bCanBuy || bCanSell ? T.Color.Accent : T.Color.TextMuted));
-        FBuilder::Inline(Line, Key, T.Space.M);
-        UVerticalBox* Words = B.Column();
-        FBuilder::Stack(Words, B.Text(FText::FromString(Item ? Item->DisplayName : Offer.Item), ETypeRole::Body,
-            bCanBuy ? T.Color.TextPrimary : T.Color.TextMuted), T.Space.XXS);
-        FBuilder::Stack(Words, B.Text(FText::FromString(FString::Join(Facts, TEXT("  ·  "))), ETypeRole::Caption), 0.f);
-        FBuilder::Inline(Line, Words, 0.f, true);
-        FBuilder::Stack(Rows, B.Surface(ESurfaceKind::Raised, Pad(T.Space.L, T.Space.S), Line), T.Space.XS);
+        if (bShownOpen && Shelf > 0 && Money < Offer.BuyPrice)
+        {
+            Chips->AddChildToWrapBox(B.Chip(EMarburgumGlyph::Lock, LOCTEXT("Short", "Not enough money"), ETone::Danger));
+        }
+        FBuilder::Stack(Words, Chips, 0.f);
+        FBuilder::Inline(Line, Words, 0.f, true, false);
+        FBuilder::Stack(Rows, B.Surface(bCanBuy || bCanSell ? ESurfaceKind::Raised : ESurfaceKind::Sunken, Pad(T.Space.L, T.Space.M), Line), T.Space.XS);
     }
     Shown = Snapshot();
 }

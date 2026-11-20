@@ -8,6 +8,7 @@
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
+#include "Components/WrapBox.h"
 #include "GameFramework/Pawn.h"
 #include "MarburgumGameplayContract.h"
 #include "MarburgumInteractable.h"
@@ -21,8 +22,7 @@ using namespace MarburgumUI;
 
 namespace
 {
-    constexpr float PanelWidth = 620.f;
-    float TextWidth(const FTokens& T) { return PanelWidth - 2.f * T.Space.XL - 2.f * T.Space.L - 48.f; }
+    constexpr float PanelWidth = 660.f;
 }
 
 void UMarburgumChoicePanel::NativeOnInitialized()
@@ -31,31 +31,34 @@ void UMarburgumChoicePanel::NativeOnInitialized()
     const FTokens& T = Tokens();
     FBuilder B(*WidgetTree);
 
+    // A decision card: the mission as an archival heading, the question in the speaker's voice, and numbered answers whose
+    // consequences are chips (money, XP), read before choosing. Nothing here decides; the server records the choice.
     UVerticalBox* Column = B.Column();
     UHorizontalBox* Header = B.Row();
-    UVerticalBox* Titles = B.Column();
-    FBuilder::Stack(Titles, B.Text(LOCTEXT("Overline", "DECISION"), ETypeRole::Overline, T.Color.Accent), T.Space.XXS);
-    MissionLabel = B.Text(FText::GetEmpty(), ETypeRole::Title);
-    // Long names wrap inside the card instead of running under "[E] Not now" and past its edge.
-    MissionLabel->SetAutoWrapText(true);
-    FBuilder::Stack(Titles, MissionLabel, 0.f);
-    FBuilder::Inline(Header, Titles, T.Space.M, true);
-    FBuilder::Inline(Header, B.Text(LOCTEXT("Close", "[E] Not now"), ETypeRole::Caption, T.Color.TextMuted), 0.f, false, false);
+    FBuilder::Inline(Header, B.GlyphText(EMarburgumGlyph::Mission, LOCTEXT("Overline", "DECISION"), ETypeRole::Overline, T.Color.Accent, nullptr, 14.f),
+        T.Space.M, true);
+    FBuilder::Inline(Header, B.KeyHint(FText::AsCultureInvariant(TEXT("E")), LOCTEXT("Close", "Not now")), 0.f);
     FBuilder::Stack(Column, Header, T.Space.S);
-    ObjectiveLabel = B.Text(FText::GetEmpty(), ETypeRole::Body);
-    ObjectiveLabel->SetWrapTextAt(PanelWidth - 2.f * T.Space.XL);
-    FBuilder::Stack(Column, ObjectiveLabel, T.Space.M);
-    FBuilder::Stack(Column, B.Rule(T.Color.Border, 1.f), T.Space.M);
+    MissionLabel = B.Text(FText::GetEmpty(), ETypeRole::PlaceTitle);
+    // Long names wrap inside the card instead of running past its edge.
+    MissionLabel->SetAutoWrapText(true);
+    FBuilder::Stack(Column, MissionLabel, T.Space.S);
+    ObjectiveLabel = B.Text(FText::GetEmpty(), ETypeRole::Quote, T.Color.TextSecondary);
+    ObjectiveLabel->SetAutoWrapText(true);
+    FBuilder::Stack(Column, ObjectiveLabel, T.Space.L);
+    FBuilder::Stack(Column, B.SectionTitle(LOCTEXT("Answers", "YOUR ANSWER"), T.Color.Accent), T.Space.S);
     Rows = B.Column();
-    FBuilder::Stack(Column, Rows, T.Space.S);
-    FBuilder::Stack(Column, B.Text(LOCTEXT("Hint", "Press a number to decide. The server records your choice; it cannot be taken back."),
-        ETypeRole::Caption, T.Color.TextMuted), 0.f);
+    FBuilder::Stack(Column, Rows, T.Space.M);
+    UHorizontalBox* Footer = B.Row();
+    FBuilder::Inline(Footer, B.Glyph(EMarburgumGlyph::Lock, T.Color.TextMuted, T.Icon.Small), T.Space.S, false, false);
+    UTextBlock* Hint = B.Text(LOCTEXT("Hint", "Press a number to decide. The server records your choice; it cannot be taken back."),
+        ETypeRole::Caption, T.Color.TextMuted);
+    Hint->SetAutoWrapText(true);
+    FBuilder::Inline(Footer, Hint, 0.f, true, false);
+    FBuilder::Stack(Column, Footer, 0.f);
 
     UBorder* Panel = B.Surface(ESurfaceKind::Panel, Pad(T.Space.XL), Column);
-    USizeBox* Width = WidgetTree->ConstructWidget<USizeBox>();
-    Width->SetWidthOverride(PanelWidth);
-    Width->SetContent(Panel);
-    UBorder* Anchor = B.Surface(ESurfaceKind::Base, FMargin(0.f), Width, false);
+    UBorder* Anchor = B.Surface(ESurfaceKind::Base, Pad(T.Space.XL), B.Bounded(Panel, PanelWidth), false);
     Anchor->SetBrushColor(FLinearColor::Transparent);
     FBuilder::Align(Anchor, HAlign_Center, VAlign_Center);
     USafeZone* Safe = WidgetTree->ConstructWidget<USafeZone>();
@@ -116,36 +119,38 @@ void UMarburgumChoicePanel::Rebuild()
         ChoiceIds.Add(FName(Choice.Id));
         Affordable.Add(bAfford);
 
-        TArray<FString> Consequences;
+        UHorizontalBox* Line = B.Row();
+        FBuilder::Inline(Line, B.KeyCap(FText::AsNumber(Index + 1), bAfford), T.Space.M, false, false);
+        UVerticalBox* Words = B.Column();
+        UTextBlock* Label = B.Text(FText::FromString(Choice.Label), ETypeRole::BodyStrong, bAfford ? T.Color.TextPrimary : T.Color.TextMuted);
+        Label->SetAutoWrapText(true);
+        FBuilder::Stack(Words, Label, T.Space.XS);
+        // What each answer costs or earns, as chips that wrap: never a clipped line of dots.
+        UWrapBox* Chips = WidgetTree->ConstructWidget<UWrapBox>();
+        Chips->SetInnerSlotPadding(FVector2D(T.Space.XS, T.Space.XS));
         if (Choice.MoneyDelta != 0)
         {
-            Consequences.Add(Choice.MoneyDelta > 0 ? FString::Printf(TEXT("+%d money"), Choice.MoneyDelta)
-                                                   : FString::Printf(TEXT("−%d money"), -Choice.MoneyDelta));
+            Chips->AddChildToWrapBox(B.Chip(EMarburgumGlyph::Coin, Choice.MoneyDelta > 0
+                ? FText::Format(LOCTEXT("Gain", "+{0} money"), FText::AsNumber(Choice.MoneyDelta))
+                : FText::Format(LOCTEXT("Cost", "−{0} money"), FText::AsNumber(-Choice.MoneyDelta)),
+                Choice.MoneyDelta > 0 ? ETone::Success : ETone::Warning));
         }
         for (int32 Award = 0; Award < Choice.SkillXpCount; ++Award)
         {
             const FSkillDefinition* Skill = FindSkill(Choice.SkillXp[Award].Skill);
-            Consequences.Add(FString::Printf(TEXT("%s +%d XP"), Skill ? Skill->DisplayName : Choice.SkillXp[Award].Skill, Choice.SkillXp[Award].Xp));
+            Chips->AddChildToWrapBox(B.Chip(EMarburgumGlyph::Skill, FText::Format(LOCTEXT("Xp", "{0} +{1} XP"),
+                FText::FromString(Skill ? Skill->DisplayName : Choice.SkillXp[Award].Skill), FText::AsNumber(Choice.SkillXp[Award].Xp)), ETone::Info));
         }
         if (!bAfford)
         {
-            Consequences.Add(TEXT("not enough money"));
+            Chips->AddChildToWrapBox(B.Chip(EMarburgumGlyph::Lock, LOCTEXT("Short", "Not enough money"), ETone::Danger));
         }
-
-        UHorizontalBox* Line = B.Row();
-        UBorder* Key = B.Surface(ESurfaceKind::Raised, Pad(T.Space.S, T.Space.XXS),
-            B.Text(FText::AsNumber(Index + 1), ETypeRole::Heading, bAfford ? T.Color.Accent : T.Color.TextMuted));
-        FBuilder::Inline(Line, Key, T.Space.M);
-        UVerticalBox* Words = B.Column();
-        UTextBlock* Label = B.Text(FText::FromString(Choice.Label), ETypeRole::Body, bAfford ? T.Color.TextPrimary : T.Color.TextMuted);
-        Label->SetWrapTextAt(TextWidth(T));
-        FBuilder::Stack(Words, Label, T.Space.XXS);
-        if (!Consequences.IsEmpty())
+        if (Chips->GetChildrenCount() > 0)
         {
-            FBuilder::Stack(Words, B.Text(FText::FromString(FString::Join(Consequences, TEXT("  ·  "))), ETypeRole::Caption), 0.f);
+            FBuilder::Stack(Words, Chips, 0.f);
         }
-        FBuilder::Inline(Line, Words, 0.f, true);
-        FBuilder::Stack(Rows, B.Surface(ESurfaceKind::Raised, Pad(T.Space.L, T.Space.S), Line), T.Space.XS);
+        FBuilder::Inline(Line, Words, 0.f, true, false);
+        FBuilder::Stack(Rows, B.Surface(bAfford ? ESurfaceKind::Raised : ESurfaceKind::Sunken, Pad(T.Space.L, T.Space.M), Line), T.Space.XS);
     }
 }
 
