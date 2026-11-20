@@ -26,12 +26,11 @@ namespace MarburgumNpcLook
     const FName PaintTint(TEXT("Paint Tint"));
     const FLinearColor LineColor(0.55f, 0.6f, 0.5f);
     const FLinearColor FloatColor(0.85f, 0.18f, 0.08f);
-    /** The float lands this far out in front of the angler, and comes in with the reel. */
-    constexpr double CastReachCm = 1100.0;
+    /** The float lands on the first water between these distances in front of the angler, and comes in with the reel. */
+    constexpr double NearestCastCm = 500.0;
+    constexpr double FurthestCastCm = 2600.0;
     constexpr double LineRadiusCm = 0.12;
     constexpr double FloatDiameterCm = 4.0;
-    /** Without a known surface the float rests this far under the feet (the Lent bank stands about this high). */
-    constexpr double FallbackWaterDropCm = 180.0;
     /** Talking hands blend in and out over this long. */
     constexpr float BlendSeconds = 0.25f;
 
@@ -78,11 +77,13 @@ AMarburgumNpc::AMarburgumNpc()
 
     // A feet-level root lets the interaction range and the prompt anchor use the person, not a cube.
     Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-    Root->SetMobility(EComponentMobility::Static);
+    // Movable: the server may stand a level-placed person somewhere better before play (the angler on the bank).
+    Root->SetMobility(EComponentMobility::Movable);
     SetRootComponent(Root);
 
     // The base class's mesh is the collision stand-in: it blocks like a person and is never drawn.
     Mesh->SetupAttachment(Root);
+    Mesh->SetMobility(EComponentMobility::Movable);
     Mesh->SetStaticMesh(Cylinder.Object);
     Mesh->SetRelativeScale3D(FVector(Look::BodyRadius / 50.f, Look::BodyRadius / 50.f, Look::BodyHeight / 100.f));
     Mesh->SetRelativeLocation(FVector(0.f, 0.f, Look::BodyHeight * 0.5f));
@@ -280,7 +281,7 @@ APawn* AMarburgumNpc::AttentionTarget() const
     return Nearest;
 }
 
-void AMarburgumNpc::TurnBody(float DeltaSeconds, const APawn* Toward)
+void AMarburgumNpc::TurnBody(float DeltaSeconds, const APawn* Toward, bool bTalking)
 {
     namespace Look = MarburgumNpcLook;
     namespace Npc = MarburgumII::Npc;
@@ -288,7 +289,9 @@ void AMarburgumNpc::TurnBody(float DeltaSeconds, const APawn* Toward)
     if (Toward)
     {
         const FVector Local = GetActorTransform().InverseTransformVectorNoScale(Toward->GetActorLocation() - GetActorLocation());
-        Goal = FMath::Clamp(FMath::RadiansToDegrees(FMath::Atan2(Local.Y, Local.X)), -Npc::AttentionMaxTurnDegrees, Npc::AttentionMaxTurnDegrees);
+        // Someone talking to you gets your face, wherever they stand; a passer-by only a turn of the head and shoulders.
+        const double Limit = bTalking ? 180.0 : Npc::AttentionMaxTurnDegrees;
+        Goal = FMath::Clamp(FMath::RadiansToDegrees(FMath::Atan2(Local.Y, Local.X)), -Limit, Limit);
     }
     const double Step = Npc::AttentionTurnDegreesPerSecond * DeltaSeconds;
     BodyTurn += FMath::Clamp(Goal - BodyTurn, -Step, Step);
@@ -313,8 +316,8 @@ void AMarburgumNpc::Tick(float DeltaSeconds)
         return;
     }
     APawn* Toward = AttentionTarget();
-    TurnBody(DeltaSeconds, Toward);
     const bool bTalking = TalkingTo.IsValid() && GetWorld()->GetTimeSeconds() < TalkUntilSeconds;
+    TurnBody(DeltaSeconds, Toward, bTalking);
     if (bTalking)
     {
         Play(TalkClip, TEXT("talk"), true, -1.f);
@@ -383,15 +386,32 @@ void AMarburgumNpc::ShowLine(bool bOut, double Reeled)
     const FVector Tip = Rod->GetSocketLocation(Npc::RodTipSocket);
     if (!bFloatKnown)
     {
-        FVector Out = GetActorLocation() + GetActorForwardVector() * Look::CastReachCm;
-        double Surface = GetActorLocation().Z - Look::FallbackWaterDropCm;
+        // The float lands on the first water in front of him, never on the quay: the Lent promenade stands well back
+        // from the Drava in places. With no water within reach the line stays in.
+        bFloatKnown = true;
+        bFloatOnWater = false;
         if (const UMarburgumWaterSubsystem* Water = GetWorld()->GetSubsystem<UMarburgumWaterSubsystem>())
         {
-            Water->SurfaceAt(Out, Surface);
+            for (double Reach = Look::NearestCastCm; Reach <= Look::FurthestCastCm && !bFloatOnWater; Reach += 100.0)
+            {
+                FVector Out = GetActorLocation() + GetActorForwardVector() * Reach;
+                double Surface = 0.0;
+                if (Water->SurfaceAt(Out, Surface))
+                {
+                    // A little further than the edge, where a cast actually lands.
+                    Out = GetActorLocation() + GetActorForwardVector() * FMath::Min(Reach + 350.0, Look::FurthestCastCm);
+                    Water->SurfaceAt(Out, Surface);
+                    FloatAt = FVector(Out.X, Out.Y, Surface);
+                    bFloatOnWater = true;
+                }
+            }
         }
-        Out.Z = Surface;
-        FloatAt = Out;
-        bFloatKnown = true;
+    }
+    if (!bFloatOnWater)
+    {
+        Line->SetVisibility(false);
+        Float->SetVisibility(false);
+        return;
     }
     // Reeling draws the float back to just under the tip.
     const FVector Under(Tip.X, Tip.Y, FloatAt.Z);

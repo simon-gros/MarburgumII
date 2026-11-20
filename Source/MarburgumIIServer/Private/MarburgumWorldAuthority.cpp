@@ -1218,7 +1218,7 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
     {
         return;
     }
-    const AMarburgumInteractable* Angler = FindInteractable(LentAnglerId);
+    AMarburgumInteractable* Angler = FindInteractable(LentAnglerId);
     // The angler's original position: where the anchored content was laid out around him.
     const double AnglerOriginal[3] = { -127.0, 2.1, -58.0 };
     const FVector AnglerOriginalUe = MarburgumII::Combat::GodotPositionToUnreal(AnglerOriginal);
@@ -1288,6 +1288,57 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
         }
         return false;
     };
+    // The angler fishes from the bank (ADR-080): the level put him on the promenade, a road and a verge away from the
+    // Drava. Walk him forward along his facing to the last dry ground before the water, before anything is laid out
+    // round him, and move the development starts that look at him by the same step. His place replicates.
+    if (Angler)
+    {
+        const FVector From = Angler->GetActorLocation();
+        const FVector Ahead = Angler->GetActorForwardVector().GetSafeNormal2D();
+        FHitResult LastDry;
+        bool bDry = false;
+        bool bWater = false;
+        for (double Step = 100.0; Step <= 4500.0 && !bWater; Step += 50.0)
+        {
+            FHitResult Ground;
+            if (!FindGround(From + Ahead * Step, Ground))
+            {
+                continue;
+            }
+            if (IsWet(Ground.ImpactPoint))
+            {
+                bWater = true;
+            }
+            else
+            {
+                LastDry = Ground;
+                bDry = true;
+            }
+        }
+        const FVector Bank = bDry ? LastDry.ImpactPoint - Ahead * 120.0 : From;
+        FHitResult BankGround;
+        if (bWater && bDry && FVector::Dist2D(Bank, From) > 300.0 && FindGround(Bank, BankGround) && !IsWet(BankGround.ImpactPoint))
+        {
+            const FVector Delta = BankGround.ImpactPoint - From;
+            Angler->SetReplicateMovement(true);
+            Angler->SetActorLocation(BankGround.ImpactPoint);
+            for (TActorIterator<APlayerStart> It(&InWorld); It; ++It)
+            {
+                if (It->PlayerStartTag == TEXT("angler"))
+                {
+                    It->GetRootComponent()->SetMobility(EComponentMobility::Movable);
+                    It->SetActorLocation(It->GetActorLocation() + FVector(Delta.X, Delta.Y, Delta.Z));
+                }
+            }
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=angler_to_bank moved_m=%.1f at=%.0f,%.0f,%.0f"), InteractLogPrefix,
+                FVector::Dist2D(From, BankGround.ImpactPoint) / 100.0, BankGround.ImpactPoint.X, BankGround.ImpactPoint.Y, BankGround.ImpactPoint.Z);
+        }
+        else
+        {
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=angler_to_bank moved_m=0 reason=%s"), InteractLogPrefix,
+                !bWater ? TEXT("no_water_ahead") : TEXT("already_at_bank"));
+        }
+    }
     int32 Spawned = 0;
     for (const FInteractableDefinition& Entry : MarburgumII::Gameplay::Interactables)
     {
@@ -1345,8 +1396,37 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
         const bool bPerson = Entry.Kind == EInteractableKind::Npc;
         // People stand on their feet; a place marker sits half sunk so it reads as a post, crate or sign.
         const FVector At = Ground.ImpactPoint + FVector(0.0, 0.0, bPerson ? 0.0 : 25.0);
-        // Everyone faces the river (the original's -z in Unreal's -X) unless the angler shows otherwise.
-        const FRotator Facing = Angler ? Angler->GetActorRotation() : FRotator(0.0, 180.0, 0.0);
+        // Everyone faces the river (the original's -z in Unreal's -X) unless the angler shows otherwise; a person whose
+        // original spot puts a wall in their face turns to the clearest way instead (ADR-080).
+        FRotator Facing = Angler ? Angler->GetActorRotation() : FRotator(0.0, 180.0, 0.0);
+        if (bPerson)
+        {
+            const FVector Chest = Ground.ImpactPoint + FVector(0.0, 0.0, 140.0);
+            const auto Clearance = [&InWorld, &Params, &Chest](const FRotator& Way)
+            {
+                FHitResult Hit;
+                return InWorld.LineTraceSingleByChannel(Hit, Chest, Chest + Way.Vector() * 1000.0, ECC_Visibility, Params)
+                    ? Hit.Distance : 1000.0;
+            };
+            if (Clearance(Facing) < 800.0)
+            {
+                FRotator Best = Facing;
+                double BestClear = Clearance(Facing);
+                for (int32 Step = 1; Step < 16; ++Step)
+                {
+                    const FRotator Way(0.0, Facing.Yaw + Step * 22.5, 0.0);
+                    const double Clear = Clearance(Way);
+                    if (Clear > BestClear + 1.0)
+                    {
+                        BestClear = Clear;
+                        Best = Way;
+                    }
+                }
+                UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=content_turned id=%s from_yaw=%.0f to_yaw=%.0f clear_m=%.1f"), InteractLogPrefix,
+                    Entry.Id, Facing.Yaw, Best.Yaw, BestClear / 100.0);
+                Facing = Best;
+            }
+        }
         const FTransform Spot(Facing, At, bPerson ? FVector::OneVector : FVector(0.5));
         UClass* Class = bPerson ? AMarburgumNpc::StaticClass() : AMarburgumInteractable::StaticClass();
         AMarburgumInteractable* Placed = InWorld.SpawnActorDeferred<AMarburgumInteractable>(Class, Spot, nullptr, nullptr,

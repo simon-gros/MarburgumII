@@ -69,7 +69,7 @@ private:
     void Play(UAnimSequenceBase* Clip, FName Name, bool bLoop, float Position);
     /** The pawn this person is paying attention to this frame, if any. */
     APawn* AttentionTarget() const;
-    void TurnBody(float DeltaSeconds, const APawn* Toward);
+    void TurnBody(float DeltaSeconds, const APawn* Toward, bool bTalking);
     void UpdateAngler(double ServerSeconds);
     void ShowLine(bool bOut, double Reeled);
 
@@ -107,4 +107,5 @@ private:
     /** Where the float lands for this cast, found once per cast. */
     FVector FloatAt = FVector::ZeroVector;
     bool bFloatKnown = false;
+    bool bFloatOnWater = false;
 };

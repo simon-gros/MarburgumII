@@ -309,28 +309,27 @@ namespace MarburgumNpcContent
             return Names.IndexOfByKey(FName(Bone));
         }
 
-        /** Where a hand closes: the knuckle line pulled a little toward the palm. False when a bone is missing. */
+        /**
+         * Where a hand closes: the knuckle line pulled a little toward the palm. The palm faces where (index - pinky) x
+         * (wrist to knuckles) points for a left hand and the opposite way for a right one (palm down, fingers forward:
+         * the right thumb is on the left). False when a bone is missing.
+         */
         bool Palm(const TArray<FTransform>& Pose, const TCHAR* Side, FVector& OutCentre, FVector& OutNormal) const
         {
             const int32 Hand = Index(*FString::Printf(TEXT("hand_%s"), Side));
             const int32 IndexKnuckle = Index(*FString::Printf(TEXT("index_01_%s"), Side));
             const int32 Middle = Index(*FString::Printf(TEXT("middle_01_%s"), Side));
             const int32 Pinky = Index(*FString::Printf(TEXT("pinky_01_%s"), Side));
-            const int32 Thumb = Index(*FString::Printf(TEXT("thumb_02_%s"), Side));
-            if (Hand == INDEX_NONE || IndexKnuckle == INDEX_NONE || Middle == INDEX_NONE || Pinky == INDEX_NONE || Thumb == INDEX_NONE)
+            if (Hand == INDEX_NONE || IndexKnuckle == INDEX_NONE || Middle == INDEX_NONE || Pinky == INDEX_NONE)
             {
                 return false;
             }
             const FVector H = Pose[Hand].GetLocation();
             const FVector M = Pose[Middle].GetLocation();
-            FVector Normal = FVector::CrossProduct(Pose[IndexKnuckle].GetLocation() - Pose[Pinky].GetLocation(), M - H).GetSafeNormal();
-            // The thumb sits on the palm's side of the hand.
-            if (FVector::DotProduct(Normal, Pose[Thumb].GetLocation() - H) < 0.0)
-            {
-                Normal = -Normal;
-            }
-            OutNormal = Normal;
-            OutCentre = M - (M - H).GetSafeNormal() * 1.0 + Normal * 2.6;
+            const FVector Across = Pose[IndexKnuckle].GetLocation() - Pose[Pinky].GetLocation();
+            const double Sign = FCString::Strcmp(Side, TEXT("r")) == 0 ? -1.0 : 1.0;
+            OutNormal = (FVector::CrossProduct(Across, M - H) * Sign).GetSafeNormal();
+            OutCentre = M - (M - H).GetSafeNormal() * 1.0 + OutNormal * 2.6;
             return true;
         }
     };
@@ -407,12 +406,58 @@ namespace MarburgumNpcContent
         return Best;
     }
 
-    /** Where the rod sits in component space for a pose: the socket on hand_r carried by that pose's hand. */
+    /**
+     * The right wrist's held turn (hand_r, local), so the knuckle line runs along the rod and the fingers close across it
+     * rather than along it; found by SocketFor and held in every fishing clip.
+     */
+    FQuat RightWrist = FQuat::Identity;
+
+    /** Turns Side's hand and everything under it by the world rotation Turn about the wrist, in a component-space pose. */
+    void TurnHand(TArray<FTransform>& Pose, const FRig& Rig, const TCHAR* Side, const FQuat& Turn)
+    {
+        const int32 Hand = Rig.Index(*FString::Printf(TEXT("hand_%s"), Side));
+        if (Hand == INDEX_NONE)
+        {
+            return;
+        }
+        const FVector Wrist = Pose[Hand].GetLocation();
+        for (int32 Bone = 0; Bone < Pose.Num(); ++Bone)
+        {
+            int32 Walk = Bone;
+            while (Walk != INDEX_NONE && Walk != Hand)
+            {
+                Walk = Rig.Reference->GetRawParentIndex(Walk);
+            }
+            if (Walk == Hand)
+            {
+                Pose[Bone].SetLocation(Wrist + Turn.RotateVector(Pose[Bone].GetLocation() - Wrist));
+                Pose[Bone].SetRotation((Turn * Pose[Bone].GetRotation()).GetNormalized());
+            }
+        }
+    }
+
+    /** A pose as the fishing clips draw it: Evaluate, then the right wrist turned by RightWrist. */
+    bool EvaluateHeld(const FPose& Pose, TArray<FTransform>& Out, FRig& Rig)
+    {
+        if (!Evaluate(Pose, Out, Rig))
+        {
+            return false;
+        }
+        const int32 Hand = Rig.Index(TEXT("hand_r"));
+        if (Hand != INDEX_NONE)
+        {
+            const FQuat World = Out[Hand].GetRotation();
+            TurnHand(Out, Rig, TEXT("r"), World * RightWrist * World.Inverse());
+        }
+        return true;
+    }
+
+    /** Where the rod sits in component space for a pose: the socket on hand_r carried by that pose's (turned) hand. */
     FTransform RodInPose(const FPose& Pose, const FTransform& Socket, FRig& Rig)
     {
         TArray<FTransform> Out;
         const int32 Hand = Rig.Index(TEXT("hand_r"));
-        if (!Evaluate(Pose, Out, Rig) || Hand == INDEX_NONE)
+        if (!EvaluateHeld(Pose, Out, Rig) || Hand == INDEX_NONE)
         {
             return FTransform::Identity;
         }
@@ -427,7 +472,12 @@ namespace MarburgumNpcContent
     {
         TArray<FTransform> Out;
         FVector Grip, Normal;
-        if (!Evaluate(HoldPose(), Out, Rig) || !Rig.Palm(Out, TEXT("r"), Grip, Normal) || Rig.Index(TEXT("hand_r")) == INDEX_NONE)
+        // Bone names are known once a pose has been evaluated.
+        const bool bEvaluated = Evaluate(HoldPose(), Out, Rig);
+        const int32 Hand = Rig.Index(TEXT("hand_r"));
+        const int32 IndexKnuckle = Rig.Index(TEXT("index_01_r"));
+        const int32 Pinky = Rig.Index(TEXT("pinky_01_r"));
+        if (!bEvaluated || Hand == INDEX_NONE || IndexKnuckle == INDEX_NONE || Pinky == INDEX_NONE)
         {
             UE_LOG(LogMarburgumNpcContent, Error, TEXT("%s cannot evaluate the hold pose on %s"), LogTag, SkeletonPath);
             return false;
@@ -435,8 +485,18 @@ namespace MarburgumNpcContent
         // Mannequin component space: +Y forward, +Z up, -X the body's right.
         const double Pitch = FMath::DegreesToRadians(32.0);
         const FVector Along = FVector(-0.1, FMath::Cos(Pitch), FMath::Sin(Pitch)).GetSafeNormal();
+        // A rod held like a torch: the wrist turns so the knuckle line runs along the blank, index toward the tip.
+        const FVector Knuckles = (Out[IndexKnuckle].GetLocation() - Out[Pinky].GetLocation()).GetSafeNormal();
+        const FQuat Turn = FQuat::FindBetweenNormals(Knuckles, Along);
+        const FQuat World = Out[Hand].GetRotation();
+        RightWrist = (World.Inverse() * Turn * World).GetNormalized();
+        TurnHand(Out, Rig, TEXT("r"), Turn);
+        if (!Rig.Palm(Out, TEXT("r"), Grip, Normal))
+        {
+            return false;
+        }
         const FTransform RodInComponent(FRotationMatrix::MakeFromXZ(Along, FVector::UpVector).ToQuat(), Grip);
-        OutSocket = RodInComponent.GetRelativeTransform(Out[Rig.Index(TEXT("hand_r"))]);
+        OutSocket = RodInComponent.GetRelativeTransform(Out[Hand]);
         return true;
     }
 
@@ -504,68 +564,80 @@ namespace MarburgumNpcContent
     }
 
     /**
-     * Curl for a finger chain: which local axis and sign close the finger toward Line (a point and direction in
-     * component space) from the hand of Pose. Tested on the index finger of Side, applied to all four fingers.
+     * Four fingers closed round a grip by Amount (1 is a fist round a rod) and the thumb a little, in Pose's hand. Each
+     * finger bends about the axis square to the finger and to the palm normal, so it closes toward the palm rather than
+     * twisting about its own length; the axis is written in each bone's own frame of Pose. Logs how far the fingertips
+     * end from Line (the grip) as evidence.
      */
-    FVector CurlAxis(const TArray<FTransform>& Pose, const FRig& Rig, const TCHAR* Side, const FVector& LinePoint, const FVector& LineDirection)
+    double CloseHand(TMap<FName, FQuat>& Held, const TArray<FTransform>& Pose, const FRig& Rig, const TCHAR* Side, double Amount,
+        const FVector& LinePoint, const FVector& LineDirection, bool bLog = true)
     {
-        const TArray<FTransform>& LocalRest = Rig.Reference->GetRawRefBonePose();
-        int32 Bones[3];
-        for (int32 Link = 0; Link < 3; ++Link)
+        FVector Centre, Normal;
+        if (!Rig.Palm(Pose, Side, Centre, Normal))
         {
-            Bones[Link] = Rig.Index(*FString::Printf(TEXT("index_0%d_%s"), Link + 1, Side));
-            if (Bones[Link] == INDEX_NONE)
-            {
-                return FVector::ZeroVector;
-            }
+            return TNumericLimits<double>::Max();
         }
-        const int32 Parent = Rig.Reference->GetRawParentIndex(Bones[0]);
-        const auto TipDistance = [&](const FVector& Axis)
+        const TArray<FTransform>& LocalRest = Rig.Reference->GetRawRefBonePose();
+        double Worst = 0.0;
+        const auto Chain = [&](const TCHAR* Finger, const double (&Joints)[3])
         {
-            FTransform At = Pose[Parent];
+            int32 Bones[3];
             for (int32 Link = 0; Link < 3; ++Link)
             {
-                FTransform Local = LocalRest[Bones[Link]];
-                Local.SetRotation(Local.GetRotation() * FQuat(Axis, 0.9));
-                At = Local * At;
+                Bones[Link] = Rig.Index(*FString::Printf(TEXT("%s_0%d_%s"), Finger, Link + 1, Side));
+                if (Bones[Link] == INDEX_NONE)
+                {
+                    return;
+                }
+            }
+            const FVector Along = (Pose[Bones[1]].GetLocation() - Pose[Bones[0]].GetLocation()).GetSafeNormal();
+            const FVector Axis = FVector::CrossProduct(Along, Normal).GetSafeNormal();
+            // Forward kinematics of the closed finger, for the evidence line.
+            FTransform At = Pose[Rig.Reference->GetRawParentIndex(Bones[0])];
+            for (int32 Link = 0; Link < 3; ++Link)
+            {
+                const FVector Local = Pose[Bones[Link]].GetRotation().Inverse().RotateVector(Axis);
+                const FQuat Turn(Local, Joints[Link] * Amount);
+                Held.Add(Rig.Names[Bones[Link]], Turn);
+                FTransform Bone = LocalRest[Bones[Link]];
+                Bone.SetRotation(Bone.GetRotation() * Turn);
+                At = Bone * At;
             }
             const FVector Tip = At.TransformPosition(LocalRest[Bones[2]].GetLocation());
-            return FMath::PointDistToLine(Tip, LineDirection, LinePoint);
+            Worst = FMath::Max(Worst, FMath::PointDistToLine(Tip, LineDirection, LinePoint));
         };
-        FVector Best = FVector::ZeroVector;
-        double BestDistance = TNumericLimits<double>::Max();
-        for (const FVector& Axis : { FVector::XAxisVector, -FVector::XAxisVector, FVector::YAxisVector, -FVector::YAxisVector,
-                 FVector::ZAxisVector, -FVector::ZAxisVector })
-        {
-            const double Distance = TipDistance(Axis);
-            if (Distance < BestDistance)
-            {
-                BestDistance = Distance;
-                Best = Axis;
-            }
-        }
-        UE_LOG(LogMarburgumNpcContent, Display, TEXT("%s curl %s axis=(%.0f, %.0f, %.0f) tip_to_grip=%.1fcm"), LogTag, Side, Best.X, Best.Y, Best.Z,
-            BestDistance);
-        return Best;
-    }
-
-    /** Four fingers closed round a grip by Amount (1 is a fist round a rod), and the thumb a little. */
-    void CloseHand(TMap<FName, FQuat>& Held, const TCHAR* Side, const FVector& Axis, double Amount)
-    {
-        if (Axis.IsZero())
-        {
-            return;
-        }
+        const double FingerJoints[3] = { 1.0, 1.25, 0.75 };
         for (const TCHAR* Finger : { TEXT("index"), TEXT("middle"), TEXT("ring"), TEXT("pinky") })
         {
-            const double Joints[] = { 1.0, 1.25, 0.75 };
-            for (int32 Link = 0; Link < 3; ++Link)
+            Chain(Finger, FingerJoints);
+        }
+        const double ThumbJoints[3] = { 0.0, 0.35, 0.45 };
+        Chain(TEXT("thumb"), ThumbJoints);
+        if (bLog)
+        {
+            UE_LOG(LogMarburgumNpcContent, Display, TEXT("%s close %s amount=%.2f palm=(%.2f, %.2f, %.2f) furthest_tip_from_grip=%.1fcm"), LogTag, Side,
+                Amount, Normal.X, Normal.Y, Normal.Z, Worst);
+        }
+        return Worst;
+    }
+
+    /** The closing amount (0.5 to 1.6) that brings every fingertip nearest the grip, then that hand closed. */
+    void CloseHandTightest(TMap<FName, FQuat>& Held, const TArray<FTransform>& Pose, const FRig& Rig, const TCHAR* Side,
+        const FVector& LinePoint, const FVector& LineDirection)
+    {
+        double BestAmount = 1.0;
+        double BestWorst = TNumericLimits<double>::Max();
+        for (double Amount = 0.5; Amount <= 1.601; Amount += 0.05)
+        {
+            TMap<FName, FQuat> Trial;
+            const double Worst = CloseHand(Trial, Pose, Rig, Side, Amount, LinePoint, LineDirection, false);
+            if (Worst < BestWorst)
             {
-                Held.Add(FName(*FString::Printf(TEXT("%s_0%d_%s"), Finger, Link + 1, Side)), FQuat(Axis, Joints[Link] * Amount));
+                BestWorst = Worst;
+                BestAmount = Amount;
             }
         }
-        Held.Add(FName(*FString::Printf(TEXT("thumb_02_%s"), Side)), FQuat(Axis, 0.35 * Amount));
-        Held.Add(FName(*FString::Printf(TEXT("thumb_03_%s"), Side)), FQuat(Axis, 0.45 * Amount));
+        CloseHand(Held, Pose, Rig, Side, BestAmount, LinePoint, LineDirection);
     }
 
     /** One track per bone any key names (a bone a key leaves out is at rest in that key), then Build. */
@@ -636,15 +708,16 @@ namespace MarburgumNpcContent
             return false;
         }
         TArray<FTransform> Out;
-        if (!Evaluate(HoldPose(), Out, Rig))
+        if (!EvaluateHeld(HoldPose(), Out, Rig))
         {
             return false;
         }
-        // Which way the fingers close, found on the hold pose: the right round the grip, the left round the knob.
+        UE_LOG(LogMarburgumNpcContent, Display, TEXT("%s wrist r turn=%.1fdeg"), LogTag, FMath::RadiansToDegrees(RightWrist.GetAngle()));
+        // The right hand closes round the grip, in the hold pose, its wrist held turned in every fishing clip.
         const FTransform HoldRod = RodInPose(HoldPose(), Socket, Rig);
-        const FVector RightAxis = CurlAxis(Out, Rig, TEXT("r"), HoldRod.GetLocation(), HoldRod.GetUnitAxis(EAxis::X));
         TMap<FName, FQuat> Grip;
-        CloseHand(Grip, TEXT("r"), RightAxis, 1.0);
+        CloseHandTightest(Grip, Out, Rig, TEXT("r"), HoldRod.GetLocation(), HoldRod.GetUnitAxis(EAxis::X));
+        Grip.Add(TEXT("hand_r"), RightWrist);
 
         bool bOk = true;
         const auto OnKnob = [](double Turn) { return [Turn](int32) { return KnobAt(Turn); }; };
@@ -657,8 +730,7 @@ namespace MarburgumNpcContent
             Evaluate(Keys[0], Left, Rig);
             const FTransform Rod = RodInPose(Keys[0], Socket, Rig);
             const FVector Knob = Rod.TransformPosition(KnobAt(0.0));
-            const FVector LeftAxis = CurlAxis(Left, Rig, TEXT("l"), Knob, Rod.TransformVector(FVector::RightVector).GetSafeNormal());
-            CloseHand(Grip, TEXT("l"), LeftAxis, 0.75);
+            CloseHandTightest(Grip, Left, Rig, TEXT("l"), Knob, Rod.TransformVector(FVector::RightVector).GetSafeNormal());
             bOk &= BuildClip(TEXT("/Game/Characters/Animations/A_FishHold"), TEXT("Marburgum fishing hold"), Npc::FishHoldLoopSeconds, true, Keys, {},
                 Grip);
         }
