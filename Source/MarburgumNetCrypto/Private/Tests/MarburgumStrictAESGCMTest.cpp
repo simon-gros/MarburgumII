@@ -120,6 +120,44 @@ bool FMarburgumStrictAESGCMTest::RunTest(const FString& Parameters)
     FMarburgumStrictAESGCM Stranger;
     Keyed(Stranger, Key(2), true);
     TestTrue(TEXT("another key cannot read it"), Receive(Stranger, Wire).bError);
+
+    // ADR-085: an authentic packet that comes back is dropped, however late; a reordered one is not.
+    TestTrue(TEXT("a replayed packet is dropped"), Receive(Receiver, Wire).Bytes.IsEmpty());
+    TestEqual(TEXT("and counted"), Receiver.GetReplaysDropped(), int64(1));
+    const TArray<uint8> Second = Send(Sender, Payload);
+    const TArray<uint8> Third = Send(Sender, Payload);
+    TestFalse(TEXT("a later packet arrives first"), Receive(Receiver, Third).Bytes.IsEmpty());
+    TestFalse(TEXT("an earlier one after it is still taken"), Receive(Receiver, Second).Bytes.IsEmpty());
+    TestTrue(TEXT("but not twice"), Receive(Receiver, Second).Bytes.IsEmpty());
+    for (int32 Index = 0; Index < 1100; ++Index)
+    {
+        Receive(Receiver, Send(Sender, Payload));
+    }
+    TestTrue(TEXT("a packet recorded 1,100 packets ago is refused"), Receive(Receiver, Third).Bytes.IsEmpty());
+    TestEqual(TEXT("replays counted"), Receiver.GetReplaysDropped(), int64(3));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumReplayWindowTest, "Marburgum.Net.ReplayWindow",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::ServerContext | EAutomationTestFlags::EngineFilter)
+
+bool FMarburgumReplayWindowTest::RunTest(const FString& Parameters)
+{
+    FMarburgumReplayWindow Window;
+    const uint64 Start = 0xFFFFFFFFFFFFFF00ull; // a random start can sit right below the wrap
+    TestTrue(TEXT("first"), Window.Accept(Start));
+    TestFalse(TEXT("duplicate"), Window.Accept(Start));
+    TestTrue(TEXT("next"), Window.Accept(Start + 2));
+    TestTrue(TEXT("gap filled late"), Window.Accept(Start + 1));
+    TestFalse(TEXT("gap filled twice"), Window.Accept(Start + 1));
+    TestTrue(TEXT("jump ahead"), Window.Accept(Start + 200));
+    TestTrue(TEXT("inside the window, unseen"), Window.Accept(Start + 3));
+    TestFalse(TEXT("inside the window, seen"), Window.Accept(Start + 2));
+    TestTrue(TEXT("far ahead"), Window.Accept(Start + 200 + 5000));
+    TestFalse(TEXT("behind the window"), Window.Accept(Start + 200 + 5000 - FMarburgumReplayWindow::WindowPackets));
+    TestTrue(TEXT("the last slot inside"), Window.Accept(Start + 200 + 5000 - FMarburgumReplayWindow::WindowPackets + 1));
+    // A slot the window slid over is free for its new counter.
+    TestTrue(TEXT("a reused slot"), Window.Accept(Start + 200 + 5000 + 1));
     return true;
 }
 
