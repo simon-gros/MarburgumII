@@ -45,6 +45,8 @@ bool FMarburgumBuildingMesherTest::RunTest(const FString& Parameters)
         TestTrue(FString::Printf(TEXT("%hs outline kept"), F.Id.c_str()), MB::CleanOutline(F.Outline));
     }
     MB::FindPartyWalls(Plans);
+    // The rectangle has a ground floor, so its street door is cut (ADR-076); the rest keep painted doors.
+    Plans[0].DoorEdge = 0;
     TestTrue(TEXT("Row houses share their middle wall"), Plans[5].Party[1] && Plans[6].Party[3]);
     TestFalse(TEXT("A free-standing wall is not a party wall"), Plans[0].Party[0]);
 
@@ -59,7 +61,15 @@ bool FMarburgumBuildingMesherTest::RunTest(const FString& Parameters)
             continue;
         }
         const MB::FCheck Check = MB::Check(Mesh, F);
-        TestTrue(FString::Printf(TEXT("%hs is closed with no T-junctions (%d open edges)"), F.Id.c_str(), Check.StrictOpenEdges), Check.bStrict);
+        TestTrue(FString::Printf(TEXT("%hs is closed apart from its street door (%d open edges)"), F.Id.c_str(), Check.OpenEdges), Check.bClosed);
+        if (Mesh.Door.bPresent)
+        {
+            TestFalse(FString::Printf(TEXT("%hs doorway is a real opening"), F.Id.c_str()), Check.bStrict);
+        }
+        else
+        {
+            TestTrue(FString::Printf(TEXT("%hs stays strictly closed"), F.Id.c_str()), Check.bStrict);
+        }
         TestTrue(FString::Printf(TEXT("%hs faces outward"), F.Id.c_str()), Check.Volume > 0.0);
         // Seen from above, the roof covers the whole footprint and the eave overhang beyond it.
         TestTrue(FString::Printf(TEXT("%hs roof covers the footprint"), F.Id.c_str()), Check.RoofCover >= Check.FootprintArea * 0.999);
@@ -106,6 +116,153 @@ bool FMarburgumBuildingMesherTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("The rectangle has upstairs windows"), Upstairs > 0);
     TestEqual(TEXT("An 18 m wall has bays 0 to 4"), MaxBay, 4);
     TestTrue(TEXT("Its walls are counted"), Rectangle.Facades >= 2);
+    TestTrue(TEXT("The rectangle's street door is cut"), Rectangle.Door.bPresent);
+    return true;
+}
+
+#endif // WITH_DEV_AUTOMATION_TESTS
+
+#if WITH_DEV_AUTOMATION_TESTS
+
+#include "MarburgumInteriorCore.h"
+#include "MarburgumInteriorSubsystem.h"
+#include "Dom/JsonObject.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumInteriorDoorCutsTest,
+    "Marburgum.Editor.InteriorDoorCuts",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+// The street door the façade mesher cuts is the one the ground floor opens from, for every footprint in the city
+// (ADR-076): the commandlet's shells and party walls equal the layout's, an eligible building's hole is its
+// layout's entrance to the centimetre, and a building without a ground floor keeps a closed shell.
+bool FMarburgumInteriorDoorCutsTest::RunTest(const FString& Parameters)
+{
+    namespace MB = MarburgumBuildings;
+    namespace MI = MarburgumInteriors;
+    std::vector<MI::FPlan> Plans;
+    if (!UMarburgumInteriorSubsystem::ReadPlans(Plans, nullptr))
+    {
+        AddError(TEXT("buildings.json could not be prepared"));
+        return false;
+    }
+    FString Text;
+    TSharedPtr<FJsonObject> Root;
+    const FString Path = FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground/buildings.json"));
+    if (!FFileHelper::LoadFileToString(Text, *Path) || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) || !Root.IsValid())
+    {
+        AddError(TEXT("buildings.json could not be read"));
+        return false;
+    }
+    // The shells exactly as MarburgumRebuildFacadesCommandlet's ReadFootprints keeps them.
+    std::vector<MB::FFootprint> Footprints;
+    std::vector<size_t> PlanOf;
+    size_t Index = 0;
+    for (const TSharedPtr<FJsonValue>& Value : Root->GetArrayField(TEXT("buildings")))
+    {
+        const size_t This = Index++;
+        const TSharedPtr<FJsonObject> Object = Value->AsObject();
+        if (!Object.IsValid())
+        {
+            continue;
+        }
+        MB::FFootprint F;
+        F.Id = TCHAR_TO_UTF8(*Object->GetStringField(TEXT("id")));
+        double Number = 0.0;
+        F.Ground = Object->TryGetNumberField(TEXT("ground"), Number) ? Number : 0.0;
+        F.Eaves = Object->TryGetNumberField(TEXT("eaves"), Number) ? Number : F.Ground + 3.0;
+        const double Ridge = Object->TryGetNumberField(TEXT("ridge"), Number) ? Number : F.Eaves;
+        F.RoofRise = Ridge - F.Eaves;
+        F.PitchDegrees = Object->TryGetNumberField(TEXT("pitch"), Number) ? Number : 40.0;
+        const FString Roof = Object->GetStringField(TEXT("roof"));
+        F.Roof = Roof == TEXT("flat") ? MB::ERoof::Flat : (Roof == TEXT("hipped") || Roof == TEXT("pyramidal") ? MB::ERoof::Hipped : MB::ERoof::Gabled);
+        F.Base = F.Ground - 2.65;
+        const double Area = Object->TryGetNumberField(TEXT("area"), Number) ? Number : 0.0;
+        for (const TSharedPtr<FJsonValue>& Point : Object->GetArrayField(TEXT("outline")))
+        {
+            const TArray<TSharedPtr<FJsonValue>> Pair = Point->AsArray();
+            if (Pair.Num() >= 2)
+            {
+                F.Outline.push_back({ Pair[0]->AsNumber(), Pair[1]->AsNumber() });
+            }
+        }
+        if (Area < 30.0 || F.Outline.size() < 4 || !MB::CleanOutline(F.Outline))
+        {
+            TestFalse(FString::Printf(TEXT("%hs has no shell and no layout"), F.Id.c_str()), This < Plans.size() && Plans[This].bShell);
+            continue;
+        }
+        Footprints.push_back(F);
+        PlanOf.push_back(This);
+    }
+    MB::FindPartyWalls(Footprints);
+
+    int32 Cut = 0;
+    int32 Sealed = 0;
+    int32 Differ = 0;
+    int32 Misplaced = 0;
+    int32 Leaky = 0;
+    for (size_t F = 0; F < Footprints.size(); ++F)
+    {
+        MB::FFootprint& Footprint = Footprints[F];
+        const MI::FPlan& Plan = Plans[PlanOf[F]];
+        bool bSame = Plan.bShell && Plan.Id == Footprint.Id && Plan.Outline.size() == Footprint.Outline.size();
+        for (size_t P = 0; bSame && P < Plan.Outline.size(); ++P)
+        {
+            bSame = FMath::IsNearlyEqual(Plan.Outline[P].X, Footprint.Outline[P].X, 1.0e-6) && FMath::IsNearlyEqual(Plan.Outline[P].Y, Footprint.Outline[P].Y, 1.0e-6)
+                && (Plan.Party[P] != 0) == Footprint.Party[P];
+        }
+        if (!bSame)
+        {
+            ++Differ;
+            AddError(FString::Printf(TEXT("%hs: the layout's outline or party walls differ from the shell's"), Footprint.Id.c_str()));
+            continue;
+        }
+        const MI::FLayout Layout = MI::Generate(Plan);
+        Footprint.DoorEdge = Layout.Status == MI::EStatus::Eligible ? Layout.EntranceEdge : -1;
+        if (Layout.Status == MI::EStatus::Eligible)
+        {
+            Footprint.DoorSill = Layout.Openings[0].Z0;
+        }
+        MB::FBuildingMesh Mesh;
+        std::string Error;
+        if (!MB::BuildBuilding(Footprint, Mesh, Error))
+        {
+            continue;
+        }
+        const MB::FCheck Check = MB::Check(Mesh, Footprint);
+        if (Layout.Status != MI::EStatus::Eligible)
+        {
+            ++Sealed;
+            if (Mesh.Door.bPresent || !Check.bClosed)
+            {
+                ++Leaky;
+                AddError(FString::Printf(TEXT("%hs has no ground floor but its shell is open"), Footprint.Id.c_str()));
+            }
+            continue;
+        }
+        ++Cut;
+        const MI::FOpening& Street = Layout.Openings[0];
+        // The hole's bottom corners, in plan metres, against the layout's street opening.
+        const MB::FVec3 L = Mesh.Door.Corner[0];
+        const MB::FVec3 R = Mesh.Door.Corner[1];
+        const bool bAligned = Mesh.Door.bPresent && Check.bClosed && Check.Volume > 0.0
+            && FMath::IsNearlyEqual(L.X, Street.A.X, 0.01) && FMath::IsNearlyEqual(L.Y, Street.A.Y, 0.01)
+            && FMath::IsNearlyEqual(R.X, Street.B.X, 0.01) && FMath::IsNearlyEqual(R.Y, Street.B.Y, 0.01)
+            && FMath::IsNearlyEqual(L.Z, Street.Z0, 0.01) && FMath::IsNearlyEqual(Mesh.Door.Corner[2].Z, Street.Z1, 0.01);
+        if (!bAligned)
+        {
+            ++Misplaced;
+            AddError(FString::Printf(TEXT("%hs: the cut door (%.2f,%.2f)-(%.2f,%.2f) is not the layout's (%.2f,%.2f)-(%.2f,%.2f)"), Footprint.Id.c_str(),
+                L.X, L.Y, R.X, R.Y, Street.A.X, Street.A.Y, Street.B.X, Street.B.Y));
+        }
+    }
+    TestEqual(TEXT("Every shell's outline and party walls are the layout's"), Differ, 0);
+    TestEqual(TEXT("Every cut door is its layout's entrance"), Misplaced, 0);
+    TestEqual(TEXT("No building without a ground floor is left open"), Leaky, 0);
+    AddInfo(FString::Printf(TEXT("MB2INTERIOR_CUTS shells=%d cut=%d sealed=%d"), static_cast<int32>(Footprints.size()), Cut, Sealed));
     return true;
 }
 

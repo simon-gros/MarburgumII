@@ -3,13 +3,17 @@
 // Watertight Lent building shells. Plain standard C++ so the same code runs in the editor commandlet
 // and in a standalone check outside Unreal.
 //
-// A building is one closed solid: a floor, the walls, a soffit and fascia under the eaves, and a roof.
+// A building is one solid: a floor, the walls, a soffit and fascia under the eaves, and a roof.
 // The roof is a weighted straight skeleton of the footprint. Every roof face starts on a wall line,
 // so the roof always meets the walls. Gable ends and party walls are edges that do not move inward;
-// their faces come out vertical and are plaster. Window frames, glass, sills and doors are separate
-// closed boxes set into the wall, and the plinth, string course and cornice closed rings round it. Positions are welded, and Check() proves the result is closed: every
-// edge is used by exactly two triangles, once in each direction.
+// their faces come out vertical and are plaster. Window frames, glass, sills and the street-door frame are
+// separate closed boxes set into the wall, and the plinth, string course and cornice closed rings round it.
+// A building with a ground floor has its street door cut through the wall its layout chose (FFootprint::DoorEdge,
+// MarburgumInteriorCore.h); every other building keeps a painted door. Check() allows that one doorway and no other
+// crack: every other edge is used by exactly two triangles, once in each direction.
 
+#include <cmath>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -64,6 +68,12 @@ namespace MarburgumBuildings
         double RoofRise = 4.0;
         double PitchDegrees = 40.0;
         ERoof Roof = ERoof::Gabled;
+        // The wall the street door is cut through, from the building's interior layout
+        // (MarburgumInteriorCore.h, Generate's EntranceEdge), or -1: no hole, a painted door on the longest free wall.
+        int DoorEdge = -1;
+        // The cut door's sill: the ground floor's measured floor (MarburgumInteriorCore.h, FPlan::Floor). NaN: Ground.
+        double DoorSill = std::numeric_limits<double>::quiet_NaN();
+        double Sill() const { return std::isfinite(DoorSill) ? DoorSill : Ground; }
     };
 
     struct FTriangle
@@ -101,6 +111,14 @@ namespace MarburgumBuildings
         int Facades = 0;
         // Façade bands built: plinth, string course, cornice.
         int Bands = 0;
+        // The street doorway, when the longest free wall can take one. Corner order is bottom-left,
+        // bottom-right, top-right, top-left, on the outer wall, in plan metres.
+        struct FDoorPortal
+        {
+            bool bPresent = false;
+            FVec3 Corner[4] = {};
+        };
+        FDoorPortal Door;
     };
 
     struct FCheck

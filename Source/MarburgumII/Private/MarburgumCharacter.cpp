@@ -84,6 +84,8 @@ AMarburgumCharacter::AMarburgumCharacter(const FObjectInitializer& ObjectInitial
 
     // Protagonist prototype (ADR-021). The mannequin's pivot is at its feet and it faces +Y.
     USkeletalMeshComponent* Body = GetMesh();
+    // Channel 1 is the room lamps' (ADR-076), so a ceiling lamp lights the people in the room but not the façade outside.
+    Body->SetLightingChannels(true, true, false);
     static ConstructorHelpers::FObjectFinder<USkeletalMesh> Protagonist(
         TEXT("/Game/Characters/Protagonist/SKM_Protagonist.SKM_Protagonist"));
     if (Protagonist.Succeeded())

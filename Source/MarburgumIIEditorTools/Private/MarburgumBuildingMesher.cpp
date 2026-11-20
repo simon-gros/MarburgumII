@@ -1,4 +1,5 @@
 #include "MarburgumBuildingMesher.h"
+#include "MarburgumInteriorCore.h"
 
 #include <algorithm>
 #include <array>
@@ -911,11 +912,19 @@ namespace
         return OffsetOutline(Outline, Offset, Eave);
     }
 
-    void AddOpenings(double Width, double Height, bool bDoor, std::vector<std::array<double, 7>>& Out)
+    // DoorKind: 0 none, 1 the painted door of a building with no ground floor, 2 the cut street door of one with.
+    void AddOpenings(double Width, double Height, int DoorKind, double DoorClearance, double SillAbove, std::vector<std::array<double, 7>>& Out)
     {
-        // Each opening: U0, U1, V0, V1, door (1) or window (0), storey, bay; U along the wall, V above the ground.
+        // SillAbove lifts the cut door's sill from the street line to the measured floor (FFootprint::DoorSill).
+        // Each opening: U0, U1, V0, V1, door (1 painted, 2 cut) or window (0), storey, bay; U along the wall, V above the ground.
+        // DoorClearance is the shared figure from MarburgumInteriorCore, not this wall's own height.
+        const MarburgumInteriors::FDoorCut Cut = DoorKind == 2 ? MarburgumInteriors::DoorCut(Width, DoorClearance) : MarburgumInteriors::FDoorCut{};
         if (Height < 2.4 || Width < 2.2)
         {
+            if (Cut.bFits)
+            {
+                Out.push_back({ Cut.U0, Cut.U1, Cut.V0 + SillAbove, Cut.V1 + SillAbove, 2.0, 0.0, 0.0 });
+            }
             return;
         }
         const int Storeys = std::clamp(static_cast<int>(std::lround(Height / 3.2)), 1, 6);
@@ -924,7 +933,15 @@ namespace
         const double Step = Width / (Count + 1);
         for (int S = 0; S < Storeys; ++S)
         {
-            if (S == 0 && bDoor)
+            if (S == 0 && DoorKind == 2)
+            {
+                if (Cut.bFits)
+                {
+                    Out.push_back({ Cut.U0, Cut.U1, Cut.V0 + SillAbove, Cut.V1 + SillAbove, 2.0, 0.0, 0.0 });
+                }
+                continue;
+            }
+            if (S == 0 && DoorKind == 1)
             {
                 const double Top = std::min(2.15 + SocleTop, Storey - 0.4);
                 if (Top - SocleTop > 1.7)
@@ -1040,6 +1057,18 @@ namespace
                     Longest = I;
                 }
             }
+            // The cut street door is the interior layout's (MarburgumInteriorCore.h): the commandlet sets DoorEdge
+            // only for a building that gets a ground floor. Every other building keeps the painted door on its
+            // longest free wall, so no shell is left with a hole and nothing behind it.
+            const size_t CutEdge = Footprint.DoorEdge >= 0 && static_cast<size_t>(Footprint.DoorEdge) < N ? static_cast<size_t>(Footprint.DoorEdge) : N;
+            MarburgumInteriors::FDoorCut StreetDoor;
+            const double Sill = Footprint.Sill();
+            if (CutEdge < N)
+            {
+                StreetDoor = MarburgumInteriors::DoorCut(Length(P[(CutEdge + 1) % N] - P[CutEdge]), MarburgumInteriors::FacadeHeight(Footprint.Eaves, Sill));
+            }
+            const size_t DoorWall = StreetDoor.bFits ? CutEdge : Longest;
+            const int DoorKind = StreetDoor.bFits ? 2 : 1;
             for (size_t I = 0; I < N; ++I)
             {
                 const size_t J = (I + 1) % N;
@@ -1050,40 +1079,66 @@ namespace
                 const FVec2 EB = Eave[J];
                 const FVec2 D = Normalize(B - A);
                 const FVec3 Outward{ D.Y, -D.X, 0.0 };
-                std::vector<FVec3> Wall{ At(A, Footprint.Base), At(B, Footprint.Base) };
-                if (Setup.Offset[I] > 1.0e-9)
+                const bool bCut = StreetDoor.bFits && I == CutEdge;
+                auto EmitFrom = [&](double Bottom)
                 {
-                    Wall.push_back(At(B, Soffit));
-                    Wall.push_back(At(A, Soffit));
-                    bOk &= Builder.Polygon(Wall, Outward, Plaster);
-                    bOk &= Builder.Polygon({ At(A, Soffit), At(B, Soffit), At(EB, Soffit), At(EA, Soffit) }, { 0.0, 0.0, -1.0 }, Plaster);
-                    bOk &= Builder.Polygon({ At(EA, Soffit), At(EB, Soffit), At(EB, Setup.Z0), At(EA, Setup.Z0) }, Outward, RoofTile);
+                    std::vector<FVec3> Upper{ At(A, Bottom), At(B, Bottom) };
+                    if (Setup.Offset[I] > 1.0e-9)
+                    {
+                        Upper.push_back(At(B, Soffit));
+                        Upper.push_back(At(A, Soffit));
+                    }
+                    else
+                    {
+                        // This wall runs straight up to the roof edge. Where a neighbouring edge has an
+                        // overhang, the end of that eave is closed in this wall's plane.
+                        if (Setup.Offset[J] > 1.0e-9)
+                        {
+                            Upper.push_back(At(B, Soffit));
+                            Upper.push_back(At(EB, Soffit));
+                        }
+                        Upper.push_back(At(EB, Setup.Z0));
+                        Upper.push_back(At(EA, Setup.Z0));
+                        if (Setup.Offset[H] > 1.0e-9)
+                        {
+                            Upper.push_back(At(EA, Soffit));
+                            Upper.push_back(At(A, Soffit));
+                        }
+                    }
+                    return Builder.Polygon(Upper, Outward, Plaster);
+                };
+                if (!bCut)
+                {
+                    bOk &= EmitFrom(Footprint.Base);
                 }
                 else
                 {
-                    // This wall runs straight up to the roof edge. Where a neighbouring edge has an
-                    // overhang, the end of that eave is closed in this wall's plane.
-                    if (Setup.Offset[J] > 1.0e-9)
-                    {
-                        Wall.push_back(At(B, Soffit));
-                        Wall.push_back(At(EB, Soffit));
-                    }
-                    Wall.push_back(At(EB, Setup.Z0));
-                    Wall.push_back(At(EA, Setup.Z0));
-                    if (Setup.Offset[H] > 1.0e-9)
-                    {
-                        Wall.push_back(At(EA, Soffit));
-                        Wall.push_back(At(A, Soffit));
-                    }
-                    bOk &= Builder.Polygon(Wall, Outward, Plaster);
+                    const double Z0 = Sill + StreetDoor.V0;
+                    const double Z1 = Sill + StreetDoor.V1;
+                    const FVec2 Left = A + D * StreetDoor.U0;
+                    const FVec2 Right = A + D * StreetDoor.U1;
+                    bOk &= Builder.Polygon({ At(A, Footprint.Base), At(B, Footprint.Base), At(B, Z0), At(A, Z0) }, Outward, Plaster);
+                    bOk &= Builder.Polygon({ At(A, Z0), At(Left, Z0), At(Left, Z1), At(A, Z1) }, Outward, Plaster);
+                    bOk &= Builder.Polygon({ At(Right, Z0), At(B, Z0), At(B, Z1), At(Right, Z1) }, Outward, Plaster);
+                    bOk &= EmitFrom(Z1);
+                    Mesh.Door.bPresent = true;
+                    Mesh.Door.Corner[0] = At(Left, Z0);
+                    Mesh.Door.Corner[1] = At(Right, Z0);
+                    Mesh.Door.Corner[2] = At(Right, Z1);
+                    Mesh.Door.Corner[3] = At(Left, Z1);
+                }
+                if (Setup.Offset[I] > 1.0e-9)
+                {
+                    bOk &= Builder.Polygon({ At(A, Soffit), At(B, Soffit), At(EB, Soffit), At(EA, Soffit) }, { 0.0, 0.0, -1.0 }, Plaster);
+                    bOk &= Builder.Polygon({ At(EA, Soffit), At(EB, Soffit), At(EB, Setup.Z0), At(EA, Setup.Z0) }, Outward, RoofTile);
                 }
                 if (!Footprint.Party[I] && !Setup.bParapet)
                 {
-                    AddFacade(A, B, Soffit, I == Longest);
+                    AddFacade(A, B, Soffit, I == DoorWall ? DoorKind : 0);
                 }
                 else if (!Footprint.Party[I])
                 {
-                    AddFacade(A, B, Setup.Z0 - ParapetHeight, I == Longest);
+                    AddFacade(A, B, Setup.Z0 - ParapetHeight, I == DoorWall ? DoorKind : 0);
                 }
             }
             // Façade bands round the whole outline: a darker plinth from the bottom of the wall, a
@@ -1094,7 +1149,15 @@ namespace
                 const int Storeys = std::clamp(static_cast<int>(std::lround(Rise / 3.2)), 1, 6);
                 if (Footprint.Ground + SocleTop > Footprint.Base + 0.05)
                 {
-                    bOk &= Band(Footprint.Base, Footprint.Ground + SocleTop, SocleOut, Socle);
+                    // The plinth would be a step across the street door. Leave that stretch out, and cap the cut.
+                    if (StreetDoor.bFits && Sill < Footprint.Ground + SocleTop)
+                    {
+                        bOk &= Band(Footprint.Base, Footprint.Ground + SocleTop, SocleOut, Socle, static_cast<int>(CutEdge), StreetDoor.U0, StreetDoor.U1);
+                    }
+                    else
+                    {
+                        bOk &= Band(Footprint.Base, Footprint.Ground + SocleTop, SocleOut, Socle);
+                    }
                 }
                 if (Storeys >= 2 && Rise >= 4.8)
                 {
@@ -1121,7 +1184,7 @@ namespace
     private:
         // One band from Z0 to Z1: a closed ring round the outline, Out proud of the free walls and
         // BandIn into them, mitred at the corners. Skipped (true) where the mitres do not fit.
-        bool Band(double Z0, double Z1, double Out, int Material)
+        bool Band(double Z0, double Z1, double Out, int Material, int GapEdge = -1, double GapU0 = 0.0, double GapU1 = 0.0)
         {
             const std::vector<FVec2>& P = Footprint.Outline;
             const size_t N = P.size();
@@ -1138,27 +1201,63 @@ namespace
             }
             const FVec3 Up{ 0.0, 0.0, 1.0 };
             bool bOk = true;
+            auto Lerp2 = [](const FVec2& P0, const FVec2& P1, double T) { return P0 + (P1 - P0) * T; };
             for (size_t I = 0; I < N; ++I)
             {
                 const size_t J = (I + 1) % N;
                 const FVec2 D = Normalize(P[J] - P[I]);
                 const FVec3 Outward{ D.Y, -D.X, 0.0 };
-                bOk &= Builder.Polygon({ At(Outer[I], Z0), At(Outer[J], Z0), At(Outer[J], Z1), At(Outer[I], Z1) }, Outward, Material);
-                bOk &= Builder.Polygon({ At(Inner[J], Z0), At(Inner[I], Z0), At(Inner[I], Z1), At(Inner[J], Z1) }, Outward * -1.0, Material);
-                bOk &= Builder.Polygon({ At(Inner[I], Z1), At(Outer[I], Z1), At(Outer[J], Z1), At(Inner[J], Z1) }, Up, Material);
-                bOk &= Builder.Polygon({ At(Inner[I], Z0), At(Inner[J], Z0), At(Outer[J], Z0), At(Outer[I], Z0) }, Up * -1.0, Material);
+                const FVec3 Along{ D.X, D.Y, 0.0 };
+                auto EmitSpan = [&](double T0, double T1)
+                {
+                    const FVec2 O0 = Lerp2(Outer[I], Outer[J], T0);
+                    const FVec2 O1 = Lerp2(Outer[I], Outer[J], T1);
+                    const FVec2 I0 = Lerp2(Inner[I], Inner[J], T0);
+                    const FVec2 I1 = Lerp2(Inner[I], Inner[J], T1);
+                    bOk &= Builder.Polygon({ At(O0, Z0), At(O1, Z0), At(O1, Z1), At(O0, Z1) }, Outward, Material);
+                    bOk &= Builder.Polygon({ At(I1, Z0), At(I0, Z0), At(I0, Z1), At(I1, Z1) }, Outward * -1.0, Material);
+                    bOk &= Builder.Polygon({ At(I0, Z1), At(O0, Z1), At(O1, Z1), At(I1, Z1) }, Up, Material);
+                    bOk &= Builder.Polygon({ At(I0, Z0), At(I1, Z0), At(O1, Z0), At(O0, Z0) }, Up * -1.0, Material);
+                };
+                auto Cap = [&](double T, const FVec3& Facing)
+                {
+                    const FVec2 O = Lerp2(Outer[I], Outer[J], T);
+                    const FVec2 In = Lerp2(Inner[I], Inner[J], T);
+                    bOk &= Builder.Polygon({ At(O, Z0), At(In, Z0), At(In, Z1), At(O, Z1) }, Facing, Material);
+                };
+                const double Width = Length(P[J] - P[I]);
+                if (static_cast<int>(I) == GapEdge && GapU1 > GapU0 + 0.05 && Width > 0.05)
+                {
+                    const double T0 = std::clamp(GapU0 / Width, 0.0, 1.0);
+                    const double T1 = std::clamp(GapU1 / Width, 0.0, 1.0);
+                    if (T0 > 0.002)
+                    {
+                        EmitSpan(0.0, T0);
+                    }
+                    if (T1 < 0.998)
+                    {
+                        EmitSpan(T1, 1.0);
+                    }
+                    Cap(T0, Along);
+                    Cap(T1, Along * -1.0);
+                }
+                else
+                {
+                    EmitSpan(0.0, 1.0);
+                }
             }
             Mesh.Bands += 1;
             return bOk;
         }
 
-        void AddFacade(const FVec2& A, const FVec2& B, double Top, bool bDoor)
+        void AddFacade(const FVec2& A, const FVec2& B, double Top, int DoorKind)
         {
             const double Width = Length(B - A);
             const FVec2 D = Normalize(B - A);
             const FVec2 Outside{ D.Y, -D.X };
             std::vector<std::array<double, 7>> Openings;
-            AddOpenings(Width, Top - Footprint.Ground, bDoor, Openings);
+            AddOpenings(Width, Top - Footprint.Ground, DoorKind, MarburgumInteriors::FacadeHeight(Footprint.Eaves, Footprint.Sill()), Footprint.Sill() - Footprint.Ground,
+                Openings);
             const int Facade = Mesh.Facades++;
             auto Corner = [&](double U, double Z, double W) { return At(A + D * U + Outside * W, Footprint.Ground + Z); };
             auto Box = [&](double U0, double U1, double V0, double V1, double W0, double W1, int Material)
@@ -1176,10 +1275,21 @@ namespace
                 const double V0 = std::max(O[2], Footprint.Base - Footprint.Ground);
                 const double V1 = O[3];
                 const bool bIsDoor = O[4] > 0.5;
+                const bool bIsCut = O[4] > 1.5;
                 constexpr double Bar = 0.07;
                 constexpr double Back = -0.03;
                 // Every part is its own closed solid set into the wall; parts overlap by a centimetre
                 // instead of touching, so no two of them share a face.
+                if (bIsCut)
+                {
+                    // Jambs and a lintel only. The leaf is a separate actor, and these boxes sit 4 mm
+                    // inside the cut so they do not land on the opening's edges.
+                    constexpr double Inset = 0.004;
+                    Box(U0 + Inset, U0 + Inset + Bar, V0, V1, Back, 0.08, Frame);
+                    Box(U1 - Inset - Bar, U1 - Inset, V0, V1, Back, 0.08, Frame);
+                    Box(U0 + Inset + Bar - 0.01, U1 - Inset - Bar + 0.01, V1 - Bar, V1, Back, 0.08, Frame);
+                    continue;
+                }
                 if (bIsDoor)
                 {
                     Box(U0, U0 + Bar, V0, V1, Back, 0.08, Frame);
@@ -1577,6 +1687,56 @@ FCheck Check(const FBuildingMesh& Mesh, const FFootprint& Footprint)
     }
     Count(Split, Result.OpenEdges, Result.OverusedEdges);
     Result.bClosed = Result.OpenEdges == 0;
+    if (!Result.bClosed && Mesh.Door.bPresent)
+    {
+        auto OnPortal = [&](const FVec3& P)
+        {
+            const FVec3* C = Mesh.Door.Corner;
+            const int Next[4] = { 1, 2, 3, 0 };
+            for (int Edge = 0; Edge < 4; ++Edge)
+            {
+                const FVec3 A = C[Edge];
+                const FVec3 B = C[Next[Edge]];
+                const FVec3 AB = B - A;
+                const double L2 = Dot(AB, AB);
+                if (L2 < 1.0e-12)
+                {
+                    continue;
+                }
+                const double T = std::clamp(Dot(P - A, AB) / L2, 0.0, 1.0);
+                if (Length(P - (A + AB * T)) < 2.0e-3)
+                {
+                    return true;
+                }
+            }
+            return false;
+        };
+        std::map<std::pair<int, int>, int> Directed;
+        for (const auto& E : Split)
+        {
+            ++Directed[{ E[0], E[1] }];
+        }
+        bool bOnlyPortal = true;
+        int PortalEdges = 0;
+        for (const auto& Item : Directed)
+        {
+            const auto Back = Directed.find({ Item.first.second, Item.first.first });
+            const int Reverse = Back == Directed.end() ? 0 : Back->second;
+            if (Item.second > Reverse)
+            {
+                if (!OnPortal(Mesh.Positions[Item.first.first]) || !OnPortal(Mesh.Positions[Item.first.second]))
+                {
+                    bOnlyPortal = false;
+                    break;
+                }
+                PortalEdges += Item.second - Reverse;
+            }
+        }
+        if (bOnlyPortal && PortalEdges > 0)
+        {
+            Result.bClosed = true;
+        }
+    }
 
     // Connected components and volume.
     std::vector<int> Parent(NV);
@@ -1612,6 +1772,18 @@ FCheck Check(const FBuildingMesh& Mesh, const FFootprint& Footprint)
     for (size_t I = 0; I < NV; ++I)
     {
         Result.Components += Used[I] && Find(static_cast<int>(I)) == static_cast<int>(I) ? 1 : 0;
+    }
+    if (Mesh.Door.bPresent)
+    {
+        // The hole is open, so the sum above is not a closed volume. Add the missing wall patch, facing
+        // outward, for the check only. It is not a triangle in the mesh.
+        const FVec3& C0 = Mesh.Door.Corner[0];
+        const FVec3& C1 = Mesh.Door.Corner[1];
+        const FVec3& C2 = Mesh.Door.Corner[2];
+        const FVec3& C3 = Mesh.Door.Corner[3];
+        auto Stored = [](const FVec3& A, const FVec3& B, const FVec3& C) { return Dot(A, Cross(C, B)) / 6.0; };
+        Result.Volume += Stored(C0, C1, C2);
+        Result.Volume += Stored(C0, C2, C3);
     }
     Result.FootprintArea = SignedArea(Footprint.Outline);
     return Result;
