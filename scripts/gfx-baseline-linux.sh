@@ -11,8 +11,13 @@
 # subset (e.g. noon,night). MB2_GFX_SETTLE seconds per view (default 4). MB2_SURVEY_PORT as for the survey (default
 # 27891; never 7777 or 17777, which are for playtests).
 #
+# This host is shared: other sessions' smokes render on the same GPU and lengthen the frame-time tails. A monitor samples
+# every 5 s how many other Unreal game, server and editor processes are running (gpu-monitor.tsv), and baseline.json
+# names, per scene, how many samples inside its run saw one ("contended"). GPU utilisation is recorded but is no signal:
+# the survey client runs uncapped and keeps the GPU near full on its own.
+#
 # Evidence in Saved/GfxBaseline/<name or UTC timestamp>/: meta.env (source and engine, cooked content hash for staged,
-# GPU and driver, other GPU users at the start), one directory per scene (PNGs, stats.tsv, render_config.json, logs,
+# GPU and driver, other GPU users at the start), gpu-monitor.tsv, one directory per scene (PNGs, stats.tsv, render_config.json, logs,
 # summary.txt), and baseline.csv / baseline.json from `mb2 gfx-baseline`. Editor numbers are labelled editor_game_mode
 # and compare only with each other; a frame budget needs the staged (packaged) run.
 set -uo pipefail
@@ -72,6 +77,20 @@ gfx_views="$("$repo_root/scripts/mb2.sh" gfx-views)" || exit 1
 cat "$out_dir/meta.env"
 [[ "$(sed -n 's/^other_unreal_processes=//p' "$out_dir/meta.env")" != 0 ]] &&
     echo "WARNING: other Unreal processes are running; they share the GPU and skew the numbers (named in meta.env)." >&2
+
+# epoch, GPU utilisation %, GPU memory MiB, other Unreal processes (ours carry this run's directory on their command line)
+monitor() {
+    while true; do
+        printf '%s\t%s\t%s\n' "$(date +%s)" \
+            "$(nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader,nounits 2>/dev/null | head -n 1 | tr -d ' ' | tr ',' '\t')" \
+            "$(pgrep -af '/Binaries/Linux/(UnrealEditor|MarburgumII(Client|Server))( |$)' | grep -vcF "$out_dir")"
+        sleep 5
+    done
+}
+printf 'epoch\tgpu_util\tgpu_mem_mb\tother_unreal\n' > "$out_dir/gpu-monitor.tsv"
+monitor >> "$out_dir/gpu-monitor.tsv" &
+monitor_pid=$!
+trap 'kill "$monitor_pid" 2>/dev/null' EXIT
 
 failed=0
 for entry in "${scenes[@]}"; do

@@ -72,4 +72,6 @@ Matrix: noon/dusk/night/overcast/rain, dry/wet, static/moving camera, running NP
 
 ## First recommended coding task — GFX-00
 
+**Status 20 November:** tooling implemented and a packaged baseline measured on the RTX 5080 host; frame-time tails of five scenes were contended by another session and must be re-run on a free GPU. Report, numbers and A/B plan: [GFX00_BASELINE.md](GFX00_BASELINE.md).
+
 Perform a **non-destructive rendering configuration and visual-baseline audit** on /Game/World/lent. Extend the existing visual survey to reproducible day/dusk/night/rain/river/bridge/interior/character/HUD scenes; print active GI/reflection/shadow/post-processing/scalability/Nanite settings; run matching *actual packaged* client benchmarks where feasible; collect current source and cooked asset hashes. Produce a concise report naming the five largest visible deficiencies, implementation prerequisites, GPU/VRAM costs and a reversible A/B test plan for GFX-01–04. **Do not globally activate experimental rendering features or claim completion without measured packaged proof.**

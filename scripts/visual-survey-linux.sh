@@ -81,6 +81,7 @@ stop_server() {
 trap stop_server EXIT
 
 echo "Evidence in $out_dir"
+epoch_start="$(date +%s)"
 setsid "${server_cmd[@]}" "$map" -port="$port" -MB2WorldStore="$out_dir/world-store.json" -MB2Weather="$weather" -MB2Clock="$clock" \
     -MB2ClockSpeed=0.001 "${server_extra[@]}" "${common_args[@]}" > "$out_dir/server.log" 2>&1 &
 server_pid=$!
@@ -108,10 +109,11 @@ for attempt in 0 1 2; do
         > "$out_dir/client.log" 2>&1 || code=$?
 done
 stop_server
+epoch_end="$(date +%s)"
 
 shots="$(find "$out_dir" -maxdepth 1 -name '*.png' | wc -l)"
 {
-    echo "mode=$mode clock=$clock weather=$weather start=${start:-default} settle_s=$settle client_exit=$code views=$expected shots=$shots"
+    echo "mode=$mode clock=$clock weather=$weather start=${start:-default} settle_s=$settle client_exit=$code views=$expected shots=$shots epoch_start=$epoch_start epoch_end=$epoch_end"
     echo "gpu_at_start=${gpu_others:-unknown} (utilization, memory used) other_unreal_processes=$ue_others"
     echo "commit=$(git -C "$repo_root" rev-parse --short HEAD)$(git -C "$repo_root" diff --quiet HEAD -- Content Source || echo '+dirty')"
     echo "skipped_packages=$(grep -ac 'SkipPackage' "$out_dir/client.log")"

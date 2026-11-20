@@ -4,10 +4,11 @@
 //!   towards the Lent frontage and towards Stari most, the north-bank quay looking upstream, and one above the Lent
 //!   roofs. Plan metres (x east, y south of the middle of Stari most, z above the Drava) as in `survey-views`.
 //! * `mb2 gfx-baseline <dir>` reads the scenes scripts/gfx-baseline-linux.sh wrote under `<dir>` (one survey per
-//!   time of day and weather, each with stats.tsv, render_config.json and summary.txt, plus `<dir>/meta.env`) and
-//!   writes `<dir>/baseline.csv` (one row per scene and view) and `<dir>/baseline.json` (provenance, the renderer's
-//!   configuration, and per scene the median and worst views). It measures; it does not judge. Exit 0 when every
-//!   scene was read and every view was shot, 1 otherwise.
+//!   time of day and weather, each with stats.tsv, render_config.json and summary.txt, plus `<dir>/meta.env` and
+//!   `<dir>/gpu-monitor.tsv`) and writes `<dir>/baseline.csv` (one row per scene and view) and `<dir>/baseline.json`
+//!   (provenance, the renderer's configuration, and per scene the median and worst views and whether another Unreal
+//!   process ran during it). It measures; it does not judge. Exit 0 when every scene was read and every view was
+//!   shot, 1 otherwise; a contended scene is reported, not failed.
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -106,6 +107,25 @@ fn config_differences(first: &Value, other: &Value) -> Vec<String> {
     out
 }
 
+/// gpu-monitor.tsv as (epoch, other Unreal processes); an absent or unreadable file is an empty monitor.
+fn read_monitor(text: &str) -> Vec<(u64, u32)> {
+    text.lines()
+        .skip(1)
+        .filter_map(|line| {
+            let fields: Vec<&str> = line.split('\t').collect();
+            Some((fields.first()?.parse().ok()?, fields.last()?.trim().parse().ok()?))
+        })
+        .collect()
+}
+
+/// How many monitor samples fell inside the scene's run, and in how many another Unreal process was running.
+fn contention(monitor: &[(u64, u32)], start: Option<u64>, end: Option<u64>) -> Value {
+    let (Some(start), Some(end)) = (start, end) else { return Value::Null };
+    let inside: Vec<u32> = monitor.iter().filter(|(t, _)| (start..=end).contains(t)).map(|(_, n)| *n).collect();
+    let busy = inside.iter().filter(|n| **n > 0).count();
+    json!({ "samples": inside.len(), "with_other_unreal": busy, "contended": busy > 0 })
+}
+
 pub fn summarize(dir: &Path) -> Result<(Value, String, bool), String> {
     let meta = key_values(&read_lossy(&dir.join("meta.env")).ok_or("no meta.env (run scripts/gfx-baseline-linux.sh)")?, false);
     let mut scenes: Vec<_> = std::fs::read_dir(dir)
@@ -118,6 +138,7 @@ pub fn summarize(dir: &Path) -> Result<(Value, String, bool), String> {
     if scenes.is_empty() {
         return Err("no scene directories with a summary.txt".into());
     }
+    let monitor = read_monitor(&read_lossy(&dir.join("gpu-monitor.tsv")).unwrap_or_default());
 
     let mut ok = true;
     let mut csv_rows: Vec<Vec<String>> = Vec::new();
@@ -168,6 +189,7 @@ pub fn summarize(dir: &Path) -> Result<(Value, String, bool), String> {
             "shots": shots,
             "complete": complete,
             "client_exit": summary.get("client_exit"),
+            "contention": contention(&monitor, summary.get("epoch_start").and_then(|v| v.parse().ok()), summary.get("epoch_end").and_then(|v| v.parse().ok())),
             "gpu_at_start": summary_text.lines().find(|l| l.starts_with("gpu_at_start=")).map(|l| l.trim_start_matches("gpu_at_start=")),
             "frame_ms_median": median_of(&fixed, "frame_ms"),
             "frame_p99_worst": worst(&rows, "frame_p99"),
@@ -218,15 +240,21 @@ pub fn run(dir: &str) -> u8 {
                 return 2;
             }
             for scene in doc["scenes"].as_array().into_iter().flatten() {
+                let busy = &scene["contention"];
                 println!(
-                    "{:<14} views={}/{} frame_ms_median={} gpu_p50_median={} gpu_p99_worst={} vram_max={}",
+                    "{:<14} views={}/{} frame_ms_median={} gpu_p50_median={} gpu_p99_worst={} vram_max={}{}",
                     scene["scene"].as_str().unwrap_or(""),
                     scene["shots"],
                     scene["views"],
                     scene["frame_ms_median"],
                     scene["gpu_p50_median"],
                     scene["gpu_p99_worst"],
-                    scene["vram_used_mb_max"]
+                    scene["vram_used_mb_max"],
+                    if busy["contended"] == json!(true) {
+                        format!(" CONTENDED ({}/{} samples with another Unreal process)", busy["with_other_unreal"], busy["samples"])
+                    } else {
+                        String::new()
+                    }
                 );
             }
             println!("baseline: {} ({})", dir.join("baseline.json").display(), doc["evidence_class"].as_str().unwrap_or(""));
@@ -257,7 +285,7 @@ mod tests {
         let path = dir.join(name);
         std::fs::create_dir_all(&path).unwrap();
         let views = gpus.len() + 1;
-        std::fs::write(path.join("summary.txt"), format!("mode=editor clock=2026-06-18T10:00:00Z weather=clear_dry start=default settle_s=4 client_exit=0 views={views} shots={views}\ngpu_at_start=3 %, 1500 MiB other_unreal_processes=0\n")).unwrap();
+        std::fs::write(path.join("summary.txt"), format!("mode=editor clock=2026-06-18T10:00:00Z weather=clear_dry start=default settle_s=4 client_exit=0 views={views} shots={views} epoch_start=1000 epoch_end=1100\ngpu_at_start=3 %, 1500 MiB other_unreal_processes=0\n")).unwrap();
         let mut stats = vec![HEADER.to_string(), row("player_hud", 9.0, true)];
         stats.extend(gpus.iter().enumerate().map(|(i, g)| row(&format!("v{i}"), *g, false)));
         std::fs::write(path.join("stats.tsv"), stats.join("\n")).unwrap();
@@ -299,6 +327,18 @@ mod tests {
         let text = std::fs::read_to_string(&summary).unwrap().replace("shots=3", "shots=2");
         std::fs::write(summary, text).unwrap();
         assert!(!summarize(dir.path()).unwrap().2);
+    }
+
+    #[test]
+    fn another_unreal_process_inside_the_scene_marks_it_contended() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("meta.env"), "mode=staged\n").unwrap();
+        scene(dir.path(), "a_noon", &[3.0], "4");
+        // Samples before (990) and after (1110) the scene's run do not count.
+        std::fs::write(dir.path().join("gpu-monitor.tsv"), "epoch\tgpu_util\tgpu_mem_mb\tother_unreal\n990\t95\t3000\t3\n1000\t90\t1500\t0\n1050\t92\t3100\t2\n1100\t91\t1500\t0\n1110\t90\t3000\t3\n").unwrap();
+        let (doc, _, ok) = summarize(dir.path()).unwrap();
+        assert!(ok, "contention is reported, not failed");
+        assert_eq!(doc["scenes"][0]["contention"], json!({ "samples": 3, "with_other_unreal": 1, "contended": true }));
     }
 
     #[test]
