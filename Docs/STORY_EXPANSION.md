@@ -244,3 +244,46 @@ All furniture is built at runtime from engine primitives and blocks the camera a
 | `[P]` card at a prop whose document a step asks for | `MarburgumInteractionPrompt` | rendered captures |
 
 The world store schema is unchanged (6): conditional stages, deductions and unique items need no new fields, and `Negative.Persistence` round-trips a mid-chapter world through `FMarburgumWorldStore`.
+
+### 10.7 Tests and evidence (Chapter VI)
+
+<!-- filled in below as each run completes; nothing is listed before it ran -->
+
+### 10.8 Not done, limits and provisional parts (Chapter VI)
+
+- **Owner approval: not given.** Nothing in this chapter is accepted until the owner has played it (§10.9).
+- **Period variants.** Only the default mid-decade (1993–96) variant exists. 1990–92 (Stefan alive, with the negatives) and 1997–99 (Nika's scan, a copy, and the chain-of-custody question she puts to the player) need a calendar-dependent stage selection the world clock (mirrored to 1996) does not yet call for.
+- **Provisional places.** Foto Vidmar has no interior: its counter and light table stand beside Nika on Glavni trg. Block 13 and its cellar are not built: Ivana Zupan and her storage cage stand on the Tabor temporary floor, about 170 m from the canon's Block 13. The Melje date board and the Kainach trucks stand on the Melje temporary floor. All three are reached by development starts (`?MB2Start=mission_<id>`, `photo_<subject>`), not by walking across the city; none is presented as a finished district.
+- **Purple Saturday.** Albin's `left_alone` route is meant to find him among the match-day group at Ljudski vrt. Neither the stadium district nor a match-day event (`PublicEventState`) exists; Boris, by the Kiosk 67 café, vouches for you instead. Dependency recorded, route completable.
+- **Albin's routine.** The original says Albin resumes his kiosk routine after Kiosk 67; he stands at his authored spot whatever the outcome. His Chapter VI dialogue is what changes.
+- **Props are primitives.** Furniture is built from engine boxes and cylinders (and the project's lorry mesh), deliberately plain; no bespoke or generated models. The engine text font has no Latin Extended-A, so lettering on props avoids č, š and ž.
+- **Controller.** Gameplay actions (`[E]`, `[P]`, the number keys of a decision) have **no gamepad bindings** in the project; only menus navigate with a controller. Chapter VI is therefore keyboard and mouse only, like Chapters I–IV. A gameplay controller layer (aiming the camera for `[P]` included) is a separate item on the roadmap.
+- **Slovene.** All new catalogue text and the 21 new interface strings are drafted Slovene awaiting a native editorial review (terms checked against the existing translation: *fotografija*, *kontaktna kopija*, *dvorišče v Meljah*, *Modra knjiga*; new: *odtis* for a print, *izvirnik*, *pričevanje*, *sklep*, *garažna številka* for a fleet number).
+- **Chapter V** is not implemented and its evidence is never awarded; Chapter VI does not require it.
+
+### 10.9 Owner playtest: how to play Chapter VI
+
+1. **Build.** Package the branch (`scripts/package-linux.sh`) or use the staged build whose `Saved/StagedBuilds/BUILD_STAMP` names the commit under test (`scripts/build-stamp.sh check` must say `build_fresh: yes`).
+2. **A world with the prerequisites done**, one character per Kiosk 67 outcome you want to see (or play Prologue to Chapter III, *Then and Now* and Kiosk 67 yourself):
+   ```bash
+   scripts/seed-chapter-vi-store.sh Saved/Playtest/ch6/world-store.json \
+       simon-ch6-work:temporary_work simon-ch6-tab:tab_paid simon-ch6-sold:object_sold simon-ch6-alone:left_alone
+   ```
+3. **Server** on a free port (never 7777 or 17777):
+   ```bash
+   Saved/StagedBuilds/LinuxServer/MarburgumIIServer.sh /Game/World/lent -port=27760 \
+       -MB2WorldStore="$PWD/Saved/Playtest/ch6/world-store.json" -log
+   ```
+4. **Client** (windowed; add `-culture=sl` for Slovene):
+   ```bash
+   Saved/StagedBuilds/LinuxClient/MarburgumIIClient.sh "127.0.0.1:27760?MB2Start=mission_nika_vidmar?MB2Character=simon-ch6-sold" -windowed -ResX=1920 -ResY=1080
+   ```
+   The remote places are reached by reconnecting with another start: `mission_ivana_zupan` or `mission_block_13_storage_cage` (Tabor floor), `photo_melje_date_board_view` (Melje floor), `mission_vera_horvat`, `mission_mariborski_glas_archive`, `mission_kiosk_67_customer`, `mission_stamp_collector`, `mission_viole_terrace_regular`. Progress is saved by the server at every step, so a reconnect continues where you were.
+5. **Play.** `[E]` talks or inspects, `[P]` photographs (the prompt names the subject in the middle of the frame), `[1]`–`[3]` answer a decision, `[J]` Journal, `[I]` Inventory. Follow the pinned objective. Things worth checking:
+   - the order book's page and the contact sheet are photographed at the counter and the light table (the `[P]` card appears there); the light table refuses a photograph before the sheet is in hand;
+   - at step 8 Nika offers *Thirty-Six Exposures*; at the light table pick a wrong conclusion first: LOOK AGAIN, nothing changes; then *the place, not the person*;
+   - at the Melje floor, frame the date board between the trucks;
+   - the Journal's OPEN QUESTIONS move to ESTABLISHED as you go, and *why December* stays open; the Inventory cards say original, print, copy, testimony, information or inference;
+   - each character meets a different Albin: at once (`temporary_work`), after Petra (`tab_paid`), after the collector (`object_sold`: try buying with less than 40, then work it off), after Boris (`left_alone`);
+   - at the end, Nika keeps the contact sheet and gives you a receipt; talking to her again changes nothing; restart the server and reconnect: everything is where you left it.
+6. **Record** the commit, the stamp, what you played and your decision (ADR-008).
