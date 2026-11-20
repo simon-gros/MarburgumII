@@ -88,6 +88,8 @@ private:
     UPROPERTY(Transient) TObjectPtr<UTextBlock> NoteLabel;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> WeatherLabel;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> ClockLabel;
+    /** The minute ClockLabel shows, so the label is formatted once a minute, not every update. */
+    int32 ShownClockStamp = INDEX_NONE;
 
     FDelegateHandle AreaHandle;
     FDelegateHandle WeatherHandle;

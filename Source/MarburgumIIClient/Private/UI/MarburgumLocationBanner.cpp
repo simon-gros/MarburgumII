@@ -232,10 +232,14 @@ void UMarburgumLocationBanner::UpdateClock()
     {
         return;
     }
-    const FString Text = MarburgumII::Clock::ShortLabel(MarburgumII::Clock::MarburgumAt(Utc));
-    if (ClockLabel->GetText().ToString() != Text)
+    // Once a minute is enough: the label shows minutes, so most calls change nothing (no per-frame formatting, QA U14).
+    const MarburgumII::Clock::FCivil Now = MarburgumII::Clock::MarburgumAt(Utc);
+    const int32 Stamp = ((Now.Year * 13 + Now.Month) * 32 + Now.Day) * 1440 + Now.MinuteOfDay();
+    if (Stamp != ShownClockStamp || ClockLabel->GetText().IsEmpty())
     {
-        ClockLabel->SetText(FText::FromString(Text));
+        ShownClockStamp = Stamp;
+        ClockLabel->SetText(FText::Format(LOCTEXT("BannerClock", "{0}  ·  {1}"), GameDate(Now.Year, Now.Month, Now.Day, Now.Weekday, false),
+            GameTime(Now.Hour, Now.Minute)));
     }
     ClockLabel->SetVisibility(ESlateVisibility::HitTestInvisible);
 }

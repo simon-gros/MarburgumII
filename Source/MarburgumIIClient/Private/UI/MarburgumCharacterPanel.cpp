@@ -278,8 +278,8 @@ void UMarburgumCharacterPanel::Rebuild()
     if (AMarburgumGameState::WorldUtc(GetWorld(), Utc))
     {
         const MarburgumII::Clock::FCivil Now = MarburgumII::Clock::MarburgumAt(Utc);
-        FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Date", "Date"), FText::FromString(MarburgumII::Clock::DateLabel(Now))), T.Space.XS);
-        FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Time", "Time"), FText::FromString(MarburgumII::Clock::TimeLabel(Now))), 0.f);
+        FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Date", "Date"), GameDate(Now.Year, Now.Month, Now.Day, Now.Weekday, true)), T.Space.XS);
+        FBuilder::Stack(IdentityBox, B.Field(LOCTEXT("Time", "Time"), GameTime(Now.Hour, Now.Minute)), 0.f);
     }
 
     // Condition: the body as the server simulates it.

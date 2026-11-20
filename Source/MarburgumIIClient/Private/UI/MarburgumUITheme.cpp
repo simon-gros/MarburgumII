@@ -1,6 +1,9 @@
 #include "UI/MarburgumUITheme.h"
 
 #include "Fonts/CompositeFont.h"
+#include "Internationalization/Culture.h"
+#include "Internationalization/Internationalization.h"
+#include "MarburgumWorldClock.h"
 #include "HAL/FileManager.h"
 #include "MarburgumNetworkContract.h"
 #include "MarburgumSessionContract.h"
@@ -329,5 +332,34 @@ namespace MarburgumUI
         FLinearColor Out = Top * A + Below * (1.f - A);
         Out.A = 1.f;
         return Out;
+    }
+
+    FText GameDate(int32 Year, int32 Month, int32 Day, int32 Weekday, bool bLong)
+    {
+        MarburgumII::Clock::FCivil Civil;
+        Civil.Year = Year;
+        Civil.Month = Month;
+        Civil.Day = Day;
+        Civil.Weekday = Weekday;
+        const bool bSlovene = FInternationalization::Get().GetCurrentLanguage()->GetTwoLetterISOLanguageName() == TEXT("sl");
+        if (!bSlovene || !FDateTime::Validate(Year, Month, Day, 0, 0, 0, 0))
+        {
+            // English keeps the shared clock's own wording (the label the server and the smokes log).
+            const FString Long = MarburgumII::Clock::DateLabel(Civil);
+            if (bLong)
+            {
+                return FText::AsCultureInvariant(Long);
+            }
+            const FString Short = MarburgumII::Clock::ShortLabel(Civil);
+            int32 Dot = INDEX_NONE;
+            return FText::AsCultureInvariant(Short.FindChar(TEXT('\xB7'), Dot) ? Short.Left(Dot).TrimEnd() : Short);
+        }
+        // Slovene from the culture's calendar names (ICU): "torek, 18. junij 1996", "18. jun. 1996".
+        return FText::AsDate(FDateTime(Year, Month, Day), bLong ? EDateTimeStyle::Full : EDateTimeStyle::Medium, FText::GetInvariantTimeZone());
+    }
+
+    FText GameTime(int32 Hour, int32 Minute)
+    {
+        return FText::AsCultureInvariant(FString::Printf(TEXT("%02d:%02d"), Hour, Minute));
     }
 }

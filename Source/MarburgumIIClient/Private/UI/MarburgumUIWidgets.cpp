@@ -937,10 +937,10 @@ int32 SMarburgumMapPlate::OnPaint(const FPaintArgs& Args, const FGeometry& Allot
     {
         const float X = Streets[Index];
         const float Lean = (Index % 2 == 0 ? -0.012f : 0.010f);
-        Line({ At(X, RiverY(Centre, X) - RiverHalfWidth - 0.028f), At(X + Lean, 0.34f + 0.03f * (Index % 3)) }, Ink(0.10f), Hair, LayerId);
+        Line({ At(X, RiverY(Centre, X) - RiverHalfWidth - 0.028f), At(X + Lean, 0.40f + 0.04f * (Index % 3)) }, Ink(0.065f), Hair, LayerId);
     }
-    Line({ At(0.39f, 0.52f), At(0.55f, 0.50f), At(0.74f, 0.53f) }, Ink(0.10f), Hair, LayerId);
-    Line({ At(0.42f, 0.42f), At(0.58f, 0.40f), At(0.71f, 0.43f) }, Ink(0.08f), Hair, LayerId);
+    Line({ At(0.39f, 0.55f), At(0.55f, 0.53f), At(0.74f, 0.56f) }, Ink(0.065f), Hair, LayerId);
+    Line({ At(0.42f, 0.47f), At(0.58f, 0.45f), At(0.71f, 0.48f) }, Ink(0.05f), Hair, LayerId);
 
     // The bridges, with their names on the south bank.
     for (const FPlateBridge& Bridge : Bridges)

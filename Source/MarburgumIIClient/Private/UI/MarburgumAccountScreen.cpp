@@ -110,7 +110,8 @@ void UMarburgumAccountScreen::NativeOnInitialized()
     FBuilder::Stack(Content, Card, T.Space.XL);
     if (UVerticalBoxSlot* CardSlot = Cast<UVerticalBoxSlot>(Card->Slot))
     {
-        CardSlot->SetHorizontalAlignment(HAlign_Left);
+        // Every step's card takes the column's width, so the card does not change size from step to step.
+        CardSlot->SetHorizontalAlignment(HAlign_Fill);
     }
     if (ShowsDiagnostics())
     {
@@ -135,8 +136,8 @@ void UMarburgumAccountScreen::NativeOnInitialized()
     FBuilder::Stack(Stage, Preview, T.Space.M, true);
     UHorizontalBox* StageFoot = B.Row();
     PreviewCaption = B.Text(FText::GetEmpty(), ETypeRole::Subheading, T.Color.TextPrimary);
-    FBuilder::Inline(StageFoot, PreviewCaption, T.Space.L, true);
-    FBuilder::Inline(StageFoot, B.Text(LOCTEXT("PreviewHint", "Drag to turn  ·  wheel to come closer"), ETypeRole::Caption, T.Color.TextSecondary), 0.f);
+    // How to turn the body is written on the stage itself (UMarburgumCharacterPreview); the foot names it.
+    FBuilder::Inline(StageFoot, PreviewCaption, 0.f, true);
     FBuilder::Stack(Stage, StageFoot, 0.f);
     UBorder* Frame = B.Surface(ESurfaceKind::Sunken, Pad(T.Space.L), Stage, false);
     Frame->SetBrush(RoundedBrush(T.Color.Sunken.CopyWithNewOpacity(0.6f), T.Radius.Large, T.Color.Hairline, T.BorderWidth));

@@ -150,8 +150,8 @@ void UMarburgumSystemMenu::Open()
     if (AMarburgumGameState::WorldUtc(GetWorld(), Utc))
     {
         const MarburgumII::Clock::FCivil Now = MarburgumII::Clock::MarburgumAt(Utc);
-        ClockLabel->SetText(Caps(FString::Printf(TEXT("Maribor  ·  %s  ·  %s"), *MarburgumII::Clock::DateLabel(Now),
-            *MarburgumII::Clock::TimeLabel(Now))));
+        ClockLabel->SetText(Caps(FText::Format(LOCTEXT("MenuClock", "Maribor  ·  {0}  ·  {1}"),
+            GameDate(Now.Year, Now.Month, Now.Day, Now.Weekday, true), GameTime(Now.Hour, Now.Minute))));
     }
     else
     {

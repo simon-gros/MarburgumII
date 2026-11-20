@@ -825,12 +825,12 @@ namespace
         {
             Names.Add(ItemDisplayName(FName(Stage->RequiredItems[Index].Id)).ToString());
         }
-        FString Joined = Names.Pop();
-        if (!Names.IsEmpty())
+        const FString Last = Names.Pop();
+        if (Names.IsEmpty())
         {
-            Joined = FString::Join(Names, TEXT(", ")) + TEXT(" or ") + Joined;
+            return FText::FromString(Last);
         }
-        return FText::FromString(Joined);
+        return FText::Format(LOCTEXT("ItemsOr", "{0} or {1}"), FText::FromString(FString::Join(Names, TEXT(", "))), FText::FromString(Last));
     }
 }
 

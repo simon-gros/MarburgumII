@@ -179,6 +179,11 @@ namespace MarburgumUI
      * Text in capitals for headings, overlines and name labels. FString::ToUpper changes ASCII letters only, so
      * "Kočar" would read "KOčAR"; FText::ToUpper is culture-aware (Č, Š, Ž, Ć, Đ, Ä, Ö, Ü).
      */
+    /** The Marburgum calendar date in the interface language: "Tuesday 18 June 1996" / "torek, 18. junij 1996", or the
+     *  short form "Tue 18 Jun 1996" / "18. jun. 1996". Times stay 24-hour ("20:15") in both languages. */
+    MARBURGUMIICLIENT_API FText GameDate(int32 Year, int32 Month, int32 Day, int32 Weekday, bool bLong);
+    MARBURGUMIICLIENT_API FText GameTime(int32 Hour, int32 Minute);
+
     inline FText Caps(const FString& Text) { return FText::FromString(Text).ToUpper(); }
     inline FText Caps(const FText& Text) { return Text.ToUpper(); }
 
