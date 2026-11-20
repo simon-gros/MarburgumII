@@ -52,6 +52,13 @@ mkdir -p "$out_dir"
 # -RenderOffScreen on every client, shot or not: a run under systemd-run inherits the desktop's DISPLAY and
 # WAYLAND_DISPLAY, and a client without it opens a window on the owner's screen. The server ignores it.
 common_args=(-log -unattended -nosound -nosplash -stdout -FullStdOutLogOutput -RenderOffScreen)
+# Fault injection stays out of the acceptance run. MB2_SMOKE_EXTRA="-PktLag=120 -PktLagVariance=40 -PktLoss=1"
+# is a separate scenario; do not treat its result as the clean-network Gate 0B result.
+if [[ -n "${MB2_SMOKE_EXTRA:-}" ]]; then
+    read -r -a smoke_extra <<< "$MB2_SMOKE_EXTRA"
+    common_args+=("${smoke_extra[@]}")
+    echo "fault injection: ${smoke_extra[*]}"
+fi
 server_pid=""
 
 # The staged launcher scripts do not exec the binary, so the server runs in its own

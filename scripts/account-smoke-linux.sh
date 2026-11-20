@@ -204,7 +204,14 @@ client() {
             sleep 3
             code=0
         fi
-        "${client_cmd[@]}" "${target[@]}" "${common_args[@]}" "$@" -MB2AccountSmoke -MB2AccountRole="$role" > "$log" 2>&1 || code=$?
+        "${client_cmd[@]}" "${target[@]}" "${common_args[@]}" "$@" -MB2AccountSmoke -MB2AccountRole="$role" > "$log" 2>&1 &
+        local cpid=$!
+        sleep 0.4
+        {
+            echo "pid=$cpid"
+            ps -o args= -p "$cpid" || true
+        } > "$out_dir/cmdline-$label.txt"
+        wait "$cpid" || code=$?
     done
     if [[ "$code" -eq 0 ]] && grep -aq "MB2ACCOUNT role=client tag=$role event=pass" "$log"; then
         echo "  client $label: PASS"
@@ -376,6 +383,24 @@ done
 expect_eq "the server and service logs hold no ticket or key" "$server_secrets" 0
 token_lines=$(cat "$out_dir"/client-first.log "$out_dir"/client-return.log | { grep -ac 'EncryptionToken=\|MB2Ticket=' || true; })
 expect_eq "rendered clients logged no encryption token" "$token_lines" 0
+# The rendered clients sign in through the session UI. Their process arguments must not carry a ticket either
+# (the null-RHI admission clients put EncryptionToken on the URL on purpose; that path is the test harness).
+cmdline_tokens=0
+for label in first return; do
+    if [[ ! -s "$out_dir/cmdline-$label.txt" ]]; then
+        echo "  rendered client $label: no process arguments captured"
+        status=1
+        continue
+    fi
+    if grep -q 'drava-bridge-1990\|pohorje-snow-1991' "$out_dir/cmdline-$label.txt"; then
+        echo "  rendered client $label process arguments hold a password"
+        status=1
+    fi
+done
+if grep -q 'EncryptionToken=\|MB2Ticket=' "$out_dir/cmdline-first.txt" "$out_dir/cmdline-return.txt" 2>/dev/null; then
+    cmdline_tokens=1
+fi
+expect_eq "rendered client process arguments hold no ticket" "$cmdline_tokens" 0
 expect_eq "rendered clients encrypted their sessions" "$(cat "$out_dir"/client-first.log "$out_dir"/client-return.log | { grep -ac 'MB2ACCOUNT role=client event=encrypted' || true; })" 2
 expect_eq "the service logged a redeem for another server" "$({ grep -ac 'event=redeem_refused reason=other_server caller=melje ticket_server=lent-smoke' "$out_dir"/service-1.log || true; })" 1
 

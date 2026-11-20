@@ -1157,7 +1157,9 @@ Map-wide, over 600 sampled pavement viewers, edge spots did not raise the share 
 
 **Measured limit, kept honest.** A player at the very end of the window who faces out of it still gets fewer people than the street's budget, because there is no pavement in view and only a 5 m-wide ring behind them. That is the edge of the loaded world, not a pavement shortage in the town, and no rule was bent to hide it.
 
-**Evidence.** On the final code, rebased on `23901a5`: day `Saved/StreetMulti/face-town-day` (all 10 scenarios accepted, `D` 28/28 at 20 s, exit 3 from the old cleanup check before the script fix) and `face-town-day2` with the fixed script (all 10 accepted, `D` 28/28 at 40 s, cap 48/48, cleanup `clear pids=5`, **exit 0**); night `face-town-night` (settled at 2, exit 0). `Marburgum.Gameplay.StreetRules` and `CombatRules` Success on the same editor build. **Not run:** a staged (packaged) matrix of this change, the integrated packaged suite, a rendered capture, the owner playtest.
+**Evidence.** On the final code, rebased on `23901a5`: day `Saved/StreetMulti/face-town-day` (all 10 scenarios accepted, `D` 28/28 at 20 s, exit 3 from the old cleanup check before the script fix) and `face-town-day2` with the fixed script (all 10 accepted, `D` 28/28 at 40 s, cap 48/48, cleanup `clear pids=5`, **exit 0**); night `face-town-night` (settled at 2, exit 0). `Marburgum.Gameplay.StreetRules` and `CombatRules` Success on the same editor build. The staged matrix was not part of that editor session.
+
+**Addendum (20 November 2026, packaged).** The same fixture on the clean Development package of `44106bc` (inputs unchanged through `1aaad5c`) settled `D` at **28/28 in 20 s**, the shared street at 18, the two districts at 18+8, the cap at 48, and night at 2 with both clients seeing the same two pedestrians. [Integrated evidence](INTEGRATED_MULTIPLAYER_2026-11-20.md). Still not run: a rendered capture and the owner playtest.
 
 ## ADR-080 — Admission tickets name their game server; live tickets stay out of client logs (accepted 2026-11-20)
 
