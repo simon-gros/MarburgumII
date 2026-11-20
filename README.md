@@ -46,6 +46,12 @@ A real editor pedestrian traversed **283 metres across Stari most and back**. Th
 
 [20 November review](Docs/DEVELOPMENT_REVIEW_2026-11-20.md) · [QA audit](Docs/QA_AUDIT_2026-11-19.md) · [Visual backlog](Docs/VISUAL_QUALITY_BACKLOG.md) · [AI evidence](Docs/AI_GAMEPLAY.md)
 
+## Historical research and art references
+
+Marburgum II now carries the original game's **236-record 1990s art-reference catalogue**, **five evidence-derived art/world-state rules**, and **three historical orthophoto/cadastral-map leads**. Source provenance, permissions and uncertainty remain explicit; the source images and rasters themselves were **not imported**. These catalogues are design evidence, not a claim that period-specific scenery is already implemented.
+
+[Browse the art-reference catalogue](art_reference/README.md) · [Historical archives and rights policy](Docs/HISTORICAL_ARCHIVES.md) · [Source directory](art_reference/SOURCES.md)
+
 ## Development progress
 
 The table distinguishes **recorded engineering implementation** from **release acceptance**. A feature may work in a scoped editor test and still require current packaged multiplayer testing, graphical review and a personal owner playtest.
