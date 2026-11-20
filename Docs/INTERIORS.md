@@ -55,6 +55,8 @@ Regenerate `interior_floors.json` (`-run=MarburgumInteriorAudit -WriteFloors`) a
 
 ## Packaged and rollout gates — 20 November morning
 
+**Update, 20 November 06:11 UTC:** the staged door smoke **passed** on a clean packaged pair (`a0d0b89`). Hotel Lent and the vine museum ran at once, the museum's clients lagged. Covered: denial out of reach, the swing held open while someone stands in it, late joins, a tourist streaming out 268 m and back in with the doors replicated as left, the emptied building resetting on the same server, and a restart. It found and fixed one defect: the last player leaving an empty server left the interior's doors open. Evidence: [P0_PACKAGED_EVIDENCE_2026-11-20.md](P0_PACKAGED_EVIDENCE_2026-11-20.md). Still open: the other three cut shells on a staged run, latency to a real remote host, and the owner's walkthrough. The text below is the morning's gate as written.
+
 A Client/Server package compiled after staged UFS data correction, **but there is no recorded passing staged three-client door smoke**. Test `scripts/door-smoke-linux.sh staged`, with two different occupied buildings, denial/out-of-reach, obstructed closing, late joins, server restart, stream out/in and actual network lag; stamp footprint, measured floor, cut façade and cooked asset revisions. Only **five of 586 eligible** buildings are physically open; the remaining **581** require incremental audited cuts and rollback, not a blanket acceptance. Explicitly handle the 346 named geometry/access exceptions. Owner playtest remains mandatory before an interior phase is approved. [Detailed priorities](DEVELOPMENT_REVIEW_2026-11-20_MORNING.md).
 
 ## What is not done
