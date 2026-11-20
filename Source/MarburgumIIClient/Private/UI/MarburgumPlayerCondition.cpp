@@ -92,10 +92,11 @@ void UMarburgumPlayerCondition::NativeOnInitialized()
     StaminaValue = Value;
     FBuilder::Stack(Column, Bars, 0.f);
 
-    UBorder* Content = B.Surface(ESurfaceKind::Base, FMargin(T.Space.L, T.Space.M, T.Space.XXL, T.Space.M), Column, false);
+    // The shade runs well past the values so they never sit on its faded tail over a bright street.
+    UBorder* Content = B.Surface(ESurfaceKind::Base, FMargin(T.Space.L, T.Space.M, T.Space.XXXL * 2.f, T.Space.M), Column, false);
     Content->SetBrushColor(FLinearColor::Transparent);
     UOverlay* ClusterStack = WidgetTree->ConstructWidget<UOverlay>();
-    UOverlaySlot* ShadeSlot = ClusterStack->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::FadeRight,
+    UOverlaySlot* ShadeSlot = ClusterStack->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::SoftFadeRight,
         T.Color.Backdrop.CopyWithNewOpacity(T.bHighContrast ? 0.9f : 0.55f)));
     ShadeSlot->SetHorizontalAlignment(HAlign_Fill);
     ShadeSlot->SetVerticalAlignment(VAlign_Fill);
@@ -131,7 +132,7 @@ void UMarburgumPlayerCondition::NativeOnInitialized()
     UBorder* DownContent = B.Surface(ESurfaceKind::Base, FMargin(T.Space.XXXL * 2.f, T.Space.XL), DownColumn, false);
     DownContent->SetBrushColor(FLinearColor::Transparent);
     UOverlay* DownStack = WidgetTree->ConstructWidget<UOverlay>();
-    UOverlaySlot* DownShade = DownStack->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::HorizontalBand,
+    UOverlaySlot* DownShade = DownStack->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::SoftBand,
         T.Color.Backdrop.CopyWithNewOpacity(T.bHighContrast ? 0.92f : 0.72f)));
     DownShade->SetHorizontalAlignment(HAlign_Fill);
     DownShade->SetVerticalAlignment(VAlign_Fill);

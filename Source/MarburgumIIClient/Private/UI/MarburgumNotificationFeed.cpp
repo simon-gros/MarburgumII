@@ -59,7 +59,7 @@ void UMarburgumNotificationFeed::NativeOnInitialized()
     UBorder* SaidPad = B.Surface(ESurfaceKind::Base, FMargin(T.Space.XXXL * 1.5f, T.Space.M), Said, false);
     SaidPad->SetBrushColor(FLinearColor::Transparent);
     UOverlay* SaidStack = WidgetTree->ConstructWidget<UOverlay>();
-    UOverlaySlot* ShadeSlot = SaidStack->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::HorizontalBand,
+    UOverlaySlot* ShadeSlot = SaidStack->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::SoftBand,
         T.Color.Backdrop.CopyWithNewOpacity(T.bHighContrast ? 0.9f : 0.62f)));
     ShadeSlot->SetHorizontalAlignment(HAlign_Fill);
     ShadeSlot->SetVerticalAlignment(VAlign_Fill);

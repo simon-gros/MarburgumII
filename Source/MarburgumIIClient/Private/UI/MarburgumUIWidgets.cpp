@@ -368,8 +368,15 @@ int32 SMarburgumMeter::OnPaint(const FPaintArgs& Args, const FGeometry& Allotted
     const float H = FMath::Min(Height, Local.Y);
     const float Y = (Local.Y - H) * 0.5f;
     const FLinearColor Tint = InWidgetStyle.GetColorAndOpacityTint();
+    if (Tint.A <= 0.004f)
+    {
+        return LayerId; // Faded out: a rounded box's outline ignores the draw tint and would stay behind.
+    }
+    // The outline colour is not multiplied by the draw tint either, so it fades with a tinted copy of the brush.
+    FSlateBrush TintedTrack = Track;
+    TintedTrack.OutlineSettings.Color = FSlateColor(Track.OutlineSettings.Color.GetSpecifiedColor() * Tint);
     FSlateDrawElement::MakeBox(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(FVector2f(Local.X, H), FSlateLayoutTransform(FVector2f(0.f, Y))),
-        &Track, ESlateDrawEffect::None, Track.GetTint(InWidgetStyle) * Tint);
+        &TintedTrack, ESlateDrawEffect::None, Track.GetTint(InWidgetStyle) * Tint);
     const float Inset = 1.f;
     const float Usable = FMath::Max(0.f, Local.X - 2.f * Inset);
     if (Ghost > Percent)
@@ -448,6 +455,30 @@ int32 SMarburgumScrim::OnPaint(const FPaintArgs& Args, const FGeometry& Allotted
             FSlateGradientStop(FVector2f(Local.X, 0.f), Solid) };
         Orientation = Orient_Vertical;
         break;
+    case EMarburgumScrimShape::SoftBand:
+    case EMarburgumScrimShape::SoftFadeRight:
+    {
+        // A gradient runs along one axis only, so the soft top and bottom come from horizontal slices, each the
+        // horizontal gradient scaled by a smooth vertical falloff (no visible steps at 16 slices).
+        constexpr int32 Slices = 16;
+        const float SliceHeight = Local.Y / Slices;
+        for (int32 Index = 0; Index < Slices; ++Index)
+        {
+            const float Centre = (Index + 0.5f) / Slices;
+            const float Falloff = FMath::SmoothStep(0.f, 0.32f, Centre) * FMath::SmoothStep(0.f, 0.32f, 1.f - Centre);
+            const FLinearColor Row = Solid.CopyWithNewOpacity(Solid.A * Falloff);
+            const FLinearColor RowClear = Row.CopyWithNewOpacity(0.f);
+            TArray<FSlateGradientStop> RowStops = Shape == EMarburgumScrimShape::SoftBand
+                ? TArray<FSlateGradientStop>{ FSlateGradientStop(FVector2f(0.f, 0.f), RowClear), FSlateGradientStop(FVector2f(Local.X * 0.22f, 0.f), Row),
+                    FSlateGradientStop(FVector2f(Local.X * 0.78f, 0.f), Row), FSlateGradientStop(FVector2f(Local.X, 0.f), RowClear) }
+                : TArray<FSlateGradientStop>{ FSlateGradientStop(FVector2f(0.f, 0.f), Row),
+                    FSlateGradientStop(FVector2f(Local.X * 0.55f, 0.f), Row.CopyWithNewOpacity(Row.A * 0.7f)), FSlateGradientStop(FVector2f(Local.X, 0.f), RowClear) };
+            FSlateDrawElement::MakeGradient(OutDrawElements, LayerId,
+                AllottedGeometry.ToPaintGeometry(FVector2f(Local.X, SliceHeight + 0.5f), FSlateLayoutTransform(FVector2f(0.f, SliceHeight * Index))),
+                MoveTemp(RowStops), Orient_Vertical);
+        }
+        return LayerId;
+    }
     }
     FSlateDrawElement::MakeGradient(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(), MoveTemp(Stops), Orientation);
     return LayerId;

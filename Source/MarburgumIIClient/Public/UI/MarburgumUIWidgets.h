@@ -88,7 +88,9 @@ enum class EMarburgumScrimShape : uint8
     FadeDown,       // Solid at the top, transparent at the bottom.
     FadeUp,         // Transparent at the top, solid at the bottom.
     FadeRight,      // Solid at the left, transparent at the right (left-anchored HUD).
-    FadeLeft        // Transparent at the left, solid at the right (right-anchored HUD).
+    FadeLeft,       // Transparent at the left, solid at the right (right-anchored HUD).
+    SoftBand,       // HorizontalBand that also fades out at the top and bottom: no edges over the street.
+    SoftFadeRight   // FadeRight that also fades out at the top and bottom.
 };
 
 class MARBURGUMIICLIENT_API SMarburgumScrim : public SLeafWidget

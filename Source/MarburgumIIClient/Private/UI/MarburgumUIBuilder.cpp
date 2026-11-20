@@ -115,6 +115,15 @@ namespace MarburgumUI
         }
     }
 
+    void FBuilder::InlineTop(UHorizontalBox* Box, UWidget* Child, float GapAfter, bool bFill)
+    {
+        Inline(Box, Child, GapAfter, bFill, false);
+        if (UHorizontalBoxSlot* Slot = Cast<UHorizontalBoxSlot>(Child->Slot))
+        {
+            Slot->SetVerticalAlignment(VAlign_Top);
+        }
+    }
+
     UImage* FBuilder::Rule(const FLinearColor& Color, float Thickness, float Width) const
     {
         UImage* Image = Tree.ConstructWidget<UImage>();

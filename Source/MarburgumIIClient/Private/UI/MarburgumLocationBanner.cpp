@@ -68,11 +68,13 @@ void UMarburgumLocationBanner::NativeOnInitialized()
     // The street or square, then the landmark (ADR-063): collapsed when the player is on none.
     StreetLabel = B.Text(FText::GetEmpty(), ETypeRole::Subheading, T.Color.TextPrimary);
     StreetLabel->SetJustification(ETextJustify::Center);
+    StreetLabel->SetWrapTextAt(BandWidth * 0.6f - 2.f * T.Space.XXXL);
     StreetLabel->SetVisibility(ESlateVisibility::Collapsed);
     FBuilder::Stack(Column, StreetLabel, T.Space.XXS);
     Center(StreetLabel);
     LandmarkLabel = B.Text(FText::GetEmpty(), ETypeRole::Quote, T.Color.Accent);
     LandmarkLabel->SetJustification(ETextJustify::Center);
+    LandmarkLabel->SetWrapTextAt(BandWidth * 0.6f - 2.f * T.Space.XXXL);
     LandmarkLabel->SetVisibility(ESlateVisibility::Collapsed);
     FBuilder::Stack(Column, LandmarkLabel, T.Space.XS);
     Center(LandmarkLabel);
@@ -92,7 +94,9 @@ void UMarburgumLocationBanner::NativeOnInitialized()
     // The area's provenance note (e.g. fictional route names), quietly, so a label is never passed off as history.
     NoteLabel = B.Text(FText::GetEmpty(), ETypeRole::Caption, T.Color.TextMuted);
     NoteLabel->SetJustification(ETextJustify::Center);
-    NoteLabel->SetAutoWrapText(true);
+    // Wrapped at the band's inner width: a centred column measures text at its full length, so automatic wrapping
+    // would let a long note run past the shade and clip.
+    NoteLabel->SetWrapTextAt(BandWidth * 0.6f - 2.f * T.Space.XXXL);
     FBuilder::Stack(Column, NoteLabel, 0.f);
     Center(NoteLabel);
 
@@ -101,7 +105,7 @@ void UMarburgumLocationBanner::NativeOnInitialized()
     FBuilder::Align(Content, HAlign_Center, VAlign_Center);
 
     UOverlay* Stackup = WidgetTree->ConstructWidget<UOverlay>();
-    UOverlaySlot* ShadeSlot = Stackup->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::HorizontalBand,
+    UOverlaySlot* ShadeSlot = Stackup->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::SoftBand,
         T.Color.Backdrop.CopyWithNewOpacity(T.bHighContrast ? 0.88f : 0.62f)));
     ShadeSlot->SetHorizontalAlignment(HAlign_Fill);
     ShadeSlot->SetVerticalAlignment(VAlign_Fill);

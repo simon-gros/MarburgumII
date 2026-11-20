@@ -84,7 +84,7 @@ void UMarburgumPinnedObjective::NativeOnInitialized()
     UBorder* Content = B.Surface(ESurfaceKind::Base, FMargin(T.Space.L, T.Space.M, T.Space.XXL, T.Space.M), Line, false);
     Content->SetBrushColor(FLinearColor::Transparent);
     UOverlay* Stack = WidgetTree->ConstructWidget<UOverlay>();
-    UOverlaySlot* ShadeSlot = Stack->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::FadeRight,
+    UOverlaySlot* ShadeSlot = Stack->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::SoftFadeRight,
         T.Color.Backdrop.CopyWithNewOpacity(T.bHighContrast ? 0.9f : 0.58f)));
     ShadeSlot->SetHorizontalAlignment(HAlign_Fill);
     ShadeSlot->SetVerticalAlignment(VAlign_Fill);

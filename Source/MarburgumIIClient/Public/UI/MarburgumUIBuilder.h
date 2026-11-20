@@ -56,6 +56,8 @@ namespace MarburgumUI
         static void Stack(UVerticalBox* Box, UWidget* Child, float GapAfter, bool bFill = false);
         /** Adds a child to a horizontal box with a right gap from the spacing scale. */
         static void Inline(UHorizontalBox* Box, UWidget* Child, float GapAfter, bool bFill = false, bool bCenterVertically = true);
+        /** Inline, top-aligned: a card beside a taller list keeps its own height instead of stretching. */
+        static void InlineTop(UHorizontalBox* Box, UWidget* Child, float GapAfter, bool bFill = false);
 
         /** Thin horizontal rule (accent or divider). */
         UImage* Rule(const FLinearColor& Color, float Thickness, float Width = 0.f) const;
