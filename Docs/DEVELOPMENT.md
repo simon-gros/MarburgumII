@@ -266,6 +266,20 @@ The C# program checks repository manifest contracts, but does not inspect the lo
 
 Recommended order: verify a clean checkout and engine pin; run `./scripts/mb2.sh validate all` and the native Unreal `Marburgum.*` automation suite with the new rule cases; run street district, places, street, combat, hours and weather editor smokes; inspect blocked chase/pavement visually; fresh-build/cook both Linux targets including the latest zoned/attractor walk graph; repeat packaged two-client, then three-client crowd/incident/mission and admission regressions; record frame time, spawn/cull counts, replication, logs, cooked hashes and explicit owner results. Do not treat editor tests as packaged acceptance.
 
+### Current packaged-multiplayer and QA checkpoint — 20 November 2026
+
+The [overnight review](DEVELOPMENT_REVIEW_2026-11-20.md) covers the merged [QA corrections](QA_AUDIT_2026-11-19.md), ADR-072 world audit, ADR-073–075 bridge/shared crowds and strict real-client population tests. A **clean Linux Development package of `c967c46`** (2026-11-20 01:31 UTC, exact server/client hashes in [AI evidence](AI_GAMEPLAY.md)) settled its night pair, local districts, shared street and 48-person cap. **The staged daytime matrix exited 1** because opposite-bank population timed out at **11/28** after 90 seconds.
+
+```bash
+./scripts/bridge-cross-linux.sh editor             # Stari most 283 m each direction; editor evidence
+./scripts/street-multiplayer-smoke-linux.sh editor night
+./scripts/street-multiplayer-smoke-linux.sh editor  # currently fails opposite banks
+./scripts/street-multiplayer-smoke-linux.sh staged night
+./scripts/street-multiplayer-smoke-linux.sh staged  # currently fails opposite banks
+```
+
+The driver waits for **settled, constrained or timeout**, rather than a fixed-window budget check. Log source/build stamps, cooked data, viewer-to-node distance, target and spawned count, candidate rejection reasons, per-client visibility and `-MB2NetRate` samples. At the failing staged banks **3,364/4,242** spawn attempts found no qualifying pavement node. Do not weaken settlement conditions to obtain a PASS. The complete latest cross-system packaged matrix and personal owner playtest remain open.
+
 ### Reproducing the newest editor-level checks
 
 ```bash
@@ -282,7 +296,7 @@ Recommended order: verify a clean checkout and engine pin; run `./scripts/mb2.sh
 ./scripts/street-places-smoke-linux.sh editor # people at bus stops and sights, going in and out of doors, shut shops; a capture per stop (ADR-069)
 ```
 
-These are **commands for reproducing earlier recorded results**, not tests executed as part of the documentation review. Before owner acceptance, rebuild/cook all current level/model/data assets for staged clients, repeat a >150 m vehicle drive with passenger after ADR-056, execute two/three-client street/account/mission integration, measure performance and record source SHA, cooked asset digest, screenshots, logs and the owner's explicit decision. See the [19 November change review](DEVELOPMENT_REVIEW_2026-11-19.md) and the historical [12 November state review](DEVELOPMENT_REVIEW_2026-11-12.md).
+These are **commands for reproducing earlier recorded results**, not tests executed as part of the documentation review. Before owner acceptance, rebuild/cook all current level/model/data assets for staged clients, repeat a >150 m vehicle drive with passenger after ADR-056, execute two/three-client street/account/mission integration, measure performance and record source SHA, cooked asset digest, screenshots, logs and the owner's explicit decision. See [20 November review](DEVELOPMENT_REVIEW_2026-11-20.md), [19 November baseline](DEVELOPMENT_REVIEW_2026-11-19.md) and [12 November historical review](DEVELOPMENT_REVIEW_2026-11-12.md).
 
 ## Required acceptance evidence
 
