@@ -35,6 +35,13 @@ public:
         AMarburgumInteractable* Target, EMarburgumTradeAction Action, FName ItemId, int32 Quantity)
         PURE_VIRTUAL(UMarburgumAuthorityService::HandleTrade, return FMarburgumInteractionReceipt(););
 
+    /**
+     * Validate and, if allowed, durably commit a photograph (ADR-080): what the requester's camera is pointed at, judged
+     * on the server from its own copy of the pawn and its view.
+     */
+    virtual FMarburgumInteractionReceipt HandlePhotograph(AMarburgumPlayerController& Requester, const FGuid& OperationId)
+        PURE_VIRTUAL(UMarburgumAuthorityService::HandlePhotograph, return FMarburgumInteractionReceipt(););
+
     /** The active service of a world, if any. */
     static UMarburgumAuthorityService* Get(const UWorld* World);
 };

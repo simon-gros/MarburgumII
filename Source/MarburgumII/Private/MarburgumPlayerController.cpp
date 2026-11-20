@@ -94,6 +94,8 @@ void AMarburgumPlayerController::SetupInputComponent()
         InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &AMarburgumPlayerController::RequestBack);
         // B opens the counter of the shopkeeper in reach (ADR-060); E still talks to them.
         InputComponent->BindKey(EKeys::B, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleShop);
+        // P takes a photograph with the camera in custody (ADR-080).
+        InputComponent->BindKey(EKeys::P, IE_Pressed, this, &AMarburgumPlayerController::RequestPhotograph);
         // The wheel and Page Up/Down scroll an open management screen taller than the screen (QA 2026-11-19).
         const TPair<FKey, float> ScrollKeys[] = {
             { EKeys::MouseScrollUp, -3.f }, { EKeys::MouseScrollDown, 3.f }, { EKeys::PageUp, -12.f }, { EKeys::PageDown, 12.f } };
@@ -304,7 +306,7 @@ bool AMarburgumPlayerController::PlanMissionInteraction(const AMarburgumInteract
     TMap<FString, FProgressView> Views;
     for (const FMarburgumMissionState& Progress : State->GetMissions())
     {
-        Views.Add(Progress.MissionId.ToString(), { Progress.StageId.ToString(), Progress.bCompleted });
+        Views.Add(Progress.MissionId.ToString(), { Progress.StageId.ToString(), Progress.bCompleted, Progress.Outcome.IsNone() ? FString() : Progress.Outcome.ToString() });
     }
     const FPlan Plan = PlanInteraction(Target.InteractableId.ToString(),
         [&Views](const FString& Mission) { return Views.Find(Mission); },
@@ -440,6 +442,41 @@ void AMarburgumPlayerController::ServerToggleDoor_Implementation(AMarburgumDoor*
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=%s player=%d building=%s"), MarburgumII::Gameplay::InteractLogPrefix,
         !bMoved ? TEXT("door_refused_blocked") : (bWasOpen ? TEXT("door_closing") : TEXT("door_opening")),
         PlayerState ? PlayerState->GetPlayerId() : -1, *Door->GetBuildingId().ToString());
+}
+
+void AMarburgumPlayerController::RequestPhotograph()
+{
+    if (!IsLocalController() || bTyping)
+    {
+        return;
+    }
+    const FGuid OperationId = FGuid::NewGuid();
+    PendingOperationId = OperationId;
+    PendingTarget = nullptr;
+    PendingSinceSeconds = FPlatformTime::Seconds();
+    FMarburgumClientUiHooks::OnPhotographTaken().Broadcast(this);
+    ServerRequestPhotograph(OperationId);
+}
+
+void AMarburgumPlayerController::ServerRequestPhotograph_Implementation(FGuid OperationId)
+{
+    UWorld* World = GetWorld();
+    if (!World || !AdmitRequest(TEXT("photograph")))
+    {
+        return;
+    }
+    FMarburgumInteractionReceipt Receipt;
+    if (UMarburgumAuthorityService* Authority = UMarburgumAuthorityService::Get(World))
+    {
+        Receipt = Authority->HandlePhotograph(*this, OperationId);
+    }
+    else
+    {
+        Receipt.OperationId = OperationId;
+        Receipt.Outcome = EMarburgumRequestOutcome::Rejected;
+        Receipt.Reason = EMarburgumInteractionReason::AuthorityUnavailable;
+    }
+    ClientReceiveInteractionReceipt(Receipt);
 }
 
 void AMarburgumPlayerController::ServerRequestInteraction_Implementation(FGuid OperationId, AMarburgumInteractable* Target)

@@ -68,6 +68,8 @@ public:
     virtual FMarburgumInteractionReceipt HandleTrade(AMarburgumPlayerController& Requester, const FGuid& OperationId,
         AMarburgumInteractable* Target, EMarburgumTradeAction Action, FName ItemId, int32 Quantity) override;
 
+    virtual FMarburgumInteractionReceipt HandlePhotograph(AMarburgumPlayerController& Requester, const FGuid& OperationId) override;
+
 private:
     /** One player's line in the water. */
     struct FCast
@@ -93,6 +95,8 @@ private:
         AMarburgumPlayerState& State, const AMarburgumInteractable& Target);
     FMarburgumInteractionReceipt HandleFishing(FMarburgumInteractionReceipt Receipt, AMarburgumPlayerController& Requester,
         AMarburgumPlayerState& State, const AMarburgumInteractable& Spot);
+    /** The checks every request shares (operation id, store, character, replay); false with Receipt set to the refusal or replay. */
+    bool AdmitOperation(FMarburgumInteractionReceipt& Receipt, AMarburgumPlayerController& Requester, AMarburgumPlayerState*& OutState);
     /** Shared validation of interaction and choice requests; false with Receipt set to the refusal or replay. */
     bool Admit(FMarburgumInteractionReceipt& Receipt, AMarburgumPlayerController& Requester, AMarburgumInteractable* Target,
         AMarburgumPlayerState*& OutState);

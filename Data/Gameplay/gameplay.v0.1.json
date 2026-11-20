@@ -1,7 +1,7 @@
 {
   "format": "marburgumii.gameplay_catalogue",
-  "version": "0.3.0",
-  "status": "stage1_lent_runtime_with_fishing_skills_missions_and_kiosk_67",
+  "version": "0.4.0",
+  "status": "stage1_lent_runtime_with_fishing_photography_skills_missions_chapter_iv_and_kiosk_67",
   "description": "Item, skill, fishing, interactable, shop and mission definitions the Unreal runtime uses. `mb2 generate gameplay` writes Source/MarburgumIIShared/Public/MarburgumGameplayCatalogue.h from this file, and `mb2 validate gameplay` fails when the two differ (ADR-049).",
   "items": [
     {
@@ -509,6 +509,201 @@
         "source": "original Marburgum project/data/items.json (integration/kiosk67-retail-reconciled-20261025)",
         "source_version": 3,
         "note": "Identifier and English name carried forward; `trade: retail` becomes kind goods (ADR-060). No legacy code or asset."
+      }
+    },
+    {
+      "id": "raeda_recorder_counter_note",
+      "name": {
+        "en": "Office recorder counter reading",
+        "sl": "Odčitek števca pisarniškega kasetofona"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter IV 'Voices on Tape' (proposed evidence)",
+        "note": "Canon beat 'the machine's counter and head wear matter later'; the item id is new."
+      }
+    },
+    {
+      "id": "canteen_cassette_c60",
+      "name": {
+        "en": "Cassette marked 'Mix — Poletje ’91'",
+        "sl": "Kaseta z oznako 'Mix — Poletje ’91'"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter IV 'Voices on Tape' (proposed evidence)",
+        "note": "Canonical evidence id canteen_cassette_c60."
+      }
+    },
+    {
+      "id": "canteen_tape_notes",
+      "name": {
+        "en": "Andrej's notes on the tape's first minutes",
+        "sl": "Andrejevi zapiski o prvih minutah traku"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter IV 'Voices on Tape' (proposed evidence)",
+        "note": "Andrej's reading of the overwritten tape; the item id is new."
+      }
+    },
+    {
+      "id": "mentor_folder_note",
+      "name": {
+        "en": "Maja's mentor's folder note, 1990",
+        "sl": "Zapisek iz mape Majinega mentorja, 1990"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter IV 'Voices on Tape' (proposed evidence)",
+        "note": "Canonical evidence id mentor_folder_note (Maja branch)."
+      }
+    },
+    {
+      "id": "camera",
+      "name": {
+        "en": "Borrowed 35 mm camera",
+        "sl": "Izposojeni 35-milimetrski fotoaparat"
+      },
+      "stacking": "fungible_stack",
+      "kind": "tool",
+      "provenance": {
+        "source": "original Marburgum docs/PHOTOGRAPHY_SKILL_ROADMAP.md and NARRATIVE_BIBLE.md (Nika Vidmar)",
+        "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+      }
+    },
+    {
+      "id": "nika_old_prints",
+      "name": {
+        "en": "Three old Foto Vidmar prints",
+        "sl": "Tri stare fotografije Foto Vidmar"
+      },
+      "stacking": "fungible_stack",
+      "kind": "clue",
+      "provenance": {
+        "source": "Marburgum II extension (ADR-080)",
+        "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+      }
+    },
+    {
+      "id": "photo_vodni_stolp",
+      "name": {
+        "en": "Photograph — Water Tower (Vodni stolp)",
+        "sl": "Fotografija — Vodni stolp"
+      },
+      "stacking": "fungible_stack",
+      "kind": "photo",
+      "provenance": {
+        "source": "Marburgum II extension (ADR-080)",
+        "note": "A print of a character's own photograph; nothing is imported."
+      }
+    },
+    {
+      "id": "photo_sodni_stolp",
+      "name": {
+        "en": "Photograph — Judgement Tower (Sodni stolp)",
+        "sl": "Fotografija — Sodni stolp"
+      },
+      "stacking": "fungible_stack",
+      "kind": "photo",
+      "provenance": {
+        "source": "Marburgum II extension (ADR-080)",
+        "note": "A print of a character's own photograph; nothing is imported."
+      }
+    },
+    {
+      "id": "photo_zidovski_stolp",
+      "name": {
+        "en": "Photograph — Jewish Tower (Židovski stolp)",
+        "sl": "Fotografija — Židovski stolp"
+      },
+      "stacking": "fungible_stack",
+      "kind": "photo",
+      "provenance": {
+        "source": "Marburgum II extension (ADR-080)",
+        "note": "A print of a character's own photograph; nothing is imported."
+      }
+    },
+    {
+      "id": "photo_sinagoga",
+      "name": {
+        "en": "Photograph — Synagogue (Sinagoga)",
+        "sl": "Fotografija — Sinagoga"
+      },
+      "stacking": "fungible_stack",
+      "kind": "photo",
+      "provenance": {
+        "source": "Marburgum II extension (ADR-080)",
+        "note": "A print of a character's own photograph; nothing is imported."
+      }
+    },
+    {
+      "id": "photo_minoritska_cerkev",
+      "name": {
+        "en": "Photograph — Minorite church (Minoritska cerkev)",
+        "sl": "Fotografija — Minoritska cerkev"
+      },
+      "stacking": "fungible_stack",
+      "kind": "photo",
+      "provenance": {
+        "source": "Marburgum II extension (ADR-080)",
+        "note": "A print of a character's own photograph; nothing is imported."
+      }
+    },
+    {
+      "id": "photo_stari_most",
+      "name": {
+        "en": "Photograph — Old Bridge (Stari most)",
+        "sl": "Fotografija — Stari most"
+      },
+      "stacking": "fungible_stack",
+      "kind": "photo",
+      "provenance": {
+        "source": "Marburgum II extension (ADR-080)",
+        "note": "A print of a character's own photograph; nothing is imported."
+      }
+    },
+    {
+      "id": "photo_kvik_lettering",
+      "name": {
+        "en": "Photograph — Kvik department-store lettering",
+        "sl": "Fotografija — Napis na blagovnici Kvik"
+      },
+      "stacking": "fungible_stack",
+      "kind": "photo",
+      "provenance": {
+        "source": "Marburgum II extension (ADR-080)",
+        "note": "A print of a character's own photograph; nothing is imported."
+      }
+    },
+    {
+      "id": "photo_velika_kavarna_lettering",
+      "name": {
+        "en": "Photograph — Velika kavarna lettering",
+        "sl": "Fotografija — Napis Velike kavarne"
+      },
+      "stacking": "fungible_stack",
+      "kind": "photo",
+      "provenance": {
+        "source": "Marburgum II extension (ADR-080)",
+        "note": "A print of a character's own photograph; nothing is imported."
+      }
+    },
+    {
+      "id": "photo_prehod_sign_melje",
+      "name": {
+        "en": "Photograph — PREHOD sign at the Melje yard",
+        "sl": "Fotografija — Napis PREHOD na dvorišču v Meljah"
+      },
+      "stacking": "fungible_stack",
+      "kind": "photo",
+      "provenance": {
+        "source": "Marburgum II extension (ADR-080)",
+        "note": "A print of a character's own photograph; nothing is imported."
       }
     }
   ],
@@ -2097,6 +2292,114 @@
         "source": "original Marburgum project/data/interactions.json and npc_visual_profiles.json",
         "source_version": 3
       }
+    },
+    {
+      "id": "tone_vogrin",
+      "kind": "npc",
+      "display_name": {
+        "en": "Tone Vogrin",
+        "sl": "Tone Vogrin"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -229.5,
+        1.74,
+        -78.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "Drago's cab, Drago's rules: no smoking, no eating, no politics after midnight. Where to?",
+        "sl": "Dragov taksi, Dragova pravila: ne kadi se, ne je se in po polnoči se ne govori o politiki. Kam greva?"
+      },
+      "colors": {
+        "primary": [
+          0.239,
+          0.267,
+          0.31
+        ],
+        "secondary": [
+          0.129,
+          0.141,
+          0.157
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md §4 and Chapter IV (Tone Vogrin, driver for Drago)",
+        "note": "Canonical character; position newly chosen beside Drago Potočnik's workshop (no original position exists)."
+      }
+    },
+    {
+      "id": "andrej_mlakar",
+      "kind": "npc",
+      "display_name": {
+        "en": "Andrej Mlakar",
+        "sl": "Andrej Mlakar"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        -8.0,
+        2.1,
+        -66.0
+      ],
+      "range_cm": 400,
+      "placement": "original",
+      "dialogue": {
+        "en": "If it beeps, I can probably fix it. If it only clicks, bring a coffee and some patience.",
+        "sl": "Če piska, ga najbrž popravim. Če samo klika, prinesi kavo in malo potrpljenja."
+      },
+      "colors": {
+        "primary": [
+          0.278,
+          0.29,
+          0.255
+        ],
+        "secondary": [
+          0.149,
+          0.157,
+          0.141
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum docs/NARRATIVE_BIBLE.md (Andrej Mlakar, computer technician)",
+        "note": "Canonical character; position newly chosen on the Lent row beside the Mariborski Glas archive desk."
+      }
+    },
+    {
+      "id": "jozica_rozman",
+      "kind": "npc",
+      "display_name": {
+        "en": "Jožica Rozman",
+        "sl": "Jožica Rozman"
+      },
+      "verb": "talk",
+      "godot_position_m": [
+        90.0,
+        22.8,
+        1058.0
+      ],
+      "range_cm": 400,
+      "placement": "pad",
+      "dialogue": {
+        "en": "We bought a desk, two chairs and that recorder for less than a winter coat. Nobody asked what had been said into it.",
+        "sl": "Pisalno mizo, dva stola in tisti kasetofon smo kupili za manj kot zimski plašč. Nihče ni vprašal, kaj so govorili vanj."
+      },
+      "colors": {
+        "primary": [
+          0.42,
+          0.376,
+          0.333
+        ],
+        "secondary": [
+          0.208,
+          0.188,
+          0.169
+        ]
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter IV ('a Tabor household')",
+        "note": "The canon's unnamed Tabor household, named here (ADR-080). Tabor is not built yet: she stands on the temporary Tabor floor (ADR-052)."
+      }
     }
   ],
   "shops": [
@@ -2158,9 +2461,9 @@
   ],
   "world_store": {
     "format": "marburgumii.world_store",
-    "schema_version": 5,
+    "schema_version": 6,
     "oldest_readable_schema": 1,
-    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition (ADR-020); schema 4 adds skill XP, money and mission outcomes (ADR-047, ADR-049); schema 5 adds shop shelves and each character's first purchase per shop (ADR-060)"
+    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition (ADR-020); schema 4 adds skill XP, money and mission outcomes (ADR-047, ADR-049); schema 5 adds shop shelves and each character's first purchase per shop (ADR-060); schema 6 adds each character's documented photo subjects (discoveries, ADR-080)."
   },
   "condition": {
     "walk_speed_mps": 2.2,
@@ -3882,6 +4185,938 @@
         "source_commit": "2cd67691801ae1a1878e0b04736a01c12b57e483",
         "note": "Every stage, requirement, grant, flag, choice, reward and journal entry carried forward (ADR-049)."
       }
+    },
+    {
+      "id": "raeda_voices_on_tape",
+      "name": {
+        "en": "Voices on Tape",
+        "sl": "Glasovi na traku"
+      },
+      "category": "story",
+      "offer_target": "vera_horvat",
+      "story_family": "The City in the Ledger",
+      "requires_completed": [
+        "raeda_city_for_sale"
+      ],
+      "summary": {
+        "en": "R-90's expense lines list two C-60 cassettes for the minutes of 22 December 1989. Vera never saw either again. If one survived, it may say where the council really met.",
+        "sl": "Med stroški v R-90 sta zapisani dve kaseti C-60 za zapisnik seje 22. decembra 1989. Vera ni nobene več videla. Če je katera preživela, morda pove, kje se je svet v resnici sestal."
+      },
+      "start_items": [],
+      "stages": [
+        {
+          "id": "find_recorder",
+          "objective_text": {
+            "en": "The office recorder went with the Raeda Servis furniture to a household in Tabor. Ask Jožica Rozman what came with it.",
+            "sl": "Pisarniški kasetofon je s pohištvom Raeda Servisa odšel k družini na Taboru. Vprašaj Jožico Rozman, kaj je bilo zraven."
+          },
+          "complete_target": "jozica_rozman",
+          "action": {
+            "en": "Ask about the recorder",
+            "sl": "Vprašaj za kasetofon"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Jožica shows you the machine: the counter stopped at 0412 and the head is worn to a shine. 'There was no tape in it. The dealer said a driver from the Melje yard had already asked for the old cassettes. For music, of all things.'",
+            "sl": "Jožica ti pokaže aparat: števec se je ustavil pri 0412, glava je zlizana do sijaja. 'Kasete ni bilo notri. Prodajalec je rekel, da je stare kasete že vprašal neki voznik z dvorišča v Meljah. Za glasbo, si predstavljaj.'"
+          },
+          "grant_items": [
+            {
+              "id": "raeda_recorder_counter_note",
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "id": "ask_drago",
+          "objective_text": {
+            "en": "Ask Drago Potočnik which of his drivers collects old cassettes for music.",
+            "sl": "Vprašaj Draga Potočnika, kateri od njegovih voznikov zbira stare kasete za glasbo."
+          },
+          "complete_target": "drago_potocnik",
+          "action": {
+            "en": "Ask about the cassettes",
+            "sl": "Vprašaj za kasete"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Drago laughs. 'Tone. He records everything onto everything. Half his glovebox is the radio from 1991. He is at the cab now. Ask him nicely; he is sentimental about his tapes.'",
+            "sl": "Drago se zasmeje. 'Tone. Vse posname na vse. Pol njegovega predala je radio iz leta 1991. Zdaj je pri taksiju. Vprašaj ga lepo, na svoje kasete je sentimentalen.'"
+          }
+        },
+        {
+          "id": "borrow_cassette",
+          "objective_text": {
+            "en": "Ask Tone Vogrin at Drago's cab for the cassette labelled 'Mix — Poletje ’91'.",
+            "sl": "Prosi Toneta Vogrina pri Dragovem taksiju za kaseto z oznako 'Mix — Poletje ’91'."
+          },
+          "complete_target": "tone_vogrin",
+          "action": {
+            "en": "Ask for the cassette",
+            "sl": "Prosi za kaseto"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Tone digs through the glovebox and hands over a C-60. Under his own label an older one shows through: 'Zbor 22.12.' 'That was office junk somebody gave away. The tape was good, so I used it. Bring it back when you are done.'",
+            "sl": "Tone pobrska po predalu in ti da kaseto C-60. Pod njegovo nalepko se vidi starejša: 'Zbor 22.12.' 'To je bila pisarniška krama, ki jo je nekdo dal stran. Trak je bil dober, pa sem ga porabil. Vrni mi jo, ko končaš.'"
+          },
+          "grant_items": [
+            {
+              "id": "canteen_cassette_c60",
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "id": "listen_andrej",
+          "objective_text": {
+            "en": "Take the cassette to Andrej Mlakar and ask what is left under the music.",
+            "sl": "Odnesi kaseto Andreju Mlakarju in ga vprašaj, kaj je ostalo pod glasbo."
+          },
+          "complete_target": "andrej_mlakar",
+          "action": {
+            "en": "Ask Andrej to listen",
+            "sl": "Prosi Andreja, naj posluša"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Andrej cleans the head twice before he plays it. 'The music covers most of it. The first four minutes are what the label claims to be, or what someone meant it to look like.' Muffled voices. A chair scrapes across the one sentence that matters. Behind it, close, a shunting locomotive, and a radio jingle you cannot quite catch. 'A tape tells you where a room was. It does not tell you what was decided in it.'",
+            "sl": "Andrej dvakrat očisti glavo, preden jo zavrti. 'Glasba prekrije večino. Prve štiri minute so to, kar trdi nalepka, ali pa to, kar je hotel nekdo, da je videti tako.' Pridušeni glasovi. Stol zastrška čez edini stavek, ki šteje. Zadaj, blizu, premikalna lokomotiva in radijski džingl, ki ga ne ujameš čisto. 'Trak ti pove, kje je bil prostor. Ne pove, kaj so v njem sklenili.'"
+          },
+          "required_items": [
+            {
+              "id": "canteen_cassette_c60",
+              "quantity": 1
+            }
+          ],
+          "grant_items": [
+            {
+              "id": "canteen_tape_notes",
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "id": "place_the_room",
+          "objective_text": {
+            "en": "Play Vera the first four minutes and ask where the meeting could have been.",
+            "sl": "Zavrti Veri prve štiri minute in jo vprašaj, kje bi seja lahko bila."
+          },
+          "complete_target": "vera_horvat",
+          "action": {
+            "en": "Play Vera the tape",
+            "sl": "Zavrti Veri trak"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Vera listens twice with her eyes closed. 'The council met in the boardroom at headquarters. Carpets, a portrait, no trains. That locomotive is the Melje yard canteen. So either the minutes lie about the room, or this is not the meeting on the label.' She writes the jingle down as 'radio, unidentified' and underlines it.",
+            "sl": "Vera posluša dvakrat, z zaprtimi očmi. 'Svet je zasedal v sejni sobi na upravi. Preproge, portret, nobenih vlakov. Ta lokomotiva je menza na dvorišču v Meljah. Torej zapisnik laže o prostoru ali pa to ni seja z nalepke.' Džingl si zapiše kot 'radio, neznano' in ga podčrta."
+          },
+          "required_items": [
+            {
+              "id": "canteen_tape_notes",
+              "quantity": 1
+            }
+          ],
+          "set_flags": {
+            "canteen_tape_place_melje": true
+          }
+        },
+        {
+          "id": "tone_question",
+          "objective_text": {
+            "en": "Tone asks why his old mixtape matters. Decide what to tell him.",
+            "sl": "Tone vpraša, zakaj je njegova stara kaseta pomembna. Odloči se, kaj mu boš povedal."
+          },
+          "complete_target": "tone_vogrin",
+          "action": {
+            "en": "Talk to Tone",
+            "sl": "Pogovori se s Tonetom"
+          },
+          "objective": {
+            "type": "choice"
+          },
+          "final": true,
+          "completion_text": {
+            "en": "",
+            "sl": ""
+          },
+          "choices": [
+            {
+              "id": "ask_tone",
+              "label": {
+                "en": "Ask Tone where the office tape came from.",
+                "sl": "Vprašaj Toneta, od kod je pisarniška kaseta."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "reputation": 10
+              },
+              "outcome": "tone_questioned",
+              "completion_text": {
+                "en": "Tone frowns at the label as if he had never read it. 'It was in a box at home. Office things.' He says it lightly and does not look at you while he says it. He tells you to keep the tape. Later Drago mentions that Tone went home early that night.",
+                "sl": "Tone se namršči ob nalepki, kot da je še nikoli ni prebral. 'Bila je v škatli doma. Pisarniške stvari.' Reče lahkotno in te pri tem ne pogleda. Reče, naj kaseto obdržiš. Kasneje Drago omeni, da je Tone tisto noč odšel domov prej."
+              }
+            },
+            {
+              "id": "spare_tone",
+              "label": {
+                "en": "Thank him and keep his household out of it.",
+                "sl": "Zahvali se mu in pusti njegov dom pri miru."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "reputation": 15
+              },
+              "outcome": "tone_spared",
+              "completion_text": {
+                "en": "You tell Tone the tape helps with an old office question and leave it there. He shrugs, tells you to keep it and turns the radio back up.",
+                "sl": "Tonetu poveš, da trak pomaga pri starem pisarniškem vprašanju, in tam ostaneš. Skomigne, reče, naj ga obdržiš, in spet prišari radio."
+              }
+            }
+          ]
+        }
+      ],
+      "reward_money": 60,
+      "journal_entry": {
+        "id": "blue_ledger_voices_on_tape",
+        "title": {
+          "en": "Blue Ledger — The Canteen Tape",
+          "sl": "Modra knjiga — Trak iz menze"
+        },
+        "text": {
+          "en": "A C-60 cassette labelled 'Zbor 22.12.' survived under a 1991 mixtape in Tone Vogrin's taxi. Its first four minutes carry muffled voices, a shunting locomotive and a radio jingle. Vera places the recording in the Melje yard canteen, not the headquarters boardroom where the minutes say the December 1989 session met. The tape does not prove what was decided; it proves where a meeting happened, and the jingle may yet date it.",
+          "sl": "Kaseta C-60 z oznako 'Zbor 22.12.' je preživela pod mixom iz leta 1991 v taksiju Toneta Vogrina. Prve štiri minute nosijo pridušene glasove, premikalno lokomotivo in radijski džingl. Vera posnetek postavi v menzo na dvorišču v Meljah, ne v sejno sobo uprave, kjer naj bi po zapisniku decembra 1989 zasedal svet. Trak ne dokaže, kaj so sklenili; dokaže, kje je bil sestanek, džingl pa ga morda še datira."
+        }
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter IV 'Voices on Tape' (proposed id raeda_voices_on_tape)",
+        "note": "Canonical beats (recorder in Tabor, Tone's taxi mixtape, Andrej's overwritten tape, locomotive and jingle, the Tone relationship beat) carried as the mid-decade (1993-96) variant on the current runtime. New in Marburgum II: Jožica Rozman names the canon's Tabor household; the Maja branch is its own follow-up (raeda_mentor_folder) because stages cannot be optional yet; the jingle is identified in Chapter VIII, not here."
+      }
+    },
+    {
+      "id": "raeda_mentor_folder",
+      "name": {
+        "en": "The Borrowed Folder",
+        "sl": "Izposojena mapa"
+      },
+      "category": "story",
+      "offer_target": "maja_koren",
+      "story_family": "The City in the Ledger",
+      "requires_completed": [
+        "raeda_voices_on_tape",
+        "raeda_names_no_longer_match"
+      ],
+      "requires_outcomes": [
+        {
+          "mission": "raeda_names_no_longer_match",
+          "any_of": [
+            "maja_informed"
+          ]
+        }
+      ],
+      "summary": {
+        "en": "Because you trusted Maja with the Raeda chronology, she went through her late mentor's papers. In 1990 he borrowed a folder from the Glas archive and never put it back.",
+        "sl": "Ker si Maji zaupal kronologijo Raede, je pregledala papirje svojega pokojnega mentorja. Leta 1990 si je iz arhiva Glasa izposodil mapo in je ni nikoli vrnil."
+      },
+      "start_items": [],
+      "stages": [
+        {
+          "id": "collect_folder",
+          "objective_text": {
+            "en": "Collect the folder Maja set aside for you at the Mariborski Glas archive desk.",
+            "sl": "Pri arhivski mizi Mariborskega glasa vzemi mapo, ki ti jo je pripravila Maja."
+          },
+          "complete_target": "mariborski_glas_archive",
+          "action": {
+            "en": "Collect Maja's folder",
+            "sl": "Vzemi Majino mapo"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "The folder is thin: two clippings and a sheet of copy paper. In pencil, in a hand Maja says she would know anywhere: 'Prehod — ask Lorber re: Kainach.' Spring 1990. Nothing after it.",
+            "sl": "Mapa je tanka: dva izrezka in list kopirnega papirja. S svinčnikom, v pisavi, ki bi jo Maja prepoznala kjerkoli: 'Prehod — vprašaj Lorberja glede Kainacha.' Pomlad 1990. Nič več za tem."
+          },
+          "grant_items": [
+            {
+              "id": "mentor_folder_note",
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "id": "maja_reads",
+          "objective_text": {
+            "en": "Show Maja her mentor's note.",
+            "sl": "Pokaži Maji mentorjev zapisek."
+          },
+          "complete_target": "maja_koren",
+          "action": {
+            "en": "Show Maja the note",
+            "sl": "Pokaži Maji zapisek"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": true,
+          "completion_text": {
+            "en": "Maja reads it standing up. 'He asked the right question in 1990 and never printed the answer. I would like to know why: whether he ran out of proof or out of courage.' She lets you keep the folder. 'It is evidence now, not a keepsake.'",
+            "sl": "Maja ga prebere stoje. 'Leta 1990 je postavil pravo vprašanje in odgovora nikoli ni objavil. Rada bi vedela, zakaj: ali mu je zmanjkalo dokazov ali poguma.' Mapo ti pusti. 'Zdaj je dokaz, ne spominek.'"
+          },
+          "required_items": [
+            {
+              "id": "mentor_folder_note",
+              "quantity": 1
+            }
+          ],
+          "set_flags": {
+            "mentor_question_found": true
+          }
+        }
+      ],
+      "reward_money": 0,
+      "journal_entry": {
+        "id": "blue_ledger_borrowed_folder",
+        "title": {
+          "en": "Blue Ledger — A Question from 1990",
+          "sl": "Modra knjiga — Vprašanje iz leta 1990"
+        },
+        "text": {
+          "en": "Maja Koren's late mentor borrowed a Glas archive folder in 1990. His only note reads 'Prehod — ask Lorber re: Kainach'. He never followed it up in print.",
+          "sl": "Pokojni mentor Maje Koren si je leta 1990 izposodil mapo iz arhiva Glasa. Njegov edini zapisek se glasi 'Prehod — vprašaj Lorberja glede Kainacha'. V tisku tega ni nikoli nadaljeval."
+        }
+      },
+      "provenance": {
+        "source": "original Marburgum docs/MAIN_STORYLINE.md Chapter IV beat 4 (Maja branch, 'a journalist borrowed a folder')",
+        "note": "Offered only to a character whose Chapter I ended in maja_informed (outcome gate, ADR-080); a separate follow-up because the runtime has no optional stages."
+      }
+    },
+    {
+      "id": "nika_then_and_now",
+      "name": {
+        "en": "Then and Now — Three Prints",
+        "sl": "Nekdaj in zdaj — tri fotografije"
+      },
+      "category": "side_story",
+      "offer_target": "nika_vidmar",
+      "story_family": "Foto Vidmar",
+      "requires_completed": [],
+      "summary": {
+        "en": "Nika Vidmar keeps prints her father made at Foto Vidmar. She lends you a camera: photograph the same places today, and she will show you how a photograph is dated.",
+        "sl": "Nika Vidmar hrani fotografije, ki jih je naredil njen oče v Foto Vidmar. Posodi ti fotoaparat: fotografiraj iste kraje danes in pokazala ti bo, kako se datira fotografija."
+      },
+      "start_items": [
+        {
+          "id": "camera",
+          "quantity": 1
+        },
+        {
+          "id": "nika_old_prints",
+          "quantity": 1
+        }
+      ],
+      "stages": [
+        {
+          "id": "shoot_vodni_stolp",
+          "objective_text": {
+            "en": "Photograph the Water Tower (Vodni stolp) at the downstream end of Lent, roughly where her father stood. Frame it and press [P].",
+            "sl": "Fotografiraj Vodni stolp na spodnjem koncu Lenta, približno tam, kjer je stal njen oče. Ujemi ga v kader in pritisni [P]."
+          },
+          "complete_target": "vodni_stolp",
+          "action": {
+            "en": "Photograph the tower",
+            "sl": "Fotografiraj stolp"
+          },
+          "objective": {
+            "type": "photograph"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "The tower in your frame has the same stones as her father's print and a different city around it: new railings, a parked hatchback where a cart stood.",
+            "sl": "Stolp v tvojem kadru ima iste kamne kot na očetovi fotografiji, okrog njega pa drugo mesto: nove ograje in parkiran avto, kjer je stal voz."
+          }
+        },
+        {
+          "id": "shoot_sodni_stolp",
+          "objective_text": {
+            "en": "Photograph the Judgement Tower (Sodni stolp) at the upstream end of Lent.",
+            "sl": "Fotografiraj Sodni stolp na zgornjem koncu Lenta."
+          },
+          "complete_target": "sodni_stolp",
+          "action": {
+            "en": "Photograph the tower",
+            "sl": "Fotografiraj stolp"
+          },
+          "objective": {
+            "type": "photograph"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Her father's print shows scaffolding on the Judgement Tower; yours shows none. Scaffolding comes and goes, and somebody always kept the invoice. That is a date you can check.",
+            "sl": "Na očetovi fotografiji je na Sodnem stolpu oder, na tvoji ga ni. Odri pridejo in gredo, račun pa je vedno nekdo shranil. To je datum, ki ga lahko preveriš."
+          }
+        },
+        {
+          "id": "shoot_stari_most",
+          "objective_text": {
+            "en": "Photograph the Old Bridge (Stari most) from the bank or the deck.",
+            "sl": "Fotografiraj Stari most z brega ali s ceste na mostu."
+          },
+          "complete_target": "stari_most",
+          "action": {
+            "en": "Photograph the bridge",
+            "sl": "Fotografiraj most"
+          },
+          "objective": {
+            "type": "photograph"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "In the old print the lamp standards on the bridge are a different shape. Lamps are replaced in batches, and the city kept the orders.",
+            "sl": "Na stari fotografiji imajo svetilke na mostu drugačno obliko. Svetilke menjajo v serijah, mesto pa je naročila shranilo."
+          }
+        },
+        {
+          "id": "show_nika",
+          "objective_text": {
+            "en": "Bring the three new photographs back to Nika Vidmar.",
+            "sl": "Prinesi tri nove fotografije nazaj Niki Vidmar."
+          },
+          "complete_target": "nika_vidmar",
+          "action": {
+            "en": "Show Nika the photographs",
+            "sl": "Pokaži Niki fotografije"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Nika lays her father's prints beside yours. 'Same place, three dates. Look at what changed and what did not. That is how you date a picture nobody labelled.' She lets you keep the camera. 'Bring me anything with a date board in the corner.'",
+            "sl": "Nika položi očetove fotografije poleg tvojih. 'Isti kraj, trije datumi. Poglej, kaj se je spremenilo in kaj ne. Tako datiraš sliko, ki je nihče ni označil.' Fotoaparat ti pusti. 'Prinesi mi karkoli s tablo z datumom v kotu.'"
+          },
+          "required_items": [
+            {
+              "id": "photo_vodni_stolp",
+              "quantity": 1
+            },
+            {
+              "id": "photo_sodni_stolp",
+              "quantity": 1
+            },
+            {
+              "id": "photo_stari_most",
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "id": "keep_or_archive",
+          "objective_text": {
+            "en": "Nika offers to file your photographs in the lab's archive next to her father's. Decide.",
+            "sl": "Nika ponudi, da tvoje fotografije shrani v arhiv laboratorija poleg očetovih. Odloči se."
+          },
+          "complete_target": "nika_vidmar",
+          "action": {
+            "en": "Decide about the prints",
+            "sl": "Odloči o fotografijah"
+          },
+          "objective": {
+            "type": "choice"
+          },
+          "final": true,
+          "completion_text": {
+            "en": "",
+            "sl": ""
+          },
+          "choices": [
+            {
+              "id": "archive_prints",
+              "label": {
+                "en": "Leave copies in the Foto Vidmar archive.",
+                "sl": "Pusti kopije v arhivu Foto Vidmar."
+              },
+              "money_delta": 30,
+              "skill_xp": {
+                "reputation": 15
+              },
+              "outcome": "prints_archived",
+              "completion_text": {
+                "en": "Nika files your copies beside her father's and pays the lab rate for them. 'In thirty years somebody will date their own city by these.'",
+                "sl": "Nika tvoje kopije vloži poleg očetovih in ti zanje plača laboratorijsko ceno. 'Čez trideset let bo nekdo po njih datiral svoje mesto.'"
+              }
+            },
+            {
+              "id": "darkroom_lesson",
+              "label": {
+                "en": "Develop a second set yourself in her darkroom.",
+                "sl": "Drugo serijo razvij sam v njeni temnici."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "photography": 40
+              },
+              "outcome": "darkroom_lesson",
+              "completion_text": {
+                "en": "An hour under the red lamp: developer, stop bath, fixer, and Nika counting seconds out loud. Your second set comes out a shade too dark, and entirely yours.",
+                "sl": "Ura pod rdečo lučjo: razvijalec, prekinjevalna kopel, fiksir in Nika, ki na glas šteje sekunde. Druga serija je za odtenek pretemna in v celoti tvoja."
+              }
+            }
+          ]
+        }
+      ],
+      "reward_money": 0,
+      "journal_entry": {
+        "id": "foto_vidmar_then_and_now",
+        "title": {
+          "en": "Foto Vidmar — Then and Now",
+          "sl": "Foto Vidmar — Nekdaj in zdaj"
+        },
+        "text": {
+          "en": "Nika Vidmar compared three of her father's prints with your photographs of the same places. Scaffolding, lamp standards and signs change in ways that records can confirm, so a photograph is dated by what changed around its subject. She lent you a 35 mm camera for anything else worth documenting.",
+          "sl": "Nika Vidmar je tri očetove fotografije primerjala s tvojimi posnetki istih krajev. Odri, svetilke in napisi se spreminjajo tako, da jih lahko potrdijo zapisi, zato fotografijo datiraš po tem, kar se je spremenilo okrog motiva. Posodila ti je 35-milimetrski fotoaparat za vse drugo, kar je vredno dokumentirati."
+        }
+      },
+      "provenance": {
+        "source": "Marburgum II extension (ADR-080), built on original Marburgum NARRATIVE_BIBLE.md (Nika Vidmar: 'photographs are evidence only when their context is known') and PHOTOGRAPHY_SKILL_ROADMAP.md",
+        "note": "Newly authored introduction to Photography; Nika's prints are fictional props and no historical image is reproduced."
+      }
+    },
+    {
+      "id": "brane_old_letters",
+      "name": {
+        "en": "The Sign Painter — Old Letters",
+        "sl": "Črkoslikar — stare črke"
+      },
+      "category": "side_story",
+      "offer_target": "brane_sign_painter",
+      "story_family": "The City in the Ledger",
+      "requires_completed": [
+        "nika_then_and_now"
+      ],
+      "summary": {
+        "en": "Brane is losing his own work as businesses rebrand. He asks you to photograph three of his signs before they are painted over: two in the old town and one out at the Melje yard.",
+        "sl": "Brane izgublja svoje delo, ker podjetja menjajo imena. Prosi te, da fotografiraš tri njegove napise, preden jih prebarvajo: dva v starem mestu in enega na dvorišču v Meljah."
+      },
+      "start_items": [],
+      "stages": [
+        {
+          "id": "shoot_kvik",
+          "objective_text": {
+            "en": "Photograph Brane's lettering on the Kvik department-store building in the old town, before the new owners take it down.",
+            "sl": "Fotografiraj Branetov napis na stavbi blagovnice Kvik v starem mestu, preden ga novi lastniki snamejo."
+          },
+          "complete_target": "kvik_lettering",
+          "action": {
+            "en": "Photograph the lettering",
+            "sl": "Fotografiraj napis"
+          },
+          "objective": {
+            "type": "photograph"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Capitals as wide as a man's arm. Brane told you the upright strokes were never quite level and nobody ever noticed from the street.",
+            "sl": "Velike črke, široke kot moška roka. Brane ti je povedal, da navpične poteze nikoli niso bile čisto ravne in da tega z ulice ni nihče opazil."
+          }
+        },
+        {
+          "id": "shoot_velika_kavarna",
+          "objective_text": {
+            "en": "Photograph the lettering over the Velika kavarna on the old-town side of the river.",
+            "sl": "Fotografiraj napis nad Veliko kavarno na staromestni strani reke."
+          },
+          "complete_target": "velika_kavarna_lettering",
+          "action": {
+            "en": "Photograph the lettering",
+            "sl": "Fotografiraj napis"
+          },
+          "objective": {
+            "type": "photograph"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Gilded once, brown now. Brane says the café paid him in coffee for a year.",
+            "sl": "Nekdaj pozlačen, zdaj rjav. Brane pravi, da mu je kavarna eno leto plačevala s kavo."
+          }
+        },
+        {
+          "id": "shoot_prehod_sign",
+          "objective_text": {
+            "en": "Go out to the Melje transport yard and photograph the PREHOD sign Brane painted over the old dispatch entrance.",
+            "sl": "Pojdi na transportno dvorišče v Meljah in fotografiraj napis PREHOD, ki ga je Brane naslikal nad starim vhodom v odpravo."
+          },
+          "complete_target": "prehod_sign_melje",
+          "action": {
+            "en": "Photograph the sign",
+            "sl": "Fotografiraj napis"
+          },
+          "objective": {
+            "type": "photograph"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "PREHOD d.o.o., white on blue and already flaking. Something about the letters looks off in the viewfinder, though you cannot yet say what.",
+            "sl": "PREHOD d.o.o., belo na modrem, že lušči se. V iskalu je s črkami nekaj narobe, čeprav še ne veš, kaj."
+          }
+        },
+        {
+          "id": "show_brane",
+          "objective_text": {
+            "en": "Bring the three photographs back to Brane.",
+            "sl": "Prinesi tri fotografije nazaj Branetu."
+          },
+          "complete_target": "brane_sign_painter",
+          "action": {
+            "en": "Show Brane the photographs",
+            "sl": "Pokaži Branetu fotografije"
+          },
+          "objective": {
+            "type": "interaction"
+          },
+          "final": false,
+          "completion_text": {
+            "en": "Brane goes through the prints quickly until the Prehod one. 'There. The space after the R is too wide. August 1990, a rush job: they had dropped half their name and needed the new one up by Monday. I chalked it wrong and painted it anyway.' He taps the print. 'If you ever see that spacing on a page, the page came after the sign, not before.'",
+            "sl": "Brane hitro prelista fotografije, do tiste s Prehodom. 'Tukaj. Presledek za R je preveč širok. Avgust 1990, nujno delo: pol imena so že opustili in novega so potrebovali do ponedeljka. S kredo sem ga zarisal narobe in ga vseeno naslikal.' Potrka po fotografiji. 'Če kdaj vidiš tak presledek na listu papirja, je list nastal po napisu, ne pred njim.'"
+          },
+          "required_items": [
+            {
+              "id": "photo_kvik_lettering",
+              "quantity": 1
+            },
+            {
+              "id": "photo_velika_kavarna_lettering",
+              "quantity": 1
+            },
+            {
+              "id": "photo_prehod_sign_melje",
+              "quantity": 1
+            }
+          ],
+          "set_flags": {
+            "prehod_spacing_error_documented": true
+          }
+        },
+        {
+          "id": "settle_prints",
+          "objective_text": {
+            "en": "Brane would like copies for his portfolio. Decide how to settle it.",
+            "sl": "Brane bi rad kopije za svojo mapo del. Odloči se, kako se bosta dogovorila."
+          },
+          "complete_target": "brane_sign_painter",
+          "action": {
+            "en": "Settle the prints",
+            "sl": "Dogovori se za fotografije"
+          },
+          "objective": {
+            "type": "choice"
+          },
+          "final": true,
+          "completion_text": {
+            "en": "",
+            "sl": ""
+          },
+          "choices": [
+            {
+              "id": "sell_copies",
+              "label": {
+                "en": "Sell him the copies at the lab rate.",
+                "sl": "Prodaj mu kopije po laboratorijski ceni."
+              },
+              "money_delta": 45,
+              "skill_xp": {
+                "trading": 10
+              },
+              "outcome": "prints_sold",
+              "completion_text": {
+                "en": "Brane counts the coins out slowly and slides the prints into a cardboard folder already fat with photographs of signs.",
+                "sl": "Brane počasi odšteje kovance in fotografije vtakne v kartonasto mapo, ki je že polna fotografij napisov."
+              }
+            },
+            {
+              "id": "give_copies",
+              "label": {
+                "en": "Give them to him.",
+                "sl": "Podari mu jih."
+              },
+              "money_delta": 0,
+              "skill_xp": {
+                "reputation": 20
+              },
+              "outcome": "prints_given",
+              "completion_text": {
+                "en": "Brane does not say thank you. He tells you which corner of Lent still has a sign of his from 1962, which is better.",
+                "sl": "Brane se ne zahvali. Pove ti, na katerem vogalu Lenta še visi njegov napis iz leta 1962, kar je bolje."
+              }
+            }
+          ]
+        }
+      ],
+      "reward_money": 0,
+      "journal_entry": {
+        "id": "blue_ledger_old_letters",
+        "title": {
+          "en": "Blue Ledger — A Painter's Error",
+          "sl": "Modra knjiga — Slikarjeva napaka"
+        },
+        "text": {
+          "en": "Brane painted the PREHOD d.o.o. sign at the Melje yard in August 1990, after the company dropped 'Kainach' from its name, and spaced the letters wrongly in the rush. Any document header that repeats the error was made after that sign, whatever date it carries.",
+          "sl": "Brane je napis PREHOD d.o.o. na dvorišču v Meljah naslikal avgusta 1990, potem ko je podjetje iz imena opustilo 'Kainach', in v naglici napačno razporedil črke. Vsaka glava dokumenta, ki ponavlja to napako, je nastala po napisu, ne glede na datum na njej."
+        }
+      },
+      "provenance": {
+        "source": "original Marburgum docs/SIDE_STORY_BIBLE.md 3.10 'The Sign Painter — Old Letters' and MAIN_STORYLINE.md timeline (Aug 1990) and Chapter X typography row",
+        "note": "Canonical side story; which signs Brane asks for is new (two heritage-register buildings and the Prehod sign at the Melje yard pad). The Chapter X deduction that uses the flag is not implemented yet."
+      }
     }
-  ]
+  ],
+  "photography": {
+    "camera_item": "camera",
+    "rules": "Server-validated (ADR-080): the camera in custody, the photographer within within_m of the subject's aim point, the view within cone_degrees of it and nothing else in the way. Each photograph is a print; the first of each subject trains Photography once per character and is remembered in the world store (schema 6, discoveries).",
+    "subjects": [
+      {
+        "id": "vodni_stolp",
+        "name": {
+          "en": "Water Tower (Vodni stolp)",
+          "sl": "Vodni stolp"
+        },
+        "godot_position_m": [
+          192.0,
+          0.0,
+          -57.0
+        ],
+        "aim_height_m": 8.0,
+        "within_m": 70.0,
+        "cone_degrees": 14.0,
+        "xp": 30,
+        "item": "photo_vodni_stolp",
+        "note": {
+          "en": "The 1552 Renaissance tower at the downstream end of Lent.",
+          "sl": "Renesančni stolp iz leta 1552 na spodnjem koncu Lenta."
+        },
+        "provenance": {
+          "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
+          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+        }
+      },
+      {
+        "id": "sodni_stolp",
+        "name": {
+          "en": "Judgement Tower (Sodni stolp)",
+          "sl": "Sodni stolp"
+        },
+        "godot_position_m": [
+          -357.0,
+          0.0,
+          -105.0
+        ],
+        "aim_height_m": 9.0,
+        "within_m": 70.0,
+        "cone_degrees": 14.0,
+        "xp": 30,
+        "item": "photo_sodni_stolp",
+        "note": {
+          "en": "The round tower of the old town wall at the upstream end of Lent.",
+          "sl": "Okrogli stolp starega mestnega obzidja na zgornjem koncu Lenta."
+        },
+        "provenance": {
+          "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
+          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+        }
+      },
+      {
+        "id": "zidovski_stolp",
+        "name": {
+          "en": "Jewish Tower (Židovski stolp)",
+          "sl": "Židovski stolp"
+        },
+        "godot_position_m": [
+          181.0,
+          0.0,
+          -99.0
+        ],
+        "aim_height_m": 7.0,
+        "within_m": 60.0,
+        "cone_degrees": 14.0,
+        "xp": 25,
+        "item": "photo_zidovski_stolp",
+        "note": {
+          "en": "The fifteenth-century defence tower above the old Jewish quarter.",
+          "sl": "Obrambni stolp iz 15. stoletja nad nekdanjo judovsko četrtjo."
+        },
+        "provenance": {
+          "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
+          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+        }
+      },
+      {
+        "id": "sinagoga",
+        "name": {
+          "en": "Synagogue (Sinagoga)",
+          "sl": "Sinagoga"
+        },
+        "godot_position_m": [
+          137.0,
+          0.0,
+          -95.0
+        ],
+        "aim_height_m": 6.0,
+        "within_m": 50.0,
+        "cone_degrees": 14.0,
+        "xp": 25,
+        "item": "photo_sinagoga",
+        "note": {
+          "en": "One of the oldest surviving synagogue buildings in Europe.",
+          "sl": "Ena najstarejših ohranjenih sinagog v Evropi."
+        },
+        "provenance": {
+          "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
+          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+        }
+      },
+      {
+        "id": "minoritska_cerkev",
+        "name": {
+          "en": "Minorite church (Minoritska cerkev)",
+          "sl": "Minoritska cerkev"
+        },
+        "godot_position_m": [
+          -302.0,
+          0.0,
+          -136.0
+        ],
+        "aim_height_m": 9.0,
+        "within_m": 80.0,
+        "cone_degrees": 14.0,
+        "xp": 25,
+        "item": "photo_minoritska_cerkev",
+        "note": {
+          "en": "The old Minorite church by the river, long used for anything but worship.",
+          "sl": "Stara minoritska cerkev ob reki, dolgo uporabljena za vse drugo kot bogoslužje."
+        },
+        "provenance": {
+          "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
+          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+        }
+      },
+      {
+        "id": "stari_most",
+        "name": {
+          "en": "Old Bridge (Stari most)",
+          "sl": "Stari most"
+        },
+        "godot_position_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "aim_height_m": 4.0,
+        "within_m": 150.0,
+        "cone_degrees": 18.0,
+        "xp": 20,
+        "item": "photo_stari_most",
+        "note": {
+          "en": "The steel road bridge that ties Lent to the right bank.",
+          "sl": "Jekleni cestni most, ki poveže Lent z desnim bregom."
+        },
+        "provenance": {
+          "source": "Stari most middle (plan origin)",
+          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+        }
+      },
+      {
+        "id": "kvik_lettering",
+        "name": {
+          "en": "Kvik department-store lettering",
+          "sl": "Napis na blagovnici Kvik"
+        },
+        "godot_position_m": [
+          56.0,
+          0.0,
+          -248.0
+        ],
+        "aim_height_m": 10.0,
+        "within_m": 80.0,
+        "cone_degrees": 14.0,
+        "xp": 20,
+        "item": "photo_kvik_lettering",
+        "note": {
+          "en": "Brane's capitals on the 1970 department store.",
+          "sl": "Branetove velike črke na blagovnici iz leta 1970."
+        },
+        "provenance": {
+          "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
+          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+        }
+      },
+      {
+        "id": "velika_kavarna_lettering",
+        "name": {
+          "en": "Velika kavarna lettering",
+          "sl": "Napis Velike kavarne"
+        },
+        "godot_position_m": [
+          -18.0,
+          0.0,
+          -134.0
+        ],
+        "aim_height_m": 6.0,
+        "within_m": 60.0,
+        "cone_degrees": 14.0,
+        "xp": 20,
+        "item": "photo_velika_kavarna_lettering",
+        "note": {
+          "en": "The café's name over the corner, gilded once.",
+          "sl": "Ime kavarne nad vogalom, nekdaj pozlačeno."
+        },
+        "provenance": {
+          "source": "Heritage-register position from Content/Marburgum/Places/lent_places.json (ADR-063)",
+          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+        }
+      },
+      {
+        "id": "prehod_sign_melje",
+        "name": {
+          "en": "PREHOD sign at the Melje yard",
+          "sl": "Napis PREHOD na dvorišču v Meljah"
+        },
+        "godot_position_m": [
+          1382.0,
+          0.0,
+          -76.0
+        ],
+        "aim_height_m": 3.5,
+        "within_m": 40.0,
+        "cone_degrees": 16.0,
+        "xp": 30,
+        "item": "photo_prehod_sign_melje",
+        "note": {
+          "en": "PREHOD d.o.o., white on blue, painted in August 1990.",
+          "sl": "PREHOD d.o.o., belo na modrem, poslikano avgusta 1990."
+        },
+        "provenance": {
+          "source": "original Marburgum docs/MAIN_STORYLINE.md timeline (Aug 1990 sign) and SIDE_STORY_BIBLE.md 3.10; beside melje_yard_gate",
+          "note": "Marburgum II extension (ADR-080), newly authored; not in the original repository."
+        }
+      }
+    ]
+  }
 }

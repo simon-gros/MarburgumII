@@ -1,5 +1,7 @@
 #include "MarburgumWorldAuthority.h"
 
+#include "MarburgumPhotography.h"
+
 #include "Engine/NetConnection.h"
 #include "Engine/NetDriver.h"
 #include "Engine/World.h"
@@ -22,6 +24,7 @@
 #include "MarburgumMissionRules.h"
 #include "MarburgumNetworkContract.h"
 #include "MarburgumNpc.h"
+#include "MarburgumPhotography.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlaces.h"
 #include "MarburgumClockAuthority.h"
@@ -188,7 +191,7 @@ namespace
         for (const EMarburgumInteractionEffect Effect : { EMarburgumInteractionEffect::ItemGranted,
                  EMarburgumInteractionEffect::MissionStarted, EMarburgumInteractionEffect::StageCompleted,
                  EMarburgumInteractionEffect::MissionCompleted, EMarburgumInteractionEffect::FishCaught,
-                 EMarburgumInteractionEffect::ItemBought, EMarburgumInteractionEffect::ItemSold })
+                 EMarburgumInteractionEffect::ItemBought, EMarburgumInteractionEffect::ItemSold, EMarburgumInteractionEffect::Photographed })
         {
             if (Kind == ToString(Effect))
             {
@@ -559,8 +562,8 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::Finish(FMarburgumInteract
     return Receipt;
 }
 
-bool UMarburgumWorldAuthority::Admit(FMarburgumInteractionReceipt& Receipt, AMarburgumPlayerController& Requester,
-    AMarburgumInteractable* Target, AMarburgumPlayerState*& OutState)
+bool UMarburgumWorldAuthority::AdmitOperation(FMarburgumInteractionReceipt& Receipt, AMarburgumPlayerController& Requester,
+    AMarburgumPlayerState*& OutState)
 {
     Receipt.Outcome = EMarburgumRequestOutcome::Rejected;
     auto Refuse = [&Receipt](EMarburgumInteractionReason Reason)
@@ -614,6 +617,24 @@ bool UMarburgumWorldAuthority::Admit(FMarburgumInteractionReceipt& Receipt, AMar
             const FShopOffer* Offer = FindOffer(*PriorShop, Prior->Item);
             Receipt.StockRemaining = Offer ? MarburgumII::Retail::ShelfOf(*Offer, Store->Get().Shelves.Find(Prior->Shop)) : -1;
         }
+        return false;
+    }
+
+    OutState = State;
+    return true;
+}
+
+bool UMarburgumWorldAuthority::Admit(FMarburgumInteractionReceipt& Receipt, AMarburgumPlayerController& Requester,
+    AMarburgumInteractable* Target, AMarburgumPlayerState*& OutState)
+{
+    auto Refuse = [&Receipt](EMarburgumInteractionReason Reason)
+    {
+        Receipt.Reason = Reason;
+        return false;
+    };
+    AMarburgumPlayerState* State = nullptr;
+    if (!AdmitOperation(Receipt, Requester, State))
+    {
         return false;
     }
 
@@ -673,6 +694,12 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
     {
         return Finish(Receipt, Requester);
     }
+    // Somebody close enough to be spoken to answers whatever the request means: everyone nearby sees them turn
+    // to the speaker and talk (ADR-080). Presentation only; the decision below is the server's alone.
+    if (AMarburgumNpc* Person = Cast<AMarburgumNpc>(Target))
+    {
+        Person->ConverseAuthority(Requester.GetPawn());
+    }
     if (FindFishingSpot(Target->InteractableId.ToString()))
     {
         return HandleFishing(Receipt, Requester, *State, *Target);
@@ -718,6 +745,79 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleInteraction(
     Receipt.ItemId = Target->GrantedItemId;
     Receipt.Quantity = 1;
     Receipt.StockRemaining = Stock - 1;
+    return Finish(Receipt, Requester);
+}
+
+FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandlePhotograph(AMarburgumPlayerController& Requester, const FGuid& OperationId)
+{
+    FMarburgumInteractionReceipt Receipt;
+    Receipt.OperationId = OperationId;
+    AMarburgumPlayerState* State = nullptr;
+    if (!AdmitOperation(Receipt, Requester, State))
+    {
+        return Finish(Receipt, Requester);
+    }
+    // The server's own copy of the body and its view decides what is in frame (ADR-080); the client only asks.
+    const APawn* Body = Requester.GetPawn();
+    const AMarburgumCharacter* Photographer = Cast<AMarburgumCharacter>(Body);
+    if (!Body || State->GetCondition().IsDown() || (Photographer && Photographer->GetSeatedVehicle()))
+    {
+        Receipt.Reason = EMarburgumInteractionReason::Incapacitated;
+        return Finish(Receipt, Requester);
+    }
+    const FString& Character = State->GetCharacterKey();
+    const TMap<FString, int32>* Owned = Store->Get().Inventories.Find(Character);
+    if (!Owned || Owned->FindRef(MarburgumII::Gameplay::CameraItem) <= 0)
+    {
+        Receipt.Reason = EMarburgumInteractionReason::NoCamera;
+        return Finish(Receipt, Requester);
+    }
+    const UMarburgumPhotographySubsystem* Photography = GetWorld()->GetSubsystem<UMarburgumPhotographySubsystem>();
+    const UMarburgumPhotographySubsystem::FInFrame Frame = Photography
+        ? Photography->FindInFrame(Body->GetPawnViewLocation(), Requester.GetControlRotation(), Body)
+        : UMarburgumPhotographySubsystem::FInFrame();
+    if (!Frame.Subject)
+    {
+        Receipt.Reason = EMarburgumInteractionReason::NothingInFrame;
+        return Finish(Receipt, Requester);
+    }
+    Receipt.InteractableId = FName(Frame.Subject->Id);
+
+    FMarburgumWorldRecord Next;
+    const FMarburgumMissionDecision Decision = MarburgumII::Missions::DecidePhotograph(Store->Get(), Character, Frame.Subject->Id, Next);
+    Receipt.MissionId = Decision.Mission.IsEmpty() ? NAME_None : FName(*Decision.Mission);
+    Receipt.MissionStage = Decision.Stage.IsEmpty() ? NAME_None : FName(*Decision.Stage);
+    if (!Decision.bApplied)
+    {
+        Receipt.Reason = Decision.Reason;
+        Receipt.ItemId = Decision.Item.IsEmpty() ? NAME_None : FName(*Decision.Item);
+        return Finish(Receipt, Requester);
+    }
+    FMarburgumStoredReceipt Stored;
+    Stored.Character = Character;
+    Stored.Kind = ToString(Decision.Effect);
+    Stored.Interactable = Frame.Subject->Id;
+    Stored.Item = Decision.Item;
+    Stored.Quantity = Decision.Quantity;
+    Stored.Mission = Decision.Mission;
+    Stored.Stage = Decision.Stage;
+    Stored.Granted = Decision.Granted;
+    Stored.MoneyDelta = Decision.MoneyDelta;
+    Stored.SkillXp = Decision.SkillXp;
+    if (!Commit(Receipt, Next, Stored))
+    {
+        return Finish(Receipt, Requester);
+    }
+    ApplyInventory(*State);
+    Receipt.Outcome = EMarburgumRequestOutcome::Applied;
+    Receipt.Effect = Decision.Effect;
+    Receipt.ItemId = Decision.Item.IsEmpty() ? NAME_None : FName(*Decision.Item);
+    Receipt.Quantity = Decision.Quantity;
+    Receipt.ItemsGranted = ToStacks(&Decision.Granted);
+    Receipt.MoneyDelta = Decision.MoneyDelta;
+    Receipt.SkillXp = ToSkillAwards(Decision.SkillXp);
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=photograph character=%s subject=%s off_axis=%.1f distance_m=%.1f"), InteractLogPrefix,
+        *Character, Frame.Subject->Id, Frame.OffAxisDegrees, Frame.DistanceCm / 100.0);
     return Finish(Receipt, Requester);
 }
 
@@ -1283,6 +1383,78 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
             Entry.Id, bPerson ? TEXT("npc") : Entry.Kind == EInteractableKind::FishingSpot ? TEXT("fishing_spot") : TEXT("place"),
             At.X, At.Y, At.Z, Entry.Placement == EPlacement::AnglerRelative ? TEXT("angler_relative")
                 : Entry.Placement == EPlacement::Pad ? TEXT("pad") : TEXT("original"));
+    }
+    // Photo subjects (ADR-080): a development start where each can be photographed from (?MB2Start=photo_<id>), found
+    // round its aim point on dry ground in plain view; a subject with none is reported, never silently skipped.
+    if (const UMarburgumPhotographySubsystem* Photography = InWorld.GetSubsystem<UMarburgumPhotographySubsystem>())
+    {
+        for (const FPhotoSubjectDefinition& Subject : PhotoSubjects)
+        {
+            FVector Aim;
+            if (!Photography->GetAimPoint(Subject.Id, Aim))
+            {
+                UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=photo_unplaced id=%s reason=no_ground"), InteractLogPrefix, Subject.Id);
+                continue;
+            }
+            const double Reach = FMath::Clamp(Subject.WithinCm * 0.4, 1200.0, 4000.0);
+            bool bPlaced = false;
+            for (const double Scale : { 1.0, 0.6, 1.4 })
+            {
+                for (int32 Step = 0; !bPlaced && Step < 24; ++Step)
+                {
+                    const double Angle = Step * UE_TWO_PI / 24.0;
+                    const FVector Planned = Aim + FVector(FMath::Cos(Angle), FMath::Sin(Angle), 0.0) * Reach * Scale;
+                    FHitResult Ground;
+                    if (!FindGround(Planned, Ground) || IsWet(Ground.ImpactPoint) || Ground.ImpactNormal.Z < 0.8)
+                    {
+                        continue;
+                    }
+                    const FVector Eye = Ground.ImpactPoint + FVector(0.0, 0.0, 160.0);
+                    if (FVector::Dist(Eye, Aim) > Subject.WithinCm * 0.95)
+                    {
+                        continue;
+                    }
+                    const UMarburgumPhotographySubsystem::FInFrame Frame = Photography->FindInFrame(Eye, (Aim - Eye).Rotation(), nullptr);
+                    // By id: in a modular (editor) build each module has its own copy of the catalogue tables.
+                    if (!Frame.Subject || FCString::Strcmp(Frame.Subject->Id, Subject.Id) != 0)
+                    {
+                        continue;
+                    }
+                    FActorSpawnParameters StartParams;
+                    StartParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+                    const FVector StartAt = Ground.ImpactPoint + FVector(0.0, 0.0, 96.0);
+                    if (APlayerStart* Start = InWorld.SpawnActor<APlayerStart>(StartAt, (Aim - StartAt).GetSafeNormal2D().Rotation(), StartParams))
+                    {
+                        Start->PlayerStartTag = FName(*FString::Printf(TEXT("photo_%s"), Subject.Id));
+                        bPlaced = true;
+                        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=photo_start id=%s at=%.0f,%.0f,%.0f aim=%.0f,%.0f,%.0f distance_m=%.1f"),
+                            InteractLogPrefix, Subject.Id, StartAt.X, StartAt.Y, StartAt.Z, Aim.X, Aim.Y, Aim.Z, FVector::Dist(Eye, Aim) / 100.0);
+                    }
+                }
+                if (bPlaced)
+                {
+                    break;
+                }
+            }
+            if (!bPlaced)
+            {
+                // Say what is in the way from the nearest candidate, so the subject's data can be corrected.
+                FString Blocker = TEXT("-");
+                FHitResult Ground;
+                if (FindGround(Aim + FVector(Reach, 0.0, 0.0), Ground))
+                {
+                    FHitResult Hit;
+                    const FVector Eye = Ground.ImpactPoint + FVector(0.0, 0.0, 160.0);
+                    if (InWorld.LineTraceSingleByChannel(Hit, Eye, Aim, ECC_Visibility, FCollisionQueryParams(SCENE_QUERY_STAT(MarburgumPhotoWhy), true)))
+                    {
+                        Blocker = FString::Printf(TEXT("%s/%s at %.0f m from the aim"), Hit.GetActor() ? *Hit.GetActor()->GetName() : TEXT("-"),
+                            Hit.GetComponent() ? *Hit.GetComponent()->GetName() : TEXT("-"), FVector::Dist(Hit.ImpactPoint, Aim) / 100.0);
+                    }
+                }
+                UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=photo_unplaced id=%s reason=no_clear_view aim=%.0f,%.0f,%.0f blocker=\"%s\""),
+                    InteractLogPrefix, Subject.Id, Aim.X, Aim.Y, Aim.Z, *Blocker);
+            }
+        }
     }
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=content_ready spawned=%d"), InteractLogPrefix, Spawned);
 }

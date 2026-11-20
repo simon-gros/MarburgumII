@@ -166,6 +166,20 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
     }
     Root->SetObjectField(TEXT("first_purchases"), FirstPurchases);
 
+    TSharedRef<FJsonObject> Discoveries = MakeShared<FJsonObject>();
+    for (const FString& Character : SortedKeys(Source.Discoveries))
+    {
+        TArray<FString> Subjects = Source.Discoveries[Character];
+        Subjects.Sort();
+        TArray<TSharedPtr<FJsonValue>> Values;
+        for (const FString& Subject : Subjects)
+        {
+            Values.Add(MakeShared<FJsonValueString>(Subject));
+        }
+        Discoveries->SetArrayField(Character, Values);
+    }
+    Root->SetObjectField(TEXT("discoveries"), Discoveries);
+
     TSharedRef<FJsonObject> Receipts = MakeShared<FJsonObject>();
     for (const FString& Operation : SortedKeys(Source.Receipts))
     {
@@ -415,6 +429,27 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
             {
                 FString Id;
                 if (Shop->TryGetString(Id) && !Id.IsEmpty())
+                {
+                    Done.AddUnique(Id);
+                }
+            }
+        }
+    }
+    const TSharedPtr<FJsonObject>* Discoveries = nullptr;
+    if (Root->TryGetObjectField(TEXT("discoveries"), Discoveries))
+    {
+        for (const auto& Character : (*Discoveries)->Values)
+        {
+            const TArray<TSharedPtr<FJsonValue>>* Subjects = nullptr;
+            if (!Character.Value->TryGetArray(Subjects))
+            {
+                continue;
+            }
+            TArray<FString>& Done = Parsed.Discoveries.Add(FString(*Character.Key));
+            for (const TSharedPtr<FJsonValue>& Subject : *Subjects)
+            {
+                FString Id;
+                if (Subject->TryGetString(Id) && !Id.IsEmpty())
                 {
                     Done.AddUnique(Id);
                 }

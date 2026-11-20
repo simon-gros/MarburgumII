@@ -31,4 +31,6 @@ public:
     static FMarburgumShopUiEvent& OnShopToggleRequested();
     static FMarburgumNumberKeyUiEvent& OnNumberKeyPressed();
     static FMarburgumScrollUiEvent& OnScrollRequested();
+    /** The shutter was pressed (ADR-080): presentation flashes; the receipt says what, if anything, was taken. */
+    static FMarburgumLocalPlayerUiEvent& OnPhotographTaken();
 };

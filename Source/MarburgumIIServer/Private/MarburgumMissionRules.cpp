@@ -59,6 +59,33 @@ namespace MarburgumII::Missions
             Decision.Stage = State.Stage;
         }
 
+        /** A ready stage done, on Next: its objective item consumed, grants handed over, flags set, then on or finished. */
+        void ApplyStage(const FPlan& Plan, FMarburgumWorldRecord& Next, const FString& Character, FMarburgumMissionDecision& Decision)
+        {
+            const FMissionDefinition& Mission = *Plan.Mission;
+            const FMissionStageDefinition& Stage = *Plan.Stage;
+            FMarburgumStoredMission& State = Next.Missions.FindOrAdd(Character).FindOrAdd(Mission.Id);
+            if (Stage.Objective == EObjectiveType::InventoryAny && Stage.bConsume && !Plan.ObjectiveItem.IsEmpty())
+            {
+                const int32 Quantity = FMath::Max(Stage.ObjectiveQuantity, 1);
+                RemoveItem(Next, Character, Plan.ObjectiveItem, Quantity);
+                Decision.Item = Plan.ObjectiveItem;
+                Decision.Quantity = Quantity;
+            }
+            for (int32 Index = 0; Index < Stage.GrantItemCount; ++Index)
+            {
+                const FItemQuantity& Grant = Stage.GrantItems[Index];
+                if (FindItem(Grant.Id) && Grant.Quantity > 0)
+                {
+                    AddItem(Next, Character, Grant.Id, Grant.Quantity);
+                    Decision.Granted.FindOrAdd(Grant.Id) += Grant.Quantity;
+                }
+            }
+            SetFlags(State, Stage.SetFlags, Stage.SetFlagCount);
+            Finish(Mission, Stage, Next, Character, State, Decision);
+            Decision.bApplied = true;
+        }
+
         TMap<FString, FProgressView> Views(const FMarburgumWorldRecord& Current, const FString& Character)
         {
             TMap<FString, FProgressView> Out;
@@ -66,7 +93,7 @@ namespace MarburgumII::Missions
             {
                 for (const TPair<FString, FMarburgumStoredMission>& Pair : *Owned)
                 {
-                    Out.Add(Pair.Key, { Pair.Value.Stage, Pair.Value.bCompleted });
+                    Out.Add(Pair.Key, { Pair.Value.Stage, Pair.Value.bCompleted, Pair.Value.Outcome });
                 }
             }
             return Out;
@@ -136,33 +163,10 @@ namespace MarburgumII::Missions
             return Decision;
         }
         case EPlanAction::CompleteStage:
-        {
-            const FMissionDefinition& Mission = *Plan.Mission;
-            const FMissionStageDefinition& Stage = *Plan.Stage;
             OutNext = Current;
             ++OutNext.Revision;
-            FMarburgumStoredMission& State = OutNext.Missions.FindOrAdd(Character).FindOrAdd(Mission.Id);
-            if (Stage.Objective == EObjectiveType::InventoryAny && Stage.bConsume && !Plan.ObjectiveItem.IsEmpty())
-            {
-                const int32 Quantity = FMath::Max(Stage.ObjectiveQuantity, 1);
-                RemoveItem(OutNext, Character, Plan.ObjectiveItem, Quantity);
-                Decision.Item = Plan.ObjectiveItem;
-                Decision.Quantity = Quantity;
-            }
-            for (int32 Index = 0; Index < Stage.GrantItemCount; ++Index)
-            {
-                const FItemQuantity& Grant = Stage.GrantItems[Index];
-                if (FindItem(Grant.Id) && Grant.Quantity > 0)
-                {
-                    AddItem(OutNext, Character, Grant.Id, Grant.Quantity);
-                    Decision.Granted.FindOrAdd(Grant.Id) += Grant.Quantity;
-                }
-            }
-            SetFlags(State, Stage.SetFlags, Stage.SetFlagCount);
-            Finish(Mission, Stage, OutNext, Character, State, Decision);
-            Decision.bApplied = true;
+            ApplyStage(Plan, OutNext, Character, Decision);
             return Decision;
-        }
         case EPlanAction::ChoiceRequired:
             Decision.Reason = EMarburgumInteractionReason::ChoiceRequired;
             return Decision;
@@ -235,6 +239,80 @@ namespace MarburgumII::Missions
         if (const int64* Held = OutNext.Money.Find(Character); Held && *Held == 0)
         {
             OutNext.Money.Remove(Character);
+        }
+        Decision.bApplied = true;
+        return Decision;
+    }
+
+    FMarburgumMissionDecision DecidePhotograph(const FMarburgumWorldRecord& Current, const FString& Character, const FString& SubjectId,
+        FMarburgumWorldRecord& OutNext)
+    {
+        FMarburgumMissionDecision Decision;
+        const FPhotoSubjectDefinition* Subject = FindPhotoSubject(SubjectId);
+        const TMap<FString, int32>* Owned = Current.Inventories.Find(Character);
+        if (!Subject || !FindItem(Subject->Item))
+        {
+            Decision.Reason = EMarburgumInteractionReason::UnknownTarget;
+            return Decision;
+        }
+        if (!Owned || Owned->FindRef(CameraItem) <= 0)
+        {
+            Decision.Reason = EMarburgumInteractionReason::NoCamera;
+            return Decision;
+        }
+        const TArray<FString>* Documented = Current.Discoveries.Find(Character);
+        const bool bFirst = !Documented || !Documented->Contains(SubjectId);
+        const bool bHeld = Owned->FindRef(Subject->Item) > 0;
+        const TMap<FString, FProgressView> Progress = Views(Current, Character);
+        const FPlan Plan = PlanPhotograph(SubjectId, [&Progress](const FString& Mission) { return Progress.Find(Mission); },
+            [Owned](const FString& Item) { return Owned->FindRef(Item); });
+        const bool bMission = Plan.Action == EPlanAction::CompleteStage;
+        if (!bFirst && bHeld && !bMission)
+        {
+            // The same print again changes nothing: no second XP, no pile of copies.
+            Decision.Reason = EMarburgumInteractionReason::AlreadyPhotographed;
+            Decision.Item = Subject->Item;
+            return Decision;
+        }
+
+        // The print, the first-photograph XP and the remembered subject, with any mission step it completes, are one
+        // all-or-nothing transition.
+        OutNext = Current;
+        ++OutNext.Revision;
+        Decision.Effect = EMarburgumInteractionEffect::Photographed;
+        if (!bHeld)
+        {
+            AddItem(OutNext, Character, Subject->Item, 1);
+            Decision.Item = Subject->Item;
+            Decision.Quantity = 1;
+        }
+        if (bFirst)
+        {
+            OutNext.Discoveries.FindOrAdd(Character).AddUnique(SubjectId);
+            if (AddSkillXp(OutNext, Character, PhotographySkill, Subject->Xp))
+            {
+                Decision.SkillXp.FindOrAdd(PhotographySkill) += Subject->Xp;
+            }
+        }
+        if (bMission)
+        {
+            // The stage's own effect (StageCompleted or MissionCompleted) describes the receipt; the print rides along.
+            FMarburgumMissionDecision Stage;
+            ApplyStage(Plan, OutNext, Character, Stage);
+            Decision.Mission = Plan.Mission->Id;
+            Decision.Stage = Stage.Stage;
+            Decision.Effect = Stage.Effect;
+            Decision.MoneyDelta += Stage.MoneyDelta;
+            for (const TPair<FString, int32>& Grant : Stage.Granted)
+            {
+                Decision.Granted.FindOrAdd(Grant.Key) += Grant.Value;
+            }
+            if (!bHeld)
+            {
+                Decision.Granted.FindOrAdd(Subject->Item) += 1;
+                Decision.Item.Reset();
+                Decision.Quantity = 0;
+            }
         }
         Decision.bApplied = true;
         return Decision;

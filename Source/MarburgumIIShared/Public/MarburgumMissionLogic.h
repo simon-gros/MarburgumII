@@ -18,6 +18,10 @@
  *     (RequirementNotMet).
  *  4. Otherwise an offer here waiting on another mission (PrerequisiteIncomplete), or nothing (NothingToDo).
  *
+ * An offer gated on another mission's outcome (ADR-080) waits while that mission is unfinished and is simply not
+ * made once it ended another way: a decision taken earlier closes the door for good, without a refusal to explain.
+ * A Photograph stage is completed by photographing its subject (the server's photograph path), never by talking.
+ *
  * Work in hand comes before a new offer, so a character who reaches Petra Kralj while asking about the cashbox
  * address finishes that step before she offers Kiosk 67.
  */
@@ -28,6 +32,8 @@ namespace MarburgumII::Missions
     {
         FString Stage;
         bool bCompleted = false;
+        /** The outcome a decision recorded; empty when there was none. */
+        FString Outcome;
     };
 
     enum class EPlanAction : uint8
@@ -58,6 +64,16 @@ namespace MarburgumII::Missions
     using FCountItem = TFunctionRef<int32(const FString& ItemId)>;
 
     MARBURGUMIISHARED_API FPlan PlanInteraction(const FString& TargetId, FFindProgress FindProgress, FCountItem CountItem);
+
+    /** A photograph of SubjectId completes the current Photograph stage that names it (CompleteStage), or nothing. */
+    MARBURGUMIISHARED_API FPlan PlanPhotograph(const FString& SubjectId, FFindProgress FindProgress, FCountItem CountItem);
+
+    /**
+     * Whether Mission's outcome gates allow it for this character: Open, Waiting (a gated mission is unfinished;
+     * OutPrerequisite names it) or Closed (a gated mission ended in another outcome).
+     */
+    enum class EGate : uint8 { Open, Waiting, Closed };
+    MARBURGUMIISHARED_API EGate CheckOutcomeGates(const Gameplay::FMissionDefinition& Mission, FFindProgress FindProgress, FString& OutPrerequisite);
 
     /** True when some mission's stage targets TargetId (an authored mission target, as opposed to scenery). */
     MARBURGUMIISHARED_API bool IsMissionTarget(const FString& TargetId);

@@ -69,7 +69,8 @@ namespace MarburgumNpcLook
 
 AMarburgumNpc::AMarburgumNpc()
 {
-    using namespace MarburgumNpcLook;
+    namespace Look = MarburgumNpcLook;
+    namespace Npc = MarburgumII::Npc;
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Cylinder(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Sphere(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
     static ConstructorHelpers::FObjectFinder<USkeletalMesh> Manny(Npc::BodyMeshPath);
@@ -83,8 +84,8 @@ AMarburgumNpc::AMarburgumNpc()
     // The base class's mesh is the collision stand-in: it blocks like a person and is never drawn.
     Mesh->SetupAttachment(Root);
     Mesh->SetStaticMesh(Cylinder.Object);
-    Mesh->SetRelativeScale3D(FVector(BodyRadius / 50.f, BodyRadius / 50.f, BodyHeight / 100.f));
-    Mesh->SetRelativeLocation(FVector(0.f, 0.f, BodyHeight * 0.5f));
+    Mesh->SetRelativeScale3D(FVector(Look::BodyRadius / 50.f, Look::BodyRadius / 50.f, Look::BodyHeight / 100.f));
+    Mesh->SetRelativeLocation(FVector(0.f, 0.f, Look::BodyHeight * 0.5f));
     Mesh->SetHiddenInGame(true);
     Mesh->SetCastShadow(false);
 
@@ -102,15 +103,15 @@ AMarburgumNpc::AMarburgumNpc()
     Body->SetAnimationMode(EAnimationMode::AnimationSingleNode);
     Body->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
 
-    Rod = MakePart(*this, TEXT("Rod"), Body, RodMesh.Succeeded() ? RodMesh.Object : nullptr);
+    Rod = Look::MakePart(*this, TEXT("Rod"), Body, RodMesh.Succeeded() ? RodMesh.Object : nullptr);
     Rod->SetupAttachment(Body, Npc::RodSocket);
     Rod->SetCastShadow(true);
     Rod->SetVisibility(false);
 
-    Line = MakePart(*this, TEXT("Line"), Root, Cylinder.Object);
+    Line = Look::MakePart(*this, TEXT("Line"), Root, Cylinder.Object);
     Line->SetVisibility(false);
-    Float = MakePart(*this, TEXT("Float"), Root, Sphere.Object);
-    Float->SetRelativeScale3D(FVector(FloatDiameterCm / 100.0));
+    Float = Look::MakePart(*this, TEXT("Float"), Root, Sphere.Object);
+    Float->SetRelativeScale3D(FVector(Look::FloatDiameterCm / 100.0));
     Float->SetVisibility(false);
 
     Verb = NSLOCTEXT("MarburgumNpc", "Talk", "Talk");
@@ -130,7 +131,8 @@ void AMarburgumNpc::OnConstruction(const FTransform& Transform)
 void AMarburgumNpc::BeginPlay()
 {
     Super::BeginPlay();
-    using namespace MarburgumNpcLook;
+    namespace Look = MarburgumNpcLook;
+    namespace Npc = MarburgumII::Npc;
     Seed = GetTypeHash(InteractableId.IsNone() ? GetFName() : InteractableId);
     // Placed in a level before the body was a mannequin: whatever the level saved for the rod, it sits in the hand.
     Rod->AttachToComponent(Body, FAttachmentTransformRules::SnapToTargetNotIncludingScale, Npc::RodSocket);
@@ -143,15 +145,15 @@ void AMarburgumNpc::BeginPlay()
         SetActorTickEnabled(false);
         return;
     }
-    IdleClip = LoadClip(Npc::IdleClipPath);
-    TalkClip = LoadClip(Npc::TalkClipPath);
-    FishClips[static_cast<int32>(Npc::EAnglerPhase::Cast)] = LoadClip(Npc::FishCastClipPath);
-    FishClips[static_cast<int32>(Npc::EAnglerPhase::Wait)] = LoadClip(Npc::FishWaitClipPath);
-    FishClips[static_cast<int32>(Npc::EAnglerPhase::Reel)] = LoadClip(Npc::FishReelClipPath);
-    FishClips[static_cast<int32>(Npc::EAnglerPhase::Hold)] = LoadClip(Npc::FishHoldClipPath);
+    IdleClip = Look::LoadClip(Npc::IdleClipPath);
+    TalkClip = Look::LoadClip(Npc::TalkClipPath);
+    FishClips[static_cast<int32>(Npc::EAnglerPhase::Cast)] = Look::LoadClip(Npc::FishCastClipPath);
+    FishClips[static_cast<int32>(Npc::EAnglerPhase::Wait)] = Look::LoadClip(Npc::FishWaitClipPath);
+    FishClips[static_cast<int32>(Npc::EAnglerPhase::Reel)] = Look::LoadClip(Npc::FishReelClipPath);
+    FishClips[static_cast<int32>(Npc::EAnglerPhase::Hold)] = Look::LoadClip(Npc::FishHoldClipPath);
     if (!bHoldsRod)
     {
-        Body->SetRelativeScale3D(FVector(HeightScale(Seed)));
+        Body->SetRelativeScale3D(FVector(Look::HeightScale(Seed)));
     }
     ApplyLook();
 }
@@ -184,7 +186,8 @@ void AMarburgumNpc::ConfigureFromCatalogue()
 
 void AMarburgumNpc::ApplyLook()
 {
-    using namespace MarburgumNpcLook;
+    namespace Look = MarburgumNpcLook;
+    namespace Npc = MarburgumII::Npc;
     Rod->SetVisibility(bHoldsRod);
     if (GetNetMode() == NM_DedicatedServer)
     {
@@ -194,10 +197,10 @@ void AMarburgumNpc::ApplyLook()
     const FLinearColor Colors[] = { PrimaryColor, SecondaryColor };
     for (int32 Slot = 0; Slot < FMath::Min(Body->GetNumMaterials(), 2); ++Slot)
     {
-        Tint(Body, Colors[Slot], Slot, PaintTint);
+        Look::Tint(Body, Colors[Slot], Slot, Look::PaintTint);
     }
-    Tint(Line, LineColor);
-    Tint(Float, FloatColor);
+    Look::Tint(Line, Look::LineColor);
+    Look::Tint(Float, Look::FloatColor);
 }
 
 void AMarburgumNpc::ConverseAuthority(APawn* With)
@@ -279,7 +282,8 @@ APawn* AMarburgumNpc::AttentionTarget() const
 
 void AMarburgumNpc::TurnBody(float DeltaSeconds, const APawn* Toward)
 {
-    using namespace MarburgumNpcLook;
+    namespace Look = MarburgumNpcLook;
+    namespace Npc = MarburgumII::Npc;
     double Goal = 0.0;
     if (Toward)
     {
@@ -294,7 +298,8 @@ void AMarburgumNpc::TurnBody(float DeltaSeconds, const APawn* Toward)
 void AMarburgumNpc::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
-    using namespace MarburgumNpcLook;
+    namespace Look = MarburgumNpcLook;
+    namespace Npc = MarburgumII::Npc;
     if (GetNetMode() == NM_DedicatedServer || !Body)
     {
         return;
@@ -324,7 +329,8 @@ void AMarburgumNpc::Tick(float DeltaSeconds)
 
 void AMarburgumNpc::UpdateAngler(double ServerSeconds)
 {
-    using namespace MarburgumNpcLook;
+    namespace Look = MarburgumNpcLook;
+    namespace Npc = MarburgumII::Npc;
     const Npc::FAnglerMoment Moment = Npc::AnglerMomentAt(ServerSeconds, Seed);
     const int32 Phase = static_cast<int32>(Moment.Phase);
     const TCHAR* Names[] = { TEXT("fish_cast"), TEXT("fish_wait"), TEXT("fish_reel"), TEXT("fish_hold") };
@@ -366,7 +372,8 @@ void AMarburgumNpc::UpdateAngler(double ServerSeconds)
 
 void AMarburgumNpc::ShowLine(bool bOut, double Reeled)
 {
-    using namespace MarburgumNpcLook;
+    namespace Look = MarburgumNpcLook;
+    namespace Npc = MarburgumII::Npc;
     if (!bOut || !Rod->GetStaticMesh() || !Rod->DoesSocketExist(Npc::RodTipSocket))
     {
         Line->SetVisibility(false);
@@ -376,8 +383,8 @@ void AMarburgumNpc::ShowLine(bool bOut, double Reeled)
     const FVector Tip = Rod->GetSocketLocation(Npc::RodTipSocket);
     if (!bFloatKnown)
     {
-        FVector Out = GetActorLocation() + GetActorForwardVector() * CastReachCm;
-        double Surface = GetActorLocation().Z - FallbackWaterDropCm;
+        FVector Out = GetActorLocation() + GetActorForwardVector() * Look::CastReachCm;
+        double Surface = GetActorLocation().Z - Look::FallbackWaterDropCm;
         if (const UMarburgumWaterSubsystem* Water = GetWorld()->GetSubsystem<UMarburgumWaterSubsystem>())
         {
             Water->SurfaceAt(Out, Surface);
@@ -395,6 +402,6 @@ void AMarburgumNpc::ShowLine(bool bOut, double Reeled)
     // The engine cylinder is 100 cm tall about its middle, along Z.
     const FVector Span = At - Tip;
     Line->SetWorldLocationAndRotation((Tip + At) * 0.5, FRotationMatrix::MakeFromZ(Span.GetSafeNormal()).Rotator());
-    Line->SetWorldScale3D(FVector(LineRadiusCm * 2.0 / 100.0, LineRadiusCm * 2.0 / 100.0, Span.Size() / 100.0));
+    Line->SetWorldScale3D(FVector(Look::LineRadiusCm * 2.0 / 100.0, Look::LineRadiusCm * 2.0 / 100.0, Span.Size() / 100.0));
     Line->SetVisibility(true);
 }

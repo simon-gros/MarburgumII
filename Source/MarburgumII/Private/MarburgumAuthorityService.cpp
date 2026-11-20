@@ -46,6 +46,9 @@ namespace MarburgumII::Gameplay
         case EMarburgumInteractionReason::ItemNotAccepted: return TEXT("item_not_accepted");
         case EMarburgumInteractionReason::InsufficientItems: return TEXT("insufficient_items");
         case EMarburgumInteractionReason::Incapacitated: return TEXT("incapacitated");
+        case EMarburgumInteractionReason::NoCamera: return TEXT("no_camera");
+        case EMarburgumInteractionReason::NothingInFrame: return TEXT("nothing_in_frame");
+        case EMarburgumInteractionReason::AlreadyPhotographed: return TEXT("already_photographed");
         }
         return TEXT("unknown");
     }
@@ -63,6 +66,7 @@ namespace MarburgumII::Gameplay
         case EMarburgumInteractionEffect::FishCaught: return TEXT("fish_caught");
         case EMarburgumInteractionEffect::ItemBought: return TEXT("item_bought");
         case EMarburgumInteractionEffect::ItemSold: return TEXT("item_sold");
+        case EMarburgumInteractionEffect::Photographed: return TEXT("photographed");
         }
         return TEXT("unknown");
     }

@@ -10,8 +10,11 @@ namespace MarburgumII::Gameplay
     // ---- Catalogue definition types. The tables themselves are generated from Data/Gameplay/gameplay.v0.1.json
     // into MarburgumGameplayCatalogue.h (`mb2 generate gameplay`, ADR-049). Display text is presentation only. ----
 
-    /** Goods are what a shop counter sells and buys back (original `trade: retail`, ADR-060). */
-    enum class EItemKind : uint8 { Tool, Fish, Clue, Goods };
+    /**
+     * Goods are what a shop counter sells and buys back (original `trade: retail`, ADR-060). A photo is a print of
+     * something the character documented with a camera (ADR-080).
+     */
+    enum class EItemKind : uint8 { Tool, Fish, Clue, Goods, Photo };
 
     /** One registered item definition (ontology `ItemDefinition`), ids and English names from the original items.json. */
     struct FItemDefinition
@@ -44,6 +47,30 @@ namespace MarburgumII::Gameplay
         const TCHAR* DisplayName;
         const FFishSpecies* Species;
         int32 SpeciesCount;
+    };
+
+    /**
+     * Something a camera can document (ADR-080): a heritage building, a bridge, a view. The first photograph of it a
+     * character takes trains Photography and is remembered; every photograph is a print in the inventory, and a
+     * mission stage can ask for one. The server finds the ground under the plan position and aims AimHeightCm above it.
+     */
+    struct FPhotoSubjectDefinition
+    {
+        const TCHAR* Id;
+        const TCHAR* DisplayName;
+        /** Original Godot metres: x east, y up (ignored: the ground decides), z south of the middle of Stari most. */
+        double GodotPosition[3];
+        float AimHeightCm;
+        /** The photographer stands no further than this from the aim point. */
+        float WithinCm;
+        /** ...and points the camera no further off it than this. */
+        float ConeDegrees;
+        /** Photography XP for the character's first photograph of it. */
+        int32 Xp;
+        /** The print handed over. */
+        const TCHAR* Item;
+        /** What the photograph shows, for the notification and the journal. */
+        const TCHAR* Note;
     };
 
     enum class EInteractableKind : uint8 { Npc, FishingSpot, Clue, Location };
@@ -104,8 +131,19 @@ namespace MarburgumII::Gameplay
         int32 SetFlagCount;
     };
 
-    /** Interaction: talk to or inspect CompleteTarget. InventoryAny: hold one of ObjectiveItems. Choice: pick a choice there. */
-    enum class EObjectiveType : uint8 { Interaction, InventoryAny, Choice };
+    /**
+     * Interaction: talk to or inspect CompleteTarget. InventoryAny: hold one of ObjectiveItems. Choice: pick a choice there.
+     * Photograph: take a photograph of the photo subject CompleteTarget (ADR-080).
+     */
+    enum class EObjectiveType : uint8 { Interaction, InventoryAny, Choice, Photograph };
+
+    /** A mission offered only after another mission ended in one of these outcomes (ADR-080). */
+    struct FMissionOutcomeGate
+    {
+        const TCHAR* Mission;
+        const TCHAR* const* AnyOf;
+        int32 AnyOfCount;
+    };
 
     /** One mission stage (original project/data/missions.json). Text is presentation only. */
     struct FMissionStageDefinition
@@ -193,6 +231,9 @@ namespace MarburgumII::Gameplay
         const TCHAR* JournalEntryId;
         const TCHAR* JournalEntryTitle;
         const TCHAR* JournalEntryText;
+        /** Every gate must be met: the named mission completed with one of its outcomes. */
+        const FMissionOutcomeGate* RequiresOutcomes;
+        int32 RequiresOutcomeCount;
     };
 }
 
@@ -263,6 +304,20 @@ namespace MarburgumII::Gameplay
         }
         return nullptr;
     }
+
+    inline const FPhotoSubjectDefinition* FindPhotoSubject(const FString& Id)
+    {
+        for (const FPhotoSubjectDefinition& Subject : PhotoSubjects)
+        {
+            if (Id == Subject.Id)
+            {
+                return &Subject;
+            }
+        }
+        return nullptr;
+    }
+
+    inline constexpr const TCHAR* PhotographySkill = TEXT("photography");
 
     inline const FFishingSpotDefinition* FindFishingSpot(const FString& Id)
     {
@@ -487,7 +542,7 @@ namespace MarburgumII::Gameplay
     // adds skill XP, money and mission outcomes (ADR-047, ADR-049). Older documents load and are rewritten at the
     // current schema by the next commit.
     // Schema 5 adds shop shelves and each character's first purchase per shop (ADR-060).
-    inline constexpr int32 WorldStoreSchemaVersion = 5;
+    inline constexpr int32 WorldStoreSchemaVersion = 6;
     inline constexpr int32 WorldStoreOldestReadableSchema = 1;
 
     // Prefix for machine-parsed interaction evidence lines (scripts/interaction-smoke-linux.sh).

@@ -63,6 +63,7 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
             "fish" => "Fish",
             "clue" => "Clue",
             "goods" => "Goods",
+            "photo" => "Photo",
             other => return Err(format!("item {}: unknown kind {other}", str_of(item, "id")?)),
         };
         writeln!(out, "        {{ {}, {}, EItemKind::{kind} }},", lit(str_of(item, "id")?), lit(en(item, "name")?)).unwrap();
@@ -90,6 +91,24 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
     for (index, spot) in spots.iter().enumerate() {
         writeln!(out, "        {{ {}, {}, FishingSpot{index}Species, UE_ARRAY_COUNT(FishingSpot{index}Species) }},",
             lit(str_of(spot, "id")?), lit(en(spot, "name")?)).unwrap();
+    }
+    out.push_str("    };\n\n");
+
+    // Photo subjects (ADR-080): what a camera can document, where, and what the first photograph of it is worth.
+    let photography = &catalogue["photography"];
+    writeln!(out, "    inline constexpr const TCHAR* CameraItem = {};", lit(str_of(photography, "camera_item")?)).unwrap();
+    out.push_str("    inline constexpr FPhotoSubjectDefinition PhotoSubjects[] = {\n");
+    for subject in array(photography, "subjects")? {
+        let id = str_of(subject, "id")?;
+        let position = array(subject, "godot_position_m")?.iter().filter_map(Value::as_f64).collect::<Vec<_>>();
+        if position.len() != 3 {
+            return Err(format!("photo subject {id}: godot_position_m needs three numbers"));
+        }
+        let metres = |key: &str| -> Result<f64, String> { subject[key].as_f64().ok_or_else(|| format!("photo subject {id}: {key} is not a number")) };
+        writeln!(out, "        {{ {}, {}, {{ {}, {}, {} }}, {}, {}, {}, {}, {}, {} }},", lit(id), lit(en(subject, "name")?),
+            double(position[0]), double(position[1]), double(position[2]), float(metres("aim_height_m")? * 100.0),
+            float(metres("within_m")? * 100.0), float(metres("cone_degrees")?), int(subject, "xp")?, lit(str_of(subject, "item")?),
+            lit(subject["note"]["en"].as_str().unwrap_or(""))).unwrap();
     }
     out.push_str("    };\n\n");
 
@@ -133,6 +152,17 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
     for (m, mission) in missions.iter().enumerate() {
         let prefix = format!("Mission{m}");
         string_array(&mut out, &format!("{prefix}Requires"), array(mission, "requires_completed")?.iter().filter_map(Value::as_str));
+        let gates = array(mission, "requires_outcomes")?;
+        for (g, gate) in gates.iter().enumerate() {
+            string_array(&mut out, &format!("{prefix}Gate{g}AnyOf"), array(gate, "any_of")?.iter().filter_map(Value::as_str));
+        }
+        if !gates.is_empty() {
+            writeln!(out, "    inline constexpr FMissionOutcomeGate {prefix}Gates[] = {{").unwrap();
+            for (g, gate) in gates.iter().enumerate() {
+                writeln!(out, "        {{ {}, {} }},", lit(str_of(gate, "mission")?), span(&format!("{prefix}Gate{g}AnyOf"), !array(gate, "any_of")?.is_empty())).unwrap();
+            }
+            out.push_str("    };\n");
+        }
         quantities(&mut out, &format!("{prefix}StartItems"), array(mission, "start_items")?)?;
         let stages = array(mission, "stages")?;
         for (s, stage) in stages.iter().enumerate() {
@@ -167,6 +197,7 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
                 "interaction" => "Interaction",
                 "inventory_any" => "InventoryAny",
                 "choice" => "Choice",
+                "photograph" => "Photograph",
                 other => return Err(format!("mission {}: stage {}: unknown objective {other}", str_of(mission, "id")?, str_of(stage, "id")?)),
             };
             let items = array(objective, "items")?;
@@ -215,14 +246,15 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
     for (m, mission) in missions.iter().enumerate() {
         let prefix = format!("Mission{m}");
         let journal = &mission["journal_entry"];
-        writeln!(out, "        {{ {}, {}, {}, {}, {}, {}, {}, {}, {}Stages, UE_ARRAY_COUNT({}Stages), {}, {}, {}, {} }},",
+        writeln!(out, "        {{ {}, {}, {}, {}, {}, {}, {}, {}, {}Stages, UE_ARRAY_COUNT({}Stages), {}, {}, {}, {}, {} }},",
             lit(str_of(mission, "id")?), lit(en(mission, "name")?), lit(str_of(mission, "category")?), lit(str_of(mission, "offer_target")?),
             lit(en(mission, "summary")?), lit(mission["story_family"].as_str().unwrap_or("")),
             span(&format!("{prefix}Requires"), !array(mission, "requires_completed")?.is_empty()),
             span(&format!("{prefix}StartItems"), !array(mission, "start_items")?.is_empty()),
             prefix, prefix, mission["reward_money"].as_i64().unwrap_or(0),
             lit(journal["id"].as_str().unwrap_or("")), lit(journal["title"]["en"].as_str().unwrap_or("")),
-            lit(journal["text"]["en"].as_str().unwrap_or(""))).unwrap();
+            lit(journal["text"]["en"].as_str().unwrap_or("")),
+            span(&format!("{prefix}Gates"), !array(mission, "requires_outcomes")?.is_empty())).unwrap();
     }
     out.push_str("    };\n}\n");
     Ok(out)

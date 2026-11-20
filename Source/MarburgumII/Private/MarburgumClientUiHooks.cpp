@@ -65,3 +65,9 @@ FMarburgumLocalPlayerUiEvent& FMarburgumClientUiHooks::OnBackRequested()
     static FMarburgumLocalPlayerUiEvent Event;
     return Event;
 }
+
+FMarburgumLocalPlayerUiEvent& FMarburgumClientUiHooks::OnPhotographTaken()
+{
+    static FMarburgumLocalPlayerUiEvent Event;
+    return Event;
+}

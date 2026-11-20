@@ -126,6 +126,28 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
     }
     let missions = list(&catalogue, "missions");
     let ids: Vec<&str> = list(&catalogue, "interactables").iter().map(|e| text(&e["id"])).collect();
+    // Photography (ADR-080): a registered camera tool, subjects with a place, a positive first-photograph XP and a
+    // registered photograph item each, and the Photography skill they train.
+    let photography = &catalogue["photography"];
+    let camera = text(&photography["camera_item"]);
+    problems.expect(list(&catalogue, "items").iter().any(|i| i["id"] == camera && i["kind"] == "tool"),
+        format!("photography: camera {camera} is not a registered tool"));
+    problems.expect(skills.contains(&"photography"), "photo subjects train Photography, which is not registered");
+    let subjects: Vec<&str> = list(photography, "subjects").iter().map(|s| text(&s["id"])).collect();
+    problems.expect(!subjects.is_empty(), "photography: no subjects");
+    for subject in list(photography, "subjects") {
+        let id = text(&subject["id"]);
+        problems.expect(snake.is_match(id) && !ids.contains(&id), format!("photo subject {id}: not snake_case or clashes with an interactable"));
+        problems.expect(subjects.iter().filter(|other| **other == id).count() == 1, format!("photo subject {id} listed twice"));
+        problems.expect(subject.get("provenance").is_some(), format!("photo subject {id} without provenance"));
+        problems.expect(list(subject, "godot_position_m").len() == 3, format!("photo subject {id}: needs a position"));
+        problems.expect(subject["xp"].as_i64().map_or(false, |x| x > 0), format!("photo subject {id}: XP must be positive"));
+        problems.expect(subject["within_m"].as_f64().map_or(false, |m| m > 0.0 && m <= 150.0), format!("photo subject {id}: within_m out of range"));
+        problems.expect(subject["cone_degrees"].as_f64().map_or(false, |d| d > 0.0 && d <= 45.0), format!("photo subject {id}: cone_degrees out of range"));
+        let item = text(&subject["item"]);
+        problems.expect(list(&catalogue, "items").iter().any(|i| i["id"] == item && i["kind"] == "photo"),
+            format!("photo subject {id}: {item} is not a registered photograph"));
+    }
     for entry in list(&catalogue, "interactables") {
         let id = text(&entry["id"]);
         let name = text(&entry["display_name"]["en"]);
@@ -162,11 +184,26 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
         for required in list(mission, "requires_completed") {
             problems.expect(mission_ids.contains(&text(required)), format!("mission {id}: requires unknown mission {}", text(required)));
         }
+        // An outcome gate names a mission this one also requires, and outcomes one of its choices records.
+        for gate in list(mission, "requires_outcomes") {
+            let gated = text(&gate["mission"]);
+            let outcomes: Vec<&str> = missions.iter().filter(|m| text(&m["id"]) == gated)
+                .flat_map(|m| list(m, "stages")).flat_map(|s| list(s, "choices"))
+                .map(|c| c["outcome"].as_str().unwrap_or(text(&c["id"]))).collect();
+            problems.expect(!outcomes.is_empty(), format!("mission {id}: outcome gate on {gated}, which records no outcome"));
+            problems.expect(!list(gate, "any_of").is_empty(), format!("mission {id}: outcome gate on {gated} lists no outcome"));
+            for outcome in list(gate, "any_of") {
+                problems.expect(outcomes.contains(&text(outcome)), format!("mission {id}: {gated} never records outcome {}", text(outcome)));
+            }
+        }
         let stages = list(mission, "stages");
         problems.expect(!stages.is_empty(), format!("mission {id}: no stages"));
         for stage in stages {
             let stage_id = text(&stage["id"]);
-            problems.expect(ids.contains(&text(&stage["complete_target"])), format!("mission {id}: stage {stage_id} has an unknown target"));
+            let target = text(&stage["complete_target"]);
+            let photograph = stage["objective"]["type"] == "photograph";
+            problems.expect(if photograph { subjects.contains(&target) } else { ids.contains(&target) },
+                format!("mission {id}: stage {stage_id} has an unknown target"));
             let mut named: Vec<&str> = list(&stage["objective"], "items").iter().map(text).collect();
             for key in ["required_items", "grant_items"] {
                 named.extend(list(stage, key).iter().map(|q| text(&q["id"])));

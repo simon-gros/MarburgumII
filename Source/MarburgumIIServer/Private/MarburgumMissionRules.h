@@ -53,6 +53,16 @@ namespace MarburgumII::Missions
     FMarburgumMissionDecision DecideChoice(const FMarburgumWorldRecord& Current, const FString& Character,
         const FString& TargetId, const FString& MissionId, const FString& ChoiceId, FMarburgumWorldRecord& OutNext);
 
+    /**
+     * A photograph of a photo subject (ADR-080): the camera must be in custody. The print (unless one is already held),
+     * the first photograph's Photography XP and the remembered subject, and the current Photograph stage that names the
+     * subject, in one record. A subject already documented whose print is still held, with no stage to complete, is
+     * refused (AlreadyPhotographed). Refusals: UnknownTarget, NoCamera, AlreadyPhotographed. The view itself (range,
+     * aim, line of sight) is the caller's check.
+     */
+    FMarburgumMissionDecision DecidePhotograph(const FMarburgumWorldRecord& Current, const FString& Character, const FString& SubjectId,
+        FMarburgumWorldRecord& OutNext);
+
     /** Add XP to a skill in a record; false (and nothing changed) for an unknown skill or a non-positive amount. */
     bool AddSkillXp(FMarburgumWorldRecord& Record, const FString& Character, const FString& Skill, int64 Xp);
 }

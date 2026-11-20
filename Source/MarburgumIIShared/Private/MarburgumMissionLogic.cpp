@@ -41,6 +41,30 @@ namespace MarburgumII::Missions
         return Index >= 0 && Index + 1 < Mission.StageCount ? &Mission.Stages[Index + 1] : nullptr;
     }
 
+    EGate CheckOutcomeGates(const FMissionDefinition& Mission, FFindProgress FindProgress, FString& OutPrerequisite)
+    {
+        for (int32 Index = 0; Index < Mission.RequiresOutcomeCount; ++Index)
+        {
+            const FMissionOutcomeGate& Gate = Mission.RequiresOutcomes[Index];
+            const FProgressView* Gated = FindProgress(Gate.Mission);
+            if (!Gated || !Gated->bCompleted)
+            {
+                OutPrerequisite = Gate.Mission;
+                return EGate::Waiting;
+            }
+            bool bMet = false;
+            for (int32 Outcome = 0; Outcome < Gate.AnyOfCount && !bMet; ++Outcome)
+            {
+                bMet = Gated->Outcome == Gate.AnyOf[Outcome];
+            }
+            if (!bMet)
+            {
+                return EGate::Closed;
+            }
+        }
+        return EGate::Open;
+    }
+
     bool IsMissionTarget(const FString& TargetId)
     {
         for (const FMissionDefinition& Mission : Gameplay::Missions)
@@ -58,6 +82,28 @@ namespace MarburgumII::Missions
             }
         }
         return false;
+    }
+
+    FPlan PlanPhotograph(const FString& SubjectId, FFindProgress FindProgress, FCountItem CountItem)
+    {
+        for (const FMissionDefinition& Mission : Gameplay::Missions)
+        {
+            const FProgressView* Progress = FindProgress(Mission.Id);
+            const FMissionStageDefinition* Stage = Progress && !Progress->bCompleted ? FindStage(Mission, Progress->Stage) : nullptr;
+            if (!Stage || Stage->Objective != EObjectiveType::Photograph || SubjectId != Stage->CompleteTarget)
+            {
+                continue;
+            }
+            FPlan Plan;
+            Plan.Mission = &Mission;
+            Plan.Stage = Stage;
+            Plan.Action = StageReady(*Stage, CountItem, Plan) ? EPlanAction::CompleteStage : EPlanAction::RequirementNotMet;
+            if (Plan.Action == EPlanAction::CompleteStage)
+            {
+                return Plan;
+            }
+        }
+        return FPlan();
     }
 
     FPlan PlanInteraction(const FString& TargetId, FFindProgress FindProgress, FCountItem CountItem)
@@ -79,6 +125,11 @@ namespace MarburgumII::Missions
             FPlan Plan;
             Plan.Mission = &Mission;
             Plan.Stage = Stage;
+            if (Stage->Objective == EObjectiveType::Photograph)
+            {
+                // Only a photograph of the subject does this; there is nobody here to talk it through with.
+                continue;
+            }
             if (Stage->Objective == EObjectiveType::Choice)
             {
                 // A decision due here is work in hand. It comes before a new offer at the same person.
@@ -115,6 +166,14 @@ namespace MarburgumII::Missions
                 if (!Required || !Required->bCompleted)
                 {
                     Missing = Mission.RequiresCompleted[Index];
+                }
+            }
+            if (Missing.IsEmpty())
+            {
+                const EGate Gate = CheckOutcomeGates(Mission, FindProgress, Missing);
+                if (Gate == EGate::Closed)
+                {
+                    continue;
                 }
             }
             if (Missing.IsEmpty())
