@@ -132,7 +132,26 @@ The original generated talent trees and Talent UI stay excluded. The original ow
 
 ## 8. Tests and evidence
 
-See the ADR-081 entry in [DECISIONS.md](DECISIONS.md) for the commands, revisions and results of this pass. Editor and packaged results are reported separately there.
+All runs on this branch, Linux, UE 5.8.3, `/Game/World/lent`, dedicated server plus clients on ports 27731–27741 (never 7777 or 17777). **Editor** means `UnrealEditor -server` / `-game` processes from the branch's editor build; **staged** means the cooked Linux Client/Server packaged from the stamped commit. Neither is the owner's playtest.
+
+| Check | Mode | Revision | Result |
+| --- | --- | --- | --- |
+| `mb2 validate all`, `cargo test` (61) | source | `9e11f2c` | Pass (gameplay contract: 54 items, 54 interactables, 12 missions, 30 refusal reasons; scripts and Python-free checks) |
+| Full unity build (`-DisableAdaptiveUnity`) | editor build | pre-rebase | Pass (caught and fixed a `PaintTint` name clash adaptive unity hid) |
+| `Automation RunTests Marburgum` | editor, null RHI | `9e11f2c` (as packaged) | **44/44 Success**, including `Server.Story.VoicesOnTape`, `.OutcomeGate`, `.Photography`, `Shared.Npc.AnglerCycle`, `Shared.Photography.Catalogue` and `Server.WorldStoreCondition` (schema 6) |
+| `scripts/story-smoke-linux.sh editor` | editor | `9e11f2c` | **PASS** — `Saved/StorySmoke/20261120T074555Z`: Chapter IV to the Tone decision, Maja's folder through the outcome gate, two characters at Nika at the same moment, every photograph stage judged by the server, Brane, a side photograph and its refused repeat; server restart; `mb2 store-check story` = 180 money, 70 Reputation, 215 Photography XP, 7 documented subjects, 7 photograph commits. NPC presentation from every STEP: mannequin body, talkers `talk` turned 180° to the player, the angler in a fishing clip with the rod in hand and the line out |
+| `scripts/mission-smoke-linux.sh editor` (regression) | editor | pre-rebase (`1bf4719` code) | Every client PASS (all eight original missions, FISH at the moved angler with the new rod/clip expectation, restart CHECK, store check `90 16 95`, fishing 3 casts/2 bites); the run was marked FAIL only by the script's stale `schema 5` log expectation, fixed in `9e11f2c` |
+| Rendered NPC captures | editor | pre-rebase | `Saved/VisualSurvey/npc-views-1..3`: found the twisted fingers, the angler 18 m from the water and the 110° talkers; fixed; `npc-views-3` shows the angler on the bank with both fists round the grip and the cast |
+| Packaged Linux Client/Server | package | `9e11f2c` | `BUILD SUCCESSFUL`; `build-stamp check`: clean tree, `build_fresh: yes`, Server `1cf34657…`, Client `d675b093…`, packaged 08:08 UTC |
+| `story-smoke-linux.sh staged` | staged | `9e11f2c` | **PASS** — `Saved/StorySmoke/20261120T080849Z`: the same sequence and store check (180 / 70 / 215 / 7), NPC presentation lines as in the editor |
+| `mission-smoke-linux.sh staged` | staged | `9e11f2c` | **PASS** — `Saved/MissionSmoke/20261120T081154Z`: all eight original missions, fishing at the bank (3 casts, 2 bites, too early / escaped / caught, rod and clip in hand), restart CHECK, store reloaded at schema 6 |
+| `shop`, `combat`, `lent`, `interaction` smokes | staged | `9e11f2c` | **PASS** — `Saved/ShopSmoke/20261120T081657Z` (Kiosk 67 shared shelves, far and closed refusals), `CombatSmoke/20261120T081725Z`, `LentSmoke/20261120T081811Z` (movement-time bound), `InteractSmoke/20261120T081839Z` (shared stock contention) |
+
+Captures: [the angler's grip](Captures/story-npc/angler-grip.jpg), [on the bank](Captures/story-npc/angler-bank.jpg), [reeling](Captures/story-npc/angler-reel.jpg), [a photograph and its notification](Captures/story-npc/photograph-water-tower.jpg), [Chapter IV guidance](Captures/story-npc/chapter-iv-guidance.jpg), [Nika's darkroom](Captures/story-npc/nika-darkroom.jpg) (editor renders).
+
+**Known blockers not touched:** the street population code and the interiors were not changed; the opposite-bank crowd matrix and the door smoke were **not re-run** in this pass.
+
+**Not tested here:** the owner's playtest; a staged run of the other subsystems' smokes beyond those listed; controller/gamepad input for [P]; Slovene runtime text for catalogue content.
 
 ## 9. Not done, limits and blockers
 
