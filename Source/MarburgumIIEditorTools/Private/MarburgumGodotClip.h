@@ -43,6 +43,11 @@ namespace MarburgumGodotClip
          * 0, 28 % or 32 %, 50 % or 55 % and the end). Empty means evenly spaced. Hips offsets stay even.
          */
         TArray<double> KeyTimes;
+        /**
+         * Mannequin bones outside the original's set (fingers) held in one local turn for the whole clip, applied
+         * after the bone's reference turn, e.g. a hand closed round a rod grip.
+         */
+        TMap<FName, FQuat> HeldLocal;
     };
 
     inline constexpr int32 FramesPerSecond = 30;
@@ -82,6 +87,12 @@ namespace MarburgumGodotClip
      * ADR-043), and saves it; nullptr (after logging under LogTag) on failure.
      */
     UAnimSequence* Build(const FClip& Clip, const TCHAR* LogTag);
+
+    /**
+     * The mannequin's component-space pose for one set of keys (Godot bone -> model-space Euler), exactly as Build
+     * would draw it, with the fingers at rest. Lets a commandlet place a hand on a prop by search instead of by eye.
+     */
+    bool EvaluatePose(const TMap<FString, FVector>& Euler, TArray<FTransform>& OutComponent, TArray<FName>& OutBoneNames);
 
     /**
      * Evidence: limb directions read back from a saved clip at the given times, in the original's model axes

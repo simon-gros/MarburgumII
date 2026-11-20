@@ -98,6 +98,22 @@ int32 UMarburgumWaterSubsystem::NumVolumes() const
     return Columns.Get().Num();
 }
 
+bool UMarburgumWaterSubsystem::SurfaceAt(const FVector& Point, double& OutSurfaceZ) const
+{
+    Collect();
+    bool bFound = false;
+    for (const FMarburgumWaterColumns::FColumn& Column : Columns.Get())
+    {
+        if (Point.X >= Column.Box.Min.X && Point.X <= Column.Box.Max.X && Point.Y >= Column.Box.Min.Y && Point.Y <= Column.Box.Max.Y
+            && (!bFound || Column.Box.Max.Z > OutSurfaceZ))
+        {
+            OutSurfaceZ = Column.Box.Max.Z;
+            bFound = true;
+        }
+    }
+    return bFound;
+}
+
 bool UMarburgumWaterSubsystem::IsWet(const FVector& Feet) const
 {
     using namespace MarburgumWater;

@@ -198,6 +198,135 @@ namespace MarburgumGodotClip
         return FMath::Lerp(B1, B2, ToT == 0.0 ? 0.5 : Local / ToT);
     }
 
+    namespace
+    {
+        /**
+         * The mannequin's component-space reference pose and the rest correction that turns each listed limb onto
+         * the original's rest direction (its parent's turn carried down first), so a clip starts from the pose it
+         * was keyed on. False (after logging) when the skeleton lacks a bone.
+         */
+        bool PrepareRest(const FReferenceSkeleton& Reference, TArray<FTransform>& OutGlobalRest, TArray<FQuat>& OutCorrection,
+            const TCHAR* LogTag, bool bLog)
+        {
+            const int32 BoneCount = Reference.GetRawBoneNum();
+            const TArray<FTransform>& LocalRest = Reference.GetRawRefBonePose();
+            OutGlobalRest.SetNum(BoneCount);
+            for (int32 Bone = 0; Bone < BoneCount; ++Bone)
+            {
+                const int32 Parent = Reference.GetRawParentIndex(Bone);
+                OutGlobalRest[Bone] = Parent == INDEX_NONE ? LocalRest[Bone] : LocalRest[Bone] * OutGlobalRest[Parent];
+            }
+            for (const TPair<FName, FString>& Pair : MannequinToGodot)
+            {
+                const int32 Bone = Reference.FindRawBoneIndex(Pair.Key);
+                if (Bone == INDEX_NONE)
+                {
+                    UE_LOG(LogMarburgumGodotClip, Error, TEXT("%s mannequin has no bone %s"), LogTag, *Pair.Key.ToString());
+                    return false;
+                }
+                if (bLog)
+                {
+                    const FVector At = OutGlobalRest[Bone].GetLocation();
+                    UE_LOG(LogMarburgumGodotClip, Display, TEXT("%s bone %s <- %s rest=(%.1f, %.1f, %.1f)"), LogTag, *Pair.Key.ToString(),
+                        *Pair.Value, At.X, At.Y, At.Z);
+                }
+            }
+            OutCorrection.Init(FQuat::Identity, BoneCount);
+            for (int32 Bone = 0; Bone < BoneCount; ++Bone)
+            {
+                const int32 Parent = Reference.GetRawParentIndex(Bone);
+                OutCorrection[Bone] = Parent == INDEX_NONE ? FQuat::Identity : OutCorrection[Parent];
+                for (const FRestAim& Aim : RestAims)
+                {
+                    if (Reference.GetBoneName(Bone) != Aim.Bone)
+                    {
+                        continue;
+                    }
+                    const int32 Child = Reference.FindRawBoneIndex(Aim.Child);
+                    if (Child == INDEX_NONE)
+                    {
+                        UE_LOG(LogMarburgumGodotClip, Error, TEXT("%s mannequin has no bone %s"), LogTag, *Aim.Child.ToString());
+                        return false;
+                    }
+                    const FVector Current = OutCorrection[Bone].RotateVector(OutGlobalRest[Child].GetLocation()
+                        - OutGlobalRest[Bone].GetLocation()).GetSafeNormal();
+                    const FVector Target = GodotToMannequin(Aim.GodotDirection).GetSafeNormal();
+                    OutCorrection[Bone] = FQuat::FindBetweenNormals(Current, Target) * OutCorrection[Bone];
+                    if (bLog)
+                    {
+                        UE_LOG(LogMarburgumGodotClip, Display, TEXT("%s rest aim %s turned %.1f deg"), LogTag, *Aim.Bone.ToString(),
+                            FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(Current, Target), -1.0, 1.0))));
+                    }
+                }
+            }
+            return true;
+        }
+
+        /** Component-space rotation of every bone for one set of model-space Godot turns (Build's per-frame step). */
+        void PoseRotations(const FReferenceSkeleton& Reference, const TArray<FTransform>& GlobalRest, const TArray<FQuat>& Correction,
+            const TMap<FString, FQuat>& GodotTurn, TArray<FQuat>& OutGlobal)
+        {
+            const int32 BoneCount = Reference.GetRawBoneNum();
+            TArray<FQuat> Turn;
+            Turn.SetNum(BoneCount);
+            OutGlobal.SetNum(BoneCount);
+            for (int32 Bone = 0; Bone < BoneCount; ++Bone)
+            {
+                const int32 Parent = Reference.GetRawParentIndex(Bone);
+                const FString* GodotBone = MannequinToGodot.Find(Reference.GetBoneName(Bone));
+                Turn[Bone] = GodotBone ? GodotTurn.FindChecked(*GodotBone) : (Parent == INDEX_NONE ? FQuat::Identity : Turn[Parent]);
+                OutGlobal[Bone] = Turn[Bone] * Correction[Bone] * GlobalRest[Bone].GetRotation();
+                OutGlobal[Bone].Normalize();
+            }
+        }
+
+        /** Model-space turn of each Godot bone: its parent's turn, then its own key (_bone_pose). */
+        TMap<FString, FQuat> GodotTurns(TFunctionRef<const FVector*(const TCHAR* GodotBone)> EulerOf)
+        {
+            TMap<FString, FQuat> GodotTurn;
+            for (const TCHAR* GodotBone : GodotOrder)
+            {
+                const FString* Parent = GodotParents.Find(GodotBone);
+                const FQuat ParentTurn = Parent ? GodotTurn.FindChecked(*Parent) : FQuat::Identity;
+                const FVector* Euler = EulerOf(GodotBone);
+                GodotTurn.Add(GodotBone, ParentTurn * (Euler ? GodotEulerToMannequin(*Euler) : FQuat::Identity));
+            }
+            return GodotTurn;
+        }
+    }
+
+    bool EvaluatePose(const TMap<FString, FVector>& Euler, TArray<FTransform>& OutComponent, TArray<FName>& OutBoneNames)
+    {
+        const USkeleton* Skeleton = LoadObject<USkeleton>(nullptr, SkeletonPath);
+        if (!Skeleton)
+        {
+            UE_LOG(LogMarburgumGodotClip, Error, TEXT("EvaluatePose: missing skeleton %s"), SkeletonPath);
+            return false;
+        }
+        const FReferenceSkeleton& Reference = Skeleton->GetReferenceSkeleton();
+        TArray<FTransform> GlobalRest;
+        TArray<FQuat> Correction;
+        if (!PrepareRest(Reference, GlobalRest, Correction, TEXT("EvaluatePose"), false))
+        {
+            return false;
+        }
+        TArray<FQuat> Global;
+        PoseRotations(Reference, GlobalRest, Correction, GodotTurns([&Euler](const TCHAR* Bone) { return Euler.Find(Bone); }), Global);
+        const int32 BoneCount = Reference.GetRawBoneNum();
+        const TArray<FTransform>& LocalRest = Reference.GetRawRefBonePose();
+        OutComponent.SetNum(BoneCount);
+        OutBoneNames.SetNum(BoneCount);
+        for (int32 Bone = 0; Bone < BoneCount; ++Bone)
+        {
+            const int32 Parent = Reference.GetRawParentIndex(Bone);
+            const FVector At = Parent == INDEX_NONE ? LocalRest[Bone].GetLocation()
+                : OutComponent[Parent].GetLocation() + Global[Parent].RotateVector(LocalRest[Bone].GetLocation());
+            OutComponent[Bone] = FTransform(Global[Bone], At);
+            OutBoneNames[Bone] = Reference.GetBoneName(Bone);
+        }
+        return true;
+    }
+
     UAnimSequence* Build(const FClip& Clip, const TCHAR* LogTag)
     {
         if (Clip.KeyTimes.Num() > 0)
@@ -220,62 +349,12 @@ namespace MarburgumGodotClip
             return nullptr;
         }
         const FReferenceSkeleton& Reference = Skeleton->GetReferenceSkeleton();
-        const int32 BoneCount = Reference.GetRawBoneNum();
         const TArray<FTransform>& LocalRest = Reference.GetRawRefBonePose();
-
-        // Component-space reference pose.
         TArray<FTransform> GlobalRest;
-        GlobalRest.SetNum(BoneCount);
-        for (int32 Bone = 0; Bone < BoneCount; ++Bone)
-        {
-            const int32 Parent = Reference.GetRawParentIndex(Bone);
-            GlobalRest[Bone] = Parent == INDEX_NONE ? LocalRest[Bone] : LocalRest[Bone] * GlobalRest[Parent];
-        }
-        for (const TPair<FName, FString>& Pair : MannequinToGodot)
-        {
-            const int32 Bone = Reference.FindRawBoneIndex(Pair.Key);
-            if (Bone == INDEX_NONE)
-            {
-                UE_LOG(LogMarburgumGodotClip, Error, TEXT("%s mannequin has no bone %s"), LogTag, *Pair.Key.ToString());
-                return nullptr;
-            }
-            const FVector At = GlobalRest[Bone].GetLocation();
-            UE_LOG(LogMarburgumGodotClip, Display, TEXT("%s bone %s <- %s rest=(%.1f, %.1f, %.1f)"), LogTag, *Pair.Key.ToString(), *Pair.Value,
-                At.X, At.Y, At.Z);
-        }
-
-        // Rest correction: turn each listed limb onto the original's rest direction (its parent's turn
-        // carried down first), so the clip starts from the pose it was keyed on.
         TArray<FQuat> Correction;
-        Correction.Init(FQuat::Identity, BoneCount);
-        for (int32 Bone = 0; Bone < BoneCount; ++Bone)
+        if (!PrepareRest(Reference, GlobalRest, Correction, LogTag, true))
         {
-            const int32 Parent = Reference.GetRawParentIndex(Bone);
-            Correction[Bone] = Parent == INDEX_NONE ? FQuat::Identity : Correction[Parent];
-            for (const FRestAim& Aim : RestAims)
-            {
-                if (Reference.GetBoneName(Bone) != Aim.Bone)
-                {
-                    continue;
-                }
-                const int32 Child = Reference.FindRawBoneIndex(Aim.Child);
-                if (Child == INDEX_NONE)
-                {
-                    UE_LOG(LogMarburgumGodotClip, Error, TEXT("%s mannequin has no bone %s"), LogTag, *Aim.Child.ToString());
-                    return nullptr;
-                }
-                const FVector Current = Correction[Bone].RotateVector(GlobalRest[Child].GetLocation() - GlobalRest[Bone].GetLocation()).GetSafeNormal();
-                const FVector Target = GodotToMannequin(Aim.GodotDirection).GetSafeNormal();
-                Correction[Bone] = FQuat::FindBetweenNormals(Current, Target) * Correction[Bone];
-                UE_LOG(LogMarburgumGodotClip, Display, TEXT("%s rest aim %s turned %.1f deg"), LogTag, *Aim.Bone.ToString(),
-                    FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(Current, Target), -1.0, 1.0))));
-            }
-        }
-
-        TMap<FString, const FTrack*> TrackByBone;
-        for (const FTrack& Track : Clip.Tracks)
-        {
-            TrackByBone.Add(Track.GodotBone, &Track);
+            return nullptr;
         }
 
         const int32 Frames = FMath::RoundToInt32(Clip.LengthSeconds * FramesPerSecond);
@@ -286,34 +365,17 @@ namespace MarburgumGodotClip
         {
             const double T = static_cast<double>(Frame) / FramesPerSecond;
 
-            // Model-space turn of each Godot bone: its parent's turn, then its own key (_bone_pose).
-            TMap<FString, FQuat> GodotTurn;
-            for (const TCHAR* GodotBone : GodotOrder)
+            TMap<FString, FVector> Sampled;
+            for (const FTrack& Track : Clip.Tracks)
             {
-                const FString* Parent = GodotParents.Find(GodotBone);
-                const FQuat ParentTurn = Parent ? GodotTurn.FindChecked(*Parent) : FQuat::Identity;
-                const FTrack* const* Track = TrackByBone.Find(GodotBone);
-                const FVector Euler = !Track ? FVector::ZeroVector
-                    : Clip.KeyTimes.Num() > 0 ? SampleTimed((*Track)->Keys, Clip.KeyTimes, T)
-                    : Sample((*Track)->Keys, T, Clip.LengthSeconds, Clip.bLoop);
-                const FQuat Own = Track ? GodotEulerToMannequin(Euler) : FQuat::Identity;
-                GodotTurn.Add(GodotBone, ParentTurn * Own);
+                Sampled.Add(Track.GodotBone, Clip.KeyTimes.Num() > 0 ? SampleTimed(Track.Keys, Clip.KeyTimes, T)
+                    : Sample(Track.Keys, T, Clip.LengthSeconds, Clip.bLoop));
             }
-
             // Component-space pose: a mapped bone takes its Godot bone's turn, any other bone keeps its
             // parent's; each is applied to the corrected reference pose.
-            TArray<FQuat> Turn;
-            Turn.SetNum(BoneCount);
             TArray<FQuat> Global;
-            Global.SetNum(BoneCount);
-            for (int32 Bone = 0; Bone < BoneCount; ++Bone)
-            {
-                const int32 Parent = Reference.GetRawParentIndex(Bone);
-                const FString* GodotBone = MannequinToGodot.Find(Reference.GetBoneName(Bone));
-                Turn[Bone] = GodotBone ? GodotTurn.FindChecked(*GodotBone) : (Parent == INDEX_NONE ? FQuat::Identity : Turn[Parent]);
-                Global[Bone] = Turn[Bone] * Correction[Bone] * GlobalRest[Bone].GetRotation();
-                Global[Bone].Normalize();
-            }
+            PoseRotations(Reference, GlobalRest, Correction, GodotTurns([&Sampled](const TCHAR* Bone) { return Sampled.Find(Bone); }),
+                Global);
 
             for (const TPair<FName, FString>& Pair : MannequinToGodot)
             {
@@ -331,6 +393,29 @@ namespace MarburgumGodotClip
                 Positions.FindOrAdd(Pair.Key).Add(Position);
                 Rotations.FindOrAdd(Pair.Key).Add(Local);
                 Scales.FindOrAdd(Pair.Key).Add(LocalRest[Bone].GetScale3D());
+            }
+        }
+
+        // Bones the original never moved but a clip holds still in a pose of its own (curled fingers round a grip):
+        // their reference turn, then the held turn, on every frame.
+        for (const TPair<FName, FQuat>& Held : Clip.HeldLocal)
+        {
+            const int32 Bone = Reference.FindRawBoneIndex(Held.Key);
+            if (Bone == INDEX_NONE || MannequinToGodot.Contains(Held.Key))
+            {
+                UE_LOG(LogMarburgumGodotClip, Error, TEXT("%s cannot hold bone %s"), LogTag, *Held.Key.ToString());
+                return nullptr;
+            }
+            FQuat Local = LocalRest[Bone].GetRotation() * Held.Value;
+            Local.Normalize();
+            Positions.Add(Held.Key, TArray<FVector>());
+            Rotations.Add(Held.Key, TArray<FQuat>());
+            Scales.Add(Held.Key, TArray<FVector>());
+            for (int32 Frame = 0; Frame <= Frames; ++Frame)
+            {
+                Positions[Held.Key].Add(LocalRest[Bone].GetLocation());
+                Rotations[Held.Key].Add(Local);
+                Scales[Held.Key].Add(LocalRest[Bone].GetScale3D());
             }
         }
 

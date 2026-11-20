@@ -58,6 +58,8 @@ public:
     /** Some point of the straight way from FromFeet to ToFeet (FromFeet itself aside) is wet. */
     bool IsWetWay(const FVector& FromFeet, const FVector& ToFeet) const;
     int32 NumVolumes() const;
+    /** The highest water surface over Point's plan position, if any column covers it (an angler's float sits on it). */
+    bool SurfaceAt(const FVector& Point, double& OutSurfaceZ) const;
 
     /** Samples along a way are this far apart. */
     static constexpr double WayStepCm = 50.0;
