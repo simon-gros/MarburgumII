@@ -2,6 +2,8 @@
 
 Task 3 of the [morning review](DEVELOPMENT_REVIEW_2026-11-20_MORNING.md): qualify the open interiors with real clients on a packaged build, verify door replication and streaming, rerun the account, mission, vehicle, combat and networking regression on **one** packaged pair, and address the admission-ticket findings (QA AR1, AR13). Run by the senior-programmer agent on Simon's host (Linux 6.18, RTX 5080), on ports 279xx (never 7777 or 17777).
 
+**Later evidence (do not merge package identities):** This report specifically documents the earlier clean `a0d0b89` packaged two-building door and regression tests. Afterward ADR-079 corrected the opposite-bank crowd fixture in **editor** (28/28, day/night pass); separate `9b88369` packaged story/English–Slovene tests and `44106bc` encrypted account/relay and development-key package checks passed. Neither is evidence that this older `a0d0b89` build contained those later features. Owner acceptance remains open. See [20 November evening review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md).
+
 ## The build
 
 | | |

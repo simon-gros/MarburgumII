@@ -4,6 +4,8 @@
 **Setting:** A fictionalized Maribor, Slovenia, primarily in the 1990s.  
 **Genre:** A persistent, server-authoritative urban **MMORPG** with systems-heavy progression and a solo-friendly player experience, without fantasy themes.
 
+**Engineering direction, 20 November evening:** Scoped staged tests now cover Chapter IV and Photography, visible fishing/NPC presentation, five enterable interior shells (two staged multi-client tested), bilingual UI with working Settings, and per-connection AES-256-GCM on account-required servers (ADR-083). All remain **pre-alpha** and pending personal owner approval and complete latest-head packaged integration. The nine-window city is not World Partition or 250-player qualified. [Current evidence](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md) and [future gameplay proposals](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md).
+
 ## Core experience
 
 A living Central European city enables exploration, missions, jobs, favors, vehicles, driving, social interaction, photography, trade, investigation, fishing, economic choices, housing and persistent consequences. Ordinary life is at least as important as the occasional confrontation. The player should experience sustained character growth through learning and skills, not relentless combat.

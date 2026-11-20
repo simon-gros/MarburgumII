@@ -6,6 +6,8 @@
 
 **QA input update (20 November 2026):** The merged UI corrections make Escape and clicking the world leave the chat field, while Shift during text input should neither sprint nor brake the car. The [QA audit](QA_AUDIT_2026-11-19.md) still lists direct automated chat-menu focus proof as **UX2 open**, and owner acceptance is pending. General/private privacy routing is unchanged. [Current review](DEVELOPMENT_REVIEW_2026-11-20.md).
 
+**20 November evening:** The v2 UI has reworked chat presentation and focus/escape behavior with editor evidence; staged chat regression passed on the separately recorded encrypted-transport `44106bc` Development pair using **development-key unencrypted mode**, while signed-in account traffic uses AES-256-GCM. General/private routing stays server-authoritative. Complete current-head locale/controller/chat-focus negative cases and personal owner approval are still required. [Current review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md).
+
 ## 1. Channels and expected player experience
 
 **General:** a player sends a plain-text message to the **entire connected population of their current logical game server/shard**. General chat is not automatically region, team or proximity restricted; do not conflate it with a later local/party channel. There is no inter-server relay or global cross-shard channel in this slice. Offline users do not receive history.

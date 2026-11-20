@@ -8,6 +8,8 @@ This file is the single register for graphical, environmental and 3D-asset probl
 
 **20 November status reconciliation:** The ADR-072 visual audit and its in-engine captures remain the reference list for missing/incorrect city art. ADR-073–075 have improved server-side *navigation and shared populations*, not resolved the open vegetation, street furniture, landmark, mission-prop, period-accuracy or current packaged GPU-budget work. The clean staged crowd matrix has a reproducible **opposite-bank timeout (11/28)**, so it cannot be presented as complete visual/world acceptance. [Current review](DEVELOPMENT_REVIEW_2026-11-20.md), [QA audit](QA_AUDIT_2026-11-19.md).
 
+**20 November evening direction:** Retain this ADR-072 visual issue register as the detailed historical/scenic record. Since its baseline, the program has introduced **five actually enterable ground floors**, revised mannequin NPCs/fishing, working UI Settings and a GFX-00 read-only packaged renderer audit. This does **not** resolve the extensive foliage/furniture, period authenticity, landmark and GPU-budget entries below. The proposed priority is to furnish and visibly refine the **existing five interiors** before cutting another 581 eligible shells. Uncontended GPU measurements and source rights remain prerequisites. [Current review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md) · [Graphics roadmap](GRAPHICS_ROADMAP.md) · [Research ideas](GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md).
+
 ## What was inspected, and what was not
 
 | Inspected | How | Evidence |
