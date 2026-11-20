@@ -67,7 +67,7 @@ private:
     UEditableTextBox* AddField(UVerticalBox* Panel, const FText& Label, const FText& Hint, bool bPassword = false);
     UButton* AddButton(class UHorizontalBox* Row, const FText& Label, int32 Kind, float GapAfter);
 
-    UPROPERTY(Transient) TObjectPtr<UTextBlock> Motif;
+    UPROPERTY(Transient) TObjectPtr<UWidget> Motif;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> StepTitle;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> StepIntro;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> Message;

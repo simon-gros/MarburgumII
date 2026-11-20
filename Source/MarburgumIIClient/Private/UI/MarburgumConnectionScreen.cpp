@@ -22,6 +22,7 @@
 #include "MarburgumNetworkContract.h"
 #include "Session/MarburgumAccountSubsystem.h"
 #include "UI/MarburgumUIBuilder.h"
+#include "UI/MarburgumUIWidgets.h"
 
 #define LOCTEXT_NAMESPACE "MarburgumConnection"
 
@@ -143,26 +144,36 @@ void UMarburgumConnectionScreen::NativeOnInitialized()
     BackdropSlot->SetHorizontalAlignment(HAlign_Fill);
     BackdropSlot->SetVerticalAlignment(VAlign_Fill);
 
-    // Documentary motif: Maribor's coordinates, large and quiet, top right, clear of the card.
-    UTextBlock* Motif = B.Text(LOCTEXT("Coordinates", "46°33′N  15°39′E"), ETypeRole::Display, T.Color.TextPrimary.CopyWithNewOpacity(0.035f));
-    FSlateFontInfo MotifFont = Motif->GetFont();
-    MotifFont.Size = 88;
-    MotifFont.LetterSpacing = 0;
-    Motif->SetFont(MotifFont);
-    UOverlaySlot* MotifSlot = Root->AddChildToOverlay(Motif);
-    MotifSlot->SetHorizontalAlignment(HAlign_Right);
-    MotifSlot->SetVerticalAlignment(VAlign_Top);
-    MotifSlot->SetPadding(FMargin(0.f, T.Space.ScreenGutter * 0.8f - T.Space.L, T.Space.ScreenGutter, 0.f));
+    // Documentary motif: a survey plate of the Drava at Lent, drawn in faint lines across the frame, a warm glow behind
+    // it, and a shade on the left so the brand and the card read over it.
+    UOverlaySlot* GlowSlot = Root->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::SoftBand, T.Color.Accent.CopyWithNewOpacity(0.05f)));
+    GlowSlot->SetHorizontalAlignment(HAlign_Fill);
+    GlowSlot->SetVerticalAlignment(VAlign_Fill);
+    UOverlaySlot* PlateSlot = Root->AddChildToOverlay(WidgetTree->ConstructWidget<UMarburgumMapPlate>());
+    PlateSlot->SetHorizontalAlignment(HAlign_Fill);
+    PlateSlot->SetVerticalAlignment(VAlign_Fill);
+    UHorizontalBox* ShadeRow = B.Row();
+    FBuilder::Inline(ShadeRow, B.Scrim(EMarburgumScrimShape::FadeRight, T.Color.Backdrop.CopyWithNewOpacity(0.92f)), 0.f, true);
+    FBuilder::Inline(ShadeRow, B.Spacer(1.f, 1.f), 0.f, true);
+    UOverlaySlot* ShadeSlot = Root->AddChildToOverlay(ShadeRow);
+    ShadeSlot->SetHorizontalAlignment(HAlign_Fill);
+    ShadeSlot->SetVerticalAlignment(VAlign_Fill);
+    if (UHorizontalBoxSlot* Left = Cast<UHorizontalBoxSlot>(ShadeRow->GetChildAt(0)->Slot))
+    {
+        Left->SetVerticalAlignment(VAlign_Fill);
+    }
 
+    // The brand and the card sit together, left of centre; the version stays at the foot.
     UVerticalBox* Content = B.Column();
-    FBuilder::Stack(Content, BuildBrand(), T.Space.XXXL);
     FBuilder::Stack(Content, B.Spacer(1.f, 1.f), 0.f, true);
+    FBuilder::Stack(Content, BuildBrand(), T.Space.XXXL);
     UWidget* Card = BuildConnectCard();
     FBuilder::Stack(Content, Card, T.Space.XXL);
     if (UVerticalBoxSlot* CardSlot = Cast<UVerticalBoxSlot>(Card->Slot))
     {
         CardSlot->SetHorizontalAlignment(HAlign_Left);
     }
+    FBuilder::Stack(Content, B.Spacer(1.f, 1.f), 0.f, true);
     FBuilder::Stack(Content, BuildFooter(), 0.f);
 
     UBorder* Gutter = B.Surface(ESurfaceKind::Base, FMargin(T.Space.ScreenGutter, T.Space.ScreenGutter * 0.8f), Content, false);

@@ -19,6 +19,8 @@
 #include "MarburgumNetworkContract.h"
 #include "MarburgumSessionContract.h"
 #include "UI/MarburgumCharacterPreview.h"
+#include "UI/MarburgumUIWidgets.h"
+#include "Components/HorizontalBoxSlot.h"
 #include "UI/MarburgumUIBuilder.h"
 
 #define LOCTEXT_NAMESPACE "MarburgumAccountScreen"
@@ -82,15 +84,23 @@ void UMarburgumAccountScreen::NativeOnInitialized()
     BackdropSlot->SetHorizontalAlignment(HAlign_Fill);
     BackdropSlot->SetVerticalAlignment(VAlign_Fill);
 
-    Motif = B.Text(LOCTEXT("Coordinates", "46°33′N  15°39′E"), ETypeRole::Display, T.Color.TextPrimary.CopyWithNewOpacity(0.035f));
-    FSlateFontInfo MotifFont = Motif->GetFont();
-    MotifFont.Size = 88;
-    MotifFont.LetterSpacing = 0;
-    Motif->SetFont(MotifFont);
-    UOverlaySlot* MotifSlot = Root->AddChildToOverlay(Motif);
-    MotifSlot->SetHorizontalAlignment(HAlign_Right);
-    MotifSlot->SetVerticalAlignment(VAlign_Top);
-    MotifSlot->SetPadding(FMargin(0.f, T.Space.ScreenGutter * 0.8f - T.Space.L, T.Space.ScreenGutter, 0.f));
+    // The title screens' survey plate of the Drava at Lent behind the forms (hidden while the creator's stage is up),
+    // with a warm glow and a shade on the left where the card stands.
+    UOverlay* MotifLayer = WidgetTree->ConstructWidget<UOverlay>();
+    const auto Fill = [](UOverlaySlot* Slot) { Slot->SetHorizontalAlignment(HAlign_Fill); Slot->SetVerticalAlignment(VAlign_Fill); };
+    Fill(MotifLayer->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::SoftBand, T.Color.Accent.CopyWithNewOpacity(0.05f))));
+    Fill(MotifLayer->AddChildToOverlay(WidgetTree->ConstructWidget<UMarburgumMapPlate>()));
+    UHorizontalBox* ShadeRow = B.Row();
+    FBuilder::Inline(ShadeRow, B.Scrim(EMarburgumScrimShape::FadeRight, T.Color.Backdrop.CopyWithNewOpacity(0.92f)), 0.f, true);
+    FBuilder::Inline(ShadeRow, B.Spacer(1.f, 1.f), 0.f, true);
+    if (UHorizontalBoxSlot* Left = Cast<UHorizontalBoxSlot>(ShadeRow->GetChildAt(0)->Slot))
+    {
+        Left->SetVerticalAlignment(VAlign_Fill);
+    }
+    Fill(MotifLayer->AddChildToOverlay(ShadeRow));
+    MotifLayer->SetVisibility(ESlateVisibility::HitTestInvisible);
+    Motif = MotifLayer;
+    Fill(Root->AddChildToOverlay(MotifLayer));
 
     // One screen, two halves that never overlap (QA U9): the brand and the card on the left, scrolling when a high
     // interface scale makes them taller than the window; on the character step, the body on its stage on the right.
