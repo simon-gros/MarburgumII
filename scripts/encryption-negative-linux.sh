@@ -8,9 +8,9 @@
 #   service-stall An account-required server whose service accepts TLS and then sends no HTTP answer must
 #                 time out the redeem and admit nobody. Skipped when openssl s_server cannot listen.
 #
-# Replay, duplication and out-of-order datagrams are not injected here. The engine sequence check and
-# Marburgum.Net.StrictEncryption cover tamper, a wrong key and plaintext-after-key. This script does not
-# claim an independent AES-GCM nonce proof.
+# Replay, duplication and out-of-order datagrams are not injected here: Marburgum.Net.StrictEncryption and
+# Marburgum.Net.ReplayWindow cover tamper, a wrong key, plaintext-after-key and replayed packets (ADR-085), and the
+# account smoke covers a stolen hello ticket redeemed before its player.
 #
 # Usage: scripts/encryption-negative-linux.sh [staged]
 # Port MB2_ENC_NEG_PORT (default 28170). Never 7777 or 17777.
@@ -229,6 +229,6 @@ else
     stop_stall
 fi
 
-note "Not claimed: independent AES-GCM nonce/replay proof, session-key rotation, or a malicious hello that burns a live ticket beyond the account smoke."
+note "Not claimed: datagram-level replay injection (unit-tested only, ADR-085) or session-key rotation."
 note "Result: $([[ $status -eq 0 ]] && echo PASS || echo FAIL) — $out_dir"
 exit "$status"
