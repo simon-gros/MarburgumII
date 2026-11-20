@@ -2,14 +2,19 @@
 
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
 #include "EngineUtils.h"
 #include "GameFramework/Pawn.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
 #include "HAL/PlatformTime.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumCharacter.h"
 #include "MarburgumInteractable.h"
 #include "MarburgumNetworkContract.h"
+#include "MarburgumNpc.h"
+#include "MarburgumPhotography.h"
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
 #include "Misc/CommandLine.h"
@@ -223,6 +228,8 @@ bool UMarburgumMissionSmokeSubsystem::Tick(float DeltaTime)
     else if (Role == TEXT("STEP")) TickStep(Now);
     else if (Role == TEXT("CHOICE")) TickChoice(Now);
     else if (Role == TEXT("CHECK")) TickCheck(Now);
+    else if (Role == TEXT("PHOTO")) TickPhoto(Now);
+    else if (Role == TEXT("STORYCHECK")) TickStoryCheck(Now);
     else Fail(TEXT("unknown_role"));
     return true;
 }
@@ -316,6 +323,13 @@ void UMarburgumMissionSmokeSubsystem::TickFish(double Now)
             return;
         }
         MB2_MISSION_LOG("event=bite attempt=%d after_s=%.2f", Line.Attempt, Now - StepSeconds);
+        // ADR-080: the body shows the line it has out: the rod in the right hand and a fishing clip.
+        if (const AMarburgumCharacter* Body = Controller.IsValid() ? Cast<AMarburgumCharacter>(Controller->GetPawn()) : nullptr)
+        {
+            MB2_MISSION_LOG("event=fishing_presentation pose=%s rod=%d clip=%d", ToString(Body->GetFishingPose()), Body->IsRodInHand() ? 1 : 0,
+                Body->IsFishingClipPlaying() ? 1 : 0);
+            Expect(Body->IsRodInHand() && Body->IsFishingClipPlaying(), TEXT("no_rod_or_clip_while_fishing"));
+        }
         Op = Submit(Find(Spot), TEXT("strike"));
         Advance(10, Now);
         return;
@@ -369,8 +383,84 @@ void UMarburgumMissionSmokeSubsystem::TickStep(double Now)
         return;
     case 2:
         if (Now - StepSeconds < ToastSettleSeconds) return;
+        // ADR-080: the server told everyone this person was spoken to; on this client they turn and talk (the angler
+        // keeps fishing, rod in hand).
+        if (const AMarburgumNpc* Person = Cast<AMarburgumNpc>(Find(TargetId)))
+        {
+            MB2_MISSION_LOG("event=npc_presentation target=%s clip=%s rod=%d line=%d turn_deg=%.0f body=%s", *TargetId.ToString(),
+                *Person->GetPlayingClip().ToString(), Person->IsRodInHand() ? 1 : 0, Person->IsLineOut() ? 1 : 0, Person->GetBodyTurnDegrees(),
+                Person->GetBody() && Person->GetBody()->GetSkeletalMeshAsset() ? *Person->GetBody()->GetSkeletalMeshAsset()->GetName() : TEXT("-"));
+            Expect(Person->GetBody() && Person->GetBody()->GetSkeletalMeshAsset() != nullptr, TEXT("npc_has_no_body"));
+            Expect(Person->bHoldsRod ? Person->IsRodInHand() && Person->GetPlayingClip().ToString().StartsWith(TEXT("fish_"))
+                                     : Person->GetPlayingClip() == FName(TEXT("talk")),
+                FString::Printf(TEXT("npc_presentation clip=%s rod=%d"), *Person->GetPlayingClip().ToString(), Person->IsRodInHand() ? 1 : 0));
+        }
         Shot(*TargetId.ToString());
         Advance(3, Now);
+        return;
+    default:
+        Pass();
+        return;
+    }
+}
+
+void UMarburgumMissionSmokeSubsystem::TickPhoto(double Now)
+{
+    // ADR-080: aim the view at the subject's aim point the way a player would, then press the shutter (P).
+    AMarburgumPlayerController* Local = Controller.Get();
+    const UMarburgumPhotographySubsystem* Photography = Local ? Local->GetWorld()->GetSubsystem<UMarburgumPhotographySubsystem>() : nullptr;
+    const FMarburgumInteractionReceipt* R = ReceiptFor(Op);
+    switch (Step)
+    {
+    case 0:
+    {
+        if (Now - StepSeconds < SettleSeconds) return;
+        FVector Aim;
+        if (!Photography || !Photography->GetAimPoint(TargetId.ToString(), Aim) || !Local->GetPawn())
+        {
+            if (Now - StepSeconds > 10.0)
+            {
+                Fail(FString::Printf(TEXT("subject_unresolved=%s"), *TargetId.ToString()));
+            }
+            return;
+        }
+        const FVector Eye = Local->GetPawn()->GetPawnViewLocation();
+        Local->SetControlRotation((Aim - Eye).Rotation());
+        MB2_MISSION_LOG("event=aim subject=%s distance_m=%.1f", *TargetId.ToString(), FVector::Dist(Aim, Eye) / 100.0);
+        Advance(1, Now);
+        return;
+    }
+    case 1:
+    {
+        // Long enough for the view to reach the server with the next moves.
+        if (Now - StepSeconds < 0.8) return;
+        const UMarburgumPhotographySubsystem::FInFrame Frame = Photography->FindInFrame(Local->GetPawn()->GetPawnViewLocation(),
+            Local->GetControlRotation(), Local->GetPawn());
+        MB2_MISSION_LOG("event=frame subject=%s in_frame=%s off_axis=%.1f", *TargetId.ToString(), Frame.Subject ? Frame.Subject->Id : TEXT("-"),
+            Frame.OffAxisDegrees);
+        Local->RequestPhotograph();
+        FGuid Pending;
+        TWeakObjectPtr<AMarburgumInteractable> Ignored;
+        Local->GetPendingInteraction(Pending, Ignored);
+        Op = Pending;
+        Advance(2, Now);
+        return;
+    }
+    case 2:
+        if (!R) return;
+        Expect(ExpectEffect.ToString().StartsWith(TEXT("refused:"))
+                ? R->Outcome == EMarburgumRequestOutcome::Rejected && ExpectEffect == FName(*FString::Printf(TEXT("refused:%s"), ToString(R->Reason)))
+                : R->Outcome == EMarburgumRequestOutcome::Applied && ExpectEffect == FName(ToString(R->Effect)) && R->InteractableId == TargetId,
+            FString::Printf(TEXT("photo=%s/%s/%s subject=%s want=%s"), ToString(R->Outcome), ToString(R->Reason), ToString(R->Effect),
+                *R->InteractableId.ToString(), *ExpectEffect.ToString()));
+        Advance(3, Now);
+        return;
+    case 3:
+        if (Now - StepSeconds < ToastSettleSeconds) return;
+        MB2_MISSION_LOG("event=photo_state photography_xp=%lld print=%d", LocalState()->GetSkillXp(TEXT("photography")),
+            Count(*FString::Printf(TEXT("photo_%s"), *TargetId.ToString())));
+        Shot(*FString::Printf(TEXT("photo-%s"), *TargetId.ToString()));
+        Advance(4, Now);
         return;
     default:
         Pass();
@@ -519,6 +609,72 @@ void UMarburgumMissionSmokeSubsystem::TickCheck(double Now)
         if (Now - StepSeconds < ToastSettleSeconds) return;
         Shot(TEXT("journal"));
         Advance(3, Now);
+        return;
+    default:
+        Pass();
+        return;
+    }
+}
+
+void UMarburgumMissionSmokeSubsystem::TickStoryCheck(double Now)
+{
+    // ADR-080, after a server restart: what scripts/story-smoke-linux.sh played is all still there.
+    const AMarburgumPlayerState* State = LocalState();
+    UMarburgumUISubsystem* UI = GetGameInstance()->GetSubsystem<UMarburgumUISubsystem>();
+    switch (Step)
+    {
+    case 0:
+    {
+        if (Now - StepSeconds < SettleSeconds) return;
+        const auto Done = [this](const TCHAR* Mission, const TCHAR* Choice, const TCHAR* Outcome)
+        {
+            const FMarburgumMissionState* P = Progress(Mission);
+            Expect(P && P->bCompleted && (!Choice || P->Choice == FName(Choice)) && (!Outcome || P->Outcome == FName(Outcome)),
+                FString::Printf(TEXT("%s_not_restored"), Mission));
+        };
+        Done(TEXT("raeda_voices_on_tape"), TEXT("ask_tone"), TEXT("tone_questioned"));
+        Done(TEXT("raeda_mentor_folder"), nullptr, nullptr);
+        Done(TEXT("nika_then_and_now"), TEXT("darkroom_lesson"), TEXT("darkroom_lesson"));
+        Done(TEXT("brane_old_letters"), TEXT("give_copies"), TEXT("prints_given"));
+        Expect(State->GetMoney() == 180, FString::Printf(TEXT("money=%lld want 180"), State->GetMoney()));
+        Expect(State->GetSkillXp(TEXT("reputation")) == 70, FString::Printf(TEXT("reputation=%lld want 70"), State->GetSkillXp(TEXT("reputation"))));
+        Expect(State->GetSkillXp(TEXT("photography")) == 215, FString::Printf(TEXT("photography=%lld want 215"), State->GetSkillXp(TEXT("photography"))));
+        for (const TCHAR* Kept : { TEXT("camera"), TEXT("canteen_cassette_c60"), TEXT("canteen_tape_notes"), TEXT("mentor_folder_note"),
+                 TEXT("photo_vodni_stolp"), TEXT("photo_prehod_sign_melje"), TEXT("photo_sinagoga") })
+        {
+            Expect(Count(Kept) == 1, FString::Printf(TEXT("custody_not_restored=%s"), Kept));
+        }
+        MB2_MISSION_LOG("event=restored missions=%d money=%lld reputation_xp=%lld photography_xp=%lld", State->GetMissions().Num(), State->GetMoney(),
+            State->GetSkillXp(TEXT("reputation")), State->GetSkillXp(TEXT("photography")));
+        if (UI)
+        {
+            UI->ToggleSkills();
+        }
+        Advance(1, Now);
+        return;
+    }
+    case 1:
+        if (Now - StepSeconds < ToastSettleSeconds) return;
+        Shot(TEXT("story-skills"));
+        if (UI)
+        {
+            UI->ToggleJournal();
+        }
+        Advance(2, Now);
+        return;
+    case 2:
+        if (Now - StepSeconds < ToastSettleSeconds) return;
+        Shot(TEXT("story-journal"));
+        if (UI)
+        {
+            UI->ToggleInventory();
+        }
+        Advance(3, Now);
+        return;
+    case 3:
+        if (Now - StepSeconds < ToastSettleSeconds) return;
+        Shot(TEXT("story-inventory"));
+        Advance(4, Now);
         return;
     default:
         Pass();

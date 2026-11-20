@@ -22,6 +22,12 @@ class AMarburgumPlayerState;
  *   CHOICE  at -MB2MissionTarget: the decision panel (or, without a renderer, the RPC) chooses
  *           -MB2MissionChoice=<id> for -MB2MissionId=<mission>; expects the mission completed.
  *   CHECK   after a server restart: completed missions, decision, money, skills and fish restored.
+ *   PHOTO   with a camera: aim the view at the photo subject -MB2MissionTarget, press the shutter, and expect the effect
+ *           -MB2MissionExpect (or `refused:<reason>`), as ADR-080's server judges the frame.
+ *   STORYCHECK  after a server restart: Chapter IV, Maja's folder, Nika's and Brane's missions, their decisions, money,
+ *           Reputation and Photography XP and the evidence and prints in custody, as story-smoke-linux.sh played them.
+ *   A STEP at an NPC also checks the body the server's answer animates: talking (or, for the angler, fishing with the
+ *   rod in hand).
  *
  * Options: -MB2MissionRole= -MB2MissionShot=<path prefix> -MB2MissionTimeout=<s> and the per-role ones above.
  */
@@ -42,6 +48,8 @@ private:
     void TickStep(double Now);
     void TickChoice(double Now);
     void TickCheck(double Now);
+    void TickPhoto(double Now);
+    void TickStoryCheck(double Now);
 
     void HandleReceipt(const FMarburgumInteractionReceipt& Receipt);
     const FMarburgumInteractionReceipt* ReceiptFor(const FGuid& OperationId) const;

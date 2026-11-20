@@ -33,7 +33,7 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
     {
         FMarburgumWorldStore Store(Path);
         TestTrue(TEXT("reload"), Store.Load(Error));
-        TestEqual(TEXT("schema"), Store.GetLoadedSchema(), 5);
+        TestEqual(TEXT("schema"), Store.GetLoadedSchema(), 6);
         const FMarburgumStoredCondition* Loaded = Store.Get().Conditions.Find(TEXT("runner"));
         TestTrue(TEXT("condition saved"), Loaded != nullptr);
         if (Loaded)
@@ -170,7 +170,7 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
     {
         FMarburgumWorldStore Store(Path);
         TestTrue(TEXT("schema 5 reload"), Store.Load(Error));
-        TestEqual(TEXT("schema 5 reported"), Store.GetLoadedSchema(), 5);
+        TestEqual(TEXT("current schema reported"), Store.GetLoadedSchema(), 6);
         TestEqual(TEXT("shelf kept"), Store.Get().Shelves.FindRef(TEXT("kiosk_67")).FindRef(TEXT("mariborski_glas")), 11);
         const int32* Empty = Store.Get().Shelves.FindRef(TEXT("kiosk_67")).Find(TEXT("ballpoint_pen"));
         TestTrue(TEXT("an empty shelf is kept as empty, not as unknown"), Empty && *Empty == 0);
@@ -188,8 +188,32 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
         TestTrue(TEXT("schema 4 has no first purchases"), Store.Get().FirstPurchases.IsEmpty());
     }
 
+    // Schema 6 (ADR-080): each character's documented photo subjects round-trip; a schema 5 world has none.
+    {
+        FMarburgumWorldStore Store(Path);
+        FMarburgumWorldRecord Next;
+        Next.Revision = 20;
+        Next.Discoveries.Add(TEXT("simon"), { TEXT("vodni_stolp"), TEXT("stari_most") });
+        Next.Skills.FindOrAdd(TEXT("simon")).Add(TEXT("photography"), 50);
+        TestTrue(TEXT("schema 6 commit"), Store.Commit(Next, Error));
+    }
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("schema 6 reload"), Store.Load(Error));
+        TestEqual(TEXT("schema 6 reported"), Store.GetLoadedSchema(), 6);
+        const TArray<FString> Documented = Store.Get().Discoveries.FindRef(TEXT("simon"));
+        TestTrue(TEXT("discoveries kept"), Documented.Num() == 2 && Documented.Contains(TEXT("vodni_stolp")) && Documented.Contains(TEXT("stari_most")));
+        TestEqual(TEXT("photography XP kept"), Store.Get().Skills.FindRef(TEXT("simon")).FindRef(TEXT("photography")), int64(50));
+    }
+    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":5,\"revision\":3,\"first_purchases\":{}}"), *Path);
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("schema 5 loads"), Store.Load(Error));
+        TestTrue(TEXT("schema 5 has no discoveries"), Store.Get().Discoveries.IsEmpty());
+    }
+
     // A schema this build does not know is refused rather than reinterpreted.
-    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":6,\"revision\":1}"), *Path);
+    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":7,\"revision\":1}"), *Path);
     {
         FMarburgumWorldStore Store(Path);
         TestFalse(TEXT("future schema refused"), Store.Load(Error));

@@ -21,7 +21,7 @@ fn finish(problems: Problems, summary: String) -> u8 {
 }
 
 fn is_store(doc: &Value) -> bool {
-    doc["format"] == "marburgumii.world_store" && doc["schema_version"] == 5
+    doc["format"] == "marburgumii.world_store" && doc["schema_version"] == 6
 }
 
 /// No character's condition was saved (the Gate 1 and Lent smoke clients never run).
@@ -200,6 +200,52 @@ fn check_missions(doc: &Value, key: &str) -> u8 {
     finish(problems, format!("{money} {fishing} {reputation}"))
 }
 
+/// Chapter IV, Maja's folder and the photography missions (scripts/story-smoke-linux.sh, ADR-080), after both phases on a
+/// seeded schema 5 store. Prints "<money> <reputation> <photography> <discoveries>".
+pub fn story(store: &str, key: &str) -> u8 {
+    let doc = match load(store) {
+        Ok(doc) => doc,
+        Err(error) => return finish(Problems(vec![error]), "0 0 0 0".to_string()),
+    };
+    check_story(&doc, key)
+}
+
+fn check_story(doc: &Value, key: &str) -> u8 {
+    let mut problems = Problems::default();
+    problems.expect(is_store(doc), "not_a_current_store");
+    let item = |id: &str| doc["inventories"][key][id].as_i64().unwrap_or(0);
+    let mission = |id: &str| &doc["missions"][key][id];
+    let voices = mission("raeda_voices_on_tape");
+    problems.expect(voices["completed"] == true && voices["choice"] == "ask_tone" && voices["outcome"] == "tone_questioned"
+        && voices["journal_entry"] == "blue_ledger_voices_on_tape" && voices["flags"]["canteen_tape_place_melje"] == true,
+        format!("voices={voices}"));
+    let folder = mission("raeda_mentor_folder");
+    problems.expect(folder["completed"] == true && folder["flags"]["mentor_question_found"] == true, format!("folder={folder}"));
+    let nika = mission("nika_then_and_now");
+    problems.expect(nika["completed"] == true && nika["outcome"] == "darkroom_lesson", format!("nika={nika}"));
+    let brane = mission("brane_old_letters");
+    problems.expect(brane["completed"] == true && brane["outcome"] == "prints_given"
+        && brane["flags"]["prehod_spacing_error_documented"] == true, format!("brane={brane}"));
+    for id in ["camera", "canteen_cassette_c60", "canteen_tape_notes", "raeda_recorder_counter_note", "mentor_folder_note", "nika_old_prints",
+        "photo_vodni_stolp", "photo_sodni_stolp", "photo_stari_most", "photo_kvik_lettering", "photo_velika_kavarna_lettering",
+        "photo_prehod_sign_melje", "photo_sinagoga"]
+    {
+        problems.expect(item(id) == 1, format!("{id}={}", item(id)));
+    }
+    let documented: Vec<&str> = doc["discoveries"][key].as_array().map(|a| a.iter().filter_map(Value::as_str).collect()).unwrap_or_default();
+    problems.expect(documented.len() == 7, format!("discoveries={documented:?}"));
+    let money = doc["money"][key].as_i64().unwrap_or(0);
+    let reputation = doc["skills"][key]["reputation"].as_i64().unwrap_or(0);
+    let photography = doc["skills"][key]["photography"].as_i64().unwrap_or(0);
+    problems.expect(money == 180, format!("money={money}"));
+    problems.expect(reputation == 70, format!("reputation_xp={reputation}"));
+    problems.expect(photography == 215, format!("photography_xp={photography}"));
+    let photographs = doc["receipts"].as_object().map(|r| r.values().filter(|r| r["character"] == key
+        && (r["kind"] == "photographed" || r["interactable"].as_str().is_some_and(|i| documented.contains(&i)))).count()).unwrap_or(0);
+    problems.expect(photographs == 7, format!("photograph_receipts={photographs}"));
+    finish(problems, format!("{money} {reputation} {photography} {}", documented.len()))
+}
+
 /// Kiosk 67 (scripts/shop-smoke-linux.sh), after phase 1 on a seeded schema 4 store (revision 1, 50 money, a brass
 /// key): three counter commits, first a newspaper bought with its Trading XP, then sold back, then a pen.
 /// Prints "<revision> <money> <shelves paper,postcard,pen>".
@@ -250,7 +296,7 @@ mod tests {
 
     fn shop_store() -> Value {
         json!({
-            "format": "marburgumii.world_store", "schema_version": 5, "revision": 4,
+            "format": "marburgumii.world_store", "schema_version": 6, "revision": 4,
             "money": { "s": 23 }, "inventories": { "s": { "ballpoint_pen": 1, "brass_key": 1 } },
             "skills": { "s": { "trading": 10 } }, "first_purchases": { "s": ["kiosk_67"] },
             "shelves": { "kiosk_67": { "mariborski_glas": 12, "ballpoint_pen": 5 } },
@@ -281,7 +327,7 @@ mod tests {
 
     fn lent_store() -> Value {
         json!({
-            "format": "marburgumii.world_store", "schema_version": 5, "revision": 1, "stocks": {}, "conditions": {},
+            "format": "marburgumii.world_store", "schema_version": 6, "revision": 1, "stocks": {}, "conditions": {},
             "inventories": { "m": { "fishing_rod": 1 } },
             "missions": { "m": { "lent_first_catch": { "stage": "catch_first_fish", "started_revision": 1 } } },
             "receipts": { "OP": { "character": "m", "kind": "mission_started", "interactable": "lent_angler",
@@ -310,7 +356,7 @@ mod tests {
 
     fn condition_store(revision: i64, conditions: Value) -> Value {
         json!({
-            "format": "marburgumii.world_store", "schema_version": 5, "revision": revision, "stocks": {},
+            "format": "marburgumii.world_store", "schema_version": 6, "revision": revision, "stocks": {},
             "inventories": {}, "missions": {}, "conditions": conditions, "receipts": {}
         })
     }
@@ -343,7 +389,7 @@ mod tests {
     #[test]
     fn interaction_store_counts_three_grants() {
         let doc = json!({
-            "format": "marburgumii.world_store", "schema_version": 5, "revision": 3, "conditions": {},
+            "format": "marburgumii.world_store", "schema_version": 6, "revision": 3, "conditions": {},
             "stocks": { "dev_supply_crate": 0 },
             "inventories": { "a": { "fishing_rod": 2 }, "b": { "fishing_rod": 1 } },
             "receipts": { "OP": { "character": "a" }, "X": { "character": "a" }, "Y": { "character": "b" } }
@@ -357,7 +403,7 @@ mod tests {
     #[test]
     fn mission_store_after_the_opening_and_the_kiosk_passes() {
         let doc = json!({
-            "format": "marburgumii.world_store", "schema_version": 5, "revision": 12,
+            "format": "marburgumii.world_store", "schema_version": 6, "revision": 12,
             "stocks": {}, "conditions": {},
             "inventories": { "p": {
                 "fishing_rod": 1, "brass_key": 1, "drava_cashbox": 1,
