@@ -75,7 +75,7 @@ Preserve Marburgum's recognizable experience: transient district names; concise 
 | --- | --- | --- |
 | UI-00 | Ontology, stable module registry and exclusions | Current vehicle/swim vocabulary owner review |
 | UI-01 | Design tokens, actual UMG primitives, SAMPLE DATA gallery | Polish and full scale/contrast matrix |
-| UI-02 | Connect/refusal/recovery plus new Escape/resume/leave/quit and improved chat Escape/click-away | Menu focus/restore, controller and logout smoke, owner UX acceptance |
+| UI-02 | Connect/refusal/recovery plus new Escape/resume/leave/quit and improved chat Escape/click-away; the Foto Vidmar investigation on keyboard and mouse or a gamepad with device-following hints and a clickable, focusable decision card, packaged in English and Slovene at 1280×720 and 1920×1080 ([ADR-085](DECISIONS.md), [evidence](INPUT_INVESTIGATION_EVIDENCE.md)) | Gamepad for menus beyond the investigation, driving, combat and chat; logout smoke; physical-pad and owner UX acceptance |
 | UI-02A | Implemented registration/code/credentials/reset, first and returning sign-in, one character, three-model 3D preview/cards and ticket-gated join (ADR-055/057); editor smoke passes | Delivered mail/production operations, packaged FL-10/12, Slovene/controller/scale and owner approval |
 | UI-03 | Chat, receipt notifications, prompt, location, mission, condition/swim/down, car status | Integrated consistent layout and privacy/focus/connection-state review |
 | UI-04 | Character, Inventory, Journal, first Skills (K), scroll/clamping and long-text wrapping | Settings, creator at 150%+/5:4, live/empty/error data, contrast/localization and focus matrix |

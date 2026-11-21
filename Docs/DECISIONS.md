@@ -1256,3 +1256,20 @@ Simon asked to encrypt the traffic. This also closes the server half of QA **AR1
 **Rejected.** Duplicating Chapter VI per Kiosk 67 outcome as five missions (five copies of the spine); a hard "skip if already held" rule for shared evidence (unique items express it without stage logic); a client-side deduction check (the server decides what is right, like everything else); Hunyuan3D or new generated meshes for the props (primitives suffice and need no owner review of generated art).
 
 **Evidence.** [STORY_EXPANSION.md](STORY_EXPANSION.md) §10.7. Owner playtest: **not yet**.
+
+## ADR-085 — The Foto Vidmar investigation is played with keyboard and mouse or a gamepad; hints follow the device in use (implemented 2026-11-21; owner approval OPEN)
+
+**Context.** ADR-084 left "a gameplay controller layer" undecided: `[E]`, `[P]` and the choice keys had no gamepad bindings, the decision card answered only to number keys, and every prompt named keyboard keys. The investigation (Chapter VI's order-book page, the Frame 37 deduction) could not be played from a pad or with the mouse.
+
+**Decision.**
+
+1. **Bindings on the existing requests.** Left stick walks (same axes as WASD), right stick aims the view as a rate with a squared response (fine framing, fast turns); A interacts, the right trigger is the shutter, View opens the Journal, Y the Inventory, B closes a counter or decision, Menu is Escape; X jumps and a held left trigger runs. Every action goes through the same gameplay request and server receipt as its key. `Gamepad_RightY` reaches the game negated by `FSceneViewport`, so the look code negates it again: stick up looks up.
+2. **Decision card.** Each answer is a row the mouse clicks and the keys focus (arrows, D-pad, stick; Up/Down wrap and never leave the card). Number keys still pick at once. A send is latched before anything else, so a double click or a second key sends nothing more; only a fresh press counts, so the key that opened the card, or a held confirm, never answers. B, Escape and the opening key cancel without a request. A click beside the card is swallowed. World input is restored on every close. All rows draw identical states, and a deduction shows no reward chips, so focus and hover never hint at the right answer.
+3. **Hints follow the device.** `FMarburgumInputDevice` tracks the last deliberate key, button, stick or mouse movement and names the key caps for each verb (E/A, P/RT, …). Interaction prompts, the photograph prompt, the decision card, the pinned objective's Journal hint and the management shell switch at once when the device changes mid-interaction; the card keeps its focus.
+4. **Verification by input events.** `UMarburgumInputSmokeSubsystem` (client, `-MB2InputSmoke`) feeds pointer and gamepad events through `FSlateApplication` into a rendered client; `scripts/input-smoke-linux.sh` seeds the story with the RPC drivers and checks every outcome from the server's committed world store.
+
+**Not decided here.** Key rebinding (the input remapping system); gamepad play for driving, combat, chat and the counter (Settings says so); platform glyph sets (caps are text: "A", "RT"); a physical-device pass.
+
+**Rejected.** Enhanced Input migration in this change (larger than the slice; the legacy axis mappings already carry WASD); client-side answer filtering (the server judges every answer, as before); highlighting the focused answer in an accent colour (reads as a clue).
+
+**Evidence.** [INPUT_INVESTIGATION_EVIDENCE.md](INPUT_INVESTIGATION_EVIDENCE.md). Owner playtest: **not yet**.
