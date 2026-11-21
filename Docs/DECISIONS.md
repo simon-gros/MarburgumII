@@ -1302,11 +1302,11 @@ Simon asked to encrypt the traffic. This also closes the server half of QA **AR1
 
 **Decision.**
 
-1. **Placement in the ground tool.** `lent-ground --mode plants` reads the nine windows' plant files, which use our plan origin, and keeps a plant only where all of these hold:
+1. **Placement in the ground tool.** `lent-ground --mode plants` reads the 25 windows' plant files (the nine of ADR-045 until ADR-090), which use our plan origin, and keeps a plant only where all of these hold:
    - the landscape is grass at its trunk and nearly all round it (`surface.png`);
    - no paving is drawn within reach (`top.bin` over `heights.bin`);
    - it is clear of buildings, the river, bridges, the square's edge and the walk graph (a tree's trunk by 1 m, a bush by its crown).
-   A plant that fails is dropped, never moved. Result: 9,959 of 35,380, namely 4,972 trees and 4,987 bushes. The file `Content/Marburgum/Vegetation/lent_plants.json` is staged.
+   A plant that fails is dropped, never moved. Result on the nine windows: 9,959 of 35,380, namely 4,972 trees and 4,987 bushes; on the five by five (ADR-090): 40,604 of 124,392, namely 20,144 trees and 20,460 bushes. The file `Content/Marburgum/Vegetation/lent_plants.json` is staged.
 2. **The original's species meshes** (16 of 20, Marburgum-owned procedural meshes) are copied to `/Game/Vegetation` and always cooked. Their glTF-import materials drew black in Lent's light, so `scripts/create-weather-content.sh plants` gives them `M_PlantFoliage` (two-sided foliage) and `M_PlantBark`, with one instance per species in the original's colours.
 3. **Server and client put up the same plants from the file**, not replicated, as the street lamps do (ADR-065):
    - one instanced component per species, with no collision;
@@ -1371,7 +1371,7 @@ The evening review of 20 November listed two open P0 security points on ADR-083:
    - every mapped bench and bollard;
    - no solid piece on the street people's walk lines (a panel across one leaves a gap, a bench or bollard backs off up to 1.5 m);
    - nothing within 0.3 m of a tree's trunk (ADR-087: the trees are the better measurement).
-   Result: 948 pieces in `Content/Marburgum/Furniture/lent_street_furniture.json` (staged).
+   Result: 948 pieces on the nine windows, 2,339 on the five by five (ADR-090), in `Content/Marburgum/Furniture/lent_street_furniture.json` (staged).
 3. **The original's meshes and paint**, copied to `/Game/World/StreetFurniture` (always cooked) and `/Game/World/Materials`, with three changes by `scripts/create-weather-content.sh furniture`:
    - simple boxes instead of per-triangle collision, so a shelter's roof no longer blocks;
    - Nanite off, since the paint was not compiled for it and drew as the default material;
