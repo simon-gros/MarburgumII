@@ -100,17 +100,23 @@ bool UMarburgumPhotographySubsystem::GetAimPoint(const FString& SubjectId, FVect
 }
 
 UMarburgumPhotographySubsystem::FInFrame UMarburgumPhotographySubsystem::FindInFrame(const FVector& Eye, const FRotator& View,
-    const AActor* Photographer) const
+    const AActor* Photographer, FString* OutWhy) const
 {
     Resolve();
     FInFrame Best;
     const UWorld* World = GetWorld();
     if (!World)
     {
+        if (OutWhy)
+        {
+            *OutWhy = TEXT("no_world");
+        }
         return Best;
     }
     const FVector Forward = View.Vector();
     FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumPhotoSight), true, Photographer);
+    FString NearestMiss;
+    double NearestOff = TNumericLimits<double>::Max();
     for (const MarburgumII::Gameplay::FPhotoSubjectDefinition& Subject : MarburgumII::Gameplay::PhotoSubjects)
     {
         const FVector* Aim = AimPoints.Find(Subject.Id);
@@ -127,18 +133,35 @@ UMarburgumPhotographySubsystem::FInFrame UMarburgumPhotographySubsystem::FindInF
         const double OffAxis = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(Forward, Toward / Distance), -1.0, 1.0)));
         if (OffAxis > Subject.ConeDegrees || (Best.Subject && OffAxis >= Best.OffAxisDegrees))
         {
+            if (OutWhy && OffAxis < NearestOff && OffAxis > Subject.ConeDegrees)
+            {
+                NearestOff = OffAxis;
+                NearestMiss = FString::Printf(TEXT("id=%s reason=off_axis off=%.1f cone=%.1f dist_m=%.1f"),
+                    Subject.Id, OffAxis, Subject.ConeDegrees, Distance / 100.0);
+            }
             continue;
         }
         FHitResult Hit;
         if (World->LineTraceSingleByChannel(Hit, Eye, *Aim, ECC_Visibility, Params)
             && FVector::Dist(Hit.ImpactPoint, *Aim) > FMath::Min(SubjectBodyCm, Distance * 0.5))
         {
+            if (OutWhy && OffAxis < NearestOff)
+            {
+                NearestOff = OffAxis;
+                NearestMiss = FString::Printf(TEXT("id=%s reason=blocked off=%.1f dist_m=%.1f gap_m=%.1f hit=%s"),
+                    Subject.Id, OffAxis, Distance / 100.0, FVector::Dist(Hit.ImpactPoint, *Aim) / 100.0,
+                    Hit.GetActor() ? *Hit.GetActor()->GetName() : TEXT("-"));
+            }
             continue; // Something else is in the way.
         }
         Best.Subject = &Subject;
         Best.AimPoint = *Aim;
         Best.OffAxisDegrees = OffAxis;
         Best.DistanceCm = Distance;
+    }
+    if (OutWhy && !Best.Subject)
+    {
+        *OutWhy = NearestMiss.IsEmpty() ? TEXT("none_in_range") : NearestMiss;
     }
     return Best;
 }

@@ -20,6 +20,10 @@ pub const LOGIN_FAILURES: usize = 5;
 pub const LOGIN_WINDOW_S: i64 = 15 * 60;
 /// Outstanding admission tickets per account; a newer one replaces the oldest.
 pub const ADMISSIONS_PER_ACCOUNT: usize = 3;
+/// How often its server may redeem one ticket within its minute (ADR-088). The ticket travels in the clear in the
+/// engine's hello, so anyone on the path can redeem it first; without the connection key that admits nobody, and the
+/// player's own hello must still work. Admission needs the key, so the ticket alone is no longer single-use.
+pub const REDEEMS_PER_TICKET: u32 = 3;
 /// Live sessions per account; a new sign-in ends the oldest. Unbounded, one account signing in again and again grew
 /// the store, which every commit rewrites under the lock, until redeems timed out (QA 2026-11-19, AR3).
 pub const SESSIONS_PER_ACCOUNT: usize = 5;
@@ -94,8 +98,9 @@ struct Admission {
     account: String,
     /// The game server the ticket was asked for; only its key spends it (AR1).
     server: String,
-    /// Held in memory only, like the ticket, and handed out once each: to the client and to the redeeming server.
+    /// Held in memory only, like the ticket; handed to the client, and to its server on each redeem.
     key: String,
+    redeems: u32,
     issued_at: i64,
     expires_at: i64,
 }
@@ -457,12 +462,14 @@ impl Service {
         }
         let (ticket, key) = (secrets::token(), secrets::token());
         self.admissions.insert(secrets::verifier("admission", &ticket),
-            Admission { account: account_id, server, key: key.clone(), issued_at: now, expires_at: now + ADMISSION_TTL_S });
+            Admission { account: account_id, server, key: key.clone(), redeems: 0, issued_at: now, expires_at: now + ADMISSION_TTL_S });
         Ok(AdmissionTicket { ticket, key, expires_in: ADMISSION_TTL_S })
     }
 
-    /// A game server spends a ticket; its key says which server it is. A ticket asked for another server is refused
-    /// and left as it was, so a server that is shown a stolen ticket cannot burn it either (AR1).
+    /// A game server redeems a ticket for its connection key; the server's own key says which server it is. A ticket
+    /// asked for another server is refused and left as it was (AR1). Its own server may redeem it up to
+    /// REDEEMS_PER_TICKET times within its minute: a stolen ticket redeemed first, without its key, admits nobody and
+    /// does not lock the player out (ADR-088). Signing out or a password reset still ends it at once (AR10).
     pub fn redeem(&mut self, server_key: &str, ticket: &str, now: i64) -> Outcome<Admitted> {
         // Every key is compared, to the end, so the time taken does not say which one came close.
         let caller = self.servers.iter().fold(None, |found, s| if secrets::same(server_key, &s.key) { Some(s.id.clone()) } else { found });
@@ -478,14 +485,19 @@ impl Service {
             }
             _ => return refuse(403, "ticket_invalid"),
         }
-        let admission = self.admissions.remove(&verifier).expect("checked above");
-        let Some(account) = self.store.accounts.get(&admission.account) else {
+        let admission = self.admissions.get_mut(&verifier).expect("checked above");
+        admission.redeems += 1;
+        let (account_id, key) = (admission.account.clone(), admission.key.clone());
+        if admission.redeems >= REDEEMS_PER_TICKET {
+            self.admissions.remove(&verifier);
+        }
+        let Some(account) = self.store.accounts.get(&account_id) else {
             return refuse(403, "ticket_invalid");
         };
         let Some(character) = view(account).character else {
             return refuse(403, "ticket_invalid");
         };
-        Ok(Admitted { account: admission.account, character, key: admission.key })
+        Ok(Admitted { account: account_id, character, key })
     }
 
     /// "Forgot password": a code to the address if it has an account; the same answer either way.
@@ -684,7 +696,11 @@ pub mod tests {
         assert_eq!(admitted.key, issued.key);
         assert_eq!(URL_SAFE_NO_PAD.decode(&issued.key).unwrap().len(), 32);
         assert_ne!(issued.key, ticket);
-        assert_eq!(code_of(service.redeem(KEY, &ticket, 62)), "ticket_invalid", "single use");
+        // ADR-088: its server may redeem it again (a thief's redeem must not lock the player out), up to the limit.
+        for _ in 1..REDEEMS_PER_TICKET {
+            assert_eq!(service.redeem(KEY, &ticket, 62).unwrap().key, issued.key);
+        }
+        assert_eq!(code_of(service.redeem(KEY, &ticket, 62)), "ticket_invalid", "limited redeems");
         let late = service.admission(&session, SERVER, 70).unwrap().ticket;
         assert_eq!(code_of(service.redeem(KEY, &late, 70 + ADMISSION_TTL_S)), "ticket_invalid", "expired");
         // Nothing secret is in the store: no password, code, session or ticket in the clear.

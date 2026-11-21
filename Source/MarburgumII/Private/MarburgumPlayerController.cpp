@@ -238,9 +238,11 @@ AActor* AMarburgumPlayerController::FindUseCandidate() const
     const FVector At = Body->GetActorLocation();
     AActor* Best = nullptr;
     double BestDistanceSquared = TNumericLimits<double>::Max();
-    // Doors are measured from the middle of the doorway, not the hinge, and a door behind the body counts for
-    // more distance than one ahead, so the door a person faces wins between two that are both in reach.
-    const FVector Facing = Body->GetActorForwardVector().GetSafeNormal2D();
+    // Doors are measured from the middle of the doorway, not the hinge. The body turns to follow movement
+    // (bOrientRotationToMovement), so the way it last walked is not the way the camera is looking: a player who
+    // stopped and turned to a door would otherwise keep the one behind their torso. The look wins. A door behind
+    // that look counts for more distance than one ahead, so the door they face wins between two in reach.
+    const FVector Facing = GetControlRotation().Vector().GetSafeNormal2D();
     for (TActorIterator<AMarburgumDoor> It(World); It; ++It)
     {
         if (!It->IsWithinReach(At))
@@ -511,11 +513,19 @@ void AMarburgumPlayerController::RequestPhotograph()
     PendingTarget = nullptr;
     PendingSinceSeconds = FPlatformTime::Seconds();
     FMarburgumClientUiHooks::OnPhotographTaken().Broadcast(this);
-    ServerRequestPhotograph(OperationId);
+    // The mouse look is not in the last walk. Send it with the request; the server still places the eye.
+    const FRotator View = GetControlRotation();
+    ServerRequestPhotograph(OperationId, FRotator::CompressAxisToShort(View.Pitch), FRotator::CompressAxisToShort(View.Yaw));
 }
 
-void AMarburgumPlayerController::ServerRequestPhotograph_Implementation(FGuid OperationId)
+void AMarburgumPlayerController::ServerRequestPhotograph_Implementation(FGuid OperationId, int32 PitchShort, int32 YawShort)
 {
+    // An idle pawn sends no move, and ServerUpdateCamera is unreliable and does not set this rotation, so a look
+    // upward never arrived and a high sign sat just outside the cone (kvik, Velika kavarna). The eye and the trace
+    // stay the server's. Pitch is clamped to a look a person can hold.
+    const FRotator View(FMath::Clamp(FRotator::NormalizeAxis(FRotator::DecompressAxisFromShort(PitchShort)), -89.f, 89.f),
+        FRotator::NormalizeAxis(FRotator::DecompressAxisFromShort(YawShort)), 0.f);
+    SetControlRotation(View);
     UWorld* World = GetWorld();
     if (!World || !AdmitRequest(TEXT("photograph")))
     {

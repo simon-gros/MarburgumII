@@ -1157,7 +1157,9 @@ Map-wide, over 600 sampled pavement viewers, edge spots did not raise the share 
 
 **Measured limit, kept honest.** A player at the very end of the window who faces out of it still gets fewer people than the street's budget, because there is no pavement in view and only a 5 m-wide ring behind them. That is the edge of the loaded world, not a pavement shortage in the town, and no rule was bent to hide it.
 
-**Evidence.** On the final code, rebased on `23901a5`: day `Saved/StreetMulti/face-town-day` (all 10 scenarios accepted, `D` 28/28 at 20 s, exit 3 from the old cleanup check before the script fix) and `face-town-day2` with the fixed script (all 10 accepted, `D` 28/28 at 40 s, cap 48/48, cleanup `clear pids=5`, **exit 0**); night `face-town-night` (settled at 2, exit 0). `Marburgum.Gameplay.StreetRules` and `CombatRules` Success on the same editor build. **Not run:** a staged (packaged) matrix of this change, the integrated packaged suite, a rendered capture, the owner playtest.
+**Evidence.** On the final code, rebased on `23901a5`: day `Saved/StreetMulti/face-town-day` (all 10 scenarios accepted, `D` 28/28 at 20 s, exit 3 from the old cleanup check before the script fix) and `face-town-day2` with the fixed script (all 10 accepted, `D` 28/28 at 40 s, cap 48/48, cleanup `clear pids=5`, **exit 0**); night `face-town-night` (settled at 2, exit 0). `Marburgum.Gameplay.StreetRules` and `CombatRules` Success on the same editor build. The staged matrix was not part of that editor session.
+
+**Addendum (20 November 2026, packaged).** The same fixture on the clean Development package of `44106bc` (inputs unchanged through `1aaad5c`) settled `D` at **28/28 in 20 s**, the shared street at 18, the two districts at 18+8, the cap at 48, and night at 2 with both clients seeing the same two pedestrians. [Integrated evidence](INTEGRATED_MULTIPLAYER_2026-11-20.md). Still not run: a rendered capture and the owner playtest.
 
 ## ADR-080 — Admission tickets name their game server; live tickets stay out of client logs (accepted 2026-11-20)
 
@@ -1294,7 +1296,31 @@ Simon asked to encrypt the traffic. This also closes the server half of QA **AR1
 
 **Evidence.** [INPUT_INVESTIGATION_EVIDENCE.md](INPUT_INVESTIGATION_EVIDENCE.md). Owner playtest: **not yet**.
 
-## ADR-090 — Lent and the 24 windows round it: the map five by five (accepted 2026-11-21; owner playtest OPEN)
+## ADR-088 — Encrypted packets are replay-checked; a stolen hello ticket no longer locks the player out (accepted 2026-11-21)
+
+The evening review of 20 November listed two open P0 security points on ADR-083: replay of encrypted packets, and an on-path attacker burning the cleartext hello ticket.
+
+- **Replay window.** `FMarburgumStrictAESGCM` reads the sender's 64-bit packet counter from the GCM nonce (bytes 1–8, as `FAESGCMHandlerComponent::Outgoing` writes it). It keeps a 1,024-packet window and drops an authentic packet whose counter it has already accepted, or one older than the window (`MB2CRYPTO event=replay_dropped`).
+  - The counter enters the window only after the packet authenticates. GCM covers the nonce, so a forged counter cannot move the window.
+  - The comparison is modulo 2^64, because the sender starts its counter at a random value and lets it wrap.
+  - Why it is needed: the engine's own 14-bit packet sequence wraps after 16,384 packets, so in a long session a recorded packet could otherwise come back as new.
+  - Reordering within 1,024 packets is still accepted.
+- **Hello token.** The ticket is in the clear in `NMT_Hello`. Before this change, whoever sent it first spent it: a thief without the key admitted nobody, but the player's own join then failed. Now the ticket's own server may redeem it up to `REDEEMS_PER_TICKET` = 3 times within its minute.
+  - Admission still needs the connection key, which never crosses the wire.
+  - The game server still refuses a character already in the world, and signing out or a password reset still ends every outstanding ticket.
+  - A ticket is no longer single-use as a string. It is single-character, key-bound and short-lived.
+- **Remaining.**
+  - Each direction uses the same key with an independent random 12-byte nonce prefix. The chance of a nonce collision across directions is about 2^-32 × (packets / 2^64), which is negligible; per-direction keys would remove it entirely.
+  - Metadata stays visible.
+  - Keys are not rotated during a session.
+  - A thief can still redeem the ticket three times first and exhaust it; the player then asks for a new ticket.
+- **Evidence.**
+  - `Marburgum.Net.ReplayWindow`: duplicates, gaps filled late, a jump ahead, the window edge, slot reuse, a counter that starts just below the 64-bit wrap.
+  - `Marburgum.Net.StrictEncryption`: a replayed packet dropped, reordering taken, a packet replayed 1,100 packets later refused.
+  - Service tests: 38.
+  - Editor account smoke PASS (`Saved/AccountSmoke/20261120T233811Z`). A thief redeems the player's ticket first with a wrong key and admits nobody. The player is then admitted once, through the recording relay, with that same ticket. The ticket replayed while the character is in the world is refused as already in the world.
+
+## ADR-090 — Lent and the 24 windows round it: the map five by five (implemented 2026-11-21; merged without an owner playtest)
 
 **Problem.** The owner asked for a larger area again. The map went from one 512 m window (Lent) to nine (ADR-045); now it should be 25, five by five, by adding the sixteen windows round the nine, with everything the nine have had done to them: the buildings, the ground and its materials, the quality passes and the rest. The original game already cuts Maribor into 512 m windows on one grid round the middle of Stari most, and all sixteen exist there with their footprints, orthophotos and window bounds:
 
@@ -1318,9 +1344,9 @@ Simon asked to encrypt the traffic. This also closes the server half of QA **AR1
 - **Tabor is on the map.** The six Tabor places of The City for Sale and Chapters IV and VI (the exchange counter, Irena Vogrin, the Pohorska banka desk, Jožica Rozman, Ivana Zupan and the Block 13 cage) stood on a temporary floor (ADR-052); they now stand on Tabor's ground (`placement: original`). Melje is 100–170 m east of the new edge and keeps its floor. Irena's original spot is inside a building of the real Tabor (w119054871), so a new server rule moves a person or place whose spot is inside a building footprint to the nearest open, dry ground, as ADR-052 does for one in the Drava, logged `content_moved reason=in_building`. Of the 51 authored placements only hers is affected.
 - **Extent constants** follow the square: the world audit's playable half extent, the street-lamp test and `mb2 validate lights`. `mb2 survey-views` photographs the 25 windows (`9` keeps the old set).
 
-**Evidence.** Staged Linux Development build of `8ca3e76` with `d7b99ea` (2026-11-21): the 107-view survey of the 25 windows (`Saved/Map25/survey-final`; client resident 8.0 GB and VRAM 5.0 GB, medians); the swim, vehicle, combat, mission, negative and story smokes pass, and the street smoke once it reads `Street_<n>` (`d7b99ea`). Clients take 9–12 s to load the level, which outlasted the 20 s admission deadline until `d7b99ea` stopped it during the load. The door smoke passes for Hotel Lent (`r1539756`) and fails for the lagged second building (`w539479841`): whichever of its two clients joins second is put 1.2 m from their shared start, walks up facing away and keeps the street door behind its body, the known `FindUseCandidate` fault (STORY_EXPANSION.md) that `849eb74` (door use follows the camera, not on `main`) fixes. Owner playtest: **not yet**.
+**Evidence.** Staged Linux Development build of `8ca3e76` with `d7b99ea` (2026-11-21): the 107-view survey of the 25 windows (`Saved/Map25/survey-final`; client resident 8.0 GB and VRAM 5.0 GB, medians); the swim, vehicle, combat, mission, negative and story smokes pass, and the street smoke once it reads `Street_<n>` (`d7b99ea`). Clients take 9–12 s to load the level, which outlasted the 20 s admission deadline until `d7b99ea` stopped it during the load. The door smoke passes for Hotel Lent (`r1539756`) and fails for the lagged second building (`w539479841`): whichever of its two clients joins second is put 1.2 m from their shared start, walks up facing away and keeps the street door behind its body, the known `FindUseCandidate` fault (STORY_EXPANSION.md), fixed on `main` by `af4fa11` (door use follows the camera), which came in with the merge. Owner playtest: **waived**; the owner merged the map without one (2026-11-21).
 
-## ADR-091 — /Game/World/lent is a World Partition map: clients stream it in 128 m cells, the server keeps it whole (implemented 2026-11-21; owner playtest OPEN)
+## ADR-091 — /Game/World/lent is a World Partition map: clients stream it in 128 m cells, the server keeps it whole (implemented 2026-11-21; merged without an owner playtest)
 
 **Problem.** ADR-090's five by five is one always-loaded level: 3,182 building shells, 14.0 M triangles of paving, 280 ring meshes, 24.4 M LOD0 triangles. Every process holds all of it: an editor-mode process takes about 20 GB, so the survey's two processes and the smokes' three did not fit the host, and a packaged client stays resident at 8.5 GB (median over the 107 survey views). The owner asked to enable Unreal's World Partition.
 
@@ -1340,4 +1366,4 @@ Simon asked to encrypt the traffic. This also closes the server half of QA **AR1
 - *Baked HLOD materials.* The paving's texture follows the world position and came out as a checkerboard; the lit windows read their household from texture coordinates 2 and 3 (ADR-066), and some façades and roofs came out the wrong colour. The level has about thirty materials, so keeping them costs little.
 - *Loading the whole map before begin play.* Before the engine's partition subsystem begins play the runtime hash still holds the client-only HLOD cells, and the server would load those too.
 
-**Evidence.** [WORLD_PARTITION_EVIDENCE_2026-11-21.md](WORLD_PARTITION_EVIDENCE_2026-11-21.md). Owner playtest: **not yet**.
+**Evidence.** [WORLD_PARTITION_EVIDENCE_2026-11-21.md](WORLD_PARTITION_EVIDENCE_2026-11-21.md). Owner playtest: **waived**; the owner merged it without one (2026-11-21).

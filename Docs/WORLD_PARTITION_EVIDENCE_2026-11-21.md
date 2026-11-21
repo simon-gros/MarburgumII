@@ -1,8 +1,8 @@
 # /Game/World/lent as a World Partition map — evidence, 21 November 2026
 
 ADR-091: the five by five (ADR-090) streams on clients in 128 m cells within 512 m, with merged Nanite HLODs of 256 m
-cells beyond; the dedicated server keeps the whole map. Per [ADR-008](DECISIONS.md) the status is
-`implemented_awaiting_owner_playtest`.
+cells beyond; the dedicated server keeps the whole map. The owner merged it on 2026-11-21 without a playtest ([ADR-008](DECISIONS.md)'s
+playtest waived).
 
 ## The builds
 
@@ -83,6 +83,5 @@ passes.
 
 ## Not covered
 
-- Owner playtest.
 - Night views of the far city (lit windows on the HLODs).
 - Many-player sessions: the server holds the whole map, so its memory does not fall (4.9 GB peak in the smokes).

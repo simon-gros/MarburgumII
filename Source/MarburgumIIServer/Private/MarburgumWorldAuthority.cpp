@@ -824,14 +824,22 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandlePhotograph(AMarburg
         return Finish(Receipt, Requester);
     }
     const UMarburgumPhotographySubsystem* Photography = GetWorld()->GetSubsystem<UMarburgumPhotographySubsystem>();
+    FString Why;
+    const FVector Eye = Body->GetPawnViewLocation();
+    const FRotator View = Requester.GetControlRotation();
     const UMarburgumPhotographySubsystem::FInFrame Frame = Photography
-        ? Photography->FindInFrame(Body->GetPawnViewLocation(), Requester.GetControlRotation(), Body)
+        ? Photography->FindInFrame(Eye, View, Body, &Why)
         : UMarburgumPhotographySubsystem::FInFrame();
     if (!Frame.Subject)
     {
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=photo_rejected eye=%.0f,%.0f,%.0f view=%.1f,%.1f %s"),
+            MarburgumII::Gameplay::InteractLogPrefix, Eye.X, Eye.Y, Eye.Z, View.Pitch, View.Yaw, *Why);
         Receipt.Reason = EMarburgumInteractionReason::NothingInFrame;
         return Finish(Receipt, Requester);
     }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=photo_framed id=%s off=%.1f dist_m=%.1f eye=%.0f,%.0f,%.0f view=%.1f,%.1f"),
+        MarburgumII::Gameplay::InteractLogPrefix, Frame.Subject->Id, Frame.OffAxisDegrees, Frame.DistanceCm / 100.0,
+        Eye.X, Eye.Y, Eye.Z, View.Pitch, View.Yaw);
     Receipt.InteractableId = FName(Frame.Subject->Id);
 
     FMarburgumWorldRecord Next;
