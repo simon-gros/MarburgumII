@@ -237,7 +237,10 @@ void UMarburgumStreetSubsystem::StepCrowdMatrix(double Time)
         for (int32 Index = 0; Index < Graph.GetNodes().Num(); ++Index)
         {
             const FMarburgumWalkGraph::FNode& Node = Graph.GetNodes()[Index];
-            if (Node.bRoad || Node.bBridge || Node.Component != Graph.LargestComponent() || FMath::Abs(Node.Location.Y) > 4000.0)
+            // The banks' far ends within the nine windows the scenario was qualified on (±768 m): the five by five's
+            // (ADR-090) lie 1.28 km out, both in residential streets, and D wants two kinds of place.
+            if (Node.bRoad || Node.bBridge || Node.Component != Graph.LargestComponent() || FMath::Abs(Node.Location.Y) > 4000.0
+                || FMath::Abs(Node.Location.X) > 76800.0)
             {
                 continue;
             }
