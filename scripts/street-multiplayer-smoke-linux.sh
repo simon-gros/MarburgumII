@@ -139,7 +139,8 @@ case "$mode" in
 esac
 
 map="/Game/World/lent"
-common=(-log -unattended -nosound -nosplash -stdout -FullStdOutLogOutput -nullrhi)
+# -RenderOffScreen as well as -nullrhi: under systemd-run the clients inherit the desktop's DISPLAY and WAYLAND_DISPLAY.
+common=(-log -unattended -nosound -nosplash -stdout -FullStdOutLogOutput -nullrhi -RenderOffScreen)
 server_log="$out/server.log"
 if [[ "$case_name" == "night" ]]; then
     clock=(-MB2Clock=1996-06-18T00:00:00Z)
