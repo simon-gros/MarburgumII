@@ -11,8 +11,6 @@
 
 namespace
 {
-    using namespace MarburgumII;
-
     constexpr EAutomationTestFlags ClockTestFlags = EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext
         | EAutomationTestFlags::CommandletContext | EAutomationTestFlags::ProductFilter;
 
@@ -31,6 +29,7 @@ namespace
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumWorldClockCalendarTest, "Marburgum.Shared.WorldClock.Calendar", ClockTestFlags)
 bool FMarburgumWorldClockCalendarTest::RunTest(const FString& Parameters)
 {
+    using namespace MarburgumII;
     using namespace Clock;
 
     // The decision's own example: 9 October 2026 at 02:30 in Maribor is Wednesday 9 October 1996 at 02:30, though
@@ -87,6 +86,7 @@ bool FMarburgumWorldClockCalendarTest::RunTest(const FString& Parameters)
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumWorldClockSkyTest, "Marburgum.Shared.WorldClock.Sky", ClockTestFlags)
 bool FMarburgumWorldClockSkyTest::RunTest(const FString& Parameters)
 {
+    using namespace MarburgumII;
     using namespace Clock;
 
     struct FCase
@@ -138,6 +138,7 @@ bool FMarburgumWorldClockSkyTest::RunTest(const FString& Parameters)
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumDaylightLookTest, "Marburgum.Shared.WorldClock.Daylight", ClockTestFlags)
 bool FMarburgumDaylightLookTest::RunTest(const FString& Parameters)
 {
+    using namespace MarburgumII;
     using namespace DaylightLook;
 
     // The light points away from where the sun is: a sun in the south-east at 30° shines north-west and down.

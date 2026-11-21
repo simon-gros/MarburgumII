@@ -11,8 +11,6 @@
 
 namespace
 {
-    using namespace MarburgumII;
-
     constexpr EAutomationTestFlags LightsTestFlags = EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext
         | EAutomationTestFlags::CommandletContext | EAutomationTestFlags::ProductFilter;
 }
@@ -20,6 +18,7 @@ namespace
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumStreetLightsSwitchTest, "Marburgum.Shared.StreetLights.Switch", LightsTestFlags)
 bool FMarburgumStreetLightsSwitchTest::RunTest(const FString& Parameters)
 {
+    using namespace MarburgumII;
     using namespace StreetLights;
 
     // Solstice: the sun sets at 18:57 UTC (20:57 in Maribor). Still up at 18:30, the street dark at 19:40.
@@ -127,6 +126,7 @@ bool FMarburgumStreetLightsSwitchTest::RunTest(const FString& Parameters)
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumStreetLightsFileTest, "Marburgum.Shared.StreetLights.File", LightsTestFlags)
 bool FMarburgumStreetLightsFileTest::RunTest(const FString& Parameters)
 {
+    using namespace MarburgumII;
     using namespace StreetLights;
 
     TArray<FLamp> Lamps;
@@ -179,7 +179,7 @@ bool FMarburgumStreetLightsFileTest::RunTest(const FString& Parameters)
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumStreetLightsGroundTest, "Marburgum.Shared.StreetLights.Ground", LightsTestFlags)
 bool FMarburgumStreetLightsGroundTest::RunTest(const FString& Parameters)
 {
-    using namespace StreetLights;
+    using namespace MarburgumII::StreetLights;
 
     const FString LampsText = TEXT(R"({"format":"marburgumii.street_lights","version":1,"lamps":[[0,0,3,0,0,1],[1,0,3,1,0,2]]})");
     const FString For = Fingerprint(LampsText);
