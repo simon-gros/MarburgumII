@@ -1,4 +1,5 @@
 #include "MarburgumVisualFixesCommandlet.h"
+#include "MarburgumEditorMaps.h"
 
 #include "AssetCompilingManager.h"
 #include "Components/TextRenderComponent.h"
@@ -17,7 +18,6 @@ DEFINE_LOG_CATEGORY_STATIC(LogMarburgumVisualFixes, Log, All);
 
 namespace MarburgumVisualFixes
 {
-    constexpr const TCHAR* LentMap = TEXT("/Game/World/lent");
     constexpr const TCHAR* FontPackage = TEXT("/Game/Marburgum/Fonts/F_SignRoboto");
     constexpr const TCHAR* EngineFont = TEXT("/Engine/EngineFonts/RobotoDistanceField.RobotoDistanceField");
     // A shop sign's lettering stands this high above the street in front of its wall, as MarburgumCreateMaps first placed it.
@@ -269,7 +269,7 @@ int32 UMarburgumVisualFixesCommandlet::Main(const FString& Params)
     int32 Failures = 0;
     TArray<UPackage*> Dirty;
 
-    UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(LentMap);
+    UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(MarburgumEditorMaps::Lent);
     if (!World)
     {
         return 1;
@@ -357,11 +357,11 @@ int32 UMarburgumVisualFixesCommandlet::Main(const FString& Params)
         UE_LOG(LogMarburgumVisualFixes, Error, TEXT("MB2FIX could not save the font"));
         return 1;
     }
-    if (!UEditorLoadingAndSavingUtils::SaveMap(World, LentMap))
+    if (!UEditorLoadingAndSavingUtils::SaveMap(World, MarburgumEditorMaps::Lent))
     {
-        UE_LOG(LogMarburgumVisualFixes, Error, TEXT("MB2FIX could not save %s"), LentMap);
+        UE_LOG(LogMarburgumVisualFixes, Error, TEXT("MB2FIX could not save %s"), MarburgumEditorMaps::Lent);
         return 1;
     }
-    UE_LOG(LogMarburgumVisualFixes, Display, TEXT("MB2FIX saved %s"), LentMap);
+    UE_LOG(LogMarburgumVisualFixes, Display, TEXT("MB2FIX saved %s"), MarburgumEditorMaps::Lent);
     return Failures > 0 ? 1 : 0;
 }

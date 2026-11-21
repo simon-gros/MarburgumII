@@ -16,7 +16,10 @@
 #                                             generated from them (`scripts/mb2.sh generate wet-footsteps`)
 # The landscape's surface map, Content/Marburgum/Ground/lent_surface.bin, comes from
 #   tools/lent-ground: cargo run --release -- surface-kinds --surface Data/World/lent_ground/surface.png --out Content/Marburgum/Ground/lent_surface.bin
-# Usage: scripts/create-weather-content.sh [look|lamps|windows|surfaces|audio|all]   (default: all)
+#   Content/Vegetation/Materials/{M_PlantFoliage,M_PlantBark} and each species' MI_<id>_{Foliage,Bark}
+#                                             the trees' and bushes' materials (GFX-01), set on the original's species meshes;
+#                                             where they stand is Content/Marburgum/Vegetation/lent_plants.json (lent-ground --mode plants)
+# Usage: scripts/create-weather-content.sh [look|lamps|windows|surfaces|audio|plants|all]   (default: all)
 # The commandlet lives in the Editor target, so build MarburgumIIEditor first. Rerun surfaces after a ground rebuild
 # that creates the paved materials afresh.
 set -euo pipefail
@@ -31,10 +34,10 @@ if [[ -z "$ue_root" ]]; then
 fi
 
 case "$which" in
-    look|lamps|windows|surfaces|audio) steps="$which" ;;
-    all) steps="look,lamps,windows,surfaces,audio" ;;
+    look|lamps|windows|surfaces|audio|plants) steps="$which" ;;
+    all) steps="look,lamps,windows,surfaces,audio,plants" ;;
     *)
-        echo "Usage: $0 [look|lamps|windows|surfaces|audio|all]" >&2
+        echo "Usage: $0 [look|lamps|windows|surfaces|audio|plants|all]" >&2
         exit 2
         ;;
 esac

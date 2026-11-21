@@ -31,6 +31,9 @@
 //! `--mode attractors` pins the original's bus stops, cafés, shops and sights to the walk graph, each with a spot to
 //! stand at, from the streets (attractors.rs, ADR-069).
 //!
+//! `--mode plants` keeps the original's surveyed trees and bushes that stand on grass, from `heights.bin`, `top.bin`,
+//! `surface.png` and the walk graph (plants.rs, GFX-01).
+//!
 //! `lent-ground places` writes the place names the location banner reads: districts, streets and
 //! squares, and landmarks (places.rs, ADR-063).
 
@@ -42,6 +45,7 @@ mod lamps;
 mod mesh;
 mod osm;
 mod places;
+mod plants;
 mod proj;
 mod ring;
 mod shapes;
@@ -129,6 +133,9 @@ struct Args {
     /// `attractors`: only the places that draw people in (attractors.rs), from the streets and the original's road graph
     /// at this path, into the walk graph at `walk_graph`.
     attractors: Option<PathBuf>,
+    /// `plants`: only the trees and bushes (plants.rs), from the original's `<window>_plants.json` and species catalogue,
+    /// the `heights.bin`, `top.bin` and `surface.png` already in the output and the walk graph, into this path.
+    plants: Option<Plants>,
     laz: Vec<PathBuf>,
     osm: PathBuf,
     buildings: PathBuf,
@@ -137,6 +144,12 @@ struct Args {
     out: PathBuf,
     /// Where the walk graph goes (the game reads it from its content); none to skip it.
     walk_graph: Option<PathBuf>,
+}
+
+struct Plants {
+    out: PathBuf,
+    terrain: PathBuf,
+    catalogue: PathBuf,
 }
 
 fn read_flags(args: impl Iterator<Item = String>) -> Result<HashMap<String, String>, String> {
@@ -164,7 +177,8 @@ fn parse_args(map: &HashMap<String, String>) -> Result<Args, String> {
     let walk_only = map.get("mode").is_some_and(|m| m == "walk");
     let lamps_only = map.get("mode").is_some_and(|m| m == "lamps");
     let attractors_only = map.get("mode").is_some_and(|m| m == "attractors");
-    let optional = |k: &str| if walk_only || lamps_only || attractors_only { Ok(map.get(k).cloned().unwrap_or_default()) } else { get(k) };
+    let plants_only = map.get("mode").is_some_and(|m| m == "plants");
+    let optional = |k: &str| if walk_only || lamps_only || attractors_only || plants_only { Ok(map.get(k).cloned().unwrap_or_default()) } else { get(k) };
     let lamps = if lamps_only { Some(PathBuf::from(get("lamps")?)) } else { None };
     if lamps_only && !map.contains_key("walk-graph") {
         return Err("--mode lamps needs --walk-graph (the walk graph it keeps clear of) and --lamps".into());
@@ -173,10 +187,19 @@ fn parse_args(map: &HashMap<String, String>) -> Result<Args, String> {
     if attractors_only && !map.contains_key("walk-graph") {
         return Err("--mode attractors needs --walk-graph (the walk graph it pins them to) and --road-graph".into());
     }
+    let plants = if plants_only {
+        if !map.contains_key("walk-graph") {
+            return Err("--mode plants needs --walk-graph (the walk graph it keeps clear of), --plants, --terrain and --vegetation".into());
+        }
+        Some(Plants { out: PathBuf::from(get("plants")?), terrain: PathBuf::from(get("terrain")?), catalogue: PathBuf::from(get("vegetation")?) })
+    } else {
+        None
+    };
     Ok(Args {
         walk_only,
         lamps,
         attractors,
+        plants,
         laz: list(&optional("laz")?),
         osm: PathBuf::from(get("osm")?),
         buildings: PathBuf::from(get("buildings")?),
@@ -847,6 +870,9 @@ const USAGE: &str = "usage:
               --walk-graph Content/Marburgum/Street/lent_walk_graph.json --lamps Content/Marburgum/Lights/lent_street_lights.json
        lent-ground --mode attractors --osm osm_lent.json.gz --buildings buildings.json --placed placed.txt --out DIR
               --walk-graph Content/Marburgum/Street/lent_walk_graph.json --road-graph ORIGINAL/project/data/road_graph.json
+       lent-ground --mode plants --osm osm_lent.json.gz --buildings buildings.json --placed placed.txt --out DIR
+              --walk-graph Content/Marburgum/Street/lent_walk_graph.json --terrain ORIGINAL/project/assets/terrain
+              --vegetation ORIGINAL/project/data/vegetation.json --plants Content/Marburgum/Vegetation/lent_plants.json
        lent-ground ring --laz A.laz,B.laz,... --heights DIR/heights.bin --out DIR
        lent-ground surface-kinds --surface DIR/surface.png --out Content/Marburgum/Ground/lent_surface.bin [--half 768 --cell 2]
        lent-ground places --osm osm_lent.json.gz --districts ORIGINAL/project/data/districts.json
@@ -997,6 +1023,16 @@ fn run(args: &Args) -> Result<(), String> {
         let walk = args.walk_graph.as_ref().expect("checked in parse_args");
         let summary = lamps::build(&inputs, walk, &args.osm, out)?;
         eprintln!("lamps: {summary} ({:.1}s)", t0.elapsed().as_secs_f64());
+        return Ok(());
+    }
+    if let Some(p) = &args.plants {
+        let points = EXTENT.get().expect("extent set").points;
+        let heights = read_f32(&args.out.join("heights.bin"), points, half())?;
+        let top = read_f32(&args.out.join("top.bin"), points, half())?;
+        let inputs = plants::Inputs { footprints: &footprints, water: &st.water, bridges: &st.bridges, heights: &heights, top: &top, half: half() };
+        let walk = args.walk_graph.as_ref().expect("checked in parse_args");
+        let summary = plants::build(&inputs, &args.out.join("surface.png"), &p.terrain, &p.catalogue, walk, &p.out)?;
+        eprintln!("plants: {summary} ({:.1}s)", t0.elapsed().as_secs_f64());
         return Ok(());
     }
 
