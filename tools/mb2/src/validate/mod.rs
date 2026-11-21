@@ -4,8 +4,10 @@
 mod accounts;
 mod chat;
 mod combat;
+mod furniture;
 mod gameplay;
 mod lights;
+mod plants;
 mod python_free;
 mod scripts;
 mod street;
@@ -17,7 +19,7 @@ use crate::repo::{self, Problems};
 /// A check returns its success summary lines, or records problems.
 type Check = fn(&std::path::Path, &mut Problems) -> Vec<String>;
 
-const CHECKS: [(&str, &str, Check); 11] = [
+const CHECKS: [(&str, &str, Check); 13] = [
     ("ui-ontology", "UI/HUD ontology", ui_ontology::check),
     ("chat", "Chat source contract", chat::check),
     ("gameplay", "Gameplay contract", gameplay::check),
@@ -25,6 +27,8 @@ const CHECKS: [(&str, &str, Check); 11] = [
     ("combat", "Combat contract", combat::check),
     ("street", "Street contract", street::check),
     ("lights", "Street lamps", lights::check),
+    ("plants", "Trees and bushes", plants::check),
+    ("furniture", "Street furniture", furniture::check),
     ("python-free", "Python-free tooling", python_free::check),
     ("scripts", "Scripts", scripts::check),
     ("accounts", "Account contract", accounts::check),
@@ -37,7 +41,7 @@ pub fn run(which: &str) -> u8 {
         .filter(|(name, _, _)| which == "all" || which == *name)
         .collect();
     if selected.is_empty() {
-        eprintln!("Unknown check '{which}'; use ui-ontology, chat, gameplay, vehicles, combat, street, lights, python-free, scripts, accounts, history or all.");
+        eprintln!("Unknown check '{which}'; use ui-ontology, chat, gameplay, vehicles, combat, street, lights, plants, furniture, python-free, scripts, accounts, history or all.");
         return 2;
     }
     let root = repo::root();

@@ -9,14 +9,12 @@
 
 namespace
 {
-    using namespace MarburgumII;
-
     constexpr EAutomationTestFlags WindowsTestFlags = EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext
         | EAutomationTestFlags::CommandletContext | EAutomationTestFlags::ProductFilter;
 
-    Clock::FCivil Civil(int32 Weekday, int32 Hour, int32 Minute = 0)
+    MarburgumII::Clock::FCivil Civil(int32 Weekday, int32 Hour, int32 Minute = 0)
     {
-        Clock::FCivil C;
+        MarburgumII::Clock::FCivil C;
         C.Year = 1996;
         C.Month = 11;
         C.Day = 13;
@@ -26,23 +24,23 @@ namespace
         return C;
     }
 
-    StreetLights::FSky Dark()
+    MarburgumII::StreetLights::FSky Dark()
     {
-        StreetLights::FSky Sky;
+        MarburgumII::StreetLights::FSky Sky;
         Sky.SunElevationDeg = -30.0;
         Sky.SunRateDegPerSecond = -0.001;
         return Sky;
     }
 
     /** The share of many households of upper floors lit under a state. */
-    double LitShare(const LitWindows::FState& State, bool bGround = false)
+    double LitShare(const MarburgumII::LitWindows::FState& State, bool bGround = false)
     {
         int32 Lit = 0;
         constexpr int32 Count = 4000;
         for (int32 Index = 0; Index < Count; ++Index)
         {
-            const LitWindows::FTag Tag = LitWindows::TagOf(FString::Printf(TEXT("w%d"), 100000 + Index), Index % 4, bGround ? 0 : 1 + Index % 3, 0);
-            Lit += LitWindows::IsLit(Tag, State) ? 1 : 0;
+            const MarburgumII::LitWindows::FTag Tag = MarburgumII::LitWindows::TagOf(FString::Printf(TEXT("w%d"), 100000 + Index), Index % 4, bGround ? 0 : 1 + Index % 3, 0);
+            Lit += MarburgumII::LitWindows::IsLit(Tag, State) ? 1 : 0;
         }
         return static_cast<double>(Lit) / Count;
     }
@@ -51,6 +49,7 @@ namespace
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumLitWindowsHouseholdTest, "Marburgum.Shared.LitWindows.Households", WindowsTestFlags)
 bool FMarburgumLitWindowsHouseholdTest::RunTest(const FString& Parameters)
 {
+    using namespace MarburgumII;
     using namespace LitWindows;
 
     // Fixed: the same pane is the same household on every machine and every rebuild.
@@ -102,6 +101,7 @@ bool FMarburgumLitWindowsHouseholdTest::RunTest(const FString& Parameters)
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumLitWindowsScheduleTest, "Marburgum.Shared.LitWindows.Schedule", WindowsTestFlags)
 bool FMarburgumLitWindowsScheduleTest::RunTest(const FString& Parameters)
 {
+    using namespace MarburgumII;
     using namespace LitWindows;
 
     // Noon: daylight, nothing shows, whatever the share.

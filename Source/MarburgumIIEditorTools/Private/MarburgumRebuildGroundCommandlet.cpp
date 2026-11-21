@@ -1,4 +1,5 @@
 #include "MarburgumRebuildGroundCommandlet.h"
+#include "MarburgumEditorMaps.h"
 
 #include "AssetCompilingManager.h"
 #include "Components/TextRenderComponent.h"
@@ -62,7 +63,6 @@ DEFINE_LOG_CATEGORY_STATIC(LogMarburgumGround, Log, All);
 
 namespace
 {
-    const TCHAR* LentMap = TEXT("/Game/World/lent");
     const TCHAR* GroundDir = TEXT("/Game/World/Ground");
     const TCHAR* ActorPrefix = TEXT("MB2Ground_");
 
@@ -912,7 +912,7 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
     }
     if (FParse::Param(*Params, TEXT("Verify")))
     {
-        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(LentMap);
+        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(MarburgumEditorMaps::Lent);
         if (!World)
         {
             return 1;
@@ -1072,10 +1072,10 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
     }
 
     // The level.
-    UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(LentMap);
+    UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(MarburgumEditorMaps::Lent);
     if (!World)
     {
-        UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND cannot load %s"), LentMap);
+        UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND cannot load %s"), MarburgumEditorMaps::Lent);
         return 1;
     }
     TArray<ALandscapeProxy*> OldLandscapes;
@@ -1217,9 +1217,9 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
         Actor->SetActorLocation(Actor->GetActorLocation() + FVector(0.0, 0.0, Lift));
         UE_LOG(LogMarburgumGround, Display, TEXT("MB2GROUND moved %s by %.0f cm (ground %.0f cm)"), *Actor->GetActorLabel(), Lift, NewGround.GetValue());
     }
-    if (!UEditorLoadingAndSavingUtils::SaveMap(World, LentMap))
+    if (!UEditorLoadingAndSavingUtils::SaveMap(World, MarburgumEditorMaps::Lent))
     {
-        UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND could not save %s"), LentMap);
+        UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND could not save %s"), MarburgumEditorMaps::Lent);
         return 1;
     }
     // Chunks of an earlier, smaller extent that no longer exist go with it; the level no longer

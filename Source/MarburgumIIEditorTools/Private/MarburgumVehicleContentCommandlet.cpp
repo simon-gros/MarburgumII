@@ -1,4 +1,5 @@
 #include "MarburgumVehicleContentCommandlet.h"
+#include "MarburgumEditorMaps.h"
 
 #include "MarburgumGodotClip.h"
 
@@ -44,7 +45,6 @@ namespace MarburgumVehicleContent
 {
     constexpr const TCHAR* CataloguePath = TEXT("Data/Gameplay/vehicles.v0.1.json");
     constexpr const TCHAR* MaterialPackage = TEXT("/Game/Vehicles/Materials/M_Vehicle");
-    constexpr const TCHAR* LentMap = TEXT("/Game/World/lent");
     constexpr const TCHAR* VehicleFolder = TEXT("Marburgum/Vehicles");
 
     // ======================================================================================================
@@ -1332,10 +1332,10 @@ namespace MarburgumVehicleContent
         using namespace MarburgumII::Vehicles;
         TArray<TSharedPtr<FJsonValue>> Vehicles;
         TArray<TSharedPtr<FJsonValue>> Instances;
-        UWorld* World = LoadCatalogue(Vehicles, Instances) ? UEditorLoadingAndSavingUtils::LoadMap(LentMap) : nullptr;
+        UWorld* World = LoadCatalogue(Vehicles, Instances) ? UEditorLoadingAndSavingUtils::LoadMap(MarburgumEditorMaps::Lent) : nullptr;
         if (!World)
         {
-            UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE cannot load %s"), LentMap);
+            UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE cannot load %s"), MarburgumEditorMaps::Lent);
             return false;
         }
         // The spot traces must see the paved meshes' collision (ADR-040), not only the landscape under them.
@@ -1376,7 +1376,7 @@ namespace MarburgumVehicleContent
         }
         if (!Arrival)
         {
-            UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE %s has no arrival start"), LentMap);
+            UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE %s has no arrival start"), MarburgumEditorMaps::Lent);
             return false;
         }
 
@@ -1487,12 +1487,12 @@ namespace MarburgumVehicleContent
             UE_LOG(LogMarburgumVehicleContent, Display, TEXT("MB2VEHICLE place %s definition=%s source=%s location=%s yaw=%.1f ground=%.1f arrival=%s"),
                 *Id, Definition->Id, *Source, *Location.ToString(), ChosenYaw, Ground, *Arrival->GetActorLocation().ToString());
         }
-        if (!UEditorLoadingAndSavingUtils::SaveMap(World, LentMap))
+        if (!UEditorLoadingAndSavingUtils::SaveMap(World, MarburgumEditorMaps::Lent))
         {
-            UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE could not save %s"), LentMap);
+            UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE could not save %s"), MarburgumEditorMaps::Lent);
             return false;
         }
-        UE_LOG(LogMarburgumVehicleContent, Display, TEXT("MB2VEHICLE saved %s vehicles=%d"), LentMap, Placed);
+        UE_LOG(LogMarburgumVehicleContent, Display, TEXT("MB2VEHICLE saved %s vehicles=%d"), MarburgumEditorMaps::Lent, Placed);
         return Placed > 0;
     }
 }
