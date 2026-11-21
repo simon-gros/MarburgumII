@@ -6,6 +6,7 @@
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "FileHelpers.h"
 #include "IAssetTools.h"
+#include "MarburgumStreetFurniture.h"
 #include "MarburgumVegetation.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialExpressionConstant.h"
@@ -16,6 +17,7 @@
 #include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
 #include "Misc/Paths.h"
+#include "PhysicsEngine/BodySetup.h"
 #include "StaticMeshAttributes.h"
 #include "UObject/Package.h"
 
@@ -269,6 +271,98 @@ namespace MarburgumPlantContent
             return false;
         }
         UE_LOG(LogMarburgumPlantContent, Display, TEXT("MB2PLANTCONTENT saved=%d species=%d"), Dirty.Num(), Species.Num());
+        return true;
+    }
+}
+
+
+namespace MarburgumStreetKitContent
+{
+    namespace Furniture = MarburgumII::StreetFurniture;
+
+    bool Write(FString& OutError)
+    {
+        TArray<UPackage*> Dirty;
+        UMaterial* Paint = LoadObject<UMaterial>(nullptr, PaintMaterial);
+        if (!Paint)
+        {
+            OutError = FString::Printf(TEXT("no %s"), PaintMaterial);
+            return false;
+        }
+        // Saved every time: a material copied from another project recompiles at every launch until it is resaved here.
+        Paint->Modify();
+        Paint->bUsedWithInstancedStaticMeshes = true;
+        Paint->PreEditChange(nullptr);
+        Paint->PostEditChange();
+        Paint->MarkPackageDirty();
+        Dirty.Add(Paint->GetPackage());
+        for (int32 Index = 0; Index < static_cast<int32>(Furniture::EPiece::Count); ++Index)
+        {
+            const FString Path = Furniture::MeshPath(static_cast<Furniture::EPiece>(Index));
+            UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Path);
+            if (!Mesh)
+            {
+                OutError = FString::Printf(TEXT("no %s"), *Path);
+                return false;
+            }
+            const FBox Box = Mesh->GetBoundingBox();
+            UBodySetup* Body = Mesh->GetBodySetup();
+            if (!Body)
+            {
+                Mesh->CreateBodySetup();
+                Body = Mesh->GetBodySetup();
+            }
+            const int32 Before = Body->AggGeom.BoxElems.Num() + Body->AggGeom.ConvexElems.Num();
+            const ECollisionTraceFlag OldTrace = Body->CollisionTraceFlag;
+            // The original collided against every triangle (complex as simple), so a shelter's roof stopped whoever
+            // stood under it. Ours is boxes: the shelter's back and side walls (its open side is +X), and each other
+            // piece's bounds.
+            Body->Modify();
+            Body->AggGeom.BoxElems.Reset();
+            Body->AggGeom.ConvexElems.Reset();
+            auto AddBox = [Body](const FVector& Centre, const FVector& Half)
+            {
+                FKBoxElem Elem(2.0 * Half.X, 2.0 * Half.Y, 2.0 * Half.Z);
+                Elem.Center = Centre;
+                Body->AggGeom.BoxElems.Add(Elem);
+            };
+            if (static_cast<Furniture::EPiece>(Index) == Furniture::EPiece::Shelter)
+            {
+                const double WallTop = ShelterWallTopCm;
+                const double Panel = ShelterPanelHalfCm;
+                AddBox(FVector(Box.Min.X + ShelterRoofOverhangCm + Panel, 0.0, WallTop / 2.0), FVector(Panel, Box.GetExtent().Y - ShelterRoofOverhangCm, WallTop / 2.0));
+                for (const double Side : { -1.0, 1.0 })
+                {
+                    AddBox(FVector(Box.GetCenter().X, Side * (Box.GetExtent().Y - ShelterRoofOverhangCm - Panel), WallTop / 2.0),
+                        FVector(Box.GetExtent().X - ShelterRoofOverhangCm, Panel, WallTop / 2.0));
+                }
+            }
+            else
+            {
+                AddBox(Box.GetCenter(), Box.GetExtent());
+            }
+            Body->CollisionTraceFlag = CTF_UseDefault;
+            Body->InvalidatePhysicsData();
+            Body->CreatePhysicsMeshes();
+            Mesh->Modify();
+            // The original built the kit with Nanite on, which its paint is not compiled for (the engine draws the default
+            // material instead). Nanite for the city is GFX-06's measured decision, not this kit's.
+            const bool bWasNanite = Mesh->GetNaniteSettings().bEnabled;
+            Mesh->GetNaniteSettings().bEnabled = false;
+            Mesh->PostEditChange();
+            Mesh->MarkPackageDirty();
+            Dirty.AddUnique(Mesh->GetPackage());
+            UE_LOG(LogMarburgumPlantContent, Display, TEXT("MB2KITCONTENT mesh=%s min=(%.0f,%.0f,%.0f) max=(%.0f,%.0f,%.0f) old_simple=%d old_trace=%d was_nanite=%d boxes=%d materials=%d"),
+                *Mesh->GetName(), Box.Min.X, Box.Min.Y, Box.Min.Z, Box.Max.X, Box.Max.Y, Box.Max.Z, Before, static_cast<int32>(OldTrace), bWasNanite ? 1 : 0,
+                Body->AggGeom.BoxElems.Num(), Mesh->GetStaticMaterials().Num());
+        }
+        FAssetCompilingManager::Get().FinishAllCompilation();
+        if (!Dirty.IsEmpty() && !UEditorLoadingAndSavingUtils::SavePackages(Dirty, false))
+        {
+            OutError = TEXT("could not save the street kit");
+            return false;
+        }
+        UE_LOG(LogMarburgumPlantContent, Display, TEXT("MB2KITCONTENT saved=%d"), Dirty.Num());
         return true;
     }
 }

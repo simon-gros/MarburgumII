@@ -26,3 +26,25 @@ namespace MarburgumPlantContent
     /** Writes both materials and every used species' instances, assigns them and saves. */
     bool Write(FString& OutError);
 }
+
+/**
+ * The street kit's content (GFX-01; MarburgumStreetFurniture.h names the meshes): the original game's six
+ * SM_Street_*_01 meshes and their vertex-colour M_MarburgumPaint, copied from the original.
+ *
+ * - The paint is drawn on instanced components, so it is compiled for them.
+ * - The original's meshes collide against every triangle, so a shelter's roof stops whoever stands under it. Each is
+ *   given simple boxes instead: the shelter's back and side walls (the original's own collision, its open side +X), and
+ *   each other piece's bounds.
+ *
+ * Each piece's bounds are logged, so the kit's front and footprint can be checked against the placement file.
+ */
+namespace MarburgumStreetKitContent
+{
+    inline constexpr const TCHAR* PaintMaterial = TEXT("/Game/World/Materials/M_MarburgumPaint.M_MarburgumPaint");
+    /** The original's shelter: walls 2.10 m high and 8 cm thick, the roof 10 cm over them on every side. */
+    inline constexpr double ShelterWallTopCm = 210.0;
+    inline constexpr double ShelterPanelHalfCm = 4.0;
+    inline constexpr double ShelterRoofOverhangCm = 10.0;
+
+    bool Write(FString& OutError);
+}

@@ -152,7 +152,7 @@ UMarburgumWeatherContentCommandlet::UMarburgumWeatherContentCommandlet()
 
 int32 UMarburgumWeatherContentCommandlet::Main(const FString& Params)
 {
-    FString Steps = TEXT("look,lamps,windows,surfaces,audio,plants");
+    FString Steps = TEXT("look,lamps,windows,surfaces,audio,plants,furniture");
     FParse::Value(*Params, TEXT("Steps="), Steps, false);
     TArray<FString> List;
     Steps.ParseIntoArray(List, TEXT(","));
@@ -182,6 +182,15 @@ int32 UMarburgumWeatherContentCommandlet::Main(const FString& Params)
             if (!MarburgumLitWindowsContent::Write(Error))
             {
                 UE_LOG(LogMarburgumWeatherContent, Error, TEXT("MB2WEATHERCONTENT windows failed: %s"), *Error);
+                bOk = false;
+            }
+        }
+        else if (Step == TEXT("furniture"))
+        {
+            FString Error;
+            if (!MarburgumStreetKitContent::Write(Error))
+            {
+                UE_LOG(LogMarburgumWeatherContent, Error, TEXT("MB2WEATHERCONTENT furniture failed: %s"), *Error);
                 bOk = false;
             }
         }

@@ -9,12 +9,10 @@
 
 namespace
 {
-    using namespace MarburgumII;
-
     constexpr EAutomationTestFlags VegetationTestFlags = EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext
         | EAutomationTestFlags::CommandletContext | EAutomationTestFlags::ProductFilter;
 
-    const TCHAR* Species = TEXT(R"("species":[)"
+    const TCHAR* VegetationTwoSpecies = TEXT(R"("species":[)"
         R"({"id":"lime","tree":true,"natural_height_m":16.0,"natural_radius_m":6.0,"trunk_radius_m":0.35,"trunk_height_m":4.0},)"
         R"({"id":"privet","tree":false,"natural_height_m":2.0,"natural_radius_m":1.6,"trunk_radius_m":0.035,"trunk_height_m":0.22}])");
 }
@@ -22,12 +20,12 @@ namespace
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumVegetationFileTest, "Marburgum.Shared.Vegetation.File", VegetationTestFlags)
 bool FMarburgumVegetationFileTest::RunTest(const FString& Parameters)
 {
-    using namespace Vegetation;
+    using namespace MarburgumII::Vegetation;
 
     TArray<FSpecies> Kinds;
     TArray<FPlant> Plants;
     FString Error;
-    const FString Two = FString::Printf(TEXT(R"({"format":"marburgumii.vegetation","version":1,%s,"plants":[[10.5,-20.25,3.1,0,45.0,0.8,1.1],[0,0,0,1,-30,1,1]]})"), Species);
+    const FString Two = FString::Printf(TEXT(R"({"format":"marburgumii.vegetation","version":1,%s,"plants":[[10.5,-20.25,3.1,0,45.0,0.8,1.1],[0,0,0,1,-30,1,1]]})"), VegetationTwoSpecies);
     TestTrue(TEXT("a small file reads"), Parse(Two, Kinds, Plants, Error));
     if (TestEqual(TEXT("two species"), Kinds.Num(), 2) && TestEqual(TEXT("two plants"), Plants.Num(), 2))
     {
@@ -68,11 +66,11 @@ bool FMarburgumVegetationFileTest::RunTest(const FString& Parameters)
     }
     TestFalse(TEXT("a wrong format is refused"), Parse(TEXT(R"({"format":"marburgumii.street_lights","version":1,"species":[],"plants":[]})"), Kinds, Plants, Error));
     TestFalse(TEXT("an unknown species is refused"),
-        Parse(FString::Printf(TEXT(R"({"format":"marburgumii.vegetation","version":1,%s,"plants":[[0,0,0,2,0,1,1]]})"), Species), Kinds, Plants, Error));
+        Parse(FString::Printf(TEXT(R"({"format":"marburgumii.vegetation","version":1,%s,"plants":[[0,0,0,2,0,1,1]]})"), VegetationTwoSpecies), Kinds, Plants, Error));
     TestFalse(TEXT("a zero scale is refused"),
-        Parse(FString::Printf(TEXT(R"({"format":"marburgumii.vegetation","version":1,%s,"plants":[[0,0,0,0,0,0,1]]})"), Species), Kinds, Plants, Error));
+        Parse(FString::Printf(TEXT(R"({"format":"marburgumii.vegetation","version":1,%s,"plants":[[0,0,0,0,0,0,1]]})"), VegetationTwoSpecies), Kinds, Plants, Error));
     TestFalse(TEXT("a short row is refused"),
-        Parse(FString::Printf(TEXT(R"({"format":"marburgumii.vegetation","version":1,%s,"plants":[[0,0,0,0,0,1]]})"), Species), Kinds, Plants, Error));
+        Parse(FString::Printf(TEXT(R"({"format":"marburgumii.vegetation","version":1,%s,"plants":[[0,0,0,0,0,1]]})"), VegetationTwoSpecies), Kinds, Plants, Error));
 
     // The shipped file.
     FString Text;

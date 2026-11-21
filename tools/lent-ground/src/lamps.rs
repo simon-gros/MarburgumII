@@ -155,7 +155,7 @@ impl Segments {
     fn key(&self, p: Pt) -> (i64, i64) {
         ((p[0] / self.cell).floor() as i64, (p[1] / self.cell).floor() as i64)
     }
-    fn add(&mut self, a: Pt, b: Pt) {
+    pub(crate) fn add(&mut self, a: Pt, b: Pt) {
         let (k0, k1) = (self.key([a[0].min(b[0]), a[1].min(b[1])]), self.key([a[0].max(b[0]), a[1].max(b[1])]));
         for i in k0.0..=k1.0 {
             for j in k0.1..=k1.1 {
@@ -185,7 +185,7 @@ impl Segments {
         best
     }
     /// The nearest point on any segment within r, if there is one.
-    fn nearest_point(&self, p: Pt, r: f64) -> Option<Pt> {
+    pub(crate) fn nearest_point(&self, p: Pt, r: f64) -> Option<Pt> {
         let k = self.key(p);
         let mut best: Option<(f64, Pt)> = None;
         for i in k.0 - 1..=k.0 + 1 {

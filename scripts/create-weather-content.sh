@@ -19,7 +19,10 @@
 #   Content/Vegetation/Materials/{M_PlantFoliage,M_PlantBark} and each species' MI_<id>_{Foliage,Bark}
 #                                             the trees' and bushes' materials (GFX-01), set on the original's species meshes;
 #                                             where they stand is Content/Marburgum/Vegetation/lent_plants.json (lent-ground --mode plants)
-# Usage: scripts/create-weather-content.sh [look|lamps|windows|surfaces|audio|plants|all]   (default: all)
+#   Content/World/StreetFurniture/SM_Street_*_01 and M_MarburgumPaint
+#                                             the original's street kit (GFX-01): compiled for instancing, bounds and collision logged;
+#                                             where it stands is Content/Marburgum/Furniture/lent_street_furniture.json (lent-ground --mode furniture)
+# Usage: scripts/create-weather-content.sh [look|lamps|windows|surfaces|audio|plants|furniture|all]   (default: all)
 # The commandlet lives in the Editor target, so build MarburgumIIEditor first. Rerun surfaces after a ground rebuild
 # that creates the paved materials afresh.
 set -euo pipefail
@@ -34,10 +37,10 @@ if [[ -z "$ue_root" ]]; then
 fi
 
 case "$which" in
-    look|lamps|windows|surfaces|audio|plants) steps="$which" ;;
-    all) steps="look,lamps,windows,surfaces,audio,plants" ;;
+    look|lamps|windows|surfaces|audio|plants|furniture) steps="$which" ;;
+    all) steps="look,lamps,windows,surfaces,audio,plants,furniture" ;;
     *)
-        echo "Usage: $0 [look|lamps|windows|surfaces|audio|plants|all]" >&2
+        echo "Usage: $0 [look|lamps|windows|surfaces|audio|plants|furniture|all]" >&2
         exit 2
         ;;
 esac

@@ -110,6 +110,15 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode plant
     --buildings Data/World/lent_ground/buildings.json --placed Data/World/lent_ground/placed_buildings.txt --out Data/World/lent_ground \
     --walk-graph Content/Marburgum/Street/lent_walk_graph.json --terrain "$ORIGINAL/project/assets/terrain" \
     --vegetation "$ORIGINAL/project/data/vegetation.json" --plants Content/Marburgum/Vegetation/lent_plants.json
+# Street furniture (GFX-01, VQ-023): the original's street kit at every bus platform (post, and shelter and bench where
+# mapped), every mapped bench and bollard, and along fence, wall and bollard runs, clear of the carriageway, buildings,
+# river, bridges, the walk graph and the trees (run after the plants); then the kit's collision and instancing.
+cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode furniture --osm Data/World/lent_ground/osm_lent.json.gz \
+    --buildings Data/World/lent_ground/buildings.json --placed Data/World/lent_ground/placed_buildings.txt --out Data/World/lent_ground \
+    --walk-graph Content/Marburgum/Street/lent_walk_graph.json --plants Content/Marburgum/Vegetation/lent_plants.json \
+    --furniture Content/Marburgum/Furniture/lent_street_furniture.json
+./scripts/create-weather-content.sh plants      # the trees' materials
+./scripts/create-weather-content.sh furniture   # the street kit's collision and instancing
 # Lit windows (ADR-066): the window glass and MPC_LitWindows, then the façades again, which write each pane's household
 # into the glass's texture coordinates 2 and 3 and make MI_facade_glass a child of M_WindowGlass.
 ./scripts/create-weather-content.sh windows

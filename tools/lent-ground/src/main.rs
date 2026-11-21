@@ -34,11 +34,15 @@
 //! `--mode plants` keeps the original's surveyed trees and bushes that stand on grass, from `heights.bin`, `top.bin`,
 //! `surface.png` and the walk graph (plants.rs, GFX-01).
 //!
+//! `--mode furniture` furnishes the stops, benches, bollards and fence and wall runs with the original's street kit, from
+//! the streets, `top.bin`, the walk graph and the plants (furniture.rs, GFX-01).
+//!
 //! `lent-ground places` writes the place names the location banner reads: districts, streets and
 //! squares, and landmarks (places.rs, ADR-063).
 
 mod attractors;
 mod buildings;
+mod furniture;
 mod grid;
 mod kinds;
 mod lamps;
@@ -136,6 +140,9 @@ struct Args {
     /// `plants`: only the trees and bushes (plants.rs), from the original's `<window>_plants.json` and species catalogue,
     /// the `heights.bin`, `top.bin` and `surface.png` already in the output and the walk graph, into this path.
     plants: Option<Plants>,
+    /// `furniture`: only the street furniture (furniture.rs), from the streets, `top.bin`, the walk graph and the plants file
+    /// at the first path, into the second.
+    furniture: Option<(PathBuf, PathBuf)>,
     laz: Vec<PathBuf>,
     osm: PathBuf,
     buildings: PathBuf,
@@ -178,7 +185,8 @@ fn parse_args(map: &HashMap<String, String>) -> Result<Args, String> {
     let lamps_only = map.get("mode").is_some_and(|m| m == "lamps");
     let attractors_only = map.get("mode").is_some_and(|m| m == "attractors");
     let plants_only = map.get("mode").is_some_and(|m| m == "plants");
-    let optional = |k: &str| if walk_only || lamps_only || attractors_only || plants_only { Ok(map.get(k).cloned().unwrap_or_default()) } else { get(k) };
+    let furniture_only = map.get("mode").is_some_and(|m| m == "furniture");
+    let optional = |k: &str| if walk_only || lamps_only || attractors_only || plants_only || furniture_only { Ok(map.get(k).cloned().unwrap_or_default()) } else { get(k) };
     let lamps = if lamps_only { Some(PathBuf::from(get("lamps")?)) } else { None };
     if lamps_only && !map.contains_key("walk-graph") {
         return Err("--mode lamps needs --walk-graph (the walk graph it keeps clear of) and --lamps".into());
@@ -187,6 +195,14 @@ fn parse_args(map: &HashMap<String, String>) -> Result<Args, String> {
     if attractors_only && !map.contains_key("walk-graph") {
         return Err("--mode attractors needs --walk-graph (the walk graph it pins them to) and --road-graph".into());
     }
+    let furniture = if furniture_only {
+        if !map.contains_key("walk-graph") {
+            return Err("--mode furniture needs --walk-graph, --plants (the trees it keeps clear of) and --furniture".into());
+        }
+        Some((PathBuf::from(get("plants")?), PathBuf::from(get("furniture")?)))
+    } else {
+        None
+    };
     let plants = if plants_only {
         if !map.contains_key("walk-graph") {
             return Err("--mode plants needs --walk-graph (the walk graph it keeps clear of), --plants, --terrain and --vegetation".into());
@@ -200,6 +216,7 @@ fn parse_args(map: &HashMap<String, String>) -> Result<Args, String> {
         lamps,
         attractors,
         plants,
+        furniture,
         laz: list(&optional("laz")?),
         osm: PathBuf::from(get("osm")?),
         buildings: PathBuf::from(get("buildings")?),
@@ -873,6 +890,9 @@ const USAGE: &str = "usage:
        lent-ground --mode plants --osm osm_lent.json.gz --buildings buildings.json --placed placed.txt --out DIR
               --walk-graph Content/Marburgum/Street/lent_walk_graph.json --terrain ORIGINAL/project/assets/terrain
               --vegetation ORIGINAL/project/data/vegetation.json --plants Content/Marburgum/Vegetation/lent_plants.json
+       lent-ground --mode furniture --osm osm_lent.json.gz --buildings buildings.json --placed placed.txt --out DIR
+              --walk-graph Content/Marburgum/Street/lent_walk_graph.json --plants Content/Marburgum/Vegetation/lent_plants.json
+              --furniture Content/Marburgum/Furniture/lent_street_furniture.json
        lent-ground ring --laz A.laz,B.laz,... --heights DIR/heights.bin --out DIR
        lent-ground surface-kinds --surface DIR/surface.png --out Content/Marburgum/Ground/lent_surface.bin [--half 768 --cell 2]
        lent-ground places --osm osm_lent.json.gz --districts ORIGINAL/project/data/districts.json
@@ -1023,6 +1043,14 @@ fn run(args: &Args) -> Result<(), String> {
         let walk = args.walk_graph.as_ref().expect("checked in parse_args");
         let summary = lamps::build(&inputs, walk, &args.osm, out)?;
         eprintln!("lamps: {summary} ({:.1}s)", t0.elapsed().as_secs_f64());
+        return Ok(());
+    }
+    if let Some((plants, out)) = &args.furniture {
+        let top = read_f32(&args.out.join("top.bin"), EXTENT.get().expect("extent set").points, half())?;
+        let inputs = furniture::Inputs { osm: &osm, carriageway: &st.carriageway, footprints: &footprints, water: &st.water, bridges: &st.bridges, top: &top, half: half() };
+        let walk = args.walk_graph.as_ref().expect("checked in parse_args");
+        let summary = furniture::build(&inputs, walk, plants, &args.osm, out)?;
+        eprintln!("furniture: {summary} ({:.1}s)", t0.elapsed().as_secs_f64());
         return Ok(());
     }
     if let Some(p) = &args.plants {
