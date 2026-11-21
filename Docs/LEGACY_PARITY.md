@@ -46,6 +46,8 @@ The **original Unreal `/Game/World/lent` level remains the default** (ADR-027), 
 
 Every migrated major playable feature requires a **personal in-game owner playtest and explicit approval** (ADR-008) before acceptance. CI or screenshots from an agent alone do not satisfy this decision.
 
+**Character sheet (21 November 2026, ADR-085, branch `feat/lrp-attributes-equipment`):** the original four ability scores (Wind as Endurance) and eight equipment slot ids are carried forward as data and server rules; the original never equipped anything, so which item fits which slot is a Marburgum II authoring decision. Owner acceptance open.
+
 **Additional proposed import plan (21 November 2026):** [Legacy RPG systems and character progression import roadmap](LEGACY_RPG_SYSTEMS_IMPORT_ROADMAP.md) inventories deeper character stats/equipment, skills and urban professions for future implementation. Its canonical planned attribute names are **Might, Endurance, Eye and Poise** (replacing legacy **Wind** only by versioned migration). The plan requires real **Character, Skills, Inventory, Journal and contextual HUD readjustment** alongside each server-authoritative feature and does not assert delivery. It proposes only owner-authored specializations subject to a new explicit ADR and parity/validator revisions; the original auto-generated Talent system and Talent UI remain excluded until formally changed.
 
 ## Explicit owner-approved exclusions

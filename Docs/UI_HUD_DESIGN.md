@@ -26,7 +26,7 @@ The city itself remains the visual focus. The normal exploration state must have
 | Vitality and stamina | Designed dual bars with legible labels/icons and understated gradients; no permanent combat overlay | Compact; available in character context |
 | Notifications | Distinct icon/text treatment for interaction, objective, XP/skill, item, money, reputation and connection events; aggregation and appropriate persistence | Transient, important errors acknowledged |
 | Compact vehicle speed/name | Clear graphical speed display and vehicle identity, readable during motion without blocking the driving view | Only when driving |
-| Character sheet | Visual identity and legitimate server-owned stats/condition/equipment slots, with honest empty/unsupported states | On demand |
+| Character sheet | Visual identity and legitimate server-owned stats/condition/equipment slots, with honest empty/unsupported states. ADR-085: cards that wrap to the page (identity with the 3D body; the eight slots in the original two columns, each with a worded state; Might, Endurance, Eye, Poise with base, equipment, other and total apart; condition; saved record) | On demand |
 | Skills | Scannable skill icons, name, level, XP/progress, meaningful milestone; dense but not text-clumped | On demand |
 | Inventory | Purposeful slot/list-grid hybrid to test, item silhouettes, quantity, selection details, available actions and evidence role | On demand |
 | Mission Journal and evidence | Structured mission timeline, active/completed state, current objective, gathered evidence and pin/unpin, with understated archival graphic motifs | On demand |
