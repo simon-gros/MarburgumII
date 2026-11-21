@@ -96,6 +96,51 @@ pub fn gameplay_header(catalogue: &Value) -> Result<String, String> {
     }
     out.push_str("    };\n\n");
 
+    // Character sheet (ADR-085): the four attributes, the eight equipment slots and which item fits which slot.
+    let sheet = &catalogue["character_sheet"];
+    let attributes = &sheet["attributes"];
+    let (min_score, max_score, default_score) =
+        (int(attributes, "min_score")?, int(attributes, "max_score")?, int(attributes, "default_score")?);
+    if !(min_score <= default_score && default_score <= max_score) {
+        return Err(format!("attributes: default {default_score} outside {min_score}..{max_score}"));
+    }
+    writeln!(out, "    inline constexpr int32 AttributeMinScore = {min_score};").unwrap();
+    writeln!(out, "    inline constexpr int32 AttributeMaxScore = {max_score};").unwrap();
+    writeln!(out, "    inline constexpr int32 AttributeDefaultScore = {default_score};").unwrap();
+    out.push_str("    inline constexpr FAttributeDefinition Attributes[] = {\n");
+    for attribute in array(attributes, "entries")? {
+        let id = str_of(attribute, "id")?;
+        let aliases = array(attribute, "legacy_aliases")?;
+        if aliases.len() > 1 {
+            return Err(format!("attribute {id}: at most one legacy alias"));
+        }
+        let alias = aliases.first().and_then(Value::as_str).unwrap_or("");
+        writeln!(out, "        {{ {}, {}, {}, {} }},", lit(id), lit(en(attribute, "name")?), lit(en(attribute, "summary")?), lit(alias)).unwrap();
+    }
+    out.push_str("    };\n");
+    out.push_str("    inline constexpr FEquipmentSlotDefinition EquipmentSlots[] = {\n");
+    let slots = array(&sheet["equipment_slots"], "entries")?;
+    for slot in slots {
+        let right = match str_of(slot, "column")? {
+            "left" => false,
+            "right" => true,
+            other => return Err(format!("slot {}: unknown column {other}", str_of(slot, "id")?)),
+        };
+        writeln!(out, "        {{ {}, {}, {right} }},", lit(str_of(slot, "id")?), lit(en(slot, "name")?)).unwrap();
+    }
+    out.push_str("    };\n");
+    out.push_str("    inline constexpr FItemSlotRule ItemSlotRules[] = {\n");
+    for item in array(catalogue, "items")? {
+        for slot in array(item, "equip_slots")? {
+            let slot = slot.as_str().ok_or_else(|| format!("item {}: equip_slots must be slot ids", short(item)))?;
+            if !slots.iter().any(|s| s["id"] == slot) {
+                return Err(format!("item {}: unknown equipment slot {slot}", short(item)));
+            }
+            writeln!(out, "        {{ {}, {} }},", lit(str_of(item, "id")?), lit(slot)).unwrap();
+        }
+    }
+    out.push_str("    };\n\n");
+
     // Fishing spots.
     let spots = array(&catalogue["fishing"], "spots")?;
     for (index, spot) in spots.iter().enumerate() {

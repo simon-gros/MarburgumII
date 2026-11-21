@@ -46,6 +46,34 @@ namespace MarburgumII::Gameplay
         bool bReversible;
     };
 
+    /**
+     * One of the four attributes (original character_stats, ADR-085): Might, Endurance, Eye, Poise. Endurance is the
+     * original Wind; LegacyAlias names the key an older record may still use for it, read once and never written.
+     */
+    struct FAttributeDefinition
+    {
+        const TCHAR* Id;
+        const TCHAR* DisplayName;
+        /** What the score stands for, for the character sheet. */
+        const TCHAR* Summary;
+        const TCHAR* LegacyAlias;
+    };
+
+    /** One of the eight equipment slots (original character_panel SLOTS), in sheet order; bRightColumn as the original laid them out. */
+    struct FEquipmentSlotDefinition
+    {
+        const TCHAR* Id;
+        const TCHAR* DisplayName;
+        bool bRightColumn;
+    };
+
+    /** Item may be worn or held in Slot (catalogue `equip_slots`). An item with no rule fits no slot. */
+    struct FItemSlotRule
+    {
+        const TCHAR* Item;
+        const TCHAR* Slot;
+    };
+
     /** One species a fishing spot can yield: weighted draw, XP to Fishing on landing it (original fishing.json). */
     struct FFishSpecies
     {
@@ -352,6 +380,56 @@ namespace MarburgumII::Gameplay
         return nullptr;
     }
 
+    inline const FAttributeDefinition* FindAttribute(const FString& Id)
+    {
+        for (const FAttributeDefinition& Attribute : Attributes)
+        {
+            if (Id == Attribute.Id)
+            {
+                return &Attribute;
+            }
+        }
+        return nullptr;
+    }
+
+    inline const FEquipmentSlotDefinition* FindEquipmentSlot(const FString& Id)
+    {
+        for (const FEquipmentSlotDefinition& Slot : EquipmentSlots)
+        {
+            if (Id == Slot.Id)
+            {
+                return &Slot;
+            }
+        }
+        return nullptr;
+    }
+
+    /** Whether Item can be worn or held in Slot. */
+    inline bool FitsSlot(const FString& Item, const FString& Slot)
+    {
+        for (const FItemSlotRule& Rule : ItemSlotRules)
+        {
+            if (Item == Rule.Item && Slot == Rule.Slot)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether any item at all can be worn or held in Slot (the sheet says so when none can yet). */
+    inline bool AnyItemFitsSlot(const FString& Slot)
+    {
+        for (const FItemSlotRule& Rule : ItemSlotRules)
+        {
+            if (Slot == Rule.Slot)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     inline const FShopDefinition* FindShop(const FString& Id)
     {
         for (const FShopDefinition& Shop : Shops)
@@ -648,7 +726,8 @@ namespace MarburgumII::Gameplay
     // adds skill XP, money and mission outcomes (ADR-047, ADR-049). Older documents load and are rewritten at the
     // current schema by the next commit.
     // Schema 5 adds shop shelves and each character's first purchase per shop (ADR-060).
-    inline constexpr int32 WorldStoreSchemaVersion = 6;
+    // Schema 7 adds each character's attribute scores and equipped slots, and the slot of equipment receipts (ADR-085).
+    inline constexpr int32 WorldStoreSchemaVersion = 7;
     inline constexpr int32 WorldStoreOldestReadableSchema = 1;
 
     // Prefix for machine-parsed interaction evidence lines (scripts/interaction-smoke-linux.sh).

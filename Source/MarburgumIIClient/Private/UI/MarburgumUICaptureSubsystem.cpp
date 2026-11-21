@@ -280,6 +280,20 @@ bool UMarburgumUICaptureSubsystem::BeginTourStep(const FString& Step)
         return true;
     }
     if (Step == TEXT("character")) return UI->ToggleCharacter();
+    // `character:<slot>`: the Character sheet on one equipment slot's card (ADR-085).
+    if (Step.StartsWith(TEXT("character:"))) return UI->ShowCharacterSlot(FName(*Step.RightChop(10)));
+    // `equip:<slot>:<item>`: ask the server to put a carried item in a slot, as the sheet would (ADR-085). The next step
+    // shows whatever the server decided; this one takes no picture of its own worth keeping.
+    if (Step.StartsWith(TEXT("equip:")))
+    {
+        FString Slot, Item;
+        if (!Step.RightChop(6).Split(TEXT(":"), &Slot, &Item))
+        {
+            return false;
+        }
+        Controller->SubmitEquip(FGuid::NewGuid(), FName(*Slot), FName(*Item));
+        return true;
+    }
     if (Step == TEXT("skills")) return UI->ToggleSkills();
     if (Step == TEXT("inventory")) return UI->ToggleInventory();
     // `inventory:<item>`: the Inventory on one item's card (evidence classes and descriptions, ADR-084).

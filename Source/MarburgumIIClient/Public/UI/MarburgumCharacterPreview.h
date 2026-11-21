@@ -37,8 +37,13 @@ public:
     /** Frame for a picture this wide over this tall, and this close: 0 the whole body, 1 head and shoulders. */
     void SetFraming(float Aspect, float Zoom);
     void SetTarget(UTextureRenderTarget2D* Target);
-    /** Render every frame while true; idle and costless otherwise. */
+    /** Render every frame while true; idle and costless otherwise (its lights are off too). */
     void SetCapturing(bool bCapturing);
+    /**
+     * Key the body with a spot light instead of a directional one (ADR-085): for a stage standing in a lit game world,
+     * where a directional light is never confined to the stage.
+     */
+    void SetWorldSafe(bool bInWorldSafe);
 
 protected:
     virtual void BeginPlay() override;
@@ -53,6 +58,8 @@ private:
     UPROPERTY(VisibleAnywhere) TObjectPtr<class UDirectionalLightComponent> Key;
     UPROPERTY(VisibleAnywhere) TObjectPtr<UPointLightComponent> Fill;
     UPROPERTY(VisibleAnywhere) TObjectPtr<UPointLightComponent> Rim;
+    UPROPERTY(VisibleAnywhere) TObjectPtr<class USpotLightComponent> KeySpot;
+    bool bWorldSafe = false;
     UPROPERTY(VisibleAnywhere) TObjectPtr<USceneCaptureComponent2D> Capture;
 
     /** One per roster entry, in CharacterModels order; null where an asset is missing. */
@@ -75,6 +82,8 @@ class MARBURGUMIICLIENT_API UMarburgumCharacterPreview : public UUserWidget
 public:
     void ShowModel(int32 Index);
     void SetActive(bool bActive);
+    /** For a preview inside a game world (the Character sheet): see AMarburgumCharacterPreviewStage::SetWorldSafe. */
+    void SetWorldSafe(bool bInWorldSafe);
 
     /** Test evidence: the roster index the stage last showed, or INDEX_NONE before it has shown one. */
     int32 GetShownModel() const { return ShownModel; }
@@ -110,6 +119,7 @@ private:
     float Aspect = 2.f / 3.f;
     bool bActive = false;
     bool bDragging = false;
+    bool bWorldSafe = false;
 };
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FMarburgumModelPicked, int32 /*RosterIndex*/);

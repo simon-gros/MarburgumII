@@ -82,6 +82,32 @@ namespace MarburgumII::Gameplay
         { TEXT("reputation"), TEXT("Reputation"), true },
     };
 
+    inline constexpr int32 AttributeMinScore = 1;
+    inline constexpr int32 AttributeMaxScore = 20;
+    inline constexpr int32 AttributeDefaultScore = 10;
+    inline constexpr FAttributeDefinition Attributes[] = {
+        { TEXT("might"), TEXT("Might"), TEXT("Strength for carrying loads and strenuous work."), TEXT("") },
+        { TEXT("endurance"), TEXT("Endurance"), TEXT("Staying power over long effort. Not the stamina you spend running, which comes back as you rest."), TEXT("wind") },
+        { TEXT("eye"), TEXT("Eye"), TEXT("Noticing details and doing precise work."), TEXT("") },
+        { TEXT("poise"), TEXT("Poise"), TEXT("Composure and a steady hand under pressure."), TEXT("") },
+    };
+    inline constexpr FEquipmentSlotDefinition EquipmentSlots[] = {
+        { TEXT("head"), TEXT("Head"), false },
+        { TEXT("coat"), TEXT("Coat"), false },
+        { TEXT("trousers"), TEXT("Trousers"), false },
+        { TEXT("shoes"), TEXT("Shoes"), false },
+        { TEXT("hands"), TEXT("Hands"), true },
+        { TEXT("right_hand"), TEXT("Right hand"), true },
+        { TEXT("left_hand"), TEXT("Left hand"), true },
+        { TEXT("bag"), TEXT("Bag"), true },
+    };
+    inline constexpr FItemSlotRule ItemSlotRules[] = {
+        { TEXT("fishing_rod"), TEXT("right_hand") },
+        { TEXT("fishing_rod"), TEXT("left_hand") },
+        { TEXT("camera"), TEXT("right_hand") },
+        { TEXT("camera"), TEXT("left_hand") },
+    };
+
     inline constexpr FFishSpecies FishingSpot0Species[] = {
         { TEXT("chub"), 5, 20 },
         { TEXT("roach"), 4, 16 },
@@ -667,6 +693,22 @@ namespace MarburgumII::Gameplay
         { TEXT("Housing"), TEXT("Stanovanje") },
         { TEXT("Trading"), TEXT("Trgovanje") },
         { TEXT("Reputation"), TEXT("Ugled") },
+        { TEXT("Might"), TEXT("Mo\u010D") },
+        { TEXT("Strength for carrying loads and strenuous work."), TEXT("Telesna mo\u010D za no\u0161enje bremen in te\u017Eko delo.") },
+        { TEXT("Endurance"), TEXT("Kondicija") },
+        { TEXT("Staying power over long effort. Not the stamina you spend running, which comes back as you rest."), TEXT("Kondicija za dolgotrajen napor. Ni sapa, ki jo porabi\u0161 pri teku in se vrne, ko po\u010Dije\u0161.") },
+        { TEXT("Eye"), TEXT("Oko") },
+        { TEXT("Noticing details and doing precise work."), TEXT("Opa\u017Eanje podrobnosti in natan\u010Dno delo.") },
+        { TEXT("Poise"), TEXT("Zbranost") },
+        { TEXT("Composure and a steady hand under pressure."), TEXT("Mirnost in trdna roka pod pritiskom.") },
+        { TEXT("Head"), TEXT("Glava") },
+        { TEXT("Coat"), TEXT("Pla\u0161\u010D") },
+        { TEXT("Trousers"), TEXT("Hla\u010De") },
+        { TEXT("Shoes"), TEXT("\u010Cevlji") },
+        { TEXT("Hands"), TEXT("Roke") },
+        { TEXT("Right hand"), TEXT("Desna roka") },
+        { TEXT("Left hand"), TEXT("Leva roka") },
+        { TEXT("Bag"), TEXT("Torba") },
         { TEXT("Drava \u2014 Lent bank"), TEXT("Drava \u2014 breg na Lentu") },
         { TEXT("Drava \u2014 above the Melje weir"), TEXT("Drava \u2014 nad jezom v Meljah") },
         { TEXT("Test supply crate"), TEXT("Testni zaboj z zalogo") },

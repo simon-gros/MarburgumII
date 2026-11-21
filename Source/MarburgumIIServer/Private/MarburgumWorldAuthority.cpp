@@ -18,6 +18,7 @@
 #include "MarburgumCharacterMovement.h"
 #include "MarburgumCombatContract.h"
 #include "MarburgumContentPad.h"
+#include "MarburgumEquipmentRules.h"
 #include "MarburgumFishingRules.h"
 #include "MarburgumInteractable.h"
 #include "MarburgumMissionLogic.h"
@@ -122,6 +123,31 @@ namespace
         return ToStacks(&Items);
     }
 
+    /** Filled slots in sheet order (ADR-085). */
+    TArray<FMarburgumEquippedItem> ToEquipment(const TMap<FString, FString>* Slots)
+    {
+        TArray<FMarburgumEquippedItem> Equipped;
+        for (const FEquipmentSlotDefinition& Slot : EquipmentSlots)
+        {
+            if (const FString* Item = Slots ? Slots->Find(Slot.Id) : nullptr)
+            {
+                Equipped.Add({ FName(Slot.Id), FName(**Item) });
+            }
+        }
+        return Equipped;
+    }
+
+    FMarburgumAttributes ToAttributes(const MarburgumII::CharacterSheet::FScores* Stored)
+    {
+        const MarburgumII::CharacterSheet::FScores Scores = Stored ? *Stored : MarburgumII::CharacterSheet::FScores();
+        FMarburgumAttributes Attributes;
+        Attributes.Might = static_cast<uint8>(Scores[0]);
+        Attributes.Endurance = static_cast<uint8>(Scores[1]);
+        Attributes.Eye = static_cast<uint8>(Scores[2]);
+        Attributes.Poise = static_cast<uint8>(Scores[3]);
+        return Attributes;
+    }
+
     TArray<FMarburgumSkillProgress> ToSkillAwards(const TMap<FString, int64>& Xp)
     {
         return ToSkills(&Xp);
@@ -155,6 +181,8 @@ namespace
     constexpr float FishingTickSeconds = 0.1f;
     // Counter evidence lines (scripts/shop-smoke-linux.sh).
     constexpr const TCHAR* ShopLogPrefix = TEXT("MB2SHOP");
+    // Character sheet evidence lines: attributes and equipment (scripts/sheet-smoke-linux.sh, ADR-085).
+    constexpr const TCHAR* SheetLogPrefix = TEXT("MB2SHEET");
     // How often the server looks at its clock to open or shut the counters.
     constexpr float ShopHoursCheckSeconds = 10.f;
 
@@ -191,7 +219,8 @@ namespace
         for (const EMarburgumInteractionEffect Effect : { EMarburgumInteractionEffect::ItemGranted,
                  EMarburgumInteractionEffect::MissionStarted, EMarburgumInteractionEffect::StageCompleted,
                  EMarburgumInteractionEffect::MissionCompleted, EMarburgumInteractionEffect::FishCaught,
-                 EMarburgumInteractionEffect::ItemBought, EMarburgumInteractionEffect::ItemSold, EMarburgumInteractionEffect::Photographed })
+                 EMarburgumInteractionEffect::ItemBought, EMarburgumInteractionEffect::ItemSold, EMarburgumInteractionEffect::Photographed,
+                 EMarburgumInteractionEffect::ItemEquipped, EMarburgumInteractionEffect::ItemUnequipped })
         {
             if (Kind == ToString(Effect))
             {
@@ -271,6 +300,7 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
         return;
     }
 
+    MigrateCharacterSheets();
     ApplyStocks();
     ApplyShops();
     // A listen-server host has already logged in by now.
@@ -456,7 +486,9 @@ void UMarburgumWorldAuthority::ApplyInventory(AMarburgumPlayerState& State) cons
 {
     // Custody and mission progress always travel together, so a client never sees one without the other.
     const FString& Key = State.GetCharacterKey();
-    State.SetInventoryAuthority(ToStacks(Key.IsEmpty() ? nullptr : Store->Get().Inventories.Find(Key)));
+    State.SetInventoryAuthority(ToStacks(Key.IsEmpty() ? nullptr : Store->Get().Inventories.Find(Key)),
+        ToEquipment(Key.IsEmpty() ? nullptr : Store->Get().Equipment.Find(Key)));
+    State.SetAttributesAuthority(ToAttributes(Key.IsEmpty() ? nullptr : Store->Get().Attributes.Find(Key)));
     State.SetMissionsAuthority(ToMissions(Key.IsEmpty() ? nullptr : Store->Get().Missions.Find(Key)));
     State.SetProgressAuthority(ToSkills(Key.IsEmpty() ? nullptr : Store->Get().Skills.Find(Key)),
         Key.IsEmpty() ? 0 : Store->Get().Money.FindRef(Key));
@@ -548,7 +580,7 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::Finish(FMarburgumInteract
 {
     const AMarburgumPlayerState* State = Requester.GetPlayerState<AMarburgumPlayerState>();
     UE_LOG(LogMarburgumNet, Log,
-        TEXT("%s role=server event=interaction player=%d character=%s op=%s target=%s outcome=%s reason=%s effect=%s mission=%s stage=%s item=%s quantity=%d stock=%d revision=%lld granted=%s choice=%s choice_outcome=%s money=%lld xp=%s"),
+        TEXT("%s role=server event=interaction player=%d character=%s op=%s target=%s outcome=%s reason=%s effect=%s mission=%s stage=%s item=%s quantity=%d stock=%d revision=%lld granted=%s choice=%s choice_outcome=%s money=%lld xp=%s slot=%s"),
         InteractLogPrefix,
         State ? State->GetPlayerId() : -1,
         State && !State->GetCharacterKey().IsEmpty() ? *State->GetCharacterKey() : TEXT("-"),
@@ -560,7 +592,8 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::Finish(FMarburgumInteract
         Receipt.ItemId.IsNone() ? TEXT("-") : *Receipt.ItemId.ToString(),
         Receipt.Quantity, Receipt.StockRemaining, Receipt.WorldRevision, *Describe(Receipt.ItemsGranted),
         Receipt.Choice.IsNone() ? TEXT("-") : *Receipt.Choice.ToString(),
-        Receipt.ChoiceOutcome.IsNone() ? TEXT("-") : *Receipt.ChoiceOutcome.ToString(), Receipt.MoneyDelta, *Describe(Receipt.SkillXp));
+        Receipt.ChoiceOutcome.IsNone() ? TEXT("-") : *Receipt.ChoiceOutcome.ToString(), Receipt.MoneyDelta, *Describe(Receipt.SkillXp),
+        Receipt.SlotId.IsNone() ? TEXT("-") : *Receipt.SlotId.ToString());
     return Receipt;
 }
 
@@ -611,6 +644,7 @@ bool UMarburgumWorldAuthority::AdmitOperation(FMarburgumInteractionReceipt& Rece
         Receipt.ChoiceOutcome = Prior->Outcome.IsEmpty() ? NAME_None : FName(*Prior->Outcome);
         Receipt.MoneyDelta = Prior->MoneyDelta;
         Receipt.SkillXp = ToSkillAwards(Prior->SkillXp);
+        Receipt.SlotId = Prior->Slot.IsEmpty() ? NAME_None : FName(*Prior->Slot);
         Receipt.WorldRevision = Prior->Revision;
         const AMarburgumInteractable* PriorTarget = FindInteractable(Prior->Interactable);
         Receipt.StockRemaining = PriorTarget && PriorTarget->IsItemSource() ? CurrentStock(*PriorTarget) : -1;
@@ -669,6 +703,16 @@ bool UMarburgumWorldAuthority::Admit(FMarburgumInteractionReceipt& Receipt, AMar
 
 bool UMarburgumWorldAuthority::Commit(FMarburgumInteractionReceipt& Receipt, FMarburgumWorldRecord& Next, const FMarburgumStoredReceipt& Stored)
 {
+    // Whatever else changed, no slot may name a copy the character no longer holds (a sale, a stage taking an item).
+    if (!Stored.Character.IsEmpty())
+    {
+        const TArray<FString> Emptied = MarburgumII::Equipment::Reconcile(Next, Stored.Character);
+        if (!Emptied.IsEmpty())
+        {
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=slots_emptied character=%s op=%s slots=%s"), SheetLogPrefix,
+                *Stored.Character, *OperationKey(Receipt.OperationId), *FString::Join(Emptied, TEXT(",")));
+        }
+    }
     FMarburgumStoredReceipt Entry = Stored;
     Entry.Revision = Next.Revision;
     Entry.CommittedUtc = FDateTime::UtcNow().ToIso8601();
@@ -1016,6 +1060,101 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleTrade(AMarburgumPla
     Receipt.Effect = Decision.Effect;
     Receipt.MoneyDelta = Decision.MoneyDelta;
     Receipt.SkillXp = ToSkillAwards(Stored.SkillXp);
+    return Finish(Receipt, Requester);
+}
+
+// ---- Character sheet: attributes and equipment (ADR-085) ----
+
+void UMarburgumWorldAuthority::MigrateCharacterSheets()
+{
+    const FMarburgumStoreMigration& Migration = Store->GetMigration();
+    FMarburgumWorldRecord Next = Store->Get();
+    // Equipment saved by a build whose items have since moved on must not name copies the character no longer has.
+    TArray<FString> Reconciled;
+    TArray<FString> Characters;
+    Next.Equipment.GetKeys(Characters);
+    for (const FString& Character : Characters)
+    {
+        if (!MarburgumII::Equipment::Reconcile(Next, Character).IsEmpty())
+        {
+            Reconciled.Add(Character);
+        }
+    }
+    UE_LOG(LogMarburgumNet, Log,
+        TEXT("%s role=server event=sheets_loaded schema=%d attributes=%d equipment=%d legacy_aliases=%d conflicts=%d repaired=%d reconciled=%d"),
+        SheetLogPrefix, Store->GetLoadedSchema(), Next.Attributes.Num(), Next.Equipment.Num(), Migration.LegacyAliases.Num(),
+        Migration.Conflicts.Num(), Migration.Repaired.Num(), Reconciled.Num());
+    for (const FString& Note : Migration.Notes)
+    {
+        UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=sheet_migration_note note=\"%s\""), SheetLogPrefix, *Note);
+    }
+    if (Migration.IsEmpty() && Reconciled.IsEmpty())
+    {
+        return;
+    }
+    // Make the normalized record durable once, so the legacy key or the damaged value is gone from disk and the next
+    // load has nothing to migrate. A failed write leaves the old document and the normalized record in memory alone.
+    ++Next.Revision;
+    FString Error;
+    if (!Store->Commit(Next, Error))
+    {
+        UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=sheet_migration_failed error=\"%s\""), SheetLogPrefix, *Error);
+        return;
+    }
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=sheet_migration_committed from_schema=%d revision=%lld legacy=%s conflicts=%s repaired=%s reconciled=%s"),
+        SheetLogPrefix, Store->GetLoadedSchema(), Next.Revision, *FString::Join(Migration.LegacyAliases, TEXT(",")),
+        *FString::Join(Migration.Conflicts, TEXT(",")), *FString::Join(Migration.Repaired, TEXT(",")), *FString::Join(Reconciled, TEXT(",")));
+}
+
+FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleEquip(AMarburgumPlayerController& Requester, const FGuid& OperationId,
+    FName SlotId, FName ItemId)
+{
+    FMarburgumInteractionReceipt Receipt;
+    Receipt.OperationId = OperationId;
+    Receipt.SlotId = SlotId;
+    Receipt.ItemId = ItemId;
+    AMarburgumPlayerState* State = nullptr;
+    if (!AdmitOperation(Receipt, Requester, State))
+    {
+        return Finish(Receipt, Requester);
+    }
+    // A body on the ground cannot change what it holds; a seated one can (nothing here needs both feet).
+    if (State->GetCondition().IsDown())
+    {
+        Receipt.Reason = EMarburgumInteractionReason::Incapacitated;
+        return Finish(Receipt, Requester);
+    }
+
+    const FString& Character = State->GetCharacterKey();
+    FMarburgumWorldRecord Next;
+    const FMarburgumEquipDecision Decision = MarburgumII::Equipment::DecideEquip(Store->Get(), Character,
+        SlotId.IsNone() ? FString() : SlotId.ToString(), ItemId.IsNone() ? FString() : ItemId.ToString(), Next);
+    UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=equip character=%s slot=%s item=%s replaced=%s decision=%s"), SheetLogPrefix,
+        *Character, SlotId.IsNone() ? TEXT("-") : *SlotId.ToString(), Decision.Item.IsEmpty() ? TEXT("-") : *Decision.Item,
+        Decision.Replaced.IsEmpty() ? TEXT("-") : *Decision.Replaced, Decision.bApplied ? ToString(Decision.Effect) : ToString(Decision.Reason));
+    if (!Decision.bApplied)
+    {
+        Receipt.Reason = Decision.Reason;
+        return Finish(Receipt, Requester);
+    }
+
+    FMarburgumStoredReceipt Stored;
+    Stored.Character = Character;
+    Stored.Kind = ToString(Decision.Effect);
+    Stored.Item = Decision.Item;
+    Stored.Quantity = 1;
+    Stored.Slot = Decision.Slot;
+    if (!Commit(Receipt, Next, Stored))
+    {
+        return Finish(Receipt, Requester);
+    }
+
+    // Durable first, visible second: the slot and the inventory replicate together.
+    ApplyInventory(*State);
+    Receipt.Outcome = EMarburgumRequestOutcome::Applied;
+    Receipt.Effect = Decision.Effect;
+    Receipt.ItemId = FName(*Decision.Item);
+    Receipt.Quantity = 1;
     return Finish(Receipt, Requester);
 }
 

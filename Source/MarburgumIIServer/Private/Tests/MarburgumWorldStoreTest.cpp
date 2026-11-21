@@ -33,7 +33,7 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
     {
         FMarburgumWorldStore Store(Path);
         TestTrue(TEXT("reload"), Store.Load(Error));
-        TestEqual(TEXT("schema"), Store.GetLoadedSchema(), 6);
+        TestEqual(TEXT("schema"), Store.GetLoadedSchema(), 7);
         const FMarburgumStoredCondition* Loaded = Store.Get().Conditions.Find(TEXT("runner"));
         TestTrue(TEXT("condition saved"), Loaded != nullptr);
         if (Loaded)
@@ -170,7 +170,7 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
     {
         FMarburgumWorldStore Store(Path);
         TestTrue(TEXT("schema 5 reload"), Store.Load(Error));
-        TestEqual(TEXT("current schema reported"), Store.GetLoadedSchema(), 6);
+        TestEqual(TEXT("current schema reported"), Store.GetLoadedSchema(), 7);
         TestEqual(TEXT("shelf kept"), Store.Get().Shelves.FindRef(TEXT("kiosk_67")).FindRef(TEXT("mariborski_glas")), 11);
         const int32* Empty = Store.Get().Shelves.FindRef(TEXT("kiosk_67")).Find(TEXT("ballpoint_pen"));
         TestTrue(TEXT("an empty shelf is kept as empty, not as unknown"), Empty && *Empty == 0);
@@ -200,7 +200,7 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
     {
         FMarburgumWorldStore Store(Path);
         TestTrue(TEXT("schema 6 reload"), Store.Load(Error));
-        TestEqual(TEXT("schema 6 reported"), Store.GetLoadedSchema(), 6);
+        TestEqual(TEXT("current schema reported after a schema 6 commit"), Store.GetLoadedSchema(), 7);
         const TArray<FString> Documented = Store.Get().Discoveries.FindRef(TEXT("simon"));
         TestTrue(TEXT("discoveries kept"), Documented.Num() == 2 && Documented.Contains(TEXT("vodni_stolp")) && Documented.Contains(TEXT("stari_most")));
         TestEqual(TEXT("photography XP kept"), Store.Get().Skills.FindRef(TEXT("simon")).FindRef(TEXT("photography")), int64(50));
@@ -212,8 +212,90 @@ bool FMarburgumWorldStoreConditionTest::RunTest(const FString& Parameters)
         TestTrue(TEXT("schema 5 has no discoveries"), Store.Get().Discoveries.IsEmpty());
     }
 
+    // Schema 7 (ADR-085): attributes and equipment round-trip with canonical ids; a schema 6 world has neither.
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("schema 5 store reopens"), Store.Load(Error));
+        FMarburgumWorldRecord Next;
+        Next.Revision = 30;
+        MarburgumII::CharacterSheet::FScores Scores;
+        Scores[0] = 13;
+        Scores[1] = 15;
+        Next.Attributes.Add(TEXT("simon"), Scores);
+        Next.Inventories.FindOrAdd(TEXT("simon")).Add(TEXT("fishing_rod"), 1);
+        Next.Equipment.FindOrAdd(TEXT("simon")).Add(TEXT("right_hand"), TEXT("fishing_rod"));
+        FMarburgumStoredReceipt Receipt;
+        Receipt.Character = TEXT("simon");
+        Receipt.Kind = TEXT("item_equipped");
+        Receipt.Item = TEXT("fishing_rod");
+        Receipt.Quantity = 1;
+        Receipt.Slot = TEXT("right_hand");
+        Next.Receipts.Add(TEXT("EQUIP"), Receipt);
+        TestTrue(TEXT("schema 7 commit"), Store.Commit(Next, Error));
+        FString Written;
+        FFileHelper::LoadFileToString(Written, *Path);
+        TestTrue(TEXT("endurance is written"), Written.Contains(TEXT("\"endurance\"")));
+        TestFalse(TEXT("wind is never written"), Written.Contains(TEXT("wind")));
+    }
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("schema 7 reload"), Store.Load(Error));
+        TestEqual(TEXT("schema 7 reported"), Store.GetLoadedSchema(), 7);
+        TestTrue(TEXT("a clean document needs no migration"), Store.GetMigration().IsEmpty());
+        const MarburgumII::CharacterSheet::FScores Loaded = Store.Get().Attributes.FindRef(TEXT("simon"));
+        TestEqual(TEXT("might kept"), Loaded[0], 13);
+        TestEqual(TEXT("endurance kept"), Loaded[1], 15);
+        TestEqual(TEXT("eye default"), Loaded[2], 10);
+        TestEqual(TEXT("equipment kept"), Store.Get().Equipment.FindRef(TEXT("simon")).FindRef(TEXT("right_hand")), FString(TEXT("fishing_rod")));
+        TestEqual(TEXT("receipt slot kept"), Store.Get().Receipts.FindRef(TEXT("EQUIP")).Slot, FString(TEXT("right_hand")));
+    }
+    // A legacy record: `wind` read as Endurance, a mixed record keeps `endurance`, damage is repaired and reported.
+    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":6,\"revision\":4,")
+        TEXT("\"attributes\":{\"old\":{\"might\":12,\"wind\":14,\"eye\":9,\"poise\":10},")
+        TEXT("\"mixed\":{\"might\":10,\"wind\":7,\"endurance\":16,\"eye\":10,\"poise\":10},")
+        TEXT("\"broken\":{\"might\":40,\"endurance\":\"lots\",\"eye\":10,\"poise\":10},\"plain\":{\"might\":10,\"endurance\":10,\"eye\":10,\"poise\":10}},")
+        TEXT("\"equipment\":{\"old\":{\"right_hand\":\"fishing_rod\",\"head\":\"fishing_rod\",\"pocket\":\"camera\"}}}"), *Path);
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("legacy attributes load"), Store.Load(Error));
+        const FMarburgumStoreMigration& Migration = Store.GetMigration();
+        TestTrue(TEXT("old came from wind"), Migration.LegacyAliases.Contains(TEXT("old")));
+        TestTrue(TEXT("mixed conflict audited"), Migration.Conflicts.Contains(TEXT("mixed")));
+        TestTrue(TEXT("broken repaired"), Migration.Repaired.Contains(TEXT("broken")));
+        TestTrue(TEXT("misfit equipment repaired"), Migration.Repaired.Contains(TEXT("old")));
+        TestEqual(TEXT("wind became endurance"), Store.Get().Attributes.FindRef(TEXT("old"))[1], 14);
+        TestEqual(TEXT("other scores survive the rename"), Store.Get().Attributes.FindRef(TEXT("old"))[0], 12);
+        TestEqual(TEXT("canonical endurance wins"), Store.Get().Attributes.FindRef(TEXT("mixed"))[1], 16);
+        TestEqual(TEXT("might clamped"), Store.Get().Attributes.FindRef(TEXT("broken"))[0], 20);
+        TestEqual(TEXT("unusable endurance defaulted"), Store.Get().Attributes.FindRef(TEXT("broken"))[1], 10);
+        TestFalse(TEXT("a default character is not stored"), Store.Get().Attributes.Contains(TEXT("plain")));
+        const TMap<FString, FString> Slots = Store.Get().Equipment.FindRef(TEXT("old"));
+        TestTrue(TEXT("only the fitting slot survives"), Slots.Num() == 1 && Slots.FindRef(TEXT("right_hand")) == TEXT("fishing_rod"));
+        // The next commit writes the canonical record; loading it again migrates nothing.
+        FMarburgumWorldRecord Next = Store.Get();
+        ++Next.Revision;
+        TestTrue(TEXT("migrated commit"), Store.Commit(Next, Error));
+    }
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("migrated reload"), Store.Load(Error));
+        TestTrue(TEXT("migration is one-time"), Store.GetMigration().IsEmpty());
+        TestEqual(TEXT("endurance still 14"), Store.Get().Attributes.FindRef(TEXT("old"))[1], 14);
+        FString Written;
+        FFileHelper::LoadFileToString(Written, *Path);
+        TestFalse(TEXT("no wind left on disk"), Written.Contains(TEXT("wind")));
+    }
+    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":6,\"revision\":3}"), *Path);
+    {
+        FMarburgumWorldStore Store(Path);
+        TestTrue(TEXT("schema 6 loads"), Store.Load(Error));
+        TestTrue(TEXT("schema 6 has no attributes"), Store.Get().Attributes.IsEmpty());
+        TestTrue(TEXT("schema 6 has no equipment"), Store.Get().Equipment.IsEmpty());
+        TestTrue(TEXT("nothing to migrate"), Store.GetMigration().IsEmpty());
+    }
+
     // A schema this build does not know is refused rather than reinterpreted.
-    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":7,\"revision\":1}"), *Path);
+    FFileHelper::SaveStringToFile(TEXT("{\"format\":\"marburgumii.world_store\",\"schema_version\":8,\"revision\":1}"), *Path);
     {
         FMarburgumWorldStore Store(Path);
         TestFalse(TEXT("future schema refused"), Store.Load(Error));

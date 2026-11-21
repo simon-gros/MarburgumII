@@ -69,6 +69,11 @@ namespace
     {
         return MarburgumII::Gameplay::FindItem(Id) ? FName(*Id) : NAME_None;
     }
+
+    FName KnownSlot(const FString& Id)
+    {
+        return MarburgumII::Gameplay::FindEquipmentSlot(Id) ? FName(*Id) : NAME_None;
+    }
 }
 
 void AMarburgumPlayerController::BeginPlay()
@@ -381,6 +386,41 @@ void AMarburgumPlayerController::ServerRequestTrade_Implementation(FGuid Operati
     if (UMarburgumAuthorityService* Authority = UMarburgumAuthorityService::Get(World))
     {
         Receipt = Authority->HandleTrade(*this, OperationId, Target, Action, ItemId, Quantity);
+    }
+    else
+    {
+        Receipt.OperationId = OperationId;
+        Receipt.Outcome = EMarburgumRequestOutcome::Rejected;
+        Receipt.Reason = EMarburgumInteractionReason::AuthorityUnavailable;
+    }
+    ClientReceiveInteractionReceipt(Receipt);
+}
+
+void AMarburgumPlayerController::SubmitEquip(const FGuid& OperationId, FName SlotId, FName ItemId)
+{
+    if (IsLocalController())
+    {
+        ServerRequestEquip(OperationId, IdText(SlotId), ItemId.IsNone() ? FString() : IdText(ItemId));
+    }
+}
+
+void AMarburgumPlayerController::ServerRequestEquip_Implementation(FGuid OperationId, const FString& SlotText, const FString& ItemText)
+{
+    // Unknown text never becomes a name: an unknown slot or item arrives as None and is refused by the rules.
+    const FName SlotId = KnownSlot(SlotText);
+    const FName ItemId = ItemText.IsEmpty() ? NAME_None : KnownItem(ItemText);
+    UWorld* World = GetWorld();
+    if (!World || !AdmitRequest(TEXT("equip")))
+    {
+        return;
+    }
+    FMarburgumInteractionReceipt Receipt;
+    if (UMarburgumAuthorityService* Authority = UMarburgumAuthorityService::Get(World))
+    {
+        // An item text that names nothing is not an unequip: say so instead of emptying the slot.
+        Receipt = !ItemText.IsEmpty() && ItemId.IsNone()
+            ? Authority->HandleEquip(*this, OperationId, SlotId, FName(TEXT("unknown_item")))
+            : Authority->HandleEquip(*this, OperationId, SlotId, ItemId);
     }
     else
     {

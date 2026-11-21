@@ -11,6 +11,9 @@ void AMarburgumPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, bHasCharacter, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, bInventoryKnown, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Inventory, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Equipment, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, bAttributesKnown, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Attributes, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, bMissionsKnown, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, Missions, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(AMarburgumPlayerState, bLocationKnown, COND_OwnerOnly);
@@ -68,10 +71,31 @@ int32 AMarburgumPlayerState::CountItem(FName ItemId) const
     return Count;
 }
 
-void AMarburgumPlayerState::SetInventoryAuthority(const TArray<FMarburgumItemStack>& Stacks)
+FName AMarburgumPlayerState::GetEquipped(FName SlotId) const
+{
+    const FMarburgumEquippedItem* Found =
+        Equipment.FindByPredicate([SlotId](const FMarburgumEquippedItem& Entry) { return Entry.SlotId == SlotId; });
+    return Found ? Found->ItemId : NAME_None;
+}
+
+TArray<FName> AMarburgumPlayerState::GetSlotsHolding(FName ItemId) const
+{
+    TArray<FName> Slots;
+    for (const FMarburgumEquippedItem& Entry : Equipment)
+    {
+        if (Entry.ItemId == ItemId)
+        {
+            Slots.Add(Entry.SlotId);
+        }
+    }
+    return Slots;
+}
+
+void AMarburgumPlayerState::SetInventoryAuthority(const TArray<FMarburgumItemStack>& Stacks, const TArray<FMarburgumEquippedItem>& InEquipment)
 {
     check(HasAuthority());
     Inventory = Stacks;
+    Equipment = InEquipment;
     bInventoryKnown = true;
     ForceNetUpdate();
     OnInventoryChanged().Broadcast(this);
@@ -202,6 +226,30 @@ void AMarburgumPlayerState::OnRep_Progress()
 }
 
 FMarburgumPlayerStateChanged& AMarburgumPlayerState::OnProgressChanged()
+{
+    static FMarburgumPlayerStateChanged Event;
+    return Event;
+}
+
+void AMarburgumPlayerState::SetAttributesAuthority(const FMarburgumAttributes& InAttributes)
+{
+    check(HasAuthority());
+    if (bAttributesKnown && Attributes == InAttributes)
+    {
+        return;
+    }
+    Attributes = InAttributes;
+    bAttributesKnown = true;
+    ForceNetUpdate();
+    OnAttributesChanged().Broadcast(this);
+}
+
+void AMarburgumPlayerState::OnRep_Attributes()
+{
+    OnAttributesChanged().Broadcast(this);
+}
+
+FMarburgumPlayerStateChanged& AMarburgumPlayerState::OnAttributesChanged()
 {
     static FMarburgumPlayerStateChanged Event;
     return Event;

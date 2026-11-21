@@ -44,6 +44,10 @@ struct FMarburgumWorldRecord;
  * Europe/Ljubljana clock; a purchase or sale is decided by MarburgumRetailRules.h and stored with the character in
  * one commit.
  *
+ * Character sheet (ADR-085): attributes and equipped slots load with the inventory and replicate to the owner only; a
+ * legacy `wind` score or damaged entry found at load is normalized and committed once. Equipping is decided by
+ * MarburgumEquipmentRules.h; every commit keeps slots naming only copies the character still holds.
+ *
  * Nothing becomes visible to any client before it is on disk; a refusal or failed write changes
  * nothing. Options: -MB2WorldStore=<file> (default Saved/MarburgumII/WorldStore/<Map>.json),
  * -MB2StoreFaultInjection (test-only write faults, see FMarburgumWorldStore), -MB2ClockHour=<h> and
@@ -70,6 +74,9 @@ public:
 
     virtual FMarburgumInteractionReceipt HandlePhotograph(AMarburgumPlayerController& Requester, const FGuid& OperationId) override;
 
+    virtual FMarburgumInteractionReceipt HandleEquip(AMarburgumPlayerController& Requester, const FGuid& OperationId, FName SlotId,
+        FName ItemId) override;
+
 private:
     /** One player's line in the water. */
     struct FCast
@@ -87,6 +94,8 @@ private:
     void RestoreCondition(AMarburgumPlayerState& State) const;
     void SaveCondition(const AMarburgumPlayerState& State, const TCHAR* Why);
     void ApplyInventory(AMarburgumPlayerState& State) const;
+    /** At load: log what the store normalized in attributes and equipment, and make it durable once (ADR-085). */
+    void MigrateCharacterSheets();
     void ApplyStocks() const;
     /** Put every counter's shelves and open state on its keeper; also run when the hours may have turned. */
     void ApplyShops();
