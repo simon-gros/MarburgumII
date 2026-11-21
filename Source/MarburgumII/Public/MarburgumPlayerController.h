@@ -103,6 +103,13 @@ public:
 
     void SubmitTrade(const FGuid& OperationId, AMarburgumInteractable* Target, EMarburgumTradeAction Action, FName ItemId, int32 Quantity);
 
+    /**
+     * Client: put ItemId in equipment slot SlotId, or empty the slot when ItemId is None (ADR-085). Like SubmitInteraction:
+     * the same id is safe to resend, and the answer arrives as an interaction receipt. It does not touch the pending
+     * interaction the E prompt shows; the sheet that asked tracks its own operation.
+     */
+    void SubmitEquip(const FGuid& OperationId, FName SlotId, FName ItemId);
+
     /** Client: the counter keeper B would open, the interaction candidate when it keeps a counter. */
     AMarburgumInteractable* FindShopCandidate() const;
 
@@ -193,6 +200,10 @@ protected:
 
     UFUNCTION(Server, Reliable)
     void ServerRequestPhotograph(FGuid OperationId);
+
+    /** Slot and item travel as text, like the trade ids; an empty item asks to empty the slot. */
+    UFUNCTION(Server, Reliable)
+    void ServerRequestEquip(FGuid OperationId, const FString& SlotId, const FString& ItemId);
 
     /** SeatId empty asks for the driver's seat. Text, like the mission and trade ids above. */
     UFUNCTION(Server, Reliable)

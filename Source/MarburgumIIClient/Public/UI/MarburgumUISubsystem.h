@@ -67,6 +67,10 @@ public:
     /** Show or hide the character_panel (C key). */
     bool ToggleCharacter();
     bool IsCharacterOpen() const;
+    /** Opens the Character sheet (if it is not open) on SlotId's card (ADR-085). */
+    bool ShowCharacterSlot(FName SlotId);
+    UMarburgumCharacterPanel* GetCharacterPanelForTest() const { return CharacterPanel; }
+    UMarburgumInventoryPanel* GetInventoryPanelForTest() const { return Inventory; }
 
     /**
      * Escape in play: closes an open decision, counter or management screen; with none open, opens or closes the

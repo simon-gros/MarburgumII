@@ -12,6 +12,7 @@
 #include "Components/WrapBox.h"
 #include "Engine/GameInstance.h"
 #include "MarburgumGameplayContract.h"
+#include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
 #include "Session/MarburgumSessionSubsystem.h"
 #include "UI/MarburgumEvidenceText.h"
@@ -155,13 +156,94 @@ void UMarburgumInventoryPanel::NativeConstruct()
 {
     Super::NativeConstruct();
     InventoryHandle = AMarburgumPlayerState::OnInventoryChanged().AddUObject(this, &UMarburgumInventoryPanel::HandleInventoryChanged);
+    BindReceipts();
     Rebuild();
 }
 
 void UMarburgumInventoryPanel::NativeDestruct()
 {
     AMarburgumPlayerState::OnInventoryChanged().Remove(InventoryHandle);
+    if (AMarburgumPlayerController* Source = ReceiptSource.Get())
+    {
+        Source->OnInteractionReceipt.Remove(ReceiptHandle);
+    }
+    ReceiptSource.Reset();
     Super::NativeDestruct();
+}
+
+void UMarburgumInventoryPanel::BindReceipts()
+{
+    AMarburgumPlayerController* Controller = Cast<AMarburgumPlayerController>(GetOwningPlayer());
+    if (Controller == ReceiptSource.Get())
+    {
+        return;
+    }
+    if (AMarburgumPlayerController* Old = ReceiptSource.Get())
+    {
+        Old->OnInteractionReceipt.Remove(ReceiptHandle);
+    }
+    ReceiptSource = Controller;
+    if (Controller)
+    {
+        ReceiptHandle = Controller->OnInteractionReceipt.AddUObject(this, &UMarburgumInventoryPanel::HandleReceipt);
+    }
+}
+
+void UMarburgumInventoryPanel::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+    Super::NativeTick(MyGeometry, InDeltaTime);
+    if (Pending.IsPending() && Pending.Expire())
+    {
+        Notice = LOCTEXT("NoAnswer", "No answer from the server. Nothing changed that the server has confirmed; try again.");
+        NoticeTone = ETone::Warning;
+        Refresh();
+    }
+}
+
+void UMarburgumInventoryPanel::HandleReceipt(const FMarburgumInteractionReceipt& Receipt)
+{
+    if (Pending.Accept(Receipt))
+    {
+        Notice = EquipReceiptText(Receipt, NoticeTone);
+        Refresh();
+    }
+}
+
+void UMarburgumInventoryPanel::Request(FName SlotId, FName ItemId)
+{
+    if (Pending.Submit(Cast<AMarburgumPlayerController>(GetOwningPlayer()), SlotId, ItemId))
+    {
+        Notice = FText::GetEmpty();
+        Refresh();
+    }
+}
+
+bool UMarburgumInventoryPanel::RequestForTest(FName SlotId)
+{
+    const TPair<FName, FName>* Offer = OfferedActions.FindByPredicate([SlotId](const TPair<FName, FName>& Entry) { return Entry.Key == SlotId; });
+    if (!Offer)
+    {
+        return false;
+    }
+    Request(Offer->Key, Offer->Value);
+    return Pending.IsPending();
+}
+
+void UMarburgumInventoryPanel::Refresh()
+{
+    if (!IsOpen())
+    {
+        return;
+    }
+    const bool bHadFocus = HasFocusedDescendants();
+    Rebuild();
+    if (bHadFocus)
+    {
+        if (UWidget* Focus = GetPreferredFocus())
+        {
+            Focus->SetFocus();
+        }
+    }
 }
 
 void UMarburgumInventoryPanel::SetOpen(bool bOpen)
@@ -169,6 +251,7 @@ void UMarburgumInventoryPanel::SetOpen(bool bOpen)
     SetVisibility(bOpen ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed);
     if (bOpen)
     {
+        BindReceipts();
         Rebuild();
         if (Scroller)
         {
@@ -285,6 +368,15 @@ void UMarburgumInventoryPanel::Rebuild()
         UTextBlock* Name = B.Text(Definition ? FText::FromString(MarburgumII::Gameplay::Localized(Definition->DisplayName)) : FText::FromName(Stack.ItemId), ETypeRole::Label);
         Name->SetAutoWrapText(true);
         FBuilder::Stack(Tile, Name, 0.f, true);
+        // Where it is in use, in words (ADR-085): never a colour or an icon alone.
+        const TArray<FName> InSlots = State->GetSlotsHolding(Stack.ItemId);
+        if (!InSlots.IsEmpty())
+        {
+            const FText Where = InSlots.Num() == 1 ? MarburgumUI::SlotName(InSlots[0])
+                : FText::Format(LOCTEXT("ManySlots", "{0} slots"), FText::AsNumber(InSlots.Num()));
+            FBuilder::Stack(Tile, B.GlyphText(EMarburgumGlyph::Check, Caps(FText::Format(LOCTEXT("InUse", "In use: {0}"), Where)),
+                ETypeRole::Overline, T.Color.Success), T.Space.XXS);
+        }
         FBuilder::Stack(Tile, B.Text(Caps(KindName(Kind)), ETypeRole::Overline, T.Color.TextMuted), 0.f);
 
         USizeBox* Size = WidgetTree->ConstructWidget<USizeBox>();
@@ -392,6 +484,78 @@ void UMarburgumInventoryPanel::ShowDetail(FName ItemId)
         FBuilder::Stack(DetailBox, B.Spacer(1.f, T.Space.M), 0.f);
     }
 
+    // Wear or hold (ADR-085): every slot the item fits, with what putting it there or taking it out would do.
+    OfferedActions.Reset();
+    bool bWearable = false;
+    for (const FEquipmentSlotDefinition& Def : EquipmentSlots)
+    {
+        bWearable |= FitsSlot(Id, Def.Id);
+    }
+    if (bWearable)
+    {
+        FBuilder::Stack(DetailBox, B.SectionTitle(LOCTEXT("WearHold", "WEAR OR HOLD"), T.Color.Accent), T.Space.S);
+        const TArray<FName> InSlots = State->GetSlotsHolding(ItemId);
+        const bool bFree = Quantity > InSlots.Num();
+        const bool bBusy = Pending.IsPending();
+        for (const FEquipmentSlotDefinition& Def : EquipmentSlots)
+        {
+            if (!FitsSlot(Id, Def.Id))
+            {
+                continue;
+            }
+            const FName SlotId(Def.Id);
+            const FName Worn = State->GetEquipped(SlotId);
+            const bool bHere = Worn == ItemId;
+            const bool bEnabled = !bBusy && (bHere || bFree);
+            const FText Label = bHere ? MarburgumUI::UnequipVerb(SlotId)
+                : Worn.IsNone() ? MarburgumUI::EquipVerb(SlotId)
+                : FText::Format(LOCTEXT("Instead", "{0}, instead of {1}"), MarburgumUI::EquipVerb(SlotId), MarburgumUI::ItemName(Worn));
+            UHorizontalBox* Line = B.Row();
+            FBuilder::Inline(Line, B.Glyph(MarburgumUI::SlotGlyph(SlotId), bEnabled ? T.Color.Accent : T.Color.TextMuted, T.Icon.Small), T.Space.S);
+            UVerticalBox* Words = B.Column();
+            UTextBlock* Text = B.Text(Label, ETypeRole::Label, bEnabled ? T.Color.TextPrimary : T.Color.TextMuted);
+            Text->SetAutoWrapText(true);
+            FBuilder::Stack(Words, Text, 0.f);
+            if (bHere)
+            {
+                FBuilder::Stack(Words, B.Text(Caps(LOCTEXT("InThisSlot", "In use here")), ETypeRole::Overline, T.Color.Success), 0.f);
+            }
+            else if (!bFree && !bBusy)
+            {
+                UTextBlock* Why = B.Text(FText::Format(LOCTEXT("OnlyOneElsewhere", "Your only one is in your {0}; put it away there first."),
+                    InSlots.IsEmpty() ? FText::GetEmpty() : MarburgumUI::SlotName(InSlots[0]).ToLower()), ETypeRole::Caption, T.Color.TextMuted);
+                Why->SetAutoWrapText(true);
+                FBuilder::Stack(Words, Why, 0.f);
+            }
+            FBuilder::Inline(Line, Words, 0.f, true);
+            if (!bEnabled)
+            {
+                FBuilder::Stack(DetailBox, Line, T.Space.S);
+                continue;
+            }
+            UMarburgumSelectable* Row = B.Selectable(Line, FMargin(T.Space.M, T.Space.S));
+            const FName Wanted = bHere ? NAME_None : ItemId;
+            Row->OnActivated.BindWeakLambda(this, [this, SlotId, Wanted]() { Request(SlotId, Wanted); });
+            FBuilder::Stack(DetailBox, Row, T.Space.XS);
+            OfferedActions.Add({ SlotId, Wanted });
+        }
+        if (bBusy)
+        {
+            FBuilder::Stack(DetailBox, B.GlyphText(EMarburgumGlyph::Clock, LOCTEXT("Waiting", "Asked the server; waiting for its answer."),
+                ETypeRole::Caption, ToneColor(ETone::Info)), T.Space.S);
+        }
+        else if (!Notice.IsEmpty())
+        {
+            UTextBlock* Said = B.Text(Notice, ETypeRole::Caption, ToneColor(NoticeTone));
+            Said->SetAutoWrapText(true);
+            FBuilder::Stack(DetailBox, Said, T.Space.S);
+        }
+        UTextBlock* KeepNote = B.Text(LOCTEXT("EquipKeepNote", "Worn or held, it is still one of the things you carry. The Character sheet [C] shows every slot."),
+            ETypeRole::Caption, T.Color.TextMuted);
+        KeepNote->SetAutoWrapText(true);
+        FBuilder::Stack(DetailBox, KeepNote, T.Space.L);
+    }
+
     FBuilder::Stack(DetailBox, B.SectionTitle(LOCTEXT("Actions", "WHAT YOU CAN DO"), T.Color.Accent), T.Space.S);
     bool bAnyCounter = false;
     for (const FShopDefinition& Shop : Shops)
@@ -416,6 +580,8 @@ void UMarburgumInventoryPanel::ShowDetail(FName ItemId)
             ? LOCTEXT("ClueNote", "Evidence is handed over when a mission asks for it; talk to the person who needs it.")
             : Kind == EItemKind::Photo
             ? LOCTEXT("PhotoNote", "A print of your own photograph. Somebody who asked for it will want to see it; the subject stays documented either way.")
+            : bWearable
+            ? LOCTEXT("WearableNote", "Missions and counters that want it will ask. Wearing or holding it changes no score yet.")
             : LOCTEXT("NoAction", "Nothing to do with it from here. Missions and counters that want it will ask."),
         ETypeRole::Caption, T.Color.TextMuted);
     Note->SetAutoWrapText(true);

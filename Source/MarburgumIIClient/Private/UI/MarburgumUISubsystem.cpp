@@ -585,6 +585,16 @@ bool UMarburgumUISubsystem::ToggleCharacter()
     return ToggleScreen(EMarburgumScreen::Character);
 }
 
+bool UMarburgumUISubsystem::ShowCharacterSlot(FName SlotId)
+{
+    if (!CharacterPanel || (!CharacterPanel->IsOpen() && !ToggleCharacter()))
+    {
+        return false;
+    }
+    CharacterPanel->SelectSlot(SlotId);
+    return true;
+}
+
 
 bool UMarburgumUISubsystem::ScrollOpenScreen(float Lines)
 {
@@ -1004,6 +1014,17 @@ void UMarburgumUISubsystem::HandleInteractionReceipt(const FMarburgumInteraction
         Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"),
             FText::Format(LOCTEXT("Caught", "You landed a {0}. Saved by the server."), ItemName), MarburgumUI::ETone::Success, false, EMarburgumGlyph::Fish);
         PushRewards();
+        return;
+    }
+    if (Receipt.Effect == EMarburgumInteractionEffect::ItemEquipped || Receipt.Effect == EMarburgumInteractionEffect::ItemUnequipped
+        || !Receipt.SlotId.IsNone() || Receipt.Reason == EMarburgumInteractionReason::UnknownSlot
+        || Receipt.Reason == EMarburgumInteractionReason::NotEquippable)
+    {
+        // Equipment (ADR-085): one line per request, worded as the sheet words it; keyed by operation, so a repeat replaces it.
+        MarburgumUI::ETone Tone = MarburgumUI::ETone::Neutral;
+        const FText Said = MarburgumUI::EquipReceiptText(Receipt, Tone);
+        Feed->Push(Key, bApplied ? LOCTEXT("EquipmentKind", "EQUIPMENT") : LOCTEXT("ReceiptKind", "SERVER RECEIPT"), Said, Tone, false,
+            bApplied ? EMarburgumGlyph::Check : EMarburgumGlyph::Info);
         return;
     }
     if (Receipt.Effect == EMarburgumInteractionEffect::ItemBought || Receipt.Effect == EMarburgumInteractionEffect::ItemSold)

@@ -1,6 +1,6 @@
 # The Foto Vidmar investigation with keyboard and mouse or a gamepad — evidence, 21 November 2026
 
-UI-02 input work for the investigation (ADR-085): left-stick movement, right-stick aiming, gamepad actions for
+UI-02 input work for the investigation (ADR-086): left-stick movement, right-stick aiming, gamepad actions for
 interaction, photography, Journal/Inventory, confirm and back; a clickable, focusable decision card; key hints that follow
 the device in use. Two short parts of the existing story are the acceptance cases: photographing the order-book page in
 Chapter VI (`raeda_the_negative`, `copy_order_book`) and the Frame 37 deduction at the light table (`nika_frame_37`,

@@ -18,6 +18,8 @@
 #   editor  uncooked UnrealEditor -server / -game processes (requires UE_ROOT)
 #   scenarios default to frontend,gallery,fail,recover; "all" adds tour and matrix.
 #   MB2_CAPTURE_MATRIX="1920x1080@1.0 1280x720@1.5 ..." narrows the matrix.
+#   MB2_CAPTURE_MATRIX_TOUR="explore,interact,equip:right_hand:fishing_rod,character:right_hand,..." replaces the matrix's
+#   tour steps (character:<slot>, inventory:<item> and equip:<slot>:<item> included, ADR-085).
 #   MB2_CAPTURE_CULTURE=sl renders every client in Slovene (-culture=sl; QA U11), with "-sl" in the evidence folder.
 #   The live server's clock and weather are held (MB2_CAPTURE_CLOCK, default a June afternoon, clear_dry), so before
 #   and after captures compare the interface and not the hour they were taken.
@@ -244,7 +246,7 @@ if wants tour || wants matrix; then
             scale="${case#*@}"
             code=0
             run_world_client "m-$resolution-$scale" "${resolution%x*}" "${resolution#*x}" "$scale" \
-                "explore,interact,character,skills,inventory,journal,settings,menu" || code=$?
+                "${MB2_CAPTURE_MATRIX_TOUR:-explore,interact,character,skills,inventory,journal,settings,menu}" || code=$?
             record "matrix $resolution @ $scale" "$code"
         done
     fi

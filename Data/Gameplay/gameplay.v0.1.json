@@ -16,7 +16,11 @@
         "source": "original Marburgum project/data/items.json",
         "source_version": 3,
         "note": "Identifier and English name carried forward; no legacy code or asset."
-      }
+      },
+      "equip_slots": [
+        "right_hand",
+        "left_hand"
+      ]
     },
     {
       "id": "chub",
@@ -628,7 +632,11 @@
       "provenance": {
         "source": "original Marburgum docs/PHOTOGRAPHY_SKILL_ROADMAP.md and NARRATIVE_BIBLE.md (Nika Vidmar)",
         "note": "Marburgum II extension (ADR-081), newly authored; not in the original repository."
-      }
+      },
+      "equip_slots": [
+        "right_hand",
+        "left_hand"
+      ]
     },
     {
       "id": "nika_old_prints",
@@ -1049,6 +1057,140 @@
         }
       }
     ]
+  },
+  "character_sheet": {
+    "attributes": {
+      "min_score": 1,
+      "max_score": 20,
+      "default_score": 10,
+      "modifier": "floor((score - default_score) / 2)",
+      "effects": "none yet: the scores are server-owned and shown, but no blow, cast, price, run or swim reads them until a balancing decision says how",
+      "entries": [
+        {
+          "id": "might",
+          "name": {
+            "en": "Might",
+            "sl": "Moč"
+          },
+          "summary": {
+            "en": "Strength for carrying loads and strenuous work.",
+            "sl": "Telesna moč za nošenje bremen in težko delo."
+          }
+        },
+        {
+          "id": "endurance",
+          "name": {
+            "en": "Endurance",
+            "sl": "Kondicija"
+          },
+          "summary": {
+            "en": "Staying power over long effort. Not the stamina you spend running, which comes back as you rest.",
+            "sl": "Kondicija za dolgotrajen napor. Ni sapa, ki jo porabiš pri teku in se vrne, ko počiješ."
+          },
+          "legacy_aliases": [
+            "wind"
+          ]
+        },
+        {
+          "id": "eye",
+          "name": {
+            "en": "Eye",
+            "sl": "Oko"
+          },
+          "summary": {
+            "en": "Noticing details and doing precise work.",
+            "sl": "Opažanje podrobnosti in natančno delo."
+          }
+        },
+        {
+          "id": "poise",
+          "name": {
+            "en": "Poise",
+            "sl": "Zbranost"
+          },
+          "summary": {
+            "en": "Composure and a steady hand under pressure.",
+            "sl": "Mirnost in trdna roka pod pritiskom."
+          }
+        }
+      ],
+      "provenance": {
+        "source": "original Marburgum src/shared/character_stats.{h,cpp} (Might, Wind, Eye, Poise; 1-20, default 10)",
+        "note": "Scores, range and modifier carried forward; the original attribute Wind is Endurance in Marburgum II (Docs/LEGACY_RPG_SYSTEMS_IMPORT_ROADMAP.md, ADR-085). `wind` is read only as a legacy alias and never written. Slovene names await native-speaker review; Endurance is Kondicija because the interface already calls Stamina Vzdržljivost."
+      }
+    },
+    "equipment_slots": {
+      "entries": [
+        {
+          "id": "head",
+          "name": {
+            "en": "Head",
+            "sl": "Glava"
+          },
+          "column": "left"
+        },
+        {
+          "id": "coat",
+          "name": {
+            "en": "Coat",
+            "sl": "Plašč"
+          },
+          "column": "left"
+        },
+        {
+          "id": "trousers",
+          "name": {
+            "en": "Trousers",
+            "sl": "Hlače"
+          },
+          "column": "left"
+        },
+        {
+          "id": "shoes",
+          "name": {
+            "en": "Shoes",
+            "sl": "Čevlji"
+          },
+          "column": "left"
+        },
+        {
+          "id": "hands",
+          "name": {
+            "en": "Hands",
+            "sl": "Roke"
+          },
+          "column": "right"
+        },
+        {
+          "id": "right_hand",
+          "name": {
+            "en": "Right hand",
+            "sl": "Desna roka"
+          },
+          "column": "right"
+        },
+        {
+          "id": "left_hand",
+          "name": {
+            "en": "Left hand",
+            "sl": "Leva roka"
+          },
+          "column": "right"
+        },
+        {
+          "id": "bag",
+          "name": {
+            "en": "Bag",
+            "sl": "Torba"
+          },
+          "column": "right"
+        }
+      ],
+      "provenance": {
+        "source": "original Marburgum src/client/character_panel.cpp SLOTS and src/server/world_simulation.cpp equipment",
+        "note": "Slot ids, labels and sheet columns carried forward. The original never equipped anything; which items fit which slot is authored per item (`equip_slots`) in Marburgum II. Slovene names await native-speaker review."
+      }
+    }
   },
   "fishing": {
     "timing": {
@@ -3102,9 +3244,9 @@
   ],
   "world_store": {
     "format": "marburgumii.world_store",
-    "schema_version": 6,
+    "schema_version": 7,
     "oldest_readable_schema": 1,
-    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition (ADR-020); schema 4 adds skill XP, money and mission outcomes (ADR-047, ADR-049); schema 5 adds shop shelves and each character's first purchase per shop (ADR-060); schema 6 adds each character's documented photo subjects (discoveries, ADR-081)."
+    "adapter": "development JSON file per map, atomic replace (ADR-014); schema 2 adds per-character missions and typed receipts; schema 3 adds per-character condition (ADR-020); schema 4 adds skill XP, money and mission outcomes (ADR-047, ADR-049); schema 5 adds shop shelves and each character's first purchase per shop (ADR-060); schema 6 adds each character's documented photo subjects (discoveries, ADR-081); schema 7 adds each character's four attribute scores (Might, Endurance, Eye, Poise; legacy `wind` read as Endurance) and equipped slots, and the slot of equipment receipts (ADR-085)."
   },
   "condition": {
     "walk_speed_mps": 2.2,

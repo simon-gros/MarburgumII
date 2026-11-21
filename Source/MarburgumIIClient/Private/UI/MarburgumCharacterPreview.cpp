@@ -11,6 +11,7 @@
 #include "Components/PointLightComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
@@ -123,6 +124,21 @@ AMarburgumCharacterPreviewStage::AMarburgumCharacterPreviewStage()
     Key->LightingChannels = StageChannel();
     Key->SetAtmosphereSunLight(false);
     Key->SetCastShadows(true);
+
+    // In a game world a second directional light would reach the city whatever its lighting channel (Lumen), so the
+    // in-game sheet keys the body with this spot instead (SetWorldSafe): from the same side, reaching nothing but the stage.
+    KeySpot = CreateDefaultSubobject<USpotLightComponent>(TEXT("KeySpot"));
+    KeySpot->SetupAttachment(Root);
+    KeySpot->SetRelativeLocation(FVector(260.0, 190.0, 330.0));
+    KeySpot->SetRelativeRotation(FRotator(-38.0, 215.0, 0.0));
+    KeySpot->SetIntensityUnits(ELightUnits::Candelas);
+    KeySpot->SetIntensity(90.f);
+    KeySpot->SetAttenuationRadius(900.f);
+    KeySpot->SetOuterConeAngle(40.f);
+    KeySpot->SetInnerConeAngle(20.f);
+    KeySpot->SetCastShadows(true);
+    KeySpot->LightingChannels = StageChannel();
+    KeySpot->SetVisibility(false);
 
     Fill = CreateDefaultSubobject<UPointLightComponent>(TEXT("Fill"));
     Fill->SetupAttachment(Root);
@@ -244,6 +260,19 @@ void AMarburgumCharacterPreviewStage::SetCapturing(bool bCapturing)
     Capture->bCaptureEveryFrame = bCapturing;
     Body->SetComponentTickEnabled(bCapturing);
     Body->bPauseAnims = !bCapturing;
+    // Lights only while something looks at the stage: an idle stage costs the world nothing.
+    Key->SetVisibility(bCapturing && !bWorldSafe);
+    KeySpot->SetVisibility(bCapturing && bWorldSafe);
+    Fill->SetVisibility(bCapturing);
+    Rim->SetVisibility(bCapturing);
+}
+
+void AMarburgumCharacterPreviewStage::SetWorldSafe(bool bInWorldSafe)
+{
+    bWorldSafe = bInWorldSafe;
+    const bool bCapturing = Capture->bCaptureEveryFrame;
+    Key->SetVisibility(bCapturing && !bWorldSafe);
+    KeySpot->SetVisibility(bCapturing && bWorldSafe);
 }
 
 void UMarburgumCharacterPreview::NativeOnInitialized()
@@ -330,6 +359,8 @@ AMarburgumCharacterPreviewStage* UMarburgumCharacterPreview::EnsureStage()
     AMarburgumCharacterPreviewStage* Spawned = World->SpawnActor<AMarburgumCharacterPreviewStage>(StageLocation, FRotator::ZeroRotator, Parameters);
     if (Spawned)
     {
+        Spawned->SetWorldSafe(bWorldSafe);
+        Spawned->SetCapturing(false);
         Spawned->SetTarget(Target);
         Spawned->SetYaw(Yaw);
         Spawned->SetFraming(Aspect, Zoom);
@@ -337,6 +368,15 @@ AMarburgumCharacterPreviewStage* UMarburgumCharacterPreview::EnsureStage()
     Stage = Spawned;
     ShownModel = INDEX_NONE;
     return Spawned;
+}
+
+void UMarburgumCharacterPreview::SetWorldSafe(bool bInWorldSafe)
+{
+    bWorldSafe = bInWorldSafe;
+    if (AMarburgumCharacterPreviewStage* Current = Stage.Get())
+    {
+        Current->SetWorldSafe(bWorldSafe);
+    }
 }
 
 void UMarburgumCharacterPreview::ShowModel(int32 Index)

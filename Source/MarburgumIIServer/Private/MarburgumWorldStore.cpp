@@ -180,6 +180,37 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
     }
     Root->SetObjectField(TEXT("discoveries"), Discoveries);
 
+    // Canonical ids only: a legacy `wind` read at load is written back as `endurance` (ADR-085).
+    TSharedRef<FJsonObject> Attributes = MakeShared<FJsonObject>();
+    for (const FString& Character : SortedKeys(Source.Attributes))
+    {
+        const MarburgumII::CharacterSheet::FScores& Scores = Source.Attributes[Character];
+        TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+        for (int32 Index = 0; Index < MarburgumII::CharacterSheet::AttributeCount; ++Index)
+        {
+            Entry->SetNumberField(MarburgumII::Gameplay::Attributes[Index].Id, Scores[Index]);
+        }
+        Attributes->SetObjectField(Character, Entry);
+    }
+    Root->SetObjectField(TEXT("attributes"), Attributes);
+
+    TSharedRef<FJsonObject> Equipment = MakeShared<FJsonObject>();
+    for (const FString& Character : SortedKeys(Source.Equipment))
+    {
+        const TMap<FString, FString>& Slots = Source.Equipment[Character];
+        if (Slots.IsEmpty())
+        {
+            continue;
+        }
+        TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+        for (const FString& Slot : SortedKeys(Slots))
+        {
+            Entry->SetStringField(Slot, Slots[Slot]);
+        }
+        Equipment->SetObjectField(Character, Entry);
+    }
+    Root->SetObjectField(TEXT("equipment"), Equipment);
+
     TSharedRef<FJsonObject> Receipts = MakeShared<FJsonObject>();
     for (const FString& Operation : SortedKeys(Source.Receipts))
     {
@@ -217,6 +248,10 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
         {
             Entry->SetStringField(TEXT("shop"), Receipt.Shop);
         }
+        if (!Receipt.Slot.IsEmpty())
+        {
+            Entry->SetStringField(TEXT("slot"), Receipt.Slot);
+        }
         if (!Receipt.SkillXp.IsEmpty())
         {
             TSharedRef<FJsonObject> Xp = MakeShared<FJsonObject>();
@@ -239,8 +274,10 @@ FString FMarburgumWorldStore::Serialize(const FMarburgumWorldRecord& Source)
     return Text;
 }
 
-bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecord& Out, int32& OutSchema, FString& OutError)
+bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecord& Out, int32& OutSchema, FString& OutError,
+    FMarburgumStoreMigration& OutMigration)
 {
+    FMarburgumStoreMigration Migration;
     TSharedPtr<FJsonObject> Root;
     if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) || !Root.IsValid())
     {
@@ -456,6 +493,92 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
             }
         }
     }
+    const TSharedPtr<FJsonObject>* Attributes = nullptr;
+    if (Root->TryGetObjectField(TEXT("attributes"), Attributes))
+    {
+        using namespace MarburgumII::CharacterSheet;
+        for (const auto& Character : (*Attributes)->Values)
+        {
+            const FString Key(*Character.Key);
+            const TSharedPtr<FJsonObject> Entry = Character.Value->AsObject();
+            if (!Entry.IsValid())
+            {
+                // Not an entry at all: the character keeps the default scores, and the record says so on the next commit.
+                Migration.Repaired.AddUnique(Key);
+                Migration.Notes.Add(FString::Printf(TEXT("%s: attributes not an object, default"), *Key));
+                continue;
+            }
+            FRawScores Raw;
+            for (const auto& Field : Entry->Values)
+            {
+                double Number = 0.0;
+                if (Field.Value->TryGetNumber(Number) && FMath::IsFinite(Number))
+                {
+                    Raw.Numbers.Add(FString(*Field.Key), Number);
+                }
+                else
+                {
+                    Raw.Invalid.Add(FString(*Field.Key));
+                }
+            }
+            FNormalizeReport Report;
+            const FScores Scores = Normalize(Raw, Report);
+            if (Report.bLegacyAlias)
+            {
+                Migration.LegacyAliases.AddUnique(Key);
+            }
+            if (Report.bConflict)
+            {
+                Migration.Conflicts.AddUnique(Key);
+            }
+            if (Report.bRepaired)
+            {
+                Migration.Repaired.AddUnique(Key);
+            }
+            for (const FString& Note : Report.Notes)
+            {
+                Migration.Notes.Add(FString::Printf(TEXT("%s: %s"), *Key, *Note));
+            }
+            if (!Scores.IsDefault())
+            {
+                Parsed.Attributes.Add(Key, Scores);
+            }
+        }
+    }
+    const TSharedPtr<FJsonObject>* Equipment = nullptr;
+    if (Root->TryGetObjectField(TEXT("equipment"), Equipment))
+    {
+        for (const auto& Character : (*Equipment)->Values)
+        {
+            const FString Key(*Character.Key);
+            const TSharedPtr<FJsonObject> Entry = Character.Value->AsObject();
+            if (!Entry.IsValid())
+            {
+                Migration.Repaired.AddUnique(Key);
+                continue;
+            }
+            TMap<FString, FString> Slots;
+            for (const auto& Field : Entry->Values)
+            {
+                const FString SlotId(*Field.Key);
+                FString Item;
+                // A slot this build does not know, or an item that does not fit it, is dropped rather than trusted.
+                if (Field.Value->TryGetString(Item) && MarburgumII::Gameplay::FindEquipmentSlot(SlotId) && MarburgumII::Gameplay::FitsSlot(Item, SlotId))
+                {
+                    Slots.Add(SlotId, Item);
+                }
+                else
+                {
+                    Migration.Repaired.AddUnique(Key);
+                    Migration.Notes.Add(FString::Printf(TEXT("%s: equipment %s dropped"), *Key, *SlotId));
+                }
+            }
+            if (!Slots.IsEmpty())
+            {
+                Parsed.Equipment.Add(Key, MoveTemp(Slots));
+            }
+        }
+    }
     const TSharedPtr<FJsonObject>* Receipts = nullptr;
     if (Root->TryGetObjectField(TEXT("receipts"), Receipts))
     {
@@ -494,6 +617,7 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
                 Receipt.MoneyDelta = static_cast<int64>(MoneyDelta);
             }
             Entry->TryGetStringField(TEXT("shop"), Receipt.Shop);
+            Entry->TryGetStringField(TEXT("slot"), Receipt.Slot);
             const TSharedPtr<FJsonObject>* Xp = nullptr;
             if (Entry->TryGetObjectField(TEXT("skill_xp"), Xp))
             {
@@ -509,6 +633,7 @@ bool FMarburgumWorldStore::Deserialize(const FString& Text, FMarburgumWorldRecor
     }
     Out = MoveTemp(Parsed);
     OutSchema = Schema;
+    OutMigration = MoveTemp(Migration);
     return true;
 }
 
@@ -600,6 +725,7 @@ bool FMarburgumWorldStore::Load(FString& OutError)
     {
         return false;
     }
+    Migration = FMarburgumStoreMigration();
     if (!Files.FileExists(*Path))
     {
         Record = FMarburgumWorldRecord();
@@ -612,7 +738,7 @@ bool FMarburgumWorldStore::Load(FString& OutError)
         OutError = TEXT("could not read the store file");
         return false;
     }
-    return Deserialize(Text, Record, LoadedSchema, OutError);
+    return Deserialize(Text, Record, LoadedSchema, OutError, Migration);
 }
 
 bool FMarburgumWorldStore::Commit(const FMarburgumWorldRecord& Next, FString& OutError)

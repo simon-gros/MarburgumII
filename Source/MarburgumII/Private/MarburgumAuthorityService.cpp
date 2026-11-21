@@ -50,6 +50,8 @@ namespace MarburgumII::Gameplay
         case EMarburgumInteractionReason::NothingInFrame: return TEXT("nothing_in_frame");
         case EMarburgumInteractionReason::AlreadyPhotographed: return TEXT("already_photographed");
         case EMarburgumInteractionReason::WrongConclusion: return TEXT("wrong_conclusion");
+        case EMarburgumInteractionReason::UnknownSlot: return TEXT("unknown_slot");
+        case EMarburgumInteractionReason::NotEquippable: return TEXT("not_equippable");
         }
         return TEXT("unknown");
     }
@@ -68,6 +70,8 @@ namespace MarburgumII::Gameplay
         case EMarburgumInteractionEffect::ItemBought: return TEXT("item_bought");
         case EMarburgumInteractionEffect::ItemSold: return TEXT("item_sold");
         case EMarburgumInteractionEffect::Photographed: return TEXT("photographed");
+        case EMarburgumInteractionEffect::ItemEquipped: return TEXT("item_equipped");
+        case EMarburgumInteractionEffect::ItemUnequipped: return TEXT("item_unequipped");
         }
         return TEXT("unknown");
     }
