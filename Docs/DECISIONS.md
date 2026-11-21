@@ -1296,6 +1296,41 @@ Simon asked to encrypt the traffic. This also closes the server half of QA **AR1
 
 **Evidence.** [INPUT_INVESTIGATION_EVIDENCE.md](INPUT_INVESTIGATION_EVIDENCE.md). Owner playtest: **not yet**.
 
+## ADR-087 — Trees and bushes only on grass, from the original game's survey and species meshes (GFX-01, VQ-022; implemented 2026-11-21; owner approval OPEN)
+
+**Context.** The playable square had no trees or shrubs (VQ-022, the first deficiency of the GFX-00 baseline). The original game placed the trees and bushes of each 512 m window from the ARSO 2014 survey (`<window>_plants.json`, species by ecological region) on whatever the survey put under a crown: pavements, yards and car parks included. The owner's instruction for this map: **plants only on grass**, ground that is not pavement, road, square, path, building or water, so far fewer plants than the original.
+
+**Decision.**
+
+1. **Placement in the ground tool.** `lent-ground --mode plants` reads the nine windows' plant files, which use our plan origin, and keeps a plant only where all of these hold:
+   - the landscape is grass at its trunk and nearly all round it (`surface.png`);
+   - no paving is drawn within reach (`top.bin` over `heights.bin`);
+   - it is clear of buildings, the river, bridges, the square's edge and the walk graph (a tree's trunk by 1 m, a bush by its crown).
+   A plant that fails is dropped, never moved. Result: 9,959 of 35,380, namely 4,972 trees and 4,987 bushes. The file `Content/Marburgum/Vegetation/lent_plants.json` is staged.
+2. **The original's species meshes** (16 of 20, Marburgum-owned procedural meshes) are copied to `/Game/Vegetation` and always cooked. Their glTF-import materials drew black in Lent's light, so `scripts/create-weather-content.sh plants` gives them `M_PlantFoliage` (two-sided foliage) and `M_PlantBark`, with one instance per species in the original's colours.
+3. **Server and client put up the same plants from the file**, not replicated, as the street lamps do (ADR-065):
+   - one instanced component per species, with no collision;
+   - trunks block through an invisible instanced cylinder;
+   - a dedicated server puts up only the trunks;
+   - draw distance is the original's budget (30 m per metre of height, 70–700 m);
+   - shadows only from plants over 6 m;
+   - `-MB2NoPlants` turns them off for A/B.
+4. **One shared map constant for the editor commandlets** (`MarburgumEditorMaps::Lent`). Four of them each defined `LentMap`, and adding a file to the module put two in one unity blob, which does not compile.
+
+**Not decided here.**
+- Wind sway, seasonal leaves and per-preset density (GFX-07).
+- LODs or Nanite foliage (GFX-06).
+- Street people steering round trunks.
+- New species meshes (TRELLIS, ADR-071).
+- Trees on paved squares or in street pits where the 1990s city had them. The owner's rule excludes these for now.
+
+**Rejected.**
+- Keeping the original's placements on paving, or moving refused trees onto grass (that would invent positions).
+- Re-importing the GLBs in this change (the original's Unreal assets are the same geometry).
+- Wind in this change (it costs world-position offset under Lumen and virtual shadow maps and needs its own measurement).
+
+**Evidence.** [GFX01_VEGETATION.md](GFX01_VEGETATION.md): editor A/B on 47 views, with server and client placing all 9,959 and none without ground; contended frame numbers only; captures. Owner playtest: **not yet**.
+
 ## ADR-088 — Encrypted packets are replay-checked; a stolen hello ticket no longer locks the player out (accepted 2026-11-21)
 
 The evening review of 20 November listed two open P0 security points on ADR-083: replay of encrypted packets, and an on-path attacker burning the cleartext hello ticket.
