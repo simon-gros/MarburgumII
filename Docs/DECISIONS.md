@@ -1294,7 +1294,7 @@ Simon asked to encrypt the traffic. This also closes the server half of QA **AR1
 
 **Evidence.** [INPUT_INVESTIGATION_EVIDENCE.md](INPUT_INVESTIGATION_EVIDENCE.md). Owner playtest: **not yet**.
 
-## ADR-087 — Lent and the 24 windows round it: the map five by five (accepted 2026-11-21; owner playtest OPEN)
+## ADR-090 — Lent and the 24 windows round it: the map five by five (accepted 2026-11-21; owner playtest OPEN)
 
 **Problem.** The owner asked for a larger area again. The map went from one 512 m window (Lent) to nine (ADR-045); now it should be 25, five by five, by adding the sixteen windows round the nine, with everything the nine have had done to them: the buildings, the ground and its materials, the quality passes and the rest. The original game already cuts Maribor into 512 m windows on one grid round the middle of Stari most, and all sixteen exist there with their footprints, orthophotos and window bounds:
 

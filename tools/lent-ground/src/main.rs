@@ -1,6 +1,6 @@
-//! lent-ground: builds the ground of `/Game/World/lent` from survey data (ADR-040, ADR-045, ADR-087).
+//! lent-ground: builds the ground of `/Game/World/lent` from survey data (ADR-040, ADR-045, ADR-090).
 //!
-//! The ground covers a square round the middle of Stari most: Lent and, since ADR-087, the 24
+//! The ground covers a square round the middle of Stari most: Lent and, since ADR-090, the 24
 //! windows of the original game round it, five by five (plan ±1280 m). ADR-045 had the nine of
 //! the middle three by three (±768 m).
 //!
@@ -73,7 +73,7 @@ fn half() -> f64 {
     EXTENT.get().expect("extent set").half
 }
 
-/// Lent and the 24 windows round it (ADR-087): 40 components of 126 quads over 2,560 m (0.508 m,
+/// Lent and the 24 windows round it (ADR-090): 40 components of 126 quads over 2,560 m (0.508 m,
 /// as for the nine windows of ADR-045), and an 8192² surface mask (0.3125 m). Unreal builds a
 /// landscape from whole components only, so a grid that is not a whole number of them loses its
 /// east and south edges.

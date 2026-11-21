@@ -118,7 +118,7 @@ void UMarburgumSessionSubsystem::Initialize(FSubsystemCollectionBase& Collection
     // The engine's delegate is single-cast, and UGameInstance::Init has just bound a placeholder that refuses every
     // ack ("not implemented"): replace it (ADR-083).
     FNetDelegates::OnReceivedNetworkEncryptionAck.BindUObject(this, &UMarburgumSessionSubsystem::HandleEncryptionAck);
-    // Loading the world holds the game thread, and the five by five takes over 12 s (ADR-087): the first tick after the
+    // Loading the world holds the game thread, and the five by five takes over 12 s (ADR-090): the first tick after the
     // load would find the admission deadline gone although the server was never asked to wait. The deadline excludes it.
     PreLoadMapHandle = FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &UMarburgumSessionSubsystem::HandlePreLoadMap);
     PostLoadMapHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UMarburgumSessionSubsystem::HandlePostLoadMap);

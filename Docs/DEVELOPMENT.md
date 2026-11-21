@@ -55,18 +55,18 @@ The unqualified build script invocation defaults to the Editor target. A combine
 ./scripts/create-vehicle-content.sh   # regenerate the five catalogue cars (the original procedural bodywork), M_Vehicle, A_EnterVehicle/A_ExitVehicle and the lent_hatchback placement (`-run=MarburgumVehicleContent`, ADR-039)
 ./scripts/create-combat-content.sh    # regenerate A_FightGuard/A_FightJab/A_FightHeavy (the original fight clips on the mannequin) and the CC0 impact sounds in /Game/Audio/Combat (`-run=MarburgumCombatContent`, ADR-041)
 ./scripts/create-weather-content.sh   # the rain/snow curtain, cloud material and MPC_Weather under /Game/Marburgum/Weather (look, ADR-062); set PM_asphalt/PM_paving/PM_cobblestone/PM_concrete on Lent's paved materials and import the CC0 and wet footsteps into /Game/Audio/Footsteps (`-run=MarburgumWeatherContent`, ADR-061); the landscape surface map is `lent-ground surface-kinds`, the wet steps `scripts/mb2.sh generate wet-footsteps`. Run `look` before `-run=MarburgumRebuildGround` (its paving and landscape materials read MPC_Weather); `-run=MarburgumRebuildGround -MaterialsOnly` rebuilds just those materials
-# Lent and the 24 windows round it, five by five (ADR-087; the middle nine are ADR-045's), 2,560 m square round Stari most.
+# Lent and the 24 windows round it, five by five (ADR-090; the middle nine are ADR-045's), 2,560 m square round Stari most.
 # Window names and data come from the original's project/assets/terrain ($ORIGINAL); the LiDAR tiles from its tools/fetch_lidar.sh.
 WINDOWS=lent,ljudski_vrt,center,avtobusna,pristan,titov_most,kurilnica,magdalena,pobreska,vrbanska,vinarska,mestni_park,tomsiceva,praprotnikova,smetanova,zelezniska,studenci,greenwich,preradoviceva,mejna,radvanjska,cesta_zmage,tabor,nasipna,crnogorska
 ./scripts/fetch-lent-osm.sh           # only to refresh the committed OpenStreetMap extract (Overpass)
 # Buildings (ADR-034, ADR-045): join the windows' footprints across their edges, then rebuild every building as a closed shell,
 # place the ones that are not in the level yet with the neighbours' bridges and river sheets, and write placed_buildings.txt.
 # -CheckOnly builds and checks without saving. Only the shells listed in Data/World/lent_ground/open_shells.txt get their street
-# door cut (ADR-076, ADR-087); -Only=<id> cuts one more for that run, -AllDoors every eligible shell.
+# door cut (ADR-076, ADR-090); -Only=<id> cuts one more for that run, -AllDoors every eligible shell.
 cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- merge-buildings --windows $WINDOWS \
     --terrain "$ORIGINAL/project/assets/terrain" --out Data/World/lent_ground/buildings.json
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildFacades -unattended -nop4 -nosplash -nullrhi
-# Ground (ADR-040, ADR-045, ADR-087): heights, paving and surface mask from the survey and OpenStreetMap, then the level, the river
+# Ground (ADR-040, ADR-045, ADR-090): heights, paving and surface mask from the survey and OpenStreetMap, then the level, the river
 # volumes and the car. The nine tiles under the square reach 1,436 m from Stari most, past its ±1,280 m edge; the ring reads 25.
 LAZ=$(printf '%s,' ~/marburgum-data/arso-2014/gkot/TM_{548,549,550}_{156,157,158}.laz)
 LAZ_RING=$(printf '%s,' ~/marburgum-data/arso-2014/gkot/TM_{547,548,549,550,551}_{155,156,157,158,159}.laz)
@@ -85,7 +85,7 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode attra
     --walk-graph Content/Marburgum/Street/lent_walk_graph.json --road-graph "$ORIGINAL/project/data/road_graph.json"
 # The ground tool records deeper wall footings for buildings whose surveyed ground falls more than 2.5 m below their base
 # (ground.json buildings.deep_footings_m, ADR-053); rebuild the façades once more so their walls reach it.
-# The distant ring round the square (ADR-054): the 25 survey tiles round the square out to ±2,432 m (ADR-087), meeting the new
+# The distant ring round the square (ADR-054): the 25 survey tiles round the square out to ±2,432 m (ADR-090), meeting the new
 # landscape's edge. Then the weather's surface map from the new mask.
 cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- ring --laz "$LAZ_RING" \
     --heights Data/World/lent_ground/heights.bin --out Data/World/lent_ground

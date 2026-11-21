@@ -26,7 +26,7 @@
 
 **Marburgum II** rebuilds the original *Magna Raedarum: Marburgum* as an MMORPG-first game using **Unreal Engine 5.8.3**. Walk the Drava riverfront, encounter people with their own routines, investigate urban mysteries, fish, photograph places, learn skills, shop, drive and share a persistent fictionalized 1990s Maribor with other players.
 
-Its current world covers **2,560 × 2,560 metres** across 25 original map windows centred on Lent (five by five, ADR-087), including streets, bridges, urban blocks and the Drava. It remains **one always-loaded development level**, not a finished city or a proven 250-player shard. Game rules and persistent state belong to an authoritative dedicated server; solo-friendly play and cooperation use that architecture.
+Its current world covers **2,560 × 2,560 metres** across 25 original map windows centred on Lent (five by five, ADR-090), including streets, bridges, urban blocks and the Drava. It remains **one always-loaded development level**, not a finished city or a proven 250-player shard. Game rules and persistent state belong to an authoritative dedicated server; solo-friendly play and cooperation use that architecture.
 
 ## Recent development
 

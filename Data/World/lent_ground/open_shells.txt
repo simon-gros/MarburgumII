@@ -1,4 +1,4 @@
-# Shells whose street door MarburgumRebuildFacades cuts (ADR-076, ADR-087). A full rebuild opens only these;
+# Shells whose street door MarburgumRebuildFacades cuts (ADR-076, ADR-090). A full rebuild opens only these;
 # -Only=<id> opens one more for that run, -AllDoors every eligible shell. Add an id here once its door is audited.
 r1539756  # Hotel Lent
 w539479841  # Muzej najstarejše trte na svetu

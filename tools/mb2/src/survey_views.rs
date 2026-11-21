@@ -4,7 +4,7 @@
 //! builds can be compared shot for shot:
 //!
 //! * the Lent angler and the Stari most deck;
-//! * an oblique aerial over each of the 25 512 m windows (ADR-045, ADR-087), the middle nine first;
+//! * an oblique aerial over each of the 25 512 m windows (ADR-045, ADR-090), the middle nine first;
 //! * three eye-height views per window from the street people's walk graph, each looking 60 m down the pavement it
 //!   follows;
 //! * the four map edges from 60 m up, looking out at the distant ring (ADR-054).
@@ -15,7 +15,7 @@ use serde_json::Value;
 use std::path::Path;
 
 /// The windows' centres (plan metres east, south). The middle nine of ADR-045 come first, so their views are
-/// drawn in the same order as before ADR-087 added the outer ring of sixteen.
+/// drawn in the same order as before ADR-090 added the outer ring of sixteen.
 const WINDOWS: [(&str, f64, f64); 25] = [
     ("ljudski_vrt", -512.0, -512.0),
     ("center", 0.0, -512.0),
@@ -43,14 +43,14 @@ const WINDOWS: [(&str, f64, f64); 25] = [
     ("nasipna", 512.0, 1024.0),
     ("crnogorska", 1024.0, 1024.0),
 ];
-/// The middle nine windows' map edge (ADR-045) and the five by five's (ADR-087), plan metres.
+/// The middle nine windows' map edge (ADR-045) and the five by five's (ADR-090), plan metres.
 const HALF_9_M: f64 = 768.0;
 const HALF_25_M: f64 = 1280.0;
 const EYE_HEIGHT_M: f64 = 1.7;
 const PER_WINDOW: usize = 3;
 const WALK_M: f64 = 60.0;
 const MIN_WALK_M: f64 = 35.0;
-/// A walk round a small block can end where it began (ADR-087 tomsiceva), and the camera would look straight down.
+/// A walk round a small block can end where it began (ADR-090 tomsiceva), and the camera would look straight down.
 const MIN_SIGHT_M: f64 = 20.0;
 const BRIDGE_FLAG: i64 = 1;
 

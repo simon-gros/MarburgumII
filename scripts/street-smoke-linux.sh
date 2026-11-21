@@ -152,7 +152,7 @@ expect_log "$log" "fight_incident" ">=1" "MB2_STREET role=server event=incident 
 expect_log "$log" "fight_reactions" ">=1" "MB2_STREET role=server event=react .* event=fight response=\(flee\|watch\) "
 expect_log "$log" "probe" 1 "MB2_STREET role=server event=probe vehicle=lent_hatchback "
 # A street person's id is the FName street_<n>. An FName prints as the first spelling of its name the process registered,
-# so where content registers "Street" first (the five by five does, ADR-087) the same people log as Street_<n>.
+# so where content registers "Street" first (the five by five does, ADR-090) the same people log as Street_<n>.
 expect_log "$log" "run_over" ">=1" "MB2_STREET role=server event=run_over npc=[Ss]treet_.* vehicle=lent_hatchback .* player_driving=1 "
 expect_log "$log" "dodged" ">=1" "MB2_STREET role=server event=dodge npc=[Ss]treet_"
 expect_log "$log" "answered_run_over" ">=1" "MB2_STREET role=server event=react .* event=run_over "

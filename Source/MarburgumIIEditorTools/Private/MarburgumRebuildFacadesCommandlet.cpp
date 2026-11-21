@@ -35,7 +35,7 @@ namespace
     namespace LitWindows = MarburgumII::LitWindows;
 
     // The footprints of Lent and the 24 windows round it, joined across the window edges by
-    // `lent-ground merge-buildings` (ADR-045, ADR-087), and the list of the ones the level places,
+    // `lent-ground merge-buildings` (ADR-045, ADR-090), and the list of the ones the level places,
     // which the ground tool seats.
     FString SourcePath()
     {
@@ -48,7 +48,7 @@ namespace
     }
 
     // The shells whose street door is cut (ADR-076): one id per line, `#` starts a comment. A full
-    // rebuild opens only these, so rebuilding every shell for the map (ADR-087) does not open the other
+    // rebuild opens only these, so rebuilding every shell for the map (ADR-090) does not open the other
     // eligible buildings, which are opened one audited batch at a time.
     FString OpenShellsPath()
     {
@@ -101,7 +101,7 @@ namespace
     }
 
     // A building keeps its asset where it already is: under Buildings/lent if it was in Lent, or under
-    // the window it was first placed in. ADR-087 joined some of ADR-045's buildings with their parts in
+    // the window it was first placed in. ADR-090 joined some of ADR-045's buildings with their parts in
     // the outer windows, which can change the window they mostly stand in. A new one goes under the
     // window it mostly stands in.
     FString BuildingPackage(const FString& Id, const FString& Window)
@@ -721,7 +721,7 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
             { TEXT("/Game/World/Bridges/pristan_studenska.pristan_studenska"), TEXT("Bridge_pristan_studenska"), true },
             { TEXT("/Game/World/Bridges/titov_most_titov.titov_most_titov"), TEXT("Bridge_titov_most_titov"), true },
             { TEXT("/Game/World/Bridges/titov_most_zelezniski.titov_most_zelezniski"), TEXT("Bridge_titov_most_zelezniski"), true },
-            // ADR-087's outer windows: Meljski most in greenwich, and the Drava through studenci, smetanova and greenwich.
+            // ADR-090's outer windows: Meljski most in greenwich, and the Drava through studenci, smetanova and greenwich.
             { TEXT("/Game/World/Bridges/greenwich_meljski.greenwich_meljski"), TEXT("Bridge_greenwich_meljski"), true },
             { TEXT("/Game/World/Water/pristan.pristan"), TEXT("Drava_pristan"), false },
             { TEXT("/Game/World/Water/titov_most.titov_most"), TEXT("Drava_titov_most"), false },
