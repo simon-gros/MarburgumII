@@ -10,7 +10,7 @@ const CONTRACT: &str = "Source/MarburgumIIShared/Public/MarburgumVegetation.h";
 const READER: &str = "Source/MarburgumIIShared/Private/MarburgumVegetation.cpp";
 const GAME_INI: &str = "Config/DefaultGame.ini";
 /// Half the side of the ground's square, metres (lent-ground's default extent).
-const HALF_M: f64 = 768.0;
+const HALF_M: f64 = 1280.0;
 
 pub fn check(root: &std::path::Path, problems: &mut Problems) -> Vec<String> {
     let plants = read_json(root, PLANTS, problems);

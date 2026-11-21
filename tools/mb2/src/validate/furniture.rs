@@ -12,7 +12,7 @@ const GAME_INI: &str = "Config/DefaultGame.ini";
 /// The kit's asset names, in the contract's EPiece order.
 const MESHES: [&str; 6] = ["StopPost", "Shelter", "Bench", "FencePanel", "WallPanel", "Bollard"];
 /// Half the side of the ground's square, metres (lent-ground's default extent).
-const HALF_M: f64 = 768.0;
+const HALF_M: f64 = 1280.0;
 
 /// The enumerators of `enum class <name>`, lower-case and joined with underscores at word breaks, without `Count`.
 fn enumerators(contract: &str, name: &str) -> Vec<String> {

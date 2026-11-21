@@ -85,7 +85,7 @@ bool FMarburgumVegetationFileTest::RunTest(const FString& Parameters)
     for (const FPlant& Plant : Plants)
     {
         Trees += Kinds[Plant.Species].bTree ? 1 : 0;
-        if (FMath::Abs(Plant.Location.X) > 76800.0 || FMath::Abs(Plant.Location.Y) > 76800.0)
+        if (FMath::Abs(Plant.Location.X) > 128000.0 || FMath::Abs(Plant.Location.Y) > 128000.0)
         {
             AddError(FString::Printf(TEXT("a plant outside the square at %s"), *Plant.Location.ToString()));
             break;

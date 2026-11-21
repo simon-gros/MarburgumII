@@ -109,7 +109,7 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode lamps
     --buildings Data/World/lent_ground/buildings.json --placed Data/World/lent_ground/placed_buildings.txt --out Data/World/lent_ground \
     --walk-graph Content/Marburgum/Street/lent_walk_graph.json --lamps Content/Marburgum/Lights/lent_street_lights.json
 ./scripts/create-weather-content.sh lamps
-# Trees and bushes (GFX-01, VQ-022): the original game's surveyed plants of the nine windows, kept only where they stand on
+# Trees and bushes (GFX-01, VQ-022): the original game's surveyed plants of the 25 windows, kept only where they stand on
 # grass (no paving within reach, clear of buildings, river, bridges and the walk graph), from heights.bin, top.bin and
 # surface.png (run after the ground tool and the walk graph). The species meshes are the original's, under /Game/Vegetation.
 cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode plants --osm Data/World/lent_ground/osm_lent.json.gz \
