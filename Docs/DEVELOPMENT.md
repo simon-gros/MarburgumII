@@ -123,8 +123,17 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode lamps
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumRebuildFacades -unattended -nop4 -nosplash -nullrhi
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumVisualFixes -unattended -nop4 -nosplash -nullrhi
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumInteriorAudit -unattended -nop4 -nosplash -nullrhi
-# The five by five is one always-loaded level: the editor commandlets and two-process smokes on it need more than a 16 GB
-# process limit; run them as their own unit (systemd-run --user ... -p MemoryMax=28G, as for packaging below).
+# World Partition (ADR-091): /Game/World/lent streams on clients in 128 m cells within 512 m, with one merged Nanite mesh
+# per 256 m cell (HLOD) for the rest of the map; the server keeps it whole. The commandlets above load every actor
+# (FMarburgumWholeLevel) and keep the streaming rules on save; MarburgumRebuildGround splits its new landscape into
+# streaming proxies. A client holds only the cells round its player, so the street lamps take their ground from
+# Content/Marburgum/Lights/lent_street_lights_ground.json, worked out on the whole level. Convert once, then redo the
+# lamps' ground and the HLODs after every façade, ground, bridge or lamp change:
+./scripts/partition-world.sh            # convert (once), settings, lamps, hlods
+./scripts/partition-world.sh lamps      # after content or lamp changes
+./scripts/partition-world.sh hlods      # after content changes
+# The editor commandlets on the five by five load all of it and need more than a 16 GB process limit; run them, and
+# the editor-mode smokes, as their own unit (systemd-run --user ... -p MemoryMax=28G, as for packaging below).
 # Read-only world and asset audit into Saved/VisualAudit/<name>; -Probe="X,Y;..." lists every surface under a point
 "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/MarburgumII.uproject" -run=MarburgumWorldAudit -Out="$PWD/Saved/VisualAudit/<name>" -unattended -nop4 -nosplash -nullrhi
 # Rendered survey of all 25 windows (aerials, three street views per window, the angler, the deck and the edges; per-view frame/GPU percentiles and VRAM in stats.tsv, the renderer's
@@ -195,7 +204,7 @@ The commands above describe **regeneration order**, not proof that the whole map
 - ADR-044 ambient people: **one-client editor-mode** street smoke passed; `./scripts/street-smoke-linux.sh staged` and a separate two/three-client scenario are **future acceptance tests**, not recorded passes.
 - Some older Lent/condition fixtures still use `/Game/Maps/Lent`, a distinct test world, but **the new `mission-smoke-linux.sh editor` plays all eight original missions on `/Game/World/lent`** (ADR-047–052), including temporary replicated pads for Melje/Tabor locations outside the nine-window map. A fallback test does not qualify today's world; the editor full-mission test does not equal a packaged two-client regression.
 
-**Expanded-world P0 performance and multiplayer gate:** fresh client/server cook at an exact clean SHA, map and root-manifest hashes; run camera/travel and player/angler/car/swim routes across eight window edges; sample cold load, memory/VRAM, CPU/GPU frame-time p95/p99, draw calls and server tick. Stress a controlled 1/2/4/8-client population and capture remote street reactions, NPC duplication/relevance, body retention, collision, combat down/recovery, car dodge/run-over and reconnect. The expanded world is **a single always-loaded level with no World Partition**; do not claim streaming or MMO-scale performance until measured. Fourteen surveyed deep hollows require a recorded historical/gameplay decision, not an automatic fill.
+**Expanded-world P0 performance and multiplayer gate:** fresh client/server cook at an exact clean SHA, map and root-manifest hashes; run camera/travel and player/angler/car/swim routes across eight window edges; sample cold load, memory/VRAM, CPU/GPU frame-time p95/p99, draw calls and server tick. Stress a controlled 1/2/4/8-client population and capture remote street reactions, NPC duplication/relevance, body retention, collision, combat down/recovery, car dodge/run-over and reconnect. The expanded world is **a World Partition map** (ADR-091): clients stream 128 m cells within 512 m and draw the rest as HLODs, while the dedicated server keeps all of it loaded; do not claim server streaming or MMO-scale performance until measured. Fourteen surveyed deep hollows require a recorded historical/gameplay decision, not an automatic fill.
 
 See [the 12 November development review](DEVELOPMENT_REVIEW_2026-11-12.md), [the 11 November change audit](DEVELOPMENT_UPDATE_2026-11-11.md), [ground and map decisions](DECISIONS.md), [street evidence](STAGE1_STREET_EVIDENCE.md), [combat evidence](STAGE1_COMBAT_EVIDENCE.md), and [freshness acceptance procedure](PLAYTEST_FRESHNESS.md).
 

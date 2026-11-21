@@ -8,6 +8,7 @@
 #include "Builders/CubeBuilder.h"
 #include "Engine/Polys.h"
 #include "LandscapeProxy.h"
+#include "MarburgumWholeLevel.h"
 #include "MeshDescription.h"
 #include "Model.h"
 #include "Components/BrushComponent.h"
@@ -568,7 +569,8 @@ namespace
 
     bool BuildWaterVolumes()
     {
-        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(LentMap);
+        FMarburgumWholeLevel WholeLevel(LentMap);
+        UWorld* World = WholeLevel.GetWorld();
         if (!World)
         {
             UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM cannot load %s"), LentMap);
@@ -750,7 +752,7 @@ namespace
                 ++Volumes;
             }
         }
-        if (!UEditorLoadingAndSavingUtils::SaveMap(World, LentMap))
+        if (!WholeLevel.Save())
         {
             UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM could not save %s"), LentMap);
             return false;
@@ -762,7 +764,8 @@ namespace
 
     void InspectLent()
     {
-        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(LentMap);
+        FMarburgumWholeLevel WholeLevel(LentMap);
+        UWorld* World = WholeLevel.GetWorld();
         if (!World)
         {
             UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM cannot load %s"), LentMap);

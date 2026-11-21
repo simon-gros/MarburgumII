@@ -17,6 +17,7 @@
 #include "MarburgumVehicle.h"
 #include "MarburgumWater.h"
 #include "MarburgumWorldClock.h"
+#include "MarburgumWorldLoading.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
@@ -99,6 +100,8 @@ void UMarburgumStreetSubsystem::OnWorldBeginPlay(UWorld& InWorld)
         UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=street_off reason=switch"), StreetLogPrefix);
         return;
     }
+    // The graph's nodes are grounded by tracing, so on the World Partition map every cell must be in first.
+    MarburgumII::WorldLoading::LoadWholeWorldOnServer(InWorld, TEXT("street"));
     const FString Path = FPaths::Combine(FPaths::ProjectContentDir(), MarburgumStreetPopulation::GraphFile);
     FString Report;
     FString Error;

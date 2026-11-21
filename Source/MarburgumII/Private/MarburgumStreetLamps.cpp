@@ -3,6 +3,7 @@
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "MarburgumWorldLoading.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
@@ -121,6 +122,36 @@ void AMarburgumStreetLamps::SetState(int32 Lamp, float Output, const FLinearColo
     Kind->SetCustomData(Instance[Lamp], TArrayView<const float>(Data, CustomDataFloats), false);
 }
 
+TOptional<double> UMarburgumStreetLampsSubsystem::FindGround(const UWorld& World, const FVector& SurveyedTop)
+{
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumStreetLamps), true);
+    const FCollisionObjectQueryParams Static(FCollisionObjectQueryParams::AllStaticObjects);
+    const FVector From = SurveyedTop + FVector(0.0, 0.0, MarburgumStreetLamps::GroundAboveCm);
+    const FVector To = SurveyedTop - FVector(0.0, 0.0, MarburgumStreetLamps::GroundBelowCm);
+    TArray<FHitResult> Hits;
+    World.LineTraceMultiByObjectType(Hits, From, To, Static, Params);
+    const FHitResult* Ground = nullptr;
+    for (const FHitResult& Hit : Hits)
+    {
+        const bool bWalkable = Hit.bBlockingHit && Hit.ImpactNormal.Z >= MarburgumStreetLamps::WalkableNormalZ;
+        // The surface nearest the survey's height, so an eave or a canopy over the pavement is not stood on.
+        if (bWalkable && (!Ground || FMath::Abs(Hit.ImpactPoint.Z - SurveyedTop.Z) < FMath::Abs(Ground->ImpactPoint.Z - SurveyedTop.Z)))
+        {
+            Ground = &Hit;
+        }
+    }
+    if (Ground)
+    {
+        return Ground->ImpactPoint.Z;
+    }
+    FHitResult Single;
+    if (World.LineTraceSingleByObjectType(Single, From, To, Static, Params) && Single.ImpactNormal.Z >= MarburgumStreetLamps::WalkableNormalZ)
+    {
+        return Single.ImpactPoint.Z;
+    }
+    return TOptional<double>();
+}
+
 bool UMarburgumStreetLampsSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
     return Super::ShouldCreateSubsystem(Outer) && !FParse::Param(FCommandLine::Get(), TEXT("MB2NoStreetLamps"));
@@ -152,44 +183,36 @@ void UMarburgumStreetLampsSubsystem::OnWorldBeginPlay(UWorld& InWorld)
     }
     Read = All.Num();
 
-    // Each lamp stands on what is there: the paving or the landscape under its surveyed top.
+    // Each lamp stands on what is there: the paving or the landscape under its surveyed top. A client on the World
+    // Partition map has only the cells round its player (ADR-091), so where the editor has worked that out on the whole
+    // level every role takes it from the ground file, and server and clients put the posts in the same places.
     const double Started = FPlatformTime::Seconds();
-    FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumStreetLamps), true);
-    const FCollisionObjectQueryParams Static(FCollisionObjectQueryParams::AllStaticObjects);
+    const FString GroundPath = FPaths::Combine(FPaths::ProjectContentDir(), GroundFile);
+    FString GroundText;
+    TArray<TOptional<double>> GroundCm;
+    FString GroundError = TEXT("none");
+    const bool bFromFile = FFileHelper::LoadFileToString(GroundText, *GroundPath, FFileHelper::EHashOptions::None, FILEREAD_Silent)
+        && ParseGround(GroundText, Fingerprint(Text), All.Num(), GroundCm, GroundError);
+    if (!bFromFile)
+    {
+        // Tracing the whole level is only possible where all of it is in.
+        MarburgumII::WorldLoading::LoadWholeWorldOnServer(InWorld, TEXT("street_lamps"));
+        if (InWorld.IsPartitionedWorld())
+        {
+            UE_LOG(LogMarburgumStreetLamps, Warning, TEXT("MB2LAMPS role=%s event=no_ground_file reason=\"%s\" (scripts/partition-world.sh lamps)"), Role, *GroundError);
+        }
+    }
     TArray<FLamp> Standing;
     Standing.Reserve(All.Num());
     int32 NoGround = 0;
     int32 Masts = 0;
     for (const FLamp& Lamp : All)
     {
-        TArray<FHitResult> Hits;
-        InWorld.LineTraceMultiByObjectType(Hits, Lamp.Location + FVector(0.0, 0.0, MarburgumStreetLamps::GroundAboveCm),
-            Lamp.Location - FVector(0.0, 0.0, MarburgumStreetLamps::GroundBelowCm), Static, Params);
-        const FHitResult* Ground = nullptr;
-        for (const FHitResult& Hit : Hits)
-        {
-            const bool bWalkable = Hit.bBlockingHit && Hit.ImpactNormal.Z >= MarburgumStreetLamps::WalkableNormalZ;
-            // The surface nearest the survey's height, so an eave or a canopy over the pavement is not stood on.
-            if (bWalkable && (!Ground || FMath::Abs(Hit.ImpactPoint.Z - Lamp.Location.Z) < FMath::Abs(Ground->ImpactPoint.Z - Lamp.Location.Z)))
-            {
-                Ground = &Hit;
-            }
-        }
-        if (!Ground)
-        {
-            FHitResult Single;
-            if (InWorld.LineTraceSingleByObjectType(Single, Lamp.Location + FVector(0.0, 0.0, MarburgumStreetLamps::GroundAboveCm),
-                    Lamp.Location - FVector(0.0, 0.0, MarburgumStreetLamps::GroundBelowCm), Static, Params)
-                && Single.ImpactNormal.Z >= MarburgumStreetLamps::WalkableNormalZ)
-            {
-                Hits = { Single };
-                Ground = &Hits[0];
-            }
-        }
+        const TOptional<double> Ground = bFromFile ? GroundCm[Standing.Num()] : FindGround(InWorld, Lamp.Location);
         FLamp& Placed = Standing.Add_GetRef(Lamp);
-        if (Ground)
+        if (Ground.IsSet())
         {
-            Placed.Location.Z = Ground->ImpactPoint.Z;
+            Placed.Location.Z = *Ground;
             ++Grounded;
         }
         else
@@ -218,8 +241,9 @@ void UMarburgumStreetLampsSubsystem::OnWorldBeginPlay(UWorld& InWorld)
         return;
     }
     Lamps->Build(Standing);
-    UE_LOG(LogMarburgumStreetLamps, Log, TEXT("MB2LAMPS role=%s event=placed lamps=%d grounded=%d no_ground=%d masts=%d lanterns=%d meshes=%d seconds=%.2f"),
-        Role, Read, Grounded, NoGround, Masts, Read - Masts, Lamps->HasMeshes() ? 1 : 0, FPlatformTime::Seconds() - Started);
+    UE_LOG(LogMarburgumStreetLamps, Log, TEXT("MB2LAMPS role=%s event=placed lamps=%d grounded=%d no_ground=%d masts=%d lanterns=%d meshes=%d ground=%s seconds=%.2f"),
+        Role, Read, Grounded, NoGround, Masts, Read - Masts, Lamps->HasMeshes() ? 1 : 0, bFromFile ? TEXT("file") : TEXT("trace"),
+        FPlatformTime::Seconds() - Started);
 }
 
 void UMarburgumStreetLampsSubsystem::Deinitialize()

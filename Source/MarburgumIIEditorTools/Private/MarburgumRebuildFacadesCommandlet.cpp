@@ -2,6 +2,7 @@
 
 #include "AssetCompilingManager.h"
 #include "AssetToolsModule.h"
+#include "MarburgumWholeLevel.h"
 #include "Misc/PackageName.h"
 #include "UObject/Package.h"
 #include "Dom/JsonObject.h"
@@ -661,7 +662,8 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
     int32 Placed = 0;
     if (!bCheckOnly && Only.IsEmpty())
     {
-        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(TEXT("/Game/World/lent"));
+        FMarburgumWholeLevel WholeLevel(TEXT("/Game/World/lent"));
+        UWorld* World = WholeLevel.GetWorld();
         if (!World)
         {
             UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not load /Game/World/lent"));
@@ -791,7 +793,7 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
             UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not write %s"), *PlacedPath());
             return 1;
         }
-        if (!UEditorLoadingAndSavingUtils::SaveMap(World, TEXT("/Game/World/lent")))
+        if (!WholeLevel.Save())
         {
             UE_LOG(LogMarburgumFacades, Error, TEXT("MB2FACADE could not save the level"));
             return 1;

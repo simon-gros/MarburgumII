@@ -36,7 +36,7 @@ The Stage 1 PvE fighter and ambient pedestrian actors execute their decisions on
 
 The initial street implementation aims for **20 pedestrians around each player, at most 48** in its current local rules. This is a **feature-level spawn/cull policy**, neither a proven shard capacity nor network area-of-interest (AOI) scalability solution. Its current [street evidence](STAGE1_STREET_EVIDENCE.md) uses one editor client; the [combat evidence](STAGE1_COMBAT_EVIDENCE.md) is an earlier packaged two-client test. After the nine-window expansion, validate two/three genuinely separate packaged clients observing the same server decisions without duplicated NPC ownership, unfair viewpoint-based spawning, desynchronized fall/recovery or divergent incident reactions.
 
-The new walk graph spans the nine-window pavement, but one always-loaded `/Game/World/lent` is **not** Unreal World Partition and neither it nor the graph is network AOI. Stage 3/4 must separately measure actor replication relevancy/bandwidth, server AI tick, density scaling, 1/2/4/8-client controlled loads and eventually the planned larger shard stress matrix. No measured capacity is implied by the 48-pedestrian cap.
+The new walk graph spans the nine-window pavement, but World Partition only streams `/Game/World/lent` on clients (ADR-091): the dedicated server keeps the whole map loaded, and neither World Partition nor the graph is network AOI. Stage 3/4 must separately measure actor replication relevancy/bandwidth, server AI tick, density scaling, 1/2/4/8-client controlled loads and eventually the planned larger shard stress matrix. No measured capacity is implied by the 48-pedestrian cap.
 
 ## 3. Build target matrix
 

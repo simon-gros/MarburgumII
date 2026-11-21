@@ -20,6 +20,7 @@
 #include "Render/MarburgumRenderAudit.h"
 #include "RenderTimer.h"
 #include "UnrealClient.h"
+#include "WorldPartition/WorldPartitionSubsystem.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogMarburgumViewShot, Log, All);
 
@@ -33,8 +34,18 @@ namespace MarburgumViewShot
     // Frame statistics are averaged over the settle window after this, once the camera cut has passed.
     constexpr double StatsAfterSeconds = 1.0;
     constexpr double ShotTimeoutSeconds = 15.0;
+    // A World Partition map streams round the camera (ADR-091). The streaming source moves with the view target on the
+    // next update, so streaming is judged from half a second after a cut.
+    constexpr double MinStreamCheckSeconds = 0.5;
+    constexpr double MaxStreamWaitSeconds = 30.0;
     constexpr double TotalTimeoutSeconds = 600.0;
     constexpr double MiB = 1024.0 * 1024.0;
+
+    bool IsStreamed(UWorld& World)
+    {
+        const UWorldPartitionSubsystem* Partition = World.GetSubsystem<UWorldPartitionSubsystem>();
+        return !Partition || Partition->IsStreamingCompleted();
+    }
 
     bool ParseVector(const FString& Text, FVector& Out)
     {
@@ -164,7 +175,13 @@ bool UMarburgumViewShotSubsystem::Tick(float DeltaTime)
     }
     if (!bAudited)
     {
-        // Once, with the level settled and before any camera moves: what the renderer is configured to do.
+        // Once, with the level settled and before any camera moves: what the renderer is configured to do. On a World
+        // Partition map that is once the cells round the player are in, the always-loaded one with the post-process
+        // volume and the sky among them; the map's load can outlast the first settle.
+        if (World->IsPartitionedWorld() && !IsStreamed(*World) && Now - StartSeconds < FirstViewSettleSeconds + MaxStreamWaitSeconds)
+        {
+            return true;
+        }
         bAudited = true;
         MarburgumII::RenderAudit::WriteJson(*World, FPaths::Combine(Directory, TEXT("render_config.json")));
     }
@@ -184,6 +201,20 @@ bool UMarburgumViewShotSubsystem::Tick(float DeltaTime)
     }
     else if (Current >= 0)
     {
+        // On a World Partition map, settle from when the cells round the camera are in.
+        if (!bStreamed && World->IsPartitionedWorld())
+        {
+            const double Waited = Now - ViewSeconds;
+            if (Waited < MinStreamCheckSeconds || (!IsStreamed(*World) && Waited < MaxStreamWaitSeconds))
+            {
+                return true;
+            }
+            UE_LOG(LogMarburgumViewShot, Display, TEXT("MB2VIEWSHOT view=%s streamed_s=%.1f complete=%d"), *Views[Current].Name, Waited,
+                IsStreamed(*World) ? 1 : 0);
+            bStreamed = true;
+            ViewSeconds = Now;
+            return true;
+        }
         // Settling on the current view; then take its shot.
         if (Now - ViewSeconds > StatsAfterSeconds)
         {
@@ -235,6 +266,7 @@ bool UMarburgumViewShotSubsystem::Tick(float DeltaTime)
     }
     ViewSeconds = Now;
     Stats = FStats();
+    bStreamed = false;
     return true;
 }
 

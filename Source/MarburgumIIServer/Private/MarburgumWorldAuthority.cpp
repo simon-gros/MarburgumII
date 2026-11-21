@@ -42,6 +42,7 @@
 #include "Misc/DateTime.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "MarburgumWorldLoading.h"
 #include "TimerManager.h"
 
 using namespace MarburgumII::Gameplay;
@@ -257,6 +258,8 @@ void UMarburgumWorldAuthority::OnWorldBeginPlay(UWorld& InWorld)
         FishingTickSeconds, true);
     // Bites and catches are the server's dice; nothing a client sends feeds them.
     Rolls.Initialize(static_cast<int32>(FDateTime::UtcNow().GetTicks() & 0x7fffffff));
+    // Content is placed on the ground found by tracing, so on the World Partition map every cell must be in first.
+    MarburgumII::WorldLoading::LoadWholeWorldOnServer(InWorld, TEXT("world_authority"));
     SpawnAuthoredContent(InWorld);
     InWorld.GetTimerManager().SetTimer(PostsTimer, FTimerDelegate::CreateUObject(this, &UMarburgumWorldAuthority::UpdatePosts), 1.f, true);
     InWorld.GetTimerManager().SetTimer(ShopTimer, FTimerDelegate::CreateUObject(this, &UMarburgumWorldAuthority::ApplyShops),

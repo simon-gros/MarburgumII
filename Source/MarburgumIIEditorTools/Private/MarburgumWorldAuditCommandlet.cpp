@@ -12,6 +12,7 @@
 #include "GameFramework/Actor.h"
 #include "HAL/FileManager.h"
 #include "Landscape.h"
+#include "MarburgumWholeLevel.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialInstance.h"
 #include "Misc/FileHelper.h"
@@ -453,7 +454,8 @@ int32 UMarburgumWorldAuditCommandlet::Main(const FString& Params)
         Out = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("VisualAudit"), FDateTime::UtcNow().ToString(TEXT("%Y%m%dT%H%M%SZ")));
     }
     FAudit Audit(Out);
-    UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(Map);
+    FMarburgumWholeLevel WholeLevel(Map);
+    UWorld* World = WholeLevel.GetWorld();
     if (!World)
     {
         UE_LOG(LogMarburgumWorldAudit, Error, TEXT("MB2AUDIT cannot load %s"), *Map);

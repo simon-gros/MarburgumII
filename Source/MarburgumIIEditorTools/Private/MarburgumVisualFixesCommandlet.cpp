@@ -8,6 +8,7 @@
 #include "Factories/TrueTypeFontFactory.h"
 #include "FileHelpers.h"
 #include "GameFramework/PlayerStart.h"
+#include "MarburgumWholeLevel.h"
 #include "Materials/MaterialInterface.h"
 #include "Misc/PackageName.h"
 #include "Misc/Paths.h"
@@ -279,7 +280,8 @@ int32 UMarburgumVisualFixesCommandlet::Main(const FString& Params)
     int32 Failures = 0;
     TArray<UPackage*> Dirty;
 
-    UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(LentMap);
+    FMarburgumWholeLevel WholeLevel(LentMap);
+    UWorld* World = WholeLevel.GetWorld();
     if (!World)
     {
         return 1;
@@ -367,7 +369,7 @@ int32 UMarburgumVisualFixesCommandlet::Main(const FString& Params)
         UE_LOG(LogMarburgumVisualFixes, Error, TEXT("MB2FIX could not save the font"));
         return 1;
     }
-    if (!UEditorLoadingAndSavingUtils::SaveMap(World, LentMap))
+    if (!WholeLevel.Save())
     {
         UE_LOG(LogMarburgumVisualFixes, Error, TEXT("MB2FIX could not save %s"), LentMap);
         return 1;

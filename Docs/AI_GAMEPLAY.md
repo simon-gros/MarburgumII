@@ -21,7 +21,7 @@ Statuses: **FIX NOW** (done in this pass where marked), **IMPROVE NOW**, **TO BE
 | Missions | `MarburgumMissionLogic`, `MarburgumMissionRules` | Server world store. Client prompt uses the same pure plan. | Eight original missions. Start, stage, choice, one reward, restart. Fishing is an activity the mission requires, not AI. |
 | Rust sim | `native/marburgum-sim-core` | Not linked to these actors. | Not the street or combat brain. |
 
-There is no behavior tree, no perception component, no navigation mesh, and no World Partition. The nine-window level is always loaded. Distant pedestrians are not simulated more cheaply than near ones except by not existing (spawn/cull).
+There is no behavior tree, no perception component, and no navigation mesh. The level is a World Partition map (ADR-091), but the server keeps all of it loaded, so the street people walk the whole square wherever the players are. Distant pedestrians are not simulated more cheaply than near ones except by not existing (spawn/cull).
 
 ## Fixed in this pass
 

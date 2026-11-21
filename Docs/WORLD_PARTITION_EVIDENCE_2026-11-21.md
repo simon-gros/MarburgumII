@@ -1,0 +1,88 @@
+# /Game/World/lent as a World Partition map — evidence, 21 November 2026
+
+ADR-091: the five by five (ADR-090) streams on clients in 128 m cells within 512 m, with merged Nanite HLODs of 256 m
+cells beyond; the dedicated server keeps the whole map. Per [ADR-008](DECISIONS.md) the status is
+`implemented_awaiting_owner_playtest`.
+
+## The builds
+
+| | |
+| --- | --- |
+| Partitioned | branch `feat/world-partition`, FINAL_BUILD |
+| Always-loaded | branch `feat/map-5x5`, `8ca3e76` with `d7b99ea`, staged 2026-11-21T11:22Z (the same level before conversion) |
+| Engine | UE 5.8.3, Linux Development Client and dedicated Server |
+| GPU | RTX 5080, NVIDIA 620.73.04, Vulkan SM6, 1920 × 1080, every client `-RenderOffScreen` |
+
+## Smokes
+
+All eight staged smokes pass on the partitioned build (ports 27991–27998; `Saved/WP/smokes.log`): swim, vehicle,
+street, combat, mission, negative, story and door. SMOKE_DETAIL
+
+The first partitioned package failed two of them, and both causes are fixed:
+
+- **street**: `street_off reason="no node of the walk graph is on walkable ground"`. The street subsystem and the lamps
+  traced the ground at begin play, before any cell had loaded. They now call `LoadWholeWorldOnServer` first; the server
+  logs `MB2WORLD role=server event=whole_world caller=street partition_begun=1 streaming_complete=1 seconds=4.90`, and the
+  walk graph grounds exactly as on the always-loaded level (33,897 of 34,220 nodes).
+- **door**: the rival client was not admitted within 20 s. Its admission clock ran through a 12.3 s map load; `d7b99ea`
+  stops it during loads. On the partitioned map the load takes 4.7–4.9 s.
+
+## Survey: always-loaded against partitioned
+
+The 107 views of the 25 windows (`Saved/WP/views-final.txt`), run back to back in the order A B B A
+(`Saved/WP/ab`, `ab.log`), so the other load on the host (a screen recorder ran throughout) weighs on both alike.
+Medians over the views; maxima in brackets.
+
+| | always-loaded (1, 4) | partitioned (2, 3) |
+| --- | --- | --- |
+| client resident memory | 8.50 / 8.24 GB (8.80) | 4.64 / 4.58 GB (5.04) |
+| VRAM in use | 5.04 / 5.07 GB | 4.32 / 4.29 GB |
+| streaming textures | 617 MB | 515 MB |
+| frame time | 6.9 / 7.5 ms | 8.3 / 8.6 ms |
+| frame p99 | 13.0 / 14.4 ms (95.7 / 82.7) | 14.8 / 15.2 ms (18.9 / 21.4) |
+| GPU time | 6.0 / 6.1 ms | 7.2 / 7.1 ms |
+| draw calls | 252 | 238 / 233 |
+
+The partitioned client holds 46 % less memory and 15 % less VRAM, and its worst frames are a fifth as long: the
+always-loaded level's 80–95 ms hitches are gone. Each view costs **1.1 ms more GPU time**, the same on aerial, street,
+edge and river views (air +1.1, street +1.1, edge +1.2 / +0.6 ms), so it is a fixed cost, not more geometry.
+
+**Where the 1.1 ms goes: Nanite.** The 498 HLOD meshes are the level's only Nanite meshes, so the partitioned client runs
+the Nanite pipeline and the always-loaded one does not. The same partitioned build with `r.Nanite=0`, which draws each HLOD's
+fallback mesh instead:
+
+| | always-loaded (6) | partitioned, Nanite (3 / 7) | partitioned, `r.Nanite=0` (5 / 8) |
+| --- | --- | --- | --- |
+| screen recorder | on | on / off | on / off |
+| GPU time | 7.3 ms | 7.1 / 5.8 ms | 6.0 / 4.9 ms |
+| frame time | 8.7 ms | 8.6 / 6.2 ms | 7.1 / 5.2 ms |
+| VRAM in use | 5.04 GB | 4.29 / 4.29 GB | 3.35 / 3.30 GB |
+| client resident memory | 8.18 GB | 4.58 / 4.60 GB | 4.64 / 4.56 GB |
+| draw calls | 252 | 233 / 236 | 210 / 204 |
+
+Without Nanite the partitioned client is at or under the always-loaded one on every count. The always-loaded runs differ
+by up to 1.2 ms of GPU time among themselves (1, 4, 6) with the recorder's load; the Nanite difference holds within
+each pair taken under the same conditions (0.9 and 1.1 ms).
+
+The fallback HLODs look the same as the Nanite ones from every survey view. `r.Nanite` is the project's switch and stays 1:
+GFX-06 plans Nanite for the shells and the paving, which pays the same fixed cost, and the HLODs need no rebuild to follow
+either way.
+
+## Look
+
+Street, river and near views match the always-loaded level. Beyond 512 m, where the HLODs draw, some façades lose their
+recessed window rows to the simplification (Nanite's and the fallback's alike). A first HLOD build that baked each cell into
+one material drew the paving as a checkerboard (its texture follows the world position) and some façades and roofs the
+wrong colour; the HLODs now keep the level's own materials. The lit windows at night from the HLOD distance are not yet
+checked.
+
+## Tests
+
+`Marburgum.Shared.StreetLights.{File,Ground,Switch}` and `Marburgum.Editor.PartitionRules` pass; `mb2 validate all`
+passes.
+
+## Not covered
+
+- Owner playtest.
+- Night views of the far city (lit windows on the HLODs).
+- Many-player sessions: the server holds the whole map, so its memory does not fall (4.9 GB peak in the smokes).

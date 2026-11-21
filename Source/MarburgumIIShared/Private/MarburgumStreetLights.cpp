@@ -2,8 +2,11 @@
 
 #include "Dom/JsonObject.h"
 #include "MarburgumWorldClock.h"
+#include "Misc/SecureHash.h"
+#include "Policies/CondensedJsonPrintPolicy.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
 
 namespace MarburgumII::StreetLights
 {
@@ -92,6 +95,86 @@ namespace MarburgumII::StreetLights
             Lamp.Kind = static_cast<EKind>(Kind);
             Lamp.Yaw = YawFromPlan(Values[4]);
             Lamp.Source = static_cast<ESource>(Source);
+        }
+        return true;
+    }
+
+    FString Fingerprint(const FString& LampsJson)
+    {
+        const FTCHARToUTF8 Utf8(*LampsJson);
+        FSHAHash Hash;
+        FSHA1::HashBuffer(Utf8.Get(), Utf8.Length(), Hash.Hash);
+        return Hash.ToString().ToLower();
+    }
+
+    FString WriteGround(const FString& LampsFingerprint, const TArray<TOptional<double>>& GroundCm)
+    {
+        TArray<TSharedPtr<FJsonValue>> Rows;
+        Rows.Reserve(GroundCm.Num());
+        for (const TOptional<double>& Z : GroundCm)
+        {
+            // A tenth of a millimetre is finer than any surface the trace stands a lamp on.
+            Rows.Add(Z.IsSet() ? TSharedPtr<FJsonValue>(MakeShared<FJsonValueNumber>(FMath::RoundToDouble(*Z * 10.0) / 10.0))
+                               : TSharedPtr<FJsonValue>(MakeShared<FJsonValueNull>()));
+        }
+        const TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
+        Root->SetStringField(TEXT("format"), TEXT("marburgumii.street_lights_ground"));
+        Root->SetNumberField(TEXT("version"), 1);
+        Root->SetStringField(TEXT("lamps_sha1"), LampsFingerprint);
+        Root->SetArrayField(TEXT("ground_cm"), Rows);
+        FString Out;
+        FJsonSerializer::Serialize(Root, TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Out));
+        return Out + TEXT("\n");
+    }
+
+    bool ParseGround(const FString& Json, const FString& LampsFingerprint, int32 LampCount, TArray<TOptional<double>>& OutGroundCm,
+        FString& OutError)
+    {
+        OutGroundCm.Reset();
+        TSharedPtr<FJsonObject> Root;
+        if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), Root) || !Root.IsValid())
+        {
+            OutError = TEXT("not JSON");
+            return false;
+        }
+        FString Format;
+        int32 Version = 0;
+        if (!Root->TryGetStringField(TEXT("format"), Format) || Format != TEXT("marburgumii.street_lights_ground")
+            || !Root->TryGetNumberField(TEXT("version"), Version) || Version != 1)
+        {
+            OutError = TEXT("not a street lights ground file (format marburgumii.street_lights_ground, version 1)");
+            return false;
+        }
+        FString For;
+        if (!Root->TryGetStringField(TEXT("lamps_sha1"), For) || For != LampsFingerprint)
+        {
+            OutError = FString::Printf(TEXT("made for lamps file %s, not %s"), *For, *LampsFingerprint);
+            return false;
+        }
+        const TArray<TSharedPtr<FJsonValue>>* Rows = nullptr;
+        if (!Root->TryGetArrayField(TEXT("ground_cm"), Rows) || Rows == nullptr || Rows->Num() != LampCount)
+        {
+            OutError = FString::Printf(TEXT("%d heights for %d lamps"), Rows ? Rows->Num() : 0, LampCount);
+            return false;
+        }
+        OutGroundCm.Reserve(LampCount);
+        for (int32 Index = 0; Index < Rows->Num(); ++Index)
+        {
+            const TSharedPtr<FJsonValue>& Row = (*Rows)[Index];
+            if (Row.IsValid() && Row->Type == EJson::Number && FMath::IsFinite(Row->AsNumber()))
+            {
+                OutGroundCm.Add(Row->AsNumber());
+            }
+            else if (Row.IsValid() && Row->Type == EJson::Null)
+            {
+                OutGroundCm.Add(TOptional<double>());
+            }
+            else
+            {
+                OutGroundCm.Reset();
+                OutError = FString::Printf(TEXT("lamp %d's height is neither a number nor null"), Index);
+                return false;
+            }
         }
         return true;
     }

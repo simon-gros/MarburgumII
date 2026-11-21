@@ -13,9 +13,12 @@
 #include "GameFramework/PlayerStart.h"
 #include "HAL/FileManager.h"
 #include "Landscape.h"
+#include "LandscapeConfigHelper.h"
 #include "LandscapeDataAccess.h"
 #include "LandscapeInfo.h"
 #include "LandscapeProxy.h"
+#include "LandscapeStreamingProxy.h"
+#include "MarburgumWholeLevel.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialExpressionAbs.h"
 #include "Materials/MaterialExpressionAdd.h"
@@ -73,6 +76,8 @@ namespace
     // The landscape: components of 2 × 63 quads, one quad per grid step.
     constexpr int32 SubsectionQuads = 63;
     constexpr int32 Subsections = 2;
+    // On a World Partition level (ADR-091) the landscape streams in proxies of 4 × 4 components, 256 m: one HLOD cell each.
+    constexpr uint32 ProxyComponents = 4;
 
     // Plan metres (x east, y south of Stari most, z up) to Unreal centimetres.
     FVector Ue(double X, double Y, double Z)
@@ -912,7 +917,8 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
     }
     if (FParse::Param(*Params, TEXT("Verify")))
     {
-        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(LentMap);
+        FMarburgumWholeLevel WholeLevel(LentMap);
+        UWorld* World = WholeLevel.GetWorld();
         if (!World)
         {
             return 1;
@@ -1072,7 +1078,8 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
     }
 
     // The level.
-    UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(LentMap);
+    FMarburgumWholeLevel WholeLevel(LentMap);
+    UWorld* World = WholeLevel.GetWorld();
     if (!World)
     {
         UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND cannot load %s"), LentMap);
@@ -1220,7 +1227,23 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
         Actor->SetActorLocation(Actor->GetActorLocation() + FVector(0.0, 0.0, Lift));
         UE_LOG(LogMarburgumGround, Display, TEXT("MB2GROUND moved %s by %.0f cm (ground %.0f cm)"), *Actor->GetActorLabel(), Lift, NewGround.GetValue());
     }
-    if (!UEditorLoadingAndSavingUtils::SaveMap(World, LentMap))
+    // Split the new landscape into streaming proxies as the conversion split the old one (ADR-091). The probes and the
+    // reseating above ran on it whole.
+    if (World->IsPartitionedWorld())
+    {
+        if (!FLandscapeConfigHelper::PartitionLandscape(World, Landscape->GetLandscapeInfo(), ProxyComponents))
+        {
+            UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND could not split the landscape into streaming proxies"));
+            return 1;
+        }
+        int32 Proxies = 0;
+        for (TActorIterator<ALandscapeStreamingProxy> It(World); It; ++It)
+        {
+            ++Proxies;
+        }
+        UE_LOG(LogMarburgumGround, Display, TEXT("MB2GROUND landscape_proxies=%d components_each=%u"), Proxies, ProxyComponents * ProxyComponents);
+    }
+    if (!WholeLevel.Save())
     {
         UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND could not save %s"), LentMap);
         return 1;

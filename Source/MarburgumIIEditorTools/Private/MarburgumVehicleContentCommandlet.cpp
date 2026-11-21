@@ -1,6 +1,7 @@
 #include "MarburgumVehicleContentCommandlet.h"
 
 #include "MarburgumGodotClip.h"
+#include "MarburgumWholeLevel.h"
 
 #include "AssetCompilingManager.h"
 #include "AssetRegistry/AssetRegistryModule.h"
@@ -1332,7 +1333,12 @@ namespace MarburgumVehicleContent
         using namespace MarburgumII::Vehicles;
         TArray<TSharedPtr<FJsonValue>> Vehicles;
         TArray<TSharedPtr<FJsonValue>> Instances;
-        UWorld* World = LoadCatalogue(Vehicles, Instances) ? UEditorLoadingAndSavingUtils::LoadMap(LentMap) : nullptr;
+        TUniquePtr<FMarburgumWholeLevel> WholeLevel;
+        if (LoadCatalogue(Vehicles, Instances))
+        {
+            WholeLevel = MakeUnique<FMarburgumWholeLevel>(LentMap);
+        }
+        UWorld* World = WholeLevel ? WholeLevel->GetWorld() : nullptr;
         if (!World)
         {
             UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE cannot load %s"), LentMap);
@@ -1487,7 +1493,7 @@ namespace MarburgumVehicleContent
             UE_LOG(LogMarburgumVehicleContent, Display, TEXT("MB2VEHICLE place %s definition=%s source=%s location=%s yaw=%.1f ground=%.1f arrival=%s"),
                 *Id, Definition->Id, *Source, *Location.ToString(), ChosenYaw, Ground, *Arrival->GetActorLocation().ToString());
         }
-        if (!UEditorLoadingAndSavingUtils::SaveMap(World, LentMap))
+        if (!WholeLevel->Save())
         {
             UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE could not save %s"), LentMap);
             return false;

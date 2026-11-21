@@ -14,6 +14,7 @@
 #include "MarburgumInteriorCore.h"
 #include "MarburgumInteriorSubsystem.h"
 #include "MarburgumInteriorVolume.h"
+#include "MarburgumWholeLevel.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Dom/JsonObject.h"
@@ -155,7 +156,8 @@ int32 UMarburgumInteriorAuditCommandlet::Main(const FString& Params)
     }
     const double ClassifySeconds = FPlatformTime::Seconds() - ClassifyStart;
 
-    UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(Map);
+    FMarburgumWholeLevel WholeLevel(Map);
+    UWorld* World = WholeLevel.GetWorld();
     if (!World)
     {
         UE_LOG(LogMarburgumInteriorAudit, Error, TEXT("MB2INTERIOR_AUDIT cannot load %s"), *Map);

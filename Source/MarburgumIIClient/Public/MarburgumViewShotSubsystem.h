@@ -28,6 +28,9 @@ class ACameraActor;
  * each other, not with a package). -MB2ViewShotSettle=<seconds> (default 2.5, at most 30) lengthens each view for
  * more samples. At the first view the renderer's configuration and the level's render inventory are written to
  * <dir>/render_config.json (MarburgumRenderAudit).
+ *
+ * On a World Partition map (ADR-091) the camera is the streaming source: each view waits until the cells round it have
+ * loaded (at most 30 s, logged as "MB2VIEWSHOT view=... streamed_s=...") before it starts to settle.
  */
 UCLASS()
 class MARBURGUMIICLIENT_API UMarburgumViewShotSubsystem : public UGameInstanceSubsystem
@@ -67,6 +70,8 @@ private:
     FString PendingFile;
     bool bRequested = false;
     bool bFinished = false;
+    // The current view's cells have loaded (World Partition maps only).
+    bool bStreamed = false;
 
     struct FStats
     {

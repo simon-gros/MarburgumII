@@ -26,6 +26,7 @@
 #include "GameFramework/PlayerStart.h"
 #include "GameFramework/WorldSettings.h"
 #include "IAssetTools.h"
+#include "MarburgumWholeLevel.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "MarburgumArea.h"
@@ -646,7 +647,8 @@ namespace MarburgumMaps
     /** Puts the launch map's Lent area back to the original's box, touching nothing else (-LentArea, ADR-063). */
     int32 LentArea()
     {
-        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(TEXT("/Game/World/lent"));
+        FMarburgumWholeLevel WholeLevel(TEXT("/Game/World/lent"));
+        UWorld* World = WholeLevel.GetWorld();
         if (!World)
         {
             UE_LOG(LogMarburgumMaps, Error, TEXT("MB2AREA cannot load /Game/World/lent"));
@@ -669,7 +671,7 @@ namespace MarburgumMaps
             UE_LOG(LogMarburgumMaps, Error, TEXT("MB2AREA found %d lent areas on /Game/World/lent, want 1"), Changed);
             return 1;
         }
-        if (!UEditorLoadingAndSavingUtils::SaveMap(World, TEXT("/Game/World/lent")))
+        if (!WholeLevel.Save())
         {
             UE_LOG(LogMarburgumMaps, Error, TEXT("MB2AREA could not save /Game/World/lent"));
             return 1;
@@ -679,7 +681,8 @@ namespace MarburgumMaps
 
     int32 FictionLent()
     {
-        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(TEXT("/Game/World/lent"));
+        FMarburgumWholeLevel WholeLevel(TEXT("/Game/World/lent"));
+        UWorld* World = WholeLevel.GetWorld();
         if (!World)
         {
             UE_LOG(LogMarburgumMaps, Error, TEXT("MB2FICTION cannot load /Game/World/lent"));
@@ -934,7 +937,7 @@ namespace MarburgumMaps
             }
         }
 
-        if (!UEditorLoadingAndSavingUtils::SaveMap(World, TEXT("/Game/World/lent")))
+        if (!WholeLevel.Save())
         {
             UE_LOG(LogMarburgumMaps, Error, TEXT("MB2FICTION could not save /Game/World/lent"));
             return 1;
@@ -946,7 +949,8 @@ namespace MarburgumMaps
     /** Read-only: log every actor of a saved map with its class, transform and light settings. */
     int32 Describe(const FString& MapPath)
     {
-        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(MapPath);
+        FMarburgumWholeLevel WholeLevel(MapPath);
+        UWorld* World = WholeLevel.GetWorld();
         if (!World)
         {
             UE_LOG(LogMarburgumMaps, Error, TEXT("MB2MAP cannot load %s"), *MapPath);
