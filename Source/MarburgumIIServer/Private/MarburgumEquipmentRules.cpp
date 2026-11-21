@@ -24,16 +24,18 @@ namespace MarburgumII::Equipment
     FMarburgumEquipDecision DecideEquip(const FMarburgumWorldRecord& Current, const FString& Character, const FString& Slot,
         const FString& Item, FMarburgumWorldRecord& OutNext)
     {
+        // Lookups ignore case, and an id that crossed the wire as an FName comes back in the spelling the engine
+        // registered first ("Camera", "Head"): only the catalogue's own spelling is compared, stored and reported,
+        // refusals included. An id the catalogue does not know is reported as it came.
+        const FItemDefinition* ItemDef = Item.IsEmpty() ? nullptr : FindItem(Item);
         FMarburgumEquipDecision Decision;
         Decision.Slot = Slot;
-        Decision.Item = Item;
+        Decision.Item = ItemDef ? FString(ItemDef->Id) : Item;
         auto Refuse = [&Decision](EMarburgumInteractionReason Reason)
         {
             Decision.Reason = Reason;
             return Decision;
         };
-        // Lookups ignore case, and an id that crossed the wire as an FName comes back in the spelling the engine
-        // registered first ("Camera", "Head"): only the catalogue's own spelling is compared, stored and logged.
         const FEquipmentSlotDefinition* SlotDef = FindEquipmentSlot(Slot);
         if (!SlotDef)
         {
@@ -63,12 +65,10 @@ namespace MarburgumII::Equipment
             return Decision;
         }
 
-        const FItemDefinition* ItemDef = FindItem(Item);
         if (!ItemDef || !FitsSlot(ItemDef->Id, Decision.Slot))
         {
             return Refuse(EMarburgumInteractionReason::NotEquippable);
         }
-        Decision.Item = ItemDef->Id;
         if (Worn && *Worn == Decision.Item)
         {
             return Refuse(EMarburgumInteractionReason::NothingToDo);

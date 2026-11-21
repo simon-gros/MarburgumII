@@ -102,6 +102,11 @@ bool FMarburgumEquipmentRulesTest::RunTest(const FString& Parameters)
             TestTrue(TEXT("stored in catalogue case"), Entry.Key.Equals(TEXT("left_hand"), ESearchCase::CaseSensitive)
                 && Entry.Value.Equals(Camera, ESearchCase::CaseSensitive));
         }
+        const FMarburgumEquipDecision Misfit = Equip(Record, TEXT("Head"), TEXT("Camera"));
+        TestTrue(TEXT("a refusal reports catalogue case too"), !Misfit.bApplied
+            && Misfit.Slot.Equals(TEXT("head"), ESearchCase::CaseSensitive) && Misfit.Item.Equals(Camera, ESearchCase::CaseSensitive));
+        TestTrue(TEXT("an unknown slot still reports the item in catalogue case"),
+            Equip(Record, TEXT("pocket"), TEXT("Camera")).Item.Equals(Camera, ESearchCase::CaseSensitive));
         TestTrue(TEXT("the same camera again, spelt otherwise, is nothing to do"),
             Equip(Record, TEXT("LEFT_HAND"), TEXT("camera")).Reason == EMarburgumInteractionReason::NothingToDo);
     }
