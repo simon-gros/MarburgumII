@@ -1354,3 +1354,39 @@ The evening review of 20 November listed two open P0 security points on ADR-083:
   - `Marburgum.Net.StrictEncryption`: a replayed packet dropped, reordering taken, a packet replayed 1,100 packets later refused.
   - Service tests: 38.
   - Editor account smoke PASS (`Saved/AccountSmoke/20261120T233811Z`). A thief redeems the player's ticket first with a wrong key and admits nobody. The player is then admitted once, through the recording relay, with that same ticket. The ticket replayed while the character is in the world is refused as already in the world.
+
+## ADR-089 — Street furniture from the original game's kit, placed from OpenStreetMap clear of walkers and trees (GFX-01, VQ-023; implemented 2026-11-21; owner approval OPEN)
+
+**Context.** Apart from the street lamps (ADR-065), the square had no street furniture: no stop furniture at the bus stops of ADR-069, and no benches, fences, walls or bollards (VQ-023). The original game ported a six-piece street kit and placed it from each window's OpenStreetMap topology (`feat/unreal-street-kit`). The kit's meshes exist; its placement code reads the original's per-window topology files, which this map does not use.
+
+**Decision.**
+
+1. **Placement in the ground tool**, from this map's own OpenStreetMap extract, by the original's rules:
+   - every platform gets a stop post facing the road;
+   - a shelter stands where `shelter=yes`, 1.3 m back and open to the road, sliding 2, 4 or 6 m along the kerb when blocked;
+   - a bench stands where `bench=yes`;
+   - fence, wall and bollard runs get 2 m panels and 1.5 m posts;
+   - kerbs, hedges and retaining walls are not furnished.
+2. **Added here:**
+   - every mapped bench and bollard;
+   - no solid piece on the street people's walk lines (a panel across one leaves a gap, a bench or bollard backs off up to 1.5 m);
+   - nothing within 0.3 m of a tree's trunk (ADR-087: the trees are the better measurement).
+   Result: 948 pieces in `Content/Marburgum/Furniture/lent_street_furniture.json` (staged).
+3. **The original's meshes and paint**, copied to `/Game/World/StreetFurniture` (always cooked) and `/Game/World/Materials`, with three changes by `scripts/create-weather-content.sh furniture`:
+   - simple boxes instead of per-triangle collision, so a shelter's roof no longer blocks;
+   - Nanite off, since the paint was not compiled for it and drew as the default material;
+   - the paint compiled for instancing.
+4. **Server and client put up the same pieces from the file**, not replicated, as the lamps and plants are. `-MB2NoStreetFurniture` leaves them out.
+5. **Unity-safe tests.** Three shared tests put `using namespace MarburgumII;` at file scope, which leaked into the next test files of their unity blob (an ambiguous `Weather`, `Missions`). They now declare it inside each test.
+
+**Not decided here.**
+- The kit's appearance: the original's material-library binding, paint variants and 1990s colours.
+- Waste bins, post boxes, street-name plates and traffic signs (VA-06), kiosks, and furniture on bridges.
+- 1990s corrections of the 2026 map.
+
+**Rejected.**
+- Placing pieces on walk lines and letting street people collide.
+- Moving trees to make room.
+- Standing the 17 mapped bollards that are in the carriageway (they would block traffic lanes the paving draws as open).
+
+**Evidence.** [GFX01_STREET_FURNITURE.md](GFX01_STREET_FURNITURE.md): 12 editor close-ups with and without the furniture; server and client both place 948 of 948, with none lacking ground and no missing meshes. Owner playtest: **not yet**.
