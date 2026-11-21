@@ -1,5 +1,5 @@
-//! The distant ring: the 2014 survey round the playable square, out to the edge of its nine
-//! tiles, as a low-detail mesh, so the map ends in the rest of the city instead of a void.
+//! The distant ring: the 2014 survey round the playable square, out to the edge of the tiles
+//! it is given, as a low-detail mesh, so the map ends in the rest of the city instead of a void.
 //!
 //! The ring is 4 m cells. Bare ground and tree canopies are one smooth surface; a building is
 //! its cells raised as flat blocks to the median of their roof returns, with walls where it
@@ -14,9 +14,10 @@ use crate::mesh::PavedMesh;
 use crate::proj;
 use std::path::PathBuf;
 
-/// Half the side of the ring (plan metres): the nine 1 km tiles reach at least this far from
-/// the middle of Stari most on every side.
-pub const RING_HALF: f64 = 1432.0;
+/// Half the side of the ring (plan metres) by default: the 25 survey tiles TM_547..551_155..159
+/// reach at least this far from the middle of Stari most on every side (ADR-090). The nine
+/// tiles TM_548..550_156..158 alone reach 1,432 m.
+pub const RING_HALF: f64 = 2432.0;
 pub const CELL: f64 = 4.0;
 pub const RING_CHUNK: f64 = 256.0;
 /// Material slots, in the order MarburgumRebuildGround gives the ring's meshes their materials.
@@ -59,15 +60,15 @@ fn median(v: &mut [f32]) -> Option<f32> {
     Some(v[v.len() / 2])
 }
 
-fn read(laz: &[PathBuf]) -> Result<Cells, String> {
-    let m = (2.0 * RING_HALF / CELL).round() as usize;
+fn read(laz: &[PathBuf], ring_half: f64) -> Result<Cells, String> {
+    let m = (2.0 * ring_half / CELL).round() as usize;
     let mut cells = Cells { m, ground: vec![Vec::new(); m * m], roof: vec![Vec::new(); m * m], water: vec![Vec::new(); m * m], canopy: vec![f32::NEG_INFINITY; m * m], returns: vec![0; m * m] };
     for path in laz {
         let mut reader = las::Reader::from_path(path).map_err(|e| format!("{}: {e}", path.display()))?;
         for p in reader.points() {
             let p = p.map_err(|e| e.to_string())?;
             let (x, y) = proj::d96_to_plan(p.x, p.y);
-            let (c, r) = (((x + RING_HALF) / CELL).floor(), ((y + RING_HALF) / CELL).floor());
+            let (c, r) = (((x + ring_half) / CELL).floor(), ((y + ring_half) / CELL).floor());
             if r < 0.0 || c < 0.0 || r >= m as f64 || c >= m as f64 {
                 continue;
             }
@@ -98,13 +99,13 @@ enum Kind {
 }
 
 /// Builds the ring from the survey tiles; `inner` is the landscape of the square (heights.bin,
-/// `inner_half` metres either side). Writes ring.bin and returns a summary.
-pub fn build(laz: &[PathBuf], inner: &Grid, inner_half: f64, out: &std::path::Path) -> Result<serde_json::Value, String> {
-    let mut cells = read(laz)?;
+/// `inner_half` metres either side), out to `ring_half` metres. Writes ring.bin and returns a summary.
+pub fn build(laz: &[PathBuf], inner: &Grid, inner_half: f64, ring_half: f64, out: &std::path::Path) -> Result<serde_json::Value, String> {
+    let mut cells = read(laz, ring_half)?;
     let m = cells.m;
-    let centre = |k: usize| -RING_HALF + CELL * (k as f64 + 0.5);
+    let centre = |k: usize| -ring_half + CELL * (k as f64 + 0.5);
     let in_square = |r: usize, c: usize| centre(c).abs() < inner_half && centre(r).abs() < inner_half;
-    let template = Grid::new(m, RING_HALF - CELL / 2.0, 0.0);
+    let template = Grid::new(m, ring_half - CELL / 2.0, 0.0);
 
     // Bare ground, filled where the survey saw none (water, under buildings).
     let mut ground = template.like(0.0);
@@ -282,7 +283,7 @@ pub fn build(laz: &[PathBuf], inner: &Grid, inner_half: f64, out: &std::path::Pa
             _ => ground.v[i] as f64,
         }
     };
-    let corner = |k: usize| -RING_HALF + CELL * k as f64;
+    let corner = |k: usize| -ring_half + CELL * k as f64;
     let mut height = vec![0.0f64; (m + 1) * (m + 1)];
     let mut water_at = vec![f64::NAN; (m + 1) * (m + 1)];
     for vr in 0..=m {
@@ -313,7 +314,7 @@ pub fn build(laz: &[PathBuf], inner: &Grid, inner_half: f64, out: &std::path::Pa
         }
     }
 
-    let mut mesh = PavedMesh::new(RING_HALF, RING_CHUNK);
+    let mut mesh = PavedMesh::new(ring_half, RING_CHUNK);
     let up = [0.0, 0.0, 1.0];
     let (mut n_ground, mut n_tree, mut n_building, mut n_water) = (0usize, 0usize, 0usize, 0usize);
     for r in 0..m {
@@ -378,7 +379,7 @@ pub fn build(laz: &[PathBuf], inner: &Grid, inner_half: f64, out: &std::path::Pa
     }
     mesh.write(out).map_err(|e| e.to_string())?;
     Ok(serde_json::json!({
-        "half_extent_m": RING_HALF, "cell_m": CELL, "chunk_m": RING_CHUNK, "slots": RING_SLOTS,
+        "half_extent_m": ring_half, "cell_m": CELL, "chunk_m": RING_CHUNK, "slots": RING_SLOTS,
         "cells": { "ground": n_ground, "trees": n_tree, "buildings": n_building, "water": n_water },
         "blocks": blocks.len(), "water_level_from_survey": any_water,
         "chunks": mesh.chunks.len(), "triangles": mesh.triangle_count(),

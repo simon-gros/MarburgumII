@@ -4,15 +4,19 @@
 //! builds can be compared shot for shot:
 //!
 //! * the Lent angler and the Stari most deck;
-//! * an oblique aerial over each of the nine 512 m windows (ADR-045);
+//! * an oblique aerial over each of the 25 512 m windows (ADR-045, ADR-090), the middle nine first;
 //! * three eye-height views per window from the street people's walk graph, each looking 60 m down the pavement it
 //!   follows;
 //! * the four map edges from 60 m up, looking out at the distant ring (ADR-054).
+//!
+//! `--windows 9` keeps the camera set of the nine-window map (aerials and edges at ±768 m).
 
 use serde_json::Value;
 use std::path::Path;
 
-const WINDOWS: [(&str, f64, f64); 9] = [
+/// The windows' centres (plan metres east, south). The middle nine of ADR-045 come first, so their views are
+/// drawn in the same order as before ADR-090 added the outer ring of sixteen.
+const WINDOWS: [(&str, f64, f64); 25] = [
     ("ljudski_vrt", -512.0, -512.0),
     ("center", 0.0, -512.0),
     ("avtobusna", 512.0, -512.0),
@@ -22,11 +26,32 @@ const WINDOWS: [(&str, f64, f64); 9] = [
     ("kurilnica", -512.0, 512.0),
     ("magdalena", 0.0, 512.0),
     ("pobreska", 512.0, 512.0),
+    ("vrbanska", -1024.0, -1024.0),
+    ("vinarska", -512.0, -1024.0),
+    ("mestni_park", 0.0, -1024.0),
+    ("tomsiceva", 512.0, -1024.0),
+    ("praprotnikova", 1024.0, -1024.0),
+    ("smetanova", -1024.0, -512.0),
+    ("zelezniska", 1024.0, -512.0),
+    ("studenci", -1024.0, 0.0),
+    ("greenwich", 1024.0, 0.0),
+    ("preradoviceva", -1024.0, 512.0),
+    ("mejna", 1024.0, 512.0),
+    ("radvanjska", -1024.0, 1024.0),
+    ("cesta_zmage", -512.0, 1024.0),
+    ("tabor", 0.0, 1024.0),
+    ("nasipna", 512.0, 1024.0),
+    ("crnogorska", 1024.0, 1024.0),
 ];
+/// The middle nine windows' map edge (ADR-045) and the five by five's (ADR-090), plan metres.
+const HALF_9_M: f64 = 768.0;
+const HALF_25_M: f64 = 1280.0;
 const EYE_HEIGHT_M: f64 = 1.7;
 const PER_WINDOW: usize = 3;
 const WALK_M: f64 = 60.0;
 const MIN_WALK_M: f64 = 35.0;
+/// A walk round a small block can end where it began (ADR-090 tomsiceva), and the camera would look straight down.
+const MIN_SIGHT_M: f64 = 20.0;
 const BRIDGE_FLAG: i64 = 1;
 
 /// SplitMix64: small, seedable and the same on every platform.
@@ -109,7 +134,7 @@ fn walk_ahead(
     (current, walked)
 }
 
-pub fn views(graph: &Value, seed: u64) -> Result<Vec<String>, String> {
+pub fn views(graph: &Value, seed: u64, windows: usize) -> Result<Vec<String>, String> {
     let number = |v: &Value| {
         v.as_f64()
             .ok_or_else(|| "a walk-graph node field is not a number".to_string())
@@ -157,7 +182,7 @@ pub fn views(graph: &Value, seed: u64) -> Result<Vec<String>, String> {
             70.0,
         ),
     ];
-    for (window, cx, cy) in WINDOWS {
+    for &(window, cx, cy) in WINDOWS.iter().take(windows) {
         out.push(view(
             &format!("air_{window}"),
             ue(cx, cy + 300.0, 220.0),
@@ -184,6 +209,9 @@ pub fn views(graph: &Value, seed: u64) -> Result<Vec<String>, String> {
                 continue;
             }
             let (s, e) = (nodes[start], nodes[end]);
+            if (e.east - s.east).hypot(e.south - s.south) < MIN_SIGHT_M {
+                continue;
+            }
             out.push(view(
                 &format!("street_{window}_{taken}"),
                 ue(s.east, s.south, s.up + EYE_HEIGHT_M),
@@ -193,15 +221,18 @@ pub fn views(graph: &Value, seed: u64) -> Result<Vec<String>, String> {
             taken += 1;
         }
     }
+    // 28 m inside the edge, looking at the ground 632 m (nine windows) or 1,120 m (25) beyond it; the five by five's
+    // north edge runs over the Kalvarija slopes, up to 83 m, so its cameras stand at 120 m.
+    let (edge, out_to, up) = if windows <= 9 { (HALF_9_M - 28.0, 1400.0, 60.0) } else { (HALF_25_M - 28.0, 2400.0, 120.0) };
     for (name, east, south, look_east, look_south) in [
-        ("edge_north", 0.0, -740.0, 0.0, -1400.0),
-        ("edge_south", 0.0, 740.0, 0.0, 1400.0),
-        ("edge_west", -740.0, 0.0, -1400.0, 0.0),
-        ("edge_east", 740.0, 0.0, 1400.0, 0.0),
+        ("edge_north", 0.0, -edge, 0.0, -out_to),
+        ("edge_south", 0.0, edge, 0.0, out_to),
+        ("edge_west", -edge, 0.0, -out_to, 0.0),
+        ("edge_east", edge, 0.0, out_to, 0.0),
     ] {
         out.push(view(
             name,
-            ue(east, south, 60.0),
+            ue(east, south, up),
             ue(look_east, look_south, 0.0),
             70.0,
         ));
@@ -209,7 +240,15 @@ pub fn views(graph: &Value, seed: u64) -> Result<Vec<String>, String> {
     Ok(out)
 }
 
-pub fn run(graph_path: &str, seed: Option<&str>) -> u8 {
+pub fn run(graph_path: &str, seed: Option<&str>, windows: Option<&str>) -> u8 {
+    let windows = match windows.map(str::parse::<usize>) {
+        None => WINDOWS.len(),
+        Some(Ok(n @ (9 | 25))) => n,
+        Some(_) => {
+            eprintln!("survey-views: --windows is 9 or 25");
+            return 2;
+        }
+    };
     let seed = match seed.map(str::parse::<u64>) {
         None => 1990,
         Some(Ok(seed)) => seed,
@@ -228,7 +267,7 @@ pub fn run(graph_path: &str, seed: Option<&str>) -> u8 {
             return 2;
         }
     };
-    match views(&graph, seed) {
+    match views(&graph, seed, windows) {
         Ok(views) => {
             println!("{}", views.join(";"));
             0
@@ -256,12 +295,12 @@ mod tests {
 
     #[test]
     fn the_same_seed_gives_the_same_views() {
-        assert_eq!(views(&grid(), 7).unwrap(), views(&grid(), 7).unwrap());
+        assert_eq!(views(&grid(), 7, 25).unwrap(), views(&grid(), 7, 25).unwrap());
     }
 
     #[test]
     fn a_street_view_looks_down_the_pavement_at_eye_height() {
-        let all = views(&grid(), 1990).unwrap();
+        let all = views(&grid(), 1990, 25).unwrap();
         let street: Vec<&String> = all
             .iter()
             .filter(|v| v.starts_with("street_lent_"))
@@ -278,14 +317,35 @@ mod tests {
             );
             assert_eq!(eye[0], 0.0);
         }
-        // Nine aerials, four edges, the angler and the deck, whatever the graph.
-        assert_eq!(all.iter().filter(|v| v.starts_with("air_")).count(), 9);
+        // 25 aerials, four edges, the angler and the deck, whatever the graph.
+        assert_eq!(all.iter().filter(|v| v.starts_with("air_")).count(), 25);
         assert_eq!(all.iter().filter(|v| v.starts_with("edge_")).count(), 4);
     }
 
     #[test]
+    fn the_nine_window_set_is_the_first_nine_aerials_and_the_old_edges() {
+        let nine = views(&grid(), 1990, 9).unwrap();
+        let all = views(&grid(), 1990, 25).unwrap();
+        assert_eq!(nine.iter().filter(|v| v.starts_with("air_")).count(), 9);
+        assert_eq!(nine[..nine.len() - 4], all[..nine.len() - 4], "the middle nine come first and draw the same views");
+        let edge_north = nine.iter().find(|v| v.starts_with("edge_north@")).unwrap();
+        assert!(edge_north.contains("@74000,0,6000@"), "{edge_north}");
+    }
+
+    #[test]
+    fn a_walk_round_a_block_back_to_its_start_is_not_a_view() {
+        // A 15 m square in Lent's window: every walk goes once round it, 60 m, and ends where it began.
+        let nodes: Vec<Value> = [(0.0, 0.0), (15.0, 0.0), (15.0, 15.0), (0.0, 15.0)]
+            .iter()
+            .map(|&(east, south)| json!([east, south, 2.0, 0, 0, 0.5]))
+            .collect();
+        let graph = json!({ "nodes": nodes, "edges": [[0, 1, 0], [1, 2, 0], [2, 3, 0], [3, 0, 0]] });
+        assert!(!views(&graph, 1990, 25).unwrap().iter().any(|v| v.starts_with("street_")));
+    }
+
+    #[test]
     fn a_window_without_pavement_has_only_its_aerial() {
-        let all = views(&grid(), 1990).unwrap();
+        let all = views(&grid(), 1990, 25).unwrap();
         assert!(!all.iter().any(|v| v.starts_with("street_pobreska_")));
     }
 }

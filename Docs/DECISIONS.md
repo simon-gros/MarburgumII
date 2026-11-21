@@ -1302,11 +1302,11 @@ Simon asked to encrypt the traffic. This also closes the server half of QA **AR1
 
 **Decision.**
 
-1. **Placement in the ground tool.** `lent-ground --mode plants` reads the nine windows' plant files, which use our plan origin, and keeps a plant only where all of these hold:
+1. **Placement in the ground tool.** `lent-ground --mode plants` reads the 25 windows' plant files (the nine of ADR-045 until ADR-090), which use our plan origin, and keeps a plant only where all of these hold:
    - the landscape is grass at its trunk and nearly all round it (`surface.png`);
    - no paving is drawn within reach (`top.bin` over `heights.bin`);
    - it is clear of buildings, the river, bridges, the square's edge and the walk graph (a tree's trunk by 1 m, a bush by its crown).
-   A plant that fails is dropped, never moved. Result: 9,959 of 35,380, namely 4,972 trees and 4,987 bushes. The file `Content/Marburgum/Vegetation/lent_plants.json` is staged.
+   A plant that fails is dropped, never moved. Result on the nine windows: 9,959 of 35,380, namely 4,972 trees and 4,987 bushes; on the five by five (ADR-090): 40,604 of 124,392, namely 20,144 trees and 20,460 bushes. The file `Content/Marburgum/Vegetation/lent_plants.json` is staged.
 2. **The original's species meshes** (16 of 20, Marburgum-owned procedural meshes) are copied to `/Game/Vegetation` and always cooked. Their glTF-import materials drew black in Lent's light, so `scripts/create-weather-content.sh plants` gives them `M_PlantFoliage` (two-sided foliage) and `M_PlantBark`, with one instance per species in the original's colours.
 3. **Server and client put up the same plants from the file**, not replicated, as the street lamps do (ADR-065):
    - one instanced component per species, with no collision;
@@ -1371,7 +1371,7 @@ The evening review of 20 November listed two open P0 security points on ADR-083:
    - every mapped bench and bollard;
    - no solid piece on the street people's walk lines (a panel across one leaves a gap, a bench or bollard backs off up to 1.5 m);
    - nothing within 0.3 m of a tree's trunk (ADR-087: the trees are the better measurement).
-   Result: 948 pieces in `Content/Marburgum/Furniture/lent_street_furniture.json` (staged).
+   Result: 948 pieces on the nine windows, 2,339 on the five by five (ADR-090), in `Content/Marburgum/Furniture/lent_street_furniture.json` (staged).
 3. **The original's meshes and paint**, copied to `/Game/World/StreetFurniture` (always cooked) and `/Game/World/Materials`, with three changes by `scripts/create-weather-content.sh furniture`:
    - simple boxes instead of per-triangle collision, so a shelter's roof no longer blocks;
    - Nanite off, since the paint was not compiled for it and drew as the default material;
@@ -1390,3 +1390,28 @@ The evening review of 20 November listed two open P0 security points on ADR-083:
 - Standing the 17 mapped bollards that are in the carriageway (they would block traffic lanes the paving draws as open).
 
 **Evidence.** [GFX01_STREET_FURNITURE.md](GFX01_STREET_FURNITURE.md): 12 editor close-ups with and without the furniture; server and client both place 948 of 948, with none lacking ground and no missing meshes. Owner playtest: **not yet**.
+## ADR-090 — Lent and the 24 windows round it: the map five by five (accepted 2026-11-21; owner playtest OPEN)
+
+**Problem.** The owner asked for a larger area again. The map went from one 512 m window (Lent) to nine (ADR-045); now it should be 25, five by five, by adding the sixteen windows round the nine, with everything the nine have had done to them: the buildings, the ground and its materials, the quality passes and the rest. The original game already cuts Maribor into 512 m windows on one grid round the middle of Stari most, and all sixteen exist there with their footprints, orthophotos and window bounds:
+
+| | far west | west | middle | east | far east |
+|---|---|---|---|---|---|
+| far north | vrbanska | vinarska | mestni_park | tomsiceva | praprotnikova |
+| north | smetanova | ljudski_vrt | center | avtobusna | zelezniska |
+| middle | studenci | pristan | **lent** | titov_most | greenwich |
+| south | preradoviceva | kurilnica | magdalena | pobreska | mejna |
+| far south | radvanjska | cesta_zmage | tabor | nasipna | crnogorska |
+
+**Decision.** `/Game/World/lent` stays the one launch level and now covers the 2,560 m square (plan ±1,280 m). The sixteen windows go through the same pipeline as the nine (DEVELOPMENT.md has the order), not as their original levels:
+
+- **Buildings.** `lent-ground merge-buildings` joins the 25 windows' footprints: 3,363, with 193 joined across window edges and 5 pieces that do not touch kept apart. `MarburgumRebuildFacades` builds 3,182 closed shells (0 open, 0 failed; 1,927 gabled, 371 hipped, 884 flat; 7.04 M triangles, against 870 and 3.17 M) and places the 2,312 new ones under `Buildings/<window>`. The 181 dropped are under 30 m² or slivers. Nineteen of ADR-045's buildings crossed the old square's edge; joined with their outer parts, most of their outline is now in an outer window. A building now keeps its asset wherever it already is, so these were rebuilt in place rather than duplicated under a new folder.
+- **Bridges and river.** The same pass places Meljski most (`greenwich_meljski`, the original's import with its recorded origin) and the Drava sheets of studenci, smetanova and greenwich, copied from the original's Unreal port with the materials the earlier bridges already brought. Koroški most lies 200 m outside the square and stays out.
+- **Doors stay as they were.** Rebuilding every shell would have cut a street door into every eligible building (ADR-076), where `main` has five open on purpose. `Data/World/lent_ground/open_shells.txt` lists the open shells; a full rebuild cuts only those, `-Only=<id>` one more, `-AllDoors` every eligible one. The rebuild logs `street_doors cut=5 … eligible_closed=581`.
+- **Ground.** `tools/lent-ground` defaults to the new square: 5,041² points (40 × 40 components of 2 × 63 quads, the same 0.508 m), an 8,192² surface mask (0.3125 m, so grass edges keep the sharpness of the nine windows' 0.375 m). Heights come from the same nine LiDAR tiles, which reach 1,436 m from Stari most, 80 M returns in the square; grass and hard ground from all 25 orthophotos; streets from a new Overpass extract of the square (`scripts/fetch-lent-osm.sh`, 51,108 elements, 2026-11-21): 855,571 m² of carriageway (320,463 before), 1,239,486 m² of pavement (468,025) and 806 crossings, 706 marked. The paving is 1,476 chunks with 14.0 M triangles (521 and 5.39 M). The only water in the extract is the Drava.
+- **The quality passes run on all of it.** ADR-053's and ADR-054's rules are part of the tool, so the new windows had them: 107,361 paving points over mounds flattened, 1.40 M points eased at walls, 126,984 stair points smoothed, 2.09 M verge points raised, 1,790 islands fitted (736 before) and 179,159 bank points cut and 12,264 raised. Five buildings need a deeper footing (four before), one of them the 12 m maximum. Façade bands, plaster colours and flat-roof finishes come with the shells.
+- **Street people, districts and places.** The walk graph covers the square: 34,220 nodes and 197.7 km (13,098 and 74.7 km), 30,137 nodes in the largest network. Every node has the zone of the original's nearest walk node (`street-zones`), and 350 places draw people in (239 before), from the original's road graph, which covers the whole city.
+- **The distant ring** moves out with the square. `lent-ground ring` takes `--half`, `--points` and `--ring-half`; it now reads the 25 survey tiles TM_547..551_155..159 and reaches ±2,432 m: 280 meshes, 2.75 M triangles (119 and 1.04 M), 162,013 building cells in 3,390 blocks.
+- **Tabor is on the map.** The six Tabor places of The City for Sale and Chapters IV and VI (the exchange counter, Irena Vogrin, the Pohorska banka desk, Jožica Rozman, Ivana Zupan and the Block 13 cage) stood on a temporary floor (ADR-052); they now stand on Tabor's ground (`placement: original`). Melje is 100–170 m east of the new edge and keeps its floor. Irena's original spot is inside a building of the real Tabor (w119054871), so a new server rule moves a person or place whose spot is inside a building footprint to the nearest open, dry ground, as ADR-052 does for one in the Drava, logged `content_moved reason=in_building`. Of the 51 authored placements only hers is affected.
+- **Extent constants** follow the square: the world audit's playable half extent, the street-lamp test and `mb2 validate lights`. `mb2 survey-views` photographs the 25 windows (`9` keeps the old set).
+
+**Evidence.** Staged Linux Development build of `8ca3e76` with `d7b99ea` (2026-11-21): the 107-view survey of the 25 windows (`Saved/Map25/survey-final`; client resident 8.0 GB and VRAM 5.0 GB, medians); the swim, vehicle, combat, mission, negative and story smokes pass, and the street smoke once it reads `Street_<n>` (`d7b99ea`). Clients take 9–12 s to load the level, which outlasted the 20 s admission deadline until `d7b99ea` stopped it during the load. The door smoke passes for Hotel Lent (`r1539756`) and fails for the lagged second building (`w539479841`): whichever of its two clients joins second is put 1.2 m from their shared start, walks up facing away and keeps the street door behind its body, the known `FindUseCandidate` fault (STORY_EXPANSION.md) that `849eb74` (door use follows the camera, not on `main`) fixes. Owner playtest: **not yet**.

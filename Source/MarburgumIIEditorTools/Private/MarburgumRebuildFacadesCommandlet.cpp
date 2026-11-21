@@ -10,6 +10,7 @@
 #include "EngineUtils.h"
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "FileHelpers.h"
+#include "HAL/FileManager.h"
 #include "MarburgumBuildingMesher.h"
 #include "MarburgumInteriorCore.h"
 #include "MarburgumInteriorSubsystem.h"
@@ -33,9 +34,9 @@ namespace
     namespace MB = MarburgumBuildings;
     namespace LitWindows = MarburgumII::LitWindows;
 
-    // The footprints of Lent and its eight neighbouring windows, joined across the window edges by
-    // `lent-ground merge-buildings` (ADR-045), and the list of the ones the level places, which the
-    // ground tool seats.
+    // The footprints of Lent and the 24 windows round it, joined across the window edges by
+    // `lent-ground merge-buildings` (ADR-045, ADR-090), and the list of the ones the level places,
+    // which the ground tool seats.
     FString SourcePath()
     {
         return FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground/buildings.json"));
@@ -44,6 +45,35 @@ namespace
     FString PlacedPath()
     {
         return FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground/placed_buildings.txt"));
+    }
+
+    // The shells whose street door is cut (ADR-076): one id per line, `#` starts a comment. A full
+    // rebuild opens only these, so rebuilding every shell for the map (ADR-090) does not open the other
+    // eligible buildings, which are opened one audited batch at a time.
+    FString OpenShellsPath()
+    {
+        return FPaths::Combine(FPaths::ProjectDir(), TEXT("Data/World/lent_ground/open_shells.txt"));
+    }
+
+    TSet<FString> ReadOpenShells()
+    {
+        TSet<FString> Open;
+        TArray<FString> Lines;
+        FFileHelper::LoadFileToStringArray(Lines, *OpenShellsPath());
+        for (FString Line : Lines)
+        {
+            int32 Hash = INDEX_NONE;
+            if (Line.FindChar(TEXT('#'), Hash))
+            {
+                Line.LeftInline(Hash);
+            }
+            Line.TrimStartAndEndInline();
+            if (!Line.IsEmpty())
+            {
+                Open.Add(Line);
+            }
+        }
+        return Open;
     }
 
     // Every wall reaches this far below its base, so paving and grass meet it at their own height
@@ -70,12 +100,32 @@ namespace
         return nullptr;
     }
 
-    // A building that was already in Lent keeps its asset under Buildings/lent; a new one goes under
-    // the window it mostly stands in.
+    // A building keeps its asset where it already is: under Buildings/lent if it was in Lent, or under
+    // the window it was first placed in. ADR-090 joined some of ADR-045's buildings with their parts in
+    // the outer windows, which can change the window they mostly stand in. A new one goes under the
+    // window it mostly stands in.
     FString BuildingPackage(const FString& Id, const FString& Window)
     {
         const FString Lent = FString::Printf(TEXT("/Game/World/Buildings/lent/%s"), *Id);
-        return FPackageName::DoesPackageExist(Lent) || Window.IsEmpty() ? Lent : FString::Printf(TEXT("/Game/World/Buildings/%s/%s"), *Window, *Id);
+        if (FPackageName::DoesPackageExist(Lent) || Window.IsEmpty())
+        {
+            return Lent;
+        }
+        static TArray<FString> Folders;
+        if (Folders.IsEmpty())
+        {
+            IFileManager::Get().FindFiles(Folders, *(FPaths::ProjectContentDir() / TEXT("World/Buildings/*")), false, true);
+            Folders.Sort();
+        }
+        for (const FString& Folder : Folders)
+        {
+            const FString Existing = FString::Printf(TEXT("/Game/World/Buildings/%s/%s"), *Folder, *Id);
+            if (Folder != Window && FPackageName::DoesPackageExist(Existing))
+            {
+                return Existing;
+            }
+        }
+        return FString::Printf(TEXT("/Game/World/Buildings/%s/%s"), *Window, *Id);
     }
 
     bool IsBuildingActor(const AStaticMeshActor* Actor)
@@ -362,11 +412,15 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
 
     // The street door is cut where the building's ground floor opens (ADR-076), and only there. The layout is
     // the game's own, from the same file prepared the same way; a footprint whose cleaned outline or party walls
-    // differ from the layout's keeps a painted door rather than a hole the rooms do not line up with.
+    // differ from the layout's keeps a painted door rather than a hole the rooms do not line up with. Only the
+    // shells in open_shells.txt are cut, and the one named by -Only; -AllDoors cuts every eligible shell.
     {
         std::vector<MarburgumInteriors::FPlan> Plans;
+        const TSet<FString> OpenShells = ReadOpenShells();
+        const bool bAllDoors = FParse::Param(*Params, TEXT("AllDoors"));
         int32 Cut = 0;
         int32 Mismatched = 0;
+        int32 Closed = 0;
         if (UMarburgumInteriorSubsystem::ReadPlans(Plans, nullptr))
         {
             TMap<FString, int32> ById;
@@ -393,6 +447,12 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
                 {
                     continue;
                 }
+                const FString Id = UTF8_TO_TCHAR(Footprint.Id.c_str());
+                if (!bAllDoors && Id != Only && !OpenShells.Contains(Id))
+                {
+                    ++Closed;
+                    continue;
+                }
                 if (!bSame)
                 {
                     ++Mismatched;
@@ -404,7 +464,7 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
                 ++Cut;
             }
         }
-        UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE street_doors cut=%d mismatched=%d"), Cut, Mismatched);
+        UE_LOG(LogMarburgumFacades, Display, TEXT("MB2FACADE street_doors cut=%d mismatched=%d eligible_closed=%d listed=%d"), Cut, Mismatched, Closed, OpenShells.Num());
     }
 
     UMaterialInterface* Parent = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Marburgum/Materials/Masters/M_Building.M_Building"));
@@ -661,8 +721,13 @@ int32 UMarburgumRebuildFacadesCommandlet::Main(const FString& Params)
             { TEXT("/Game/World/Bridges/pristan_studenska.pristan_studenska"), TEXT("Bridge_pristan_studenska"), true },
             { TEXT("/Game/World/Bridges/titov_most_titov.titov_most_titov"), TEXT("Bridge_titov_most_titov"), true },
             { TEXT("/Game/World/Bridges/titov_most_zelezniski.titov_most_zelezniski"), TEXT("Bridge_titov_most_zelezniski"), true },
+            // ADR-090's outer windows: Meljski most in greenwich, and the Drava through studenci, smetanova and greenwich.
+            { TEXT("/Game/World/Bridges/greenwich_meljski.greenwich_meljski"), TEXT("Bridge_greenwich_meljski"), true },
             { TEXT("/Game/World/Water/pristan.pristan"), TEXT("Drava_pristan"), false },
             { TEXT("/Game/World/Water/titov_most.titov_most"), TEXT("Drava_titov_most"), false },
+            { TEXT("/Game/World/Water/studenci.studenci"), TEXT("Drava_studenci"), false },
+            { TEXT("/Game/World/Water/smetanova.smetanova"), TEXT("Drava_smetanova"), false },
+            { TEXT("/Game/World/Water/greenwich.greenwich"), TEXT("Drava_greenwich"), false },
         };
         TSet<FString> Labels;
         const AStaticMeshActor* LentDrava = nullptr;

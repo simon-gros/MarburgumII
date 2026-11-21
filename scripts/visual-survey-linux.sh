@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Visual survey of /Game/World/lent (Docs/VISUAL_QUALITY_BACKLOG.md): a dedicated server and one offscreen 1920x1080
-# client that photographs the fixed camera set of `mb2 survey-views` (aerials of the nine windows, eye-height
+# client that photographs the fixed camera set of `mb2 survey-views` (aerials of the 25 windows, eye-height
 # street views, the map edges, the angler, the Stari most deck) and reports assets the client could not load.
 #
 #   scripts/visual-survey-linux.sh [editor|staged] [name]

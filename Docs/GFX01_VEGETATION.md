@@ -7,7 +7,7 @@
 
 The owner's instruction: **plants grow only on grass**, ground that is not pavement, road, square, path, building or water. So the map gets far fewer plants than the original game, which stood a surveyed tree wherever the 2014 survey found one, on pavements, yards and car parks included.
 
-`lent-ground --mode plants` (`tools/lent-ground/src/plants.rs`) reads the original's `<window>_plants.json` for the nine windows of ADR-045. They are on the same plan origin, the middle of Stari most. It keeps a plant only when all of these hold:
+`lent-ground --mode plants` (`tools/lent-ground/src/plants.rs`) reads the original's `<window>_plants.json` for the 25 windows of ADR-090 (the nine of ADR-045 when this was first built; see [the five by five](#the-five-by-five-adr-090)). They are on the same plan origin, the middle of Stari most. It keeps a plant only when all of these hold:
 
 | Test | Tree | Bush |
 | --- | --- | --- |
@@ -32,6 +32,27 @@ A plant that fails is **dropped, never moved**. The original had already settled
 | On a walk line | 2 | 0 |
 
 By species: Norway maple 1,906; privet 1,710; dogwood 1,303; lime 977; elder 766; silver birch 741; bramble 667; horse chestnut 507; hazel 393; London plane 345; white willow 181; reeds 148; pedunculate oak 115; black poplar 96; ash 58; black alder 46.
+
+## The five by five (ADR-090)
+
+When the map grew to 25 windows, the same rule ran over all of them (`WINDOWS` in `plants.rs`, the 2,560 m square of the 5×5 ground): **40,604 of the 124,392 surveyed plants stand on grass, 20,144 trees and 20,460 bushes** (33 %). Plants per window, north up:
+
+| | far west | west | middle | east | far east |
+| --- | --- | --- | --- | --- | --- |
+| far north | 2,404 | 3,495 | 2,929 | 3,062 | 1,450 |
+| north | 1,062 | 781 | 333 | 367 | 633 |
+| middle | 1,136 | 692 | 400 | 862 | 1,081 |
+| south | 1,532 | 1,043 | 1,072 | 4,550 | 2,506 |
+| far south | 1,386 | 1,394 | 1,268 | 3,416 | 1,750 |
+
+The middle nine keep within 3 % of their earlier counts; the 5×5 ground's finer surface mask (0.3125 m against 0.375 m) moves a few grass edges. Refused: paving within reach 27,756 trees and 22,710 bushes, not grass 15,610 and 16,695, near the square's edge 351 and 395, on a bridge 134 and 13, against a building 68 and 14, in the river 16 and 6, on a walk line 19 and 1. The street furniture was placed again against the new trunks ([GFX01_STREET_FURNITURE.md](GFX01_STREET_FURNITURE.md)).
+
+**Evidence on the five by five** (editor game mode, `d8cc613`, RTX 5080, 1080p, 21 November). The editor server and an editor `-game` client load the 25-window level (server 16.5 GB, client peak 16.7 GB; the two did not fit one 28 GB unit, so each ran in its own). Both log `MB2PLANTS … plants=40604 grounded=40604 no_ground=0 trunks=20144 missing_meshes=0` and `MB2FURNITURE … pieces=2339 grounded=2339 no_ground=0`. The 16 new windows photographed from the survey's views (an aerial and three street views each, 64 views), without plants (`-MB2NoPlants`) | with them, 64 of 64 both times; the server ran without `-MB2Weather`, so it rains. Mestni park becomes the wooded park it is, its paths left free; streets, pavements and squares stay bare:
+
+- [Mestni park, aerial](Captures/gfx01-5x5-2026-11-21/air_mestni_park.jpg) and [in the park](Captures/gfx01-5x5-2026-11-21/street_mestni_park_1.jpg)
+- [Tabor](Captures/gfx01-5x5-2026-11-21/air_tabor.jpg), [Studenci](Captures/gfx01-5x5-2026-11-21/air_studenci.jpg) and [a Studenci street](Captures/gfx01-5x5-2026-11-21/street_studenci_0.jpg), [Mejna](Captures/gfx01-5x5-2026-11-21/air_mejna.jpg), [a Vrbanska street](Captures/gfx01-5x5-2026-11-21/street_vrbanska_2.jpg)
+
+Not measured: frame time with four times the plants. It belongs in the packaged GFX-01 measurement on a free GPU.
 
 ## In the game
 

@@ -85,11 +85,15 @@ private:
     void HandlePendingConnection(UPendingNetGame* PendingNetGame);
     /** The server accepted the hello's ticket: encrypt with the ticket's key from here on (ADR-083). */
     void HandleEncryptionAck(const FOnEncryptionKeyResponse& Respond);
+    void HandlePreLoadMap(const FString& MapName);
+    void HandlePostLoadMap(UWorld* LoadedWorld);
 
     FTSTicker::FDelegateHandle TickerHandle;
     FDelegateHandle NetworkFailureHandle;
     FDelegateHandle TravelFailureHandle;
     FDelegateHandle PendingConnectionHandle;
+    FDelegateHandle PreLoadMapHandle;
+    FDelegateHandle PostLoadMapHandle;
     FMarburgumSessionChanged SessionChanged;
 
     static FString ResolveDefaultCharacterKey();
@@ -109,6 +113,8 @@ private:
     bool bExpectEncrypted = false;
     FDelegateHandle EncryptionAckBinding;
     double AttemptStartedSeconds = 0.0;
+    /** When the map load holding the game thread began, or 0. The attempt's clock stops for it. */
+    double MapLoadStartedSeconds = 0.0;
     double NextReconnectSeconds = 0.0;
     bool bReconnectScheduled = false;
 };

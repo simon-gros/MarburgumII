@@ -32,8 +32,13 @@ use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-/// The nine windows of ADR-045, whose `<window>_plants.json` cover the square.
-pub const WINDOWS: [&str; 9] = ["lent", "ljudski_vrt", "center", "avtobusna", "pristan", "titov_most", "kurilnica", "magdalena", "pobreska"];
+/// The 25 windows of ADR-090 (the nine of ADR-045 and the sixteen round them), whose `<window>_plants.json` cover the
+/// square.
+pub const WINDOWS: [&str; 25] = [
+    "lent", "ljudski_vrt", "center", "avtobusna", "pristan", "titov_most", "kurilnica", "magdalena", "pobreska", "vrbanska", "vinarska",
+    "mestni_park", "tomsiceva", "praprotnikova", "smetanova", "zelezniska", "studenci", "greenwich", "preradoviceva", "mejna", "radvanjska",
+    "cesta_zmage", "tabor", "nasipna", "crnogorska",
+];
 
 /// Paving is drawn where the walkable top stands this far over the landscape (the landscape goes 0.15 m under it).
 const PAVED_RISE_M: f32 = 0.1;
@@ -186,7 +191,7 @@ fn round(v: f64, places: i32) -> f64 {
     (v * f).round() / f
 }
 
-/// Places the plants of the nine windows and writes them to `out`; returns the summary.
+/// Places the plants of the 25 windows and writes them to `out`; returns the summary.
 pub fn build(inp: &Inputs, surface_path: &Path, terrain: &Path, catalogue_path: &Path, walk_graph: &Path, out: &Path) -> Result<Value, String> {
     let surface = Surface::read(surface_path, inp.half)?;
     let catalogue = read_catalogue(catalogue_path)?;

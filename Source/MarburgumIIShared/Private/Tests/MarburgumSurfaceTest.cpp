@@ -45,12 +45,12 @@ bool FMarburgumSurfaceTest::RunTest(const FString& Parameters)
     TestFalse(TEXT("a short map is refused"), FLandscapeMap().Parse(Bad));
     TestEqual(TEXT("unloaded map is unknown"), FLandscapeMap().SurfaceAt(0.0, 0.0), FString(Unknown));
 
-    // The committed map: Lent's 1,536 m square in 2 m cells.
+    // The committed map: the five by five's 2,560 m square in 2 m cells (ADR-090).
     TArray<uint8> Lent;
     TestTrue(TEXT("lent_surface.bin readable"), FFileHelper::LoadFileToArray(Lent, *FPaths::Combine(FPaths::ProjectContentDir(), LandscapeMapFile)));
     FLandscapeMap LentMap;
     TestTrue(TEXT("lent_surface.bin parses"), LentMap.Parse(Lent));
-    TestEqual(TEXT("768 cells a side"), LentMap.GetCells(), 768);
+    TestEqual(TEXT("1,280 cells a side"), LentMap.GetCells(), 1280);
 
     // Footstep sets.
     TestEqual(TEXT("dry asphalt is hard"), FootstepSetFor(TEXT("asphalt"), 0.0, 0.0, 0.0), FootstepHard);

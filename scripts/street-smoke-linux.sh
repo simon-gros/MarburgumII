@@ -151,13 +151,15 @@ expect_log "$log" "spawned_too_close" 0 "MB2_STREET role=server event=spawn .* w
 expect_log "$log" "fight_incident" ">=1" "MB2_STREET role=server event=incident .* kind=fight player=1 "
 expect_log "$log" "fight_reactions" ">=1" "MB2_STREET role=server event=react .* event=fight response=\(flee\|watch\) "
 expect_log "$log" "probe" 1 "MB2_STREET role=server event=probe vehicle=lent_hatchback "
-expect_log "$log" "run_over" ">=1" "MB2_STREET role=server event=run_over npc=street_.* vehicle=lent_hatchback .* player_driving=1 "
-expect_log "$log" "dodged" ">=1" "MB2_STREET role=server event=dodge npc=street_"
+# A street person's id is the FName street_<n>. An FName prints as the first spelling of its name the process registered,
+# so where content registers "Street" first (the five by five does, ADR-090) the same people log as Street_<n>.
+expect_log "$log" "run_over" ">=1" "MB2_STREET role=server event=run_over npc=[Ss]treet_.* vehicle=lent_hatchback .* player_driving=1 "
+expect_log "$log" "dodged" ">=1" "MB2_STREET role=server event=dodge npc=[Ss]treet_"
 expect_log "$log" "answered_run_over" ">=1" "MB2_STREET role=server event=react .* event=run_over "
-expect_log "$log" "probe_finder" 1 "MB2_STREET role=server event=probe_finder npc=street_"
+expect_log "$log" "probe_finder" 1 "MB2_STREET role=server event=probe_finder npc=[Ss]treet_"
 expect_log "$log" "answered_body" ">=1" "MB2_STREET role=server event=react .* event=body "
 # The person the car put out lies there until nobody is close and nobody sees it: never culled like a walker.
-victim=$(grep -ao "MB2_STREET role=server event=run_over npc=street_[0-9]* .* out=1 " "$log" | head -1 | sed 's/.* npc=\(street_[0-9]*\) .*/\1/' || true)
+victim=$(grep -ao "MB2_STREET role=server event=run_over npc=[Ss]treet_[0-9]* .* out=1 " "$log" | head -1 | sed 's/.* npc=\([Ss]treet_[0-9]*\) .*/\1/' || true)
 if [[ -n "$victim" ]]; then
     expect_log "$log" "body_culled_as_walker" 0 "MB2_STREET role=server event=despawn npc=$victim reason=\(unseen\|far\) "
 fi
@@ -167,8 +169,8 @@ expect_log "$log" "graph_off" 0 "MB2_STREET role=server event=street_off"
 expect_log "$log" "graph_checked_for_water" 1 "MB2_STREET role=server event=street_ready .* water_volumes=[1-9][0-9]* "
 expect_log "$log" "people_in_water" 0 "MB2_STREET role=server event=street_summary .* swimming=[1-9]"
 # The water probe: scared from the land side by the river, the person runs along the bank and never swims.
-expect_log "$log" "water_probe" 1 "MB2_STREET role=server event=water_probe npc=street_.* straight_away_wet=1 "
-expect_log "$log" "water_probe_dry" 1 "MB2_STREET role=server event=water_probe_done npc=street_.* swam=0 "
+expect_log "$log" "water_probe" 1 "MB2_STREET role=server event=water_probe npc=[Ss]treet_.* straight_away_wet=1 "
+expect_log "$log" "water_probe_dry" 1 "MB2_STREET role=server event=water_probe_done npc=[Ss]treet_.* swam=0 "
 
 {
     echo "MarburgumII street smoke"

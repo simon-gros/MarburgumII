@@ -165,7 +165,7 @@ bool FMarburgumStreetLightsFileTest::RunTest(const FString& Parameters)
     for (const FLamp& Lamp : Lamps)
     {
         Masts += Lamp.Kind == EKind::Mast ? 1 : 0;
-        if (FMath::Abs(Lamp.Location.X) > 76800.0 || FMath::Abs(Lamp.Location.Y) > 76800.0)
+        if (FMath::Abs(Lamp.Location.X) > 128000.0 || FMath::Abs(Lamp.Location.Y) > 128000.0)
         {
             AddError(FString::Printf(TEXT("a lamp outside the square at %s"), *Lamp.Location.ToString()));
             break;

@@ -1,15 +1,15 @@
 {
-  "blocks": 1638,
+  "blocks": 3390,
   "cell_m": 4.0,
   "cells": {
-    "buildings": 85364,
-    "ground": 124942,
-    "trees": 143355,
-    "water": 11539
+    "buildings": 162013,
+    "ground": 392189,
+    "trees": 490936,
+    "water": 23918
   },
   "chunk_m": 256.0,
-  "chunks": 119,
-  "half_extent_m": 1432.0,
+  "chunks": 280,
+  "half_extent_m": 2432.0,
   "slots": [
     "ground",
     "trees",
@@ -20,6 +20,6 @@
     "wall_grey",
     "water"
   ],
-  "triangles": 1036298,
+  "triangles": 2749754,
   "water_level_from_survey": true
 }

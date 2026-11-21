@@ -2317,7 +2317,7 @@
         1064.0
       ],
       "range_cm": 400,
-      "placement": "pad",
+      "placement": "original",
       "dialogue": {
         "en": "The spare room is let to a student. He pays, mostly. The telephone is the argument. My husband kept old office letters in the storage cage, if that is what you actually came for.",
         "sl": "Sobo oddajam študentu. Plačuje, večinoma. Prepiramo se zaradi telefona. Moj mož je hranil stara pisarniška pisma v kleti, če si res prišel po to."
@@ -2769,7 +2769,7 @@
         1050.5
       ],
       "range_cm": 400,
-      "placement": "pad",
+      "placement": "original",
       "dialogue": {
         "en": "An old counterfoil book survives among routine exchange-office records. The carbon receipt supplies the date and amount to look for.",
         "sl": "Med navadnimi zapisi menjalnice je ohranjena stara knjiga talonov. Račun z indigom pove, kateri datum in znesek iskati."
@@ -2794,7 +2794,7 @@
         1050.0
       ],
       "range_cm": 400,
-      "placement": "pad",
+      "placement": "original",
       "dialogue": {
         "en": "That counterfoil is familiar. The books were always cleaner than the transactions. I can tell you which contract number to ask for, not what conclusion to draw.",
         "sl": "Ta talon mi je znan. Knjige so bile vedno čistejše od poslov. Povem ti lahko, katero številko pogodbe zahtevati, ne pa, kakšen sklep potegniti."
@@ -2831,7 +2831,7 @@
         1049.0
       ],
       "range_cm": 400,
-      "placement": "pad",
+      "placement": "original",
       "dialogue": {
         "en": "The fictional bank archive index lists an annual Raeda file and a Kainach-related reference. The file itself is restricted; knowing that it exists is not the same as reading it.",
         "sl": "Kazalo arhiva izmišljene banke navaja letno mapo Raede in sklic, povezan s Kainachom. Mapa sama je zaprta; vedeti, da obstaja, ni isto kot jo prebrati."
@@ -2988,7 +2988,7 @@
         1058.0
       ],
       "range_cm": 400,
-      "placement": "pad",
+      "placement": "original",
       "dialogue": {
         "en": "We bought a desk, two chairs and that recorder for less than a winter coat. Nobody asked what had been said into it.",
         "sl": "Pisalno mizo, dva stola in tisti kasetofon smo kupili za manj kot zimski plašč. Nihče ni vprašal, kaj so govorili vanj."
@@ -3074,7 +3074,7 @@
         1068.0
       ],
       "range_cm": 350,
-      "placement": "pad",
+      "placement": "original",
       "prop": "storage_cage",
       "dialogue": {
         "en": "A wire-mesh storage cage from a Block 13 cellar: winter tyres, jars, and three cardboard boxes marked 'Stefan — pisarna'.",

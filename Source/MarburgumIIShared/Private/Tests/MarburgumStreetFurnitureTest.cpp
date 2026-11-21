@@ -53,7 +53,7 @@ bool FMarburgumStreetFurnitureFileTest::RunTest(const FString& Parameters)
     for (const FPiece& Piece : Pieces)
     {
         ++ByPiece[static_cast<int32>(Piece.Piece)];
-        if (FMath::Abs(Piece.Location.X) > 76800.0 || FMath::Abs(Piece.Location.Y) > 76800.0)
+        if (FMath::Abs(Piece.Location.X) > 128000.0 || FMath::Abs(Piece.Location.Y) > 128000.0)
         {
             AddError(FString::Printf(TEXT("a piece outside the square at %s"), *Piece.Location.ToString()));
             break;

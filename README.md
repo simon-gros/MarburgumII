@@ -26,7 +26,7 @@
 
 **Marburgum II** rebuilds the original *Magna Raedarum: Marburgum* as an MMORPG-first game using **Unreal Engine 5.8.3**. Walk the Drava riverfront, encounter people with their own routines, investigate urban mysteries, fish, photograph places, learn skills, shop, drive and share a persistent fictionalized 1990s Maribor with other players.
 
-Its current world covers **1,536 × 1,536 metres** across nine original map windows centred on Lent, including streets, bridges, urban blocks and the Drava. It remains **one always-loaded development level**, not a finished city or a proven 250-player shard. Game rules and persistent state belong to an authoritative dedicated server; solo-friendly play and cooperation use that architecture.
+Its current world covers **2,560 × 2,560 metres** across 25 original map windows centred on Lent (five by five, ADR-090), including streets, bridges, urban blocks and the Drava. It remains **one always-loaded development level**, not a finished city or a proven 250-player shard. Game rules and persistent state belong to an authoritative dedicated server; solo-friendly play and cooperation use that architecture.
 
 ## Recent development
 
@@ -54,7 +54,7 @@ The latest development has made the city more playable and recognizable. Mission
 | System | Existing implementation and recorded evidence | Open work |
 | --- | --- | --- |
 | **Multiplayer and identity** | Dedicated Linux Client/Server, development accounts and three-model character creation; server-bound tickets and **AES-256-GCM signed-in sessions** in the latest security package | End-to-end current-head integration, security/reconnect audit, owner acceptance and eventual larger-scale operations |
-| **The living city** | Nine windows, weather/daylight/street lighting, mapped destinations and district crowds, bidirectional editor Stari most walking | Current packaged crowd day/night matrix, period-correct art and measured streaming/scale |
+| **The living city** | 25 windows (five by five), weather/daylight/street lighting, mapped destinations and district crowds, bidirectional editor Stari most walking | Current packaged crowd day/night matrix, period-correct art and measured streaming/scale |
 | **Exploration and interiors** | Deterministic floor data for **586** eligible buildings; **five** actually have cut enterable shells; two staged multi-client interiors pass | **581** eligible shells unopened, **346** exceptions, authentic furnishing and owner walkthrough |
 | **Story and activities** | Original missions, *Voices on Tape*, outcome branches, two side stories, working Photography/prints/XP, fishing and Kiosk 67; packaged story evidence. ADR-084: **Chapter VI *The Negative*** and side story ***Frame 37***, with Albin Rojko's route set by your Kiosk 67 outcome, a deduction, evidence classed original/print/copy/testimony/information/inference and open questions in the Journal; staged English and Slovene smokes and the staged regression (story, missions, crowd, doors) pass on the merged package `72071db` | Owner playtest of Chapter VI, later chapters, deeper jobs and named routines, Slovene editorial review and full owner acceptance |
 | **Presentation** | UI design system v2, unified Character/Skills/Inventory/Journal, working **Settings**, English/Slovene UI including **657 strings**, and editor 37/37 automation | Current packaged controller, focus, 720p–4K/accessibility, localization and owner visual approval |

@@ -15,7 +15,7 @@ This map adds two rules of its own:
 - **Mapped benches and bollards.** Every `amenity=bench` and `barrier=bollard` node of the extract stands, not only those at stops. A bench faces its `direction` tag, or the walk line or road within 4 m of it. A mapped bench or bollard that is not clear backs away from the path by up to 1.5 m.
 - **Nobody is blocked and the trees stand.** No solid piece stands within 0.4 m of the street people's walk lines (0.35 m for a post); a panel run across a walk line leaves a gap there. Nothing stands within 0.3 m of a tree's trunk ([the plants](GFX01_VEGETATION.md), the better measurement, as the original's D12 said). Nothing stands in the carriageway, a building, the river or on a bridge.
 
-**Result: 948 pieces.**
+**Result: 948 pieces** on the nine windows. On the five by five (ADR-090), placed again against its 20,144 trunks: **2,339 pieces** (94 stop posts, 24 shelters, 267 benches, 1,458 fence panels, 439 wall panels, 57 bollards). The table is the nine windows' run.
 
 | Piece | Placed |
 | --- | --- |

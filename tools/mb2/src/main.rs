@@ -47,7 +47,7 @@ Usage: mb2 <command>
                          Check a world-store file after a phase of a smoke test.
   movement-check <server log> <client log> <role> <character key> <honest|adversary> <DefaultGame.ini>
                          ADR-019 bound on how far a Lent smoke walker moved on the server.
-  survey-views <walk graph> [seed]
+  survey-views <walk graph> [seed [windows: 9|25]]
                          The visual survey's fixed cameras as one MB2ViewShots string (ADR-072).
   gfx-views              The graphics roadmap's extra cameras (river, quay, roofs) as an MB2ViewShots string.
   gfx-baseline <dir>     GFX-00: baseline.csv and baseline.json from scripts/gfx-baseline-linux.sh's scenes.
@@ -97,8 +97,9 @@ fn main() -> ExitCode {
         ["movement-check", server, client, role, key, kind, ini] => {
             movement_check::run(server, client, role, key, kind, ini)
         }
-        ["survey-views", graph] => survey_views::run(graph, None),
-        ["survey-views", graph, seed] => survey_views::run(graph, Some(seed)),
+        ["survey-views", graph] => survey_views::run(graph, None, None),
+        ["survey-views", graph, seed] => survey_views::run(graph, Some(seed), None),
+        ["survey-views", graph, seed, windows] => survey_views::run(graph, Some(seed), Some(windows)),
         ["gfx-views"] => gfx_baseline::print_views(),
         ["gfx-baseline", dir] => gfx_baseline::run(dir),
         ["crowd-summary", out, sha, case_name, clock] => {
