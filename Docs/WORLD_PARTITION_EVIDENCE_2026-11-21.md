@@ -8,7 +8,7 @@ cells beyond; the dedicated server keeps the whole map. Per [ADR-008](DECISIONS.
 
 | | |
 | --- | --- |
-| Partitioned | branch `feat/world-partition`, FINAL_BUILD |
+| Partitioned | branch `feat/world-partition`, commit `713ae17`, tree clean (`dirty=0`), staged 2026-11-21T11:59:29Z; client `sha256 ac5dd5e170eb7971eff49581a8b2a6f3e304985d4fcfd2450330ca8587c127c1`, server `sha256 bd62474340ede0721add9e0291fa02e977f9a3c5d7d2995f4df3c730c049a2cc` |
 | Always-loaded | branch `feat/map-5x5`, `8ca3e76` with `d7b99ea`, staged 2026-11-21T11:22Z (the same level before conversion) |
 | Engine | UE 5.8.3, Linux Development Client and dedicated Server |
 | GPU | RTX 5080, NVIDIA 620.73.04, Vulkan SM6, 1920 × 1080, every client `-RenderOffScreen` |
@@ -16,7 +16,7 @@ cells beyond; the dedicated server keeps the whole map. Per [ADR-008](DECISIONS.
 ## Smokes
 
 All eight staged smokes pass on the partitioned build (ports 27991–27998; `Saved/WP/smokes.log`): swim, vehicle,
-street, combat, mission, negative, story and door. SMOKE_DETAIL
+street, combat, mission, negative, story and door, each recording `git_sha 713ae17` and `build_fresh: yes` (`Saved/SwimSmoke/20261121T120535Z`, `Saved/StreetSmoke/20261121T121000Z`, `Saved/DoorSmoke/20261121T123349Z` and the rest of 12:05â12:39 UTC). The survey of that build grounds 3,344 of 3,349 lamps on the server and the client from the ground file, and the server loads the whole map for the street in 3.8 s. Peak resident memory over the smokes: server 4.9 GB, client 5.7 GB. The A/B below ran on the same source before the docs were committed (`Saved/WP/ab`).
 
 The first partitioned package failed two of them, and both causes are fixed:
 
