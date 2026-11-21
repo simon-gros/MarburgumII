@@ -6,7 +6,7 @@
 #include "PlatformCryptoTypes.h"
 
 /**
- * Which packet counters a receiver has already accepted (ADR-085). The sender numbers its packets with a 64-bit counter
+ * Which packet counters a receiver has already accepted (ADR-086). The sender numbers its packets with a 64-bit counter
  * in the GCM nonce; a counter seen before, or older than the window, is a replay. The engine's own 14-bit packet
  * sequence wraps after 16,384 packets, so a packet recorded earlier in a long session could otherwise come back as new.
  */
@@ -37,7 +37,7 @@ private:
  * is set this component drops such packets instead (the same quiet drop the engine uses for a packet it cannot read
  * yet), so only packets that decrypt and authenticate under the connection's key reach the game. Packets sent in the
  * clear before the other side switched are dropped as well; their reliable contents are sent again, encrypted.
- * It also drops an authentic packet whose nonce counter it has already accepted (FMarburgumReplayWindow, ADR-085).
+ * It also drops an authentic packet whose nonce counter it has already accepted (FMarburgumReplayWindow, ADR-086).
  */
 class MARBURGUMNETCRYPTO_API FMarburgumStrictAESGCM : public FAESGCMHandlerComponent
 {

@@ -9,7 +9,7 @@
 #                 time out the redeem and admit nobody. Skipped when openssl s_server cannot listen.
 #
 # Replay, duplication and out-of-order datagrams are not injected here: Marburgum.Net.StrictEncryption and
-# Marburgum.Net.ReplayWindow cover tamper, a wrong key, plaintext-after-key and replayed packets (ADR-085), and the
+# Marburgum.Net.ReplayWindow cover tamper, a wrong key, plaintext-after-key and replayed packets (ADR-086), and the
 # account smoke covers a stolen hello ticket redeemed before its player.
 #
 # Usage: scripts/encryption-negative-linux.sh [staged]
@@ -229,6 +229,6 @@ else
     stop_stall
 fi
 
-note "Not claimed: datagram-level replay injection (unit-tested only, ADR-085) or session-key rotation."
+note "Not claimed: datagram-level replay injection (unit-tested only, ADR-086) or session-key rotation."
 note "Result: $([[ $status -eq 0 ]] && echo PASS || echo FAIL) — $out_dir"
 exit "$status"

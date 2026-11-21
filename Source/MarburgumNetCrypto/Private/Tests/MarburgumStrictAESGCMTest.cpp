@@ -121,7 +121,7 @@ bool FMarburgumStrictAESGCMTest::RunTest(const FString& Parameters)
     Keyed(Stranger, Key(2), true);
     TestTrue(TEXT("another key cannot read it"), Receive(Stranger, Wire).bError);
 
-    // ADR-085: an authentic packet that comes back is dropped, however late; a reordered one is not.
+    // ADR-086: an authentic packet that comes back is dropped, however late; a reordered one is not.
     TestTrue(TEXT("a replayed packet is dropped"), Receive(Receiver, Wire).Bytes.IsEmpty());
     TestEqual(TEXT("and counted"), Receiver.GetReplaysDropped(), int64(1));
     const TArray<uint8> Second = Send(Sender, Payload);
