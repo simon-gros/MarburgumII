@@ -5,6 +5,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/SkeletalMesh.h"
 #include "EngineUtils.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Pawn.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
@@ -430,6 +432,18 @@ void UMarburgumMissionSmokeSubsystem::TickPhoto(double Now)
             }
             return;
         }
+        // Aim from where the body has come to rest, as a player would: a client can still be placing its pawn after
+        // login (a Slovene run once aimed from 12 m above the start and photographed the street).
+        const ACharacter* Body = Cast<ACharacter>(Local->GetPawn());
+        const UCharacterMovementComponent* Movement = Body ? Body->GetCharacterMovement() : nullptr;
+        if (Movement && (!Movement->IsMovingOnGround() || Body->GetVelocity().Size() > 5.0))
+        {
+            if (Now - StepSeconds > 15.0)
+            {
+                Fail(TEXT("body_never_settled"));
+            }
+            return;
+        }
         const FVector Eye = Local->GetPawn()->GetPawnViewLocation();
         Local->SetControlRotation((Aim - Eye).Rotation());
         MB2_MISSION_LOG("event=aim subject=%s distance_m=%.1f", *TargetId.ToString(), FVector::Dist(Aim, Eye) / 100.0);
@@ -440,6 +454,12 @@ void UMarburgumMissionSmokeSubsystem::TickPhoto(double Now)
     {
         // Long enough for the view to reach the server with the next moves.
         if (Now - StepSeconds < 0.8) return;
+        // Aim once more from the eye as it is now, so a late correction of the body's place does not spoil the frame.
+        FVector Aim;
+        if (Photography->GetAimPoint(TargetId.ToString(), Aim))
+        {
+            Local->SetControlRotation((Aim - Local->GetPawn()->GetPawnViewLocation()).Rotation());
+        }
         const UMarburgumPhotographySubsystem::FInFrame Frame = Photography->FindInFrame(Local->GetPawn()->GetPawnViewLocation(),
             Local->GetControlRotation(), Local->GetPawn());
         MB2_MISSION_LOG("event=frame subject=%s in_frame=%s off_axis=%.1f", *TargetId.ToString(), Frame.Subject ? Frame.Subject->Id : TEXT("-"),
