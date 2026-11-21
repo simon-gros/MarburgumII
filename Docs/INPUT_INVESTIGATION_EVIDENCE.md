@@ -77,6 +77,9 @@ photograph taken, the card on the pad and after switching to keyboard and mouse,
 - The test client's stick release had to send an explicit 0 once per axis, as SDL does, or the axis kept its last value.
 - The print a photograph hands over is the subject's catalogue `Item` (`photo_foto_vidmar_order_book`), not `photo_<subject>`.
 - A fixed 0.2 s window for the after-close walk failed once under a frame hitch: it now pushes until 8 cm or 1 s.
+- The smoke first read the world store with Python, which the repository's tooling check forbids. It now uses
+  `mb2 store-check snapshot` (`554d153`, tooling and script only, no Unreal source), which prints the same line; the
+  packaged English 1920×1080 run was repeated with it on the `f756780` package: PASS (`Saved/InputSmoke/20261121T022515Z-en-1920x1080`).
 - First packaged run (before a host reboot for the NVIDIA 620.70 → 620.73 update): every rendered client failed to create
   a Vulkan device; not a game fault, rerun after the reboot.
 
