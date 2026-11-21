@@ -16,7 +16,8 @@
 #     not running). No ticket for an unlisted address or without one; melje's key cannot spend (or burn) this
 #     server's ticket, which is then admitted; this server refuses a ticket asked for melje.
 #   Encrypted transport (ADR-083): the ticket is the connection's encryption token and its key comes with it from
-#     the service. A stolen ticket without its key is spent but admits nobody. The admitted client joins through a
+#     the service. A ticket stolen off the wire and redeemed first, without its key, admits nobody, and the player
+#     then joins with that same ticket (ADR-088: its server may redeem a ticket up to three times). The client joins through a
 #     recording UDP relay (mb2 wire-relay): the ticket shows in its hello, and nothing after it carries the map's
 #     name, the game mode or the character's name in the clear. No server log holds a ticket or a key, and the
 #     rendered clients never log the encryption token at all (AR13).
@@ -203,7 +204,14 @@ client() {
             sleep 3
             code=0
         fi
-        "${client_cmd[@]}" "${target[@]}" "${common_args[@]}" "$@" -MB2AccountSmoke -MB2AccountRole="$role" > "$log" 2>&1 || code=$?
+        "${client_cmd[@]}" "${target[@]}" "${common_args[@]}" "$@" -MB2AccountSmoke -MB2AccountRole="$role" > "$log" 2>&1 &
+        local cpid=$!
+        sleep 0.4
+        {
+            echo "pid=$cpid"
+            ps -o args= -p "$cpid" || true
+        } > "$out_dir/cmdline-$label.txt"
+        wait "$cpid" || code=$?
     done
     if [[ "$code" -eq 0 ]] && grep -aq "MB2ACCOUNT role=client tag=$role event=pass" "$log"; then
         echo "  client $label: PASS"
@@ -277,16 +285,20 @@ admit "$melje_address" melje
 client other-server REFUSED "127.0.0.1:$port?EncryptionToken=$melje_ticket" "${nullrhi[@]}" "-MB2AdmissionKey=$melje_key"
 expect_eq "melje can spend its own ticket after this server refused it" "$(redeem_as "$secrets/melje.key" "$melje_ticket")" 200
 echo "Encrypted transport (ADR-083)"
-# A ticket stolen off the wire (it is in the clear in the hello) but without its key: spent, and nobody admitted.
-admit "127.0.0.1:$port" stolen
-client stolen REFUSED "127.0.0.1:$port?EncryptionToken=$stolen_ticket" -nullrhi -MB2AccountTimeout=120 "-MB2AdmissionKey=$(random_b64)"
-expect_server "spent the stolen ticket at the hello" 'MB2ACCOUNT role=server event=ticket_redeemed .* model=manny encrypted=1'
-admitted_manny=$({ grep -ac 'MB2ACCOUNT role=server event=admitted .* model=manny' "$out_dir/server.log" || true; })
-expect_eq "admitted nobody with the stolen ticket" "$admitted_manny" 0
-# Each ticket is asked for just before its join: a ticket lives one minute, about four client starts.
+# A ticket stolen off the wire (it is in the clear in the hello) and redeemed first, without its key: nobody is
+# admitted, and the same ticket still admits its player afterwards (ADR-088). A ticket lives one minute, so the thief
+# runs in the background and the player follows as soon as the server has redeemed it.
 admit "localhost:$port" t1
 ticket_1=$t1_ticket
 expect_eq "melje cannot spend this server's ticket" "$(redeem_as "$secrets/melje.key" "$ticket_1")" 403
+redeemed_before=$({ grep -ac 'MB2ACCOUNT role=server event=ticket_redeemed .* model=manny encrypted=1' "$out_dir/server.log" || true; })
+client stolen REFUSED "127.0.0.1:$port?EncryptionToken=$ticket_1" -nullrhi -MB2AccountTimeout=120 "-MB2AdmissionKey=$(random_b64)" &
+stolen_pid=$!
+for _ in $(seq 1 240); do
+    [[ $({ grep -ac 'MB2ACCOUNT role=server event=ticket_redeemed .* model=manny encrypted=1' "$out_dir/server.log" || true; }) -gt $redeemed_before ]] && break
+    sleep 0.25
+done
+expect_server "redeemed the stolen ticket at the thief's hello" 'MB2ACCOUNT role=server event=ticket_redeemed .* model=manny encrypted=1'
 # The admitted client joins through the recording relay, as an observer on the path would see it.
 relay_port=$((port + 3))
 "$repo_root/scripts/mb2.sh" wire-relay "127.0.0.1:$relay_port" "127.0.0.1:$port" "$out_dir/wire-admitted.txt" > "$out_dir/relay.log" 2>&1 &
@@ -299,6 +311,10 @@ for _ in $(seq 1 240); do
     grep -aq 'tag=ADMITTED event=in_world' "$out_dir/client-admitted.log" 2>/dev/null && break
     sleep 0.5
 done
+wait "$stolen_pid" || true
+admitted_manny=$({ grep -ac 'MB2ACCOUNT role=server event=admitted .* model=manny' "$out_dir/server.log" || true; })
+expect_eq "admitted the player, once, with the ticket the thief redeemed first" "$admitted_manny" 1
+# The player's own ticket and key again, while it is in the world: the ticket is redeemable, the character is not.
 client replay REFUSED "127.0.0.1:$port?EncryptionToken=$ticket_1" "${nullrhi[@]}" "-MB2AdmissionKey=$t1_key"
 admit "127.0.0.1:$port" t2
 ticket_2=$t2_ticket
@@ -320,10 +336,11 @@ for needle in /Game/World/lent MarburgumGameMode Mlakar manny; do
     expect_eq "no '$needle' on the wire" "$(( $(wire_hits "$needle" client) + $(wire_hits "$needle" server) ))" 0
 done
 replays=$(grep -ac 'admission_refused stage=redeem reason="Your sign-in for this world has expired' "$out_dir/server.log" || true)
-if [[ "$replays" -ge 3 ]]; then
-    echo "  server refused the spent and the other server's tickets: yes"
+in_world=$(grep -ac 'admission_refused stage=redeem reason=already_in_world' "$out_dir/server.log" || true)
+if [[ "$replays" -ge 2 && "$in_world" -ge 2 ]]; then
+    echo "  server refused the forged and the other server's tickets, and the character twice: yes"
 else
-    echo "  server refused the spent and the other server's tickets: NO ($replays expired-ticket refusals, want 3: forged, melje's, replay)"
+    echo "  server refused the forged and the other server's tickets, and the character twice: NO ($replays expired, want 2; $in_world in world, want 2)"
     status=1
 fi
 
@@ -344,7 +361,7 @@ leaks=0
 # Every verification code the service mailed (the outbox), as the header promises.
 mapfile -t codes < <(grep -hE '^\s+[A-Z2-9]{8}\s*$' "$out_dir"/outbox/*.txt | tr -d ' ' | sort -u)
 echo "  verification codes checked: ${#codes[@]}"
-for secret in drava-bridge-1990 pohorje-snow-1991 "$session" "$ticket_1" "$ticket_2" "$t1_key" "$t2_key" "$stolen_key" "${codes[@]}"; do
+for secret in drava-bridge-1990 pohorje-snow-1991 "$session" "$ticket_1" "$ticket_2" "$t1_key" "$t2_key" "${codes[@]}"; do
     if grep -q -- "$secret" "$out_dir/accounts.json"; then
         echo "  account store holds a secret in the clear: ${secret:0:6}…"
         leaks=1
@@ -360,12 +377,30 @@ done
 # AR13: the server never logs a ticket or a key; the clients that signed in through the screens never log the token.
 # (grep -c exits 1 on no match, which set -e must not take for a failure.)
 server_secrets=0
-for secret in "$ticket_1" "$ticket_2" "$stolen_ticket" "$melje_ticket" "$t1_key" "$t2_key" "$stolen_key"; do
+for secret in "$ticket_1" "$ticket_2" "$melje_ticket" "$t1_key" "$t2_key"; do
     grep -aq -- "$secret" "$out_dir/server.log" "$out_dir"/service-*.log && server_secrets=$((server_secrets + 1))
 done
 expect_eq "the server and service logs hold no ticket or key" "$server_secrets" 0
 token_lines=$(cat "$out_dir"/client-first.log "$out_dir"/client-return.log | { grep -ac 'EncryptionToken=\|MB2Ticket=' || true; })
 expect_eq "rendered clients logged no encryption token" "$token_lines" 0
+# The rendered clients sign in through the session UI. Their process arguments must not carry a ticket either
+# (the null-RHI admission clients put EncryptionToken on the URL on purpose; that path is the test harness).
+cmdline_tokens=0
+for label in first return; do
+    if [[ ! -s "$out_dir/cmdline-$label.txt" ]]; then
+        echo "  rendered client $label: no process arguments captured"
+        status=1
+        continue
+    fi
+    if grep -q 'drava-bridge-1990\|pohorje-snow-1991' "$out_dir/cmdline-$label.txt"; then
+        echo "  rendered client $label process arguments hold a password"
+        status=1
+    fi
+done
+if grep -q 'EncryptionToken=\|MB2Ticket=' "$out_dir/cmdline-first.txt" "$out_dir/cmdline-return.txt" 2>/dev/null; then
+    cmdline_tokens=1
+fi
+expect_eq "rendered client process arguments hold no ticket" "$cmdline_tokens" 0
 expect_eq "rendered clients encrypted their sessions" "$(cat "$out_dir"/client-first.log "$out_dir"/client-return.log | { grep -ac 'MB2ACCOUNT role=client event=encrypted' || true; })" 2
 expect_eq "the service logged a redeem for another server" "$({ grep -ac 'event=redeem_refused reason=other_server caller=melje ticket_server=lent-smoke' "$out_dir"/service-1.log || true; })" 1
 

@@ -143,19 +143,19 @@ fn along(line: &[Pt], step: f64) -> Vec<(Pt, [f64; 2])> {
 }
 
 /// Segments in square buckets, for "anything within r of this point".
-struct Segments {
+pub(crate) struct Segments {
     cell: f64,
     buckets: HashMap<(i64, i64), Vec<(Pt, Pt)>>,
 }
 
 impl Segments {
-    fn new(cell: f64) -> Self {
+    pub(crate) fn new(cell: f64) -> Self {
         Segments { cell, buckets: HashMap::new() }
     }
     fn key(&self, p: Pt) -> (i64, i64) {
         ((p[0] / self.cell).floor() as i64, (p[1] / self.cell).floor() as i64)
     }
-    fn add(&mut self, a: Pt, b: Pt) {
+    pub(crate) fn add(&mut self, a: Pt, b: Pt) {
         let (k0, k1) = (self.key([a[0].min(b[0]), a[1].min(b[1])]), self.key([a[0].max(b[0]), a[1].max(b[1])]));
         for i in k0.0..=k1.0 {
             for j in k0.1..=k1.1 {
@@ -163,13 +163,13 @@ impl Segments {
             }
         }
     }
-    fn add_line(&mut self, line: &[Pt]) {
+    pub(crate) fn add_line(&mut self, line: &[Pt]) {
         for w in line.windows(2) {
             self.add(w[0], w[1]);
         }
     }
     /// The nearest segment's distance, if one is within r (r no more than a cell).
-    fn nearest(&self, p: Pt, r: f64) -> Option<f64> {
+    pub(crate) fn nearest(&self, p: Pt, r: f64) -> Option<f64> {
         let k = self.key(p);
         let mut best: Option<f64> = None;
         for i in k.0 - 1..=k.0 + 1 {
@@ -185,7 +185,7 @@ impl Segments {
         best
     }
     /// The nearest point on any segment within r, if there is one.
-    fn nearest_point(&self, p: Pt, r: f64) -> Option<Pt> {
+    pub(crate) fn nearest_point(&self, p: Pt, r: f64) -> Option<Pt> {
         let k = self.key(p);
         let mut best: Option<(f64, Pt)> = None;
         for i in k.0 - 1..=k.0 + 1 {
@@ -515,7 +515,7 @@ fn place(inp: &Inputs, walk: &Segments) -> (Vec<Lamp>, Counts) {
 }
 
 /// Reads the walk graph's lines (the walk graph JSON written by `walk.rs`).
-fn walk_segments(path: &Path) -> Result<(Segments, usize), String> {
+pub(crate) fn walk_segments(path: &Path) -> Result<(Segments, usize), String> {
     let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
     let v: Value = serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?;
     if v["format"].as_str() != Some("marburgumii.walk_graph") {

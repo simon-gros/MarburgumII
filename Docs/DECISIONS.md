@@ -1157,7 +1157,9 @@ Map-wide, over 600 sampled pavement viewers, edge spots did not raise the share 
 
 **Measured limit, kept honest.** A player at the very end of the window who faces out of it still gets fewer people than the street's budget, because there is no pavement in view and only a 5 m-wide ring behind them. That is the edge of the loaded world, not a pavement shortage in the town, and no rule was bent to hide it.
 
-**Evidence.** On the final code, rebased on `23901a5`: day `Saved/StreetMulti/face-town-day` (all 10 scenarios accepted, `D` 28/28 at 20 s, exit 3 from the old cleanup check before the script fix) and `face-town-day2` with the fixed script (all 10 accepted, `D` 28/28 at 40 s, cap 48/48, cleanup `clear pids=5`, **exit 0**); night `face-town-night` (settled at 2, exit 0). `Marburgum.Gameplay.StreetRules` and `CombatRules` Success on the same editor build. **Not run:** a staged (packaged) matrix of this change, the integrated packaged suite, a rendered capture, the owner playtest.
+**Evidence.** On the final code, rebased on `23901a5`: day `Saved/StreetMulti/face-town-day` (all 10 scenarios accepted, `D` 28/28 at 20 s, exit 3 from the old cleanup check before the script fix) and `face-town-day2` with the fixed script (all 10 accepted, `D` 28/28 at 40 s, cap 48/48, cleanup `clear pids=5`, **exit 0**); night `face-town-night` (settled at 2, exit 0). `Marburgum.Gameplay.StreetRules` and `CombatRules` Success on the same editor build. The staged matrix was not part of that editor session.
+
+**Addendum (20 November 2026, packaged).** The same fixture on the clean Development package of `44106bc` (inputs unchanged through `1aaad5c`) settled `D` at **28/28 in 20 s**, the shared street at 18, the two districts at 18+8, the cap at 48, and night at 2 with both clients seeing the same two pedestrians. [Integrated evidence](INTEGRATED_MULTIPLAYER_2026-11-20.md). Still not run: a rendered capture and the owner playtest.
 
 ## ADR-080 — Admission tickets name their game server; live tickets stay out of client logs (accepted 2026-11-20)
 
@@ -1294,6 +1296,100 @@ Simon asked to encrypt the traffic. This also closes the server half of QA **AR1
 
 **Evidence.** [INPUT_INVESTIGATION_EVIDENCE.md](INPUT_INVESTIGATION_EVIDENCE.md). Owner playtest: **not yet**.
 
+## ADR-087 — Trees and bushes only on grass, from the original game's survey and species meshes (GFX-01, VQ-022; implemented 2026-11-21; owner approval OPEN)
+
+**Context.** The playable square had no trees or shrubs (VQ-022, the first deficiency of the GFX-00 baseline). The original game placed the trees and bushes of each 512 m window from the ARSO 2014 survey (`<window>_plants.json`, species by ecological region) on whatever the survey put under a crown: pavements, yards and car parks included. The owner's instruction for this map: **plants only on grass**, ground that is not pavement, road, square, path, building or water, so far fewer plants than the original.
+
+**Decision.**
+
+1. **Placement in the ground tool.** `lent-ground --mode plants` reads the nine windows' plant files, which use our plan origin, and keeps a plant only where all of these hold:
+   - the landscape is grass at its trunk and nearly all round it (`surface.png`);
+   - no paving is drawn within reach (`top.bin` over `heights.bin`);
+   - it is clear of buildings, the river, bridges, the square's edge and the walk graph (a tree's trunk by 1 m, a bush by its crown).
+   A plant that fails is dropped, never moved. Result: 9,959 of 35,380, namely 4,972 trees and 4,987 bushes. The file `Content/Marburgum/Vegetation/lent_plants.json` is staged.
+2. **The original's species meshes** (16 of 20, Marburgum-owned procedural meshes) are copied to `/Game/Vegetation` and always cooked. Their glTF-import materials drew black in Lent's light, so `scripts/create-weather-content.sh plants` gives them `M_PlantFoliage` (two-sided foliage) and `M_PlantBark`, with one instance per species in the original's colours.
+3. **Server and client put up the same plants from the file**, not replicated, as the street lamps do (ADR-065):
+   - one instanced component per species, with no collision;
+   - trunks block through an invisible instanced cylinder;
+   - a dedicated server puts up only the trunks;
+   - draw distance is the original's budget (30 m per metre of height, 70–700 m);
+   - shadows only from plants over 6 m;
+   - `-MB2NoPlants` turns them off for A/B.
+4. **One shared map constant for the editor commandlets** (`MarburgumEditorMaps::Lent`). Four of them each defined `LentMap`, and adding a file to the module put two in one unity blob, which does not compile.
+
+**Not decided here.**
+- Wind sway, seasonal leaves and per-preset density (GFX-07).
+- LODs or Nanite foliage (GFX-06).
+- Street people steering round trunks.
+- New species meshes (TRELLIS, ADR-071).
+- Trees on paved squares or in street pits where the 1990s city had them. The owner's rule excludes these for now.
+
+**Rejected.**
+- Keeping the original's placements on paving, or moving refused trees onto grass (that would invent positions).
+- Re-importing the GLBs in this change (the original's Unreal assets are the same geometry).
+- Wind in this change (it costs world-position offset under Lumen and virtual shadow maps and needs its own measurement).
+
+**Evidence.** [GFX01_VEGETATION.md](GFX01_VEGETATION.md): editor A/B on 47 views, with server and client placing all 9,959 and none without ground; contended frame numbers only; captures. Owner playtest: **not yet**.
+
+## ADR-088 — Encrypted packets are replay-checked; a stolen hello ticket no longer locks the player out (accepted 2026-11-21)
+
+The evening review of 20 November listed two open P0 security points on ADR-083: replay of encrypted packets, and an on-path attacker burning the cleartext hello ticket.
+
+- **Replay window.** `FMarburgumStrictAESGCM` reads the sender's 64-bit packet counter from the GCM nonce (bytes 1–8, as `FAESGCMHandlerComponent::Outgoing` writes it). It keeps a 1,024-packet window and drops an authentic packet whose counter it has already accepted, or one older than the window (`MB2CRYPTO event=replay_dropped`).
+  - The counter enters the window only after the packet authenticates. GCM covers the nonce, so a forged counter cannot move the window.
+  - The comparison is modulo 2^64, because the sender starts its counter at a random value and lets it wrap.
+  - Why it is needed: the engine's own 14-bit packet sequence wraps after 16,384 packets, so in a long session a recorded packet could otherwise come back as new.
+  - Reordering within 1,024 packets is still accepted.
+- **Hello token.** The ticket is in the clear in `NMT_Hello`. Before this change, whoever sent it first spent it: a thief without the key admitted nobody, but the player's own join then failed. Now the ticket's own server may redeem it up to `REDEEMS_PER_TICKET` = 3 times within its minute.
+  - Admission still needs the connection key, which never crosses the wire.
+  - The game server still refuses a character already in the world, and signing out or a password reset still ends every outstanding ticket.
+  - A ticket is no longer single-use as a string. It is single-character, key-bound and short-lived.
+- **Remaining.**
+  - Each direction uses the same key with an independent random 12-byte nonce prefix. The chance of a nonce collision across directions is about 2^-32 × (packets / 2^64), which is negligible; per-direction keys would remove it entirely.
+  - Metadata stays visible.
+  - Keys are not rotated during a session.
+  - A thief can still redeem the ticket three times first and exhaust it; the player then asks for a new ticket.
+- **Evidence.**
+  - `Marburgum.Net.ReplayWindow`: duplicates, gaps filled late, a jump ahead, the window edge, slot reuse, a counter that starts just below the 64-bit wrap.
+  - `Marburgum.Net.StrictEncryption`: a replayed packet dropped, reordering taken, a packet replayed 1,100 packets later refused.
+  - Service tests: 38.
+  - Editor account smoke PASS (`Saved/AccountSmoke/20261120T233811Z`). A thief redeems the player's ticket first with a wrong key and admits nobody. The player is then admitted once, through the recording relay, with that same ticket. The ticket replayed while the character is in the world is refused as already in the world.
+
+## ADR-089 — Street furniture from the original game's kit, placed from OpenStreetMap clear of walkers and trees (GFX-01, VQ-023; implemented 2026-11-21; owner approval OPEN)
+
+**Context.** Apart from the street lamps (ADR-065), the square had no street furniture: no stop furniture at the bus stops of ADR-069, and no benches, fences, walls or bollards (VQ-023). The original game ported a six-piece street kit and placed it from each window's OpenStreetMap topology (`feat/unreal-street-kit`). The kit's meshes exist; its placement code reads the original's per-window topology files, which this map does not use.
+
+**Decision.**
+
+1. **Placement in the ground tool**, from this map's own OpenStreetMap extract, by the original's rules:
+   - every platform gets a stop post facing the road;
+   - a shelter stands where `shelter=yes`, 1.3 m back and open to the road, sliding 2, 4 or 6 m along the kerb when blocked;
+   - a bench stands where `bench=yes`;
+   - fence, wall and bollard runs get 2 m panels and 1.5 m posts;
+   - kerbs, hedges and retaining walls are not furnished.
+2. **Added here:**
+   - every mapped bench and bollard;
+   - no solid piece on the street people's walk lines (a panel across one leaves a gap, a bench or bollard backs off up to 1.5 m);
+   - nothing within 0.3 m of a tree's trunk (ADR-087: the trees are the better measurement).
+   Result: 948 pieces in `Content/Marburgum/Furniture/lent_street_furniture.json` (staged).
+3. **The original's meshes and paint**, copied to `/Game/World/StreetFurniture` (always cooked) and `/Game/World/Materials`, with three changes by `scripts/create-weather-content.sh furniture`:
+   - simple boxes instead of per-triangle collision, so a shelter's roof no longer blocks;
+   - Nanite off, since the paint was not compiled for it and drew as the default material;
+   - the paint compiled for instancing.
+4. **Server and client put up the same pieces from the file**, not replicated, as the lamps and plants are. `-MB2NoStreetFurniture` leaves them out.
+5. **Unity-safe tests.** Three shared tests put `using namespace MarburgumII;` at file scope, which leaked into the next test files of their unity blob (an ambiguous `Weather`, `Missions`). They now declare it inside each test.
+
+**Not decided here.**
+- The kit's appearance: the original's material-library binding, paint variants and 1990s colours.
+- Waste bins, post boxes, street-name plates and traffic signs (VA-06), kiosks, and furniture on bridges.
+- 1990s corrections of the 2026 map.
+
+**Rejected.**
+- Placing pieces on walk lines and letting street people collide.
+- Moving trees to make room.
+- Standing the 17 mapped bollards that are in the carriageway (they would block traffic lanes the paving draws as open).
+
+**Evidence.** [GFX01_STREET_FURNITURE.md](GFX01_STREET_FURNITURE.md): 12 editor close-ups with and without the furniture; server and client both place 948 of 948, with none lacking ground and no missing meshes. Owner playtest: **not yet**.
 ## ADR-090 — Lent and the 24 windows round it: the map five by five (accepted 2026-11-21; owner playtest OPEN)
 
 **Problem.** The owner asked for a larger area again. The map went from one 512 m window (Lent) to nine (ADR-045); now it should be 25, five by five, by adding the sixteen windows round the nine, with everything the nine have had done to them: the buildings, the ground and its materials, the quality passes and the rest. The original game already cuts Maribor into 512 m windows on one grid round the middle of Stari most, and all sixteen exist there with their footprints, orthophotos and window bounds:

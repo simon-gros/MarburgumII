@@ -95,12 +95,31 @@ photograph taken, the card on the pad and after switching to keyboard and mouse,
 Merged on the owner's instruction (21 November 2026) together with `main`'s LRP-01/02 character sheet (ADR-085), which
 took the ADR number this work first used; this work is ADR-086. The merged source builds with `-DisableAdaptiveUnity`,
 `mb2 validate all` and the tooling tests pass, localization was regathered (788 entries, none without Slovene), and the
-input smoke passes on the merged source in the editor (`Saved/InputSmoke/20261121T025149Z-en-1920x1080`). The packaged
-results above are for `f756780`; the merged commit has not been packaged.
+input smoke passes on the merged source in the editor (`Saved/InputSmoke/20261121T025149Z-en-1920x1080`).
 
-## Owner walkthrough (this exact build)
+**Packaged after the merge:** `main` `9814f26`, `dirty=0`, packaged 2026-11-21T09:42:55Z; client
+`sha256 90849c8ed43b942a00b4ebeeec44043492a9a7d62f545a004ca5bce4b54a860b`, server `sha256 10f513044e17ce0f5d6dcc8e72c3db4bf607827ccb3b089b78f79bb24749a658`.
 
-On the playtest host, from `/mnt/data/marburgum-story` with the `f756780` package staged:
+| Run | Result | Evidence |
+| --- | --- | --- |
+| Input smoke, English 1920×1080 | PASS | `Saved/InputSmoke/20261121T094318Z-en-1920x1080` |
+| Input smoke, Slovene 1920×1080 | PASS | `Saved/InputSmoke/20261121T094534Z-sl-1920x1080` |
+| Input smoke, English 1280×720 | PASS | `Saved/InputSmoke/20261121T094751Z-en-1280x720` |
+| Input smoke, Slovene 1280×720 | PASS | `Saved/InputSmoke/20261121T095010Z-sl-1280x720` |
+| Chapter VI, English, `object_sold` | PASS | `Saved/NegativeSmoke/20261121T095220Z-object_sold` |
+| Chapter VI, Slovene, `left_alone` | PASS on the third run | `Saved/NegativeSmoke/20261121T101317Z-left_alone` |
+| Character sheet (LRP-01/02) | PASS | `Saved/SheetSmoke/20261121T100322Z` |
+
+The first two Slovene Chapter VI runs lost one rendered step client each to the engine's Vulkan layer, not to game code:
+`Out of memory on Vulkan` allocating a 128 MB transient heap while another session's smokes held about 5 GB of the GPU
+(`n6-ivana`), then `Assertion failed: (OldPacked & DeletingBit) == 0` in `FVulkanPipelineStateCacheManager` during PSO
+precaching, 0.8 s after start (`n6-cage`). The later steps failed only because those stages were never reached. The same
+assertion is in a Slovene run from 20 November, before this work (`Saved/NegativeSmoke/20261120T165612Z-left_alone`,
+`n6-date`): an intermittent engine race, open.
+
+## Owner walkthrough (`main` `9814f26`)
+
+On the playtest host, from `/mnt/data/marburgum-story` with the `9814f26` package staged:
 `bash Saved/InputEvidence/simon-playtest.sh` (or `… sl` for Slovene) seeds a fresh store for `simon` with Kiosk 67 as
 `object_sold`, starts the server on 17777 at 10:00 and opens a 1600×900 window at Nika's; `… stop` ends both.
 

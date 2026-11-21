@@ -109,6 +109,22 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode lamps
     --buildings Data/World/lent_ground/buildings.json --placed Data/World/lent_ground/placed_buildings.txt --out Data/World/lent_ground \
     --walk-graph Content/Marburgum/Street/lent_walk_graph.json --lamps Content/Marburgum/Lights/lent_street_lights.json
 ./scripts/create-weather-content.sh lamps
+# Trees and bushes (GFX-01, VQ-022): the original game's surveyed plants of the nine windows, kept only where they stand on
+# grass (no paving within reach, clear of buildings, river, bridges and the walk graph), from heights.bin, top.bin and
+# surface.png (run after the ground tool and the walk graph). The species meshes are the original's, under /Game/Vegetation.
+cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode plants --osm Data/World/lent_ground/osm_lent.json.gz \
+    --buildings Data/World/lent_ground/buildings.json --placed Data/World/lent_ground/placed_buildings.txt --out Data/World/lent_ground \
+    --walk-graph Content/Marburgum/Street/lent_walk_graph.json --terrain "$ORIGINAL/project/assets/terrain" \
+    --vegetation "$ORIGINAL/project/data/vegetation.json" --plants Content/Marburgum/Vegetation/lent_plants.json
+# Street furniture (GFX-01, VQ-023): the original's street kit at every bus platform (post, and shelter and bench where
+# mapped), every mapped bench and bollard, and along fence, wall and bollard runs, clear of the carriageway, buildings,
+# river, bridges, the walk graph and the trees (run after the plants); then the kit's collision and instancing.
+cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode furniture --osm Data/World/lent_ground/osm_lent.json.gz \
+    --buildings Data/World/lent_ground/buildings.json --placed Data/World/lent_ground/placed_buildings.txt --out Data/World/lent_ground \
+    --walk-graph Content/Marburgum/Street/lent_walk_graph.json --plants Content/Marburgum/Vegetation/lent_plants.json \
+    --furniture Content/Marburgum/Furniture/lent_street_furniture.json
+./scripts/create-weather-content.sh plants      # the trees' materials
+./scripts/create-weather-content.sh furniture   # the street kit's collision and instancing
 # Lit windows (ADR-066): the window glass and MPC_LitWindows, then the façades again, which write each pane's household
 # into the glass's texture coordinates 2 and 3 and make MI_facade_glass a child of M_WindowGlass.
 ./scripts/create-weather-content.sh windows
@@ -280,7 +296,7 @@ A client asks for a ticket for the address it is about to join (`POST /v1/admiss
 
 `scripts/account-smoke-linux.sh editor` makes a throwaway CA and runs the service, a dedicated server and rendered clients through the first-time and returning flows (every body in the creator's 3D preview, turned and zoomed) and five refused admissions. Ports: `MB2_ACCOUNT_PORT` (game, default 27714) and `MB2_ACCOUNT_SERVICE_PORT` (service, default 27715). Evidence goes to `Saved/AccountSmoke/<UTC timestamp>/`, with screenshots of the screens. Evidence through ADR-059 is primarily **editor-mode**, including per-model rotate/zoom and close-up captures. The latest packaged FL-10 input/scale/Slovene and full owner FL-12 gates remain open. Keep outbox, CA secrets, passwords, tickets and keys out of source control/captures.
 
-**Encrypted game traffic (ADR-083).** With every ticket the service issues a random 32-byte key, which it gives only to the client and to the server that redeems the ticket. The ticket is the engine's encryption token. It travels in the clear in the hello, and the server spends it there and answers with the key. Every packet after that is AES-256-GCM (`MarburgumNetCrypto`, `[PacketHandlerComponents] EncryptionComponent=MarburgumNetCrypto`, plugin `AESGCMHandlerComponent`). Once keyed, that component drops plaintext packets; the engine's own component would accept them. A server started with `-MB2Accounts` sets `net.AllowEncryption=2`, so a connection without a ticket is closed at the hello (`admission_refused stage=hello reason=no_ticket`). A stolen ticket without its key is spent and admits nobody. Neither side logs the ticket or the key, and the login no longer carries the ticket. Servers without `-MB2Accounts` (every other smoke) stay unencrypted development servers. A smoke client joining from a raw URL passes `?EncryptionToken=<ticket>` and `-MB2AdmissionKey=<key>` (not in Shipping). To see what crosses the wire, `scripts/mb2.sh wire-relay <listen> <server> <file>` forwards one client and records every datagram, and `scripts/mb2.sh wire-scan <file> <text>...` searches them at every bit offset.
+**Encrypted game traffic (ADR-083).** With every ticket the service issues a random 32-byte key, which it gives only to the client and to the server that redeems the ticket. The ticket is the engine's encryption token. It travels in the clear in the hello, and the server spends it there and answers with the key. Every packet after that is AES-256-GCM (`MarburgumNetCrypto`, `[PacketHandlerComponents] EncryptionComponent=MarburgumNetCrypto`, plugin `AESGCMHandlerComponent`). Once keyed, that component drops plaintext packets; the engine's own component would accept them. A server started with `-MB2Accounts` sets `net.AllowEncryption=2`, so a connection without a ticket is closed at the hello (`admission_refused stage=hello reason=no_ticket`). A stolen ticket without its key admits nobody; its server may redeem a ticket up to three times in its minute, so a thief's redeem does not lock the player out (ADR-088). Once keyed, the component also drops authentic packets it has already accepted (a 1,024-packet replay window on the nonce counter). Neither side logs the ticket or the key, and the login no longer carries the ticket. Servers without `-MB2Accounts` (every other smoke) stay unencrypted development servers. A smoke client joining from a raw URL passes `?EncryptionToken=<ticket>` and `-MB2AdmissionKey=<key>` (not in Shipping). To see what crosses the wire, `scripts/mb2.sh wire-relay <listen> <server> <file>` forwards one client and records every datagram, and `scripts/mb2.sh wire-scan <file> <text>...` searches them at every bit offset.
 
 ## Messaging validation (CHAT-001)
 

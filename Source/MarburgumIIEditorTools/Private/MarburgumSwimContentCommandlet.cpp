@@ -1,4 +1,5 @@
 #include "MarburgumSwimContentCommandlet.h"
+#include "MarburgumEditorMaps.h"
 
 #include "Animation/AnimData/IAnimationDataController.h"
 #include "Animation/AnimSequence.h"
@@ -31,7 +32,6 @@ namespace
     constexpr const TCHAR* PreviewMeshPath = TEXT("/Game/Characters/Protagonist/SKM_Protagonist.SKM_Protagonist");
     constexpr const TCHAR* SwimPackage = TEXT("/Game/Characters/Animations/A_Swim");
     constexpr const TCHAR* TreadPackage = TEXT("/Game/Characters/Animations/A_SwimTread");
-    constexpr const TCHAR* LentMap = TEXT("/Game/World/lent");
 
     // ---- The original swim cycle (magna-raedarum-marburgum tools/build_character.gd, _swim_animation) ----
     //
@@ -568,10 +568,10 @@ namespace
 
     bool BuildWaterVolumes()
     {
-        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(LentMap);
+        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(MarburgumEditorMaps::Lent);
         if (!World)
         {
-            UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM cannot load %s"), LentMap);
+            UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM cannot load %s"), MarburgumEditorMaps::Lent);
             return false;
         }
         TArray<AStaticMeshActor*> Sheets;
@@ -600,7 +600,7 @@ namespace
         }
         if (!bSheetsHaveMeshes || Landscapes.IsEmpty())
         {
-            UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM %s needs the %s water mesh and a landscape"), LentMap, WaterSheetLabel);
+            UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM %s needs the %s water mesh and a landscape"), MarburgumEditorMaps::Lent, WaterSheetLabel);
             return false;
         }
         for (AActor* Old : OldVolumes)
@@ -750,9 +750,9 @@ namespace
                 ++Volumes;
             }
         }
-        if (!UEditorLoadingAndSavingUtils::SaveMap(World, LentMap))
+        if (!UEditorLoadingAndSavingUtils::SaveMap(World, MarburgumEditorMaps::Lent))
         {
-            UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM could not save %s"), LentMap);
+            UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM could not save %s"), MarburgumEditorMaps::Lent);
             return false;
         }
         UE_LOG(LogMarburgumSwim, Display, TEXT("MB2SWIM water surface_z=%.1f cells=%d volumes=%d replaced=%d deepest_bed_z=%.1f sheets=%d sheet_triangles=%d"),
@@ -762,10 +762,10 @@ namespace
 
     void InspectLent()
     {
-        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(LentMap);
+        UWorld* World = UEditorLoadingAndSavingUtils::LoadMap(MarburgumEditorMaps::Lent);
         if (!World)
         {
-            UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM cannot load %s"), LentMap);
+            UE_LOG(LogMarburgumSwim, Error, TEXT("MB2SWIM cannot load %s"), MarburgumEditorMaps::Lent);
             return;
         }
         for (TActorIterator<AActor> It(World); It; ++It)

@@ -35,8 +35,12 @@ public:
         double DistanceCm = 0.0;
     };
 
-    /** The subject Eye looking along View would photograph; Subject is null when nothing qualifies. */
-    FInFrame FindInFrame(const FVector& Eye, const FRotator& View, const AActor* Photographer) const;
+    /**
+     * The subject Eye looking along View would photograph; Subject is null when nothing qualifies.
+     * OutWhy, when set and nothing qualifies, names the nearest subject that was in range and why it lost
+     * (cone, or the actor the sight trace hit).
+     */
+    FInFrame FindInFrame(const FVector& Eye, const FRotator& View, const AActor* Photographer, FString* OutWhy = nullptr) const;
 
     /** A subject's resolved aim point in this world; false when the subject has no ground under it here. */
     bool GetAimPoint(const FString& SubjectId, FVector& OutAimPoint) const;

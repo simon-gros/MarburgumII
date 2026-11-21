@@ -198,8 +198,9 @@ protected:
     UFUNCTION(Client, Reliable)
     void ClientReceiveInteractionReceipt(const FMarburgumInteractionReceipt& Receipt);
 
+    /** Pitch and yaw are the client's look, compressed the way the engine compresses a control rotation. */
     UFUNCTION(Server, Reliable)
-    void ServerRequestPhotograph(FGuid OperationId);
+    void ServerRequestPhotograph(FGuid OperationId, int32 PitchShort, int32 YawShort);
 
     /** Slot and item travel as text, like the trade ids; an empty item asks to empty the slot. */
     UFUNCTION(Server, Reliable)
