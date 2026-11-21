@@ -52,7 +52,21 @@ The middle nine keep within 3 % of their earlier counts; the 5×5 ground's finer
 - [Mestni park, aerial](Captures/gfx01-5x5-2026-11-21/air_mestni_park.jpg) and [in the park](Captures/gfx01-5x5-2026-11-21/street_mestni_park_1.jpg)
 - [Tabor](Captures/gfx01-5x5-2026-11-21/air_tabor.jpg), [Studenci](Captures/gfx01-5x5-2026-11-21/air_studenci.jpg) and [a Studenci street](Captures/gfx01-5x5-2026-11-21/street_studenci_0.jpg), [Mejna](Captures/gfx01-5x5-2026-11-21/air_mejna.jpg), [a Vrbanska street](Captures/gfx01-5x5-2026-11-21/street_vrbanska_2.jpg)
 
-Not measured: frame time with four times the plants. It belongs in the packaged GFX-01 measurement on a free GPU.
+**Frame time, packaged** (Development client and server of `main` `3058bbf`, RTX 5080, 1920×1080, default scalability, hardware Lumen, June noon, clear; the GPU idle at both starts, only the owner's playtest server running on the CPU). The staged survey of the 25 windows (`visual-survey-linux.sh staged`, 106 views, 4 s each) once with `-MB2NoPlants` (A) and once with the 40,604 plants (B), one after the other on the same build. Medians over the views, ms:
+
+| | A, no plants | B, plants | B − A |
+| --- | --- | --- | --- |
+| Frame, p50 | 4.32 | 4.47 | +0.15 (+3 %) |
+| Frame, p95 | 5.05 | 5.16 | +0.11 |
+| Frame, p99 | 6.08 | 6.25 | +0.17 |
+| GPU, p50 | 4.04 | 4.19 | +0.16 (+4 %) |
+| GPU, p95 | 4.28 | 4.41 | +0.13 |
+| Game thread, p95 | 1.23 | 1.28 | +0.05 |
+| Draw calls | 256 | 285 | +29 (aerials +70) |
+| VRAM used, MB | 5,019 | 5,028 | +9 |
+| Client resident, MB | 8,688 | 8,701 | +13 |
+
+The dearest views are the wooded ones: Mestni park +0.37 ms GPU at street level and +0.33 ms from the air, then Magdalena, Pristan and Pobrežje aerials at about +0.3 ms. No view's median GPU time rises by more than 0.4 ms. A few views have a p95 spike on the CPU side: street_kurilnica_0 goes from 5.2 to 8.4 ms at p95 with the render thread (3.7 → 6.9 ms) and RHI (1.6 → 5.0 ms), while its GPU p95 moves 0.5 ms; likely the first draw of new instances (PSO or streaming), unconfirmed. Evidence: `Saved/Veg25/frames-A`, `frames-B` (stats.tsv per view), compared by `Saved/Veg25/compare.sh`. Not measured: lower presets, and wind (GFX-07).
 
 ## In the game
 

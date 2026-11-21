@@ -81,6 +81,25 @@ checked.
 `Marburgum.Shared.StreetLights.{File,Ground,Switch}` and `Marburgum.Editor.PartitionRules` pass; `mb2 validate all`
 passes.
 
+## Merged with main
+
+main gained trees, bushes and street furniture over the five by five (ADR-087, ADR-089) while this was qualified. They
+are placed from their files on the ground found by a trace, which a partitioned client mostly cannot find, so they take
+it from the same ground files as the lamps (`MarburgumGroundFile.h`, `scripts/partition-world.sh ground`). On the merged
+head, staged, `build_fresh: yes`:
+
+- `b2affbd`: the editor without adaptive unity, 60 automation tests, `mb2 validate all`, and the 28-smoke matrix
+  (`Saved/WP/merge/SUMMARY.txt`): 25 pass. A partitioned client places 40,604 of 40,604 plants, 2,339 of 2,339 pieces
+  of furniture and 3,344 of 3,349 lamps, all `ground=file`, the always-loaded level's counts.
+- The three that failed, fixed: every weather client crashed counting lit windows on the HLODs' merged meshes (`27d3ce3`);
+  the server published its clock before begin play's whole-map load and corrected it only 30 s later (`8d0feeb`); both
+  crowd smokes still wanted the nine windows' 185 bridge edges (`27d3ce3`), and crowd scenario D, failing alike on the
+  always-loaded five by five, now keeps to the nine windows it was qualified on (`d6ddc3a`).
+- `d6ddc3a`: weather, crowd day and crowd night pass (`Saved/WP/merge/RECHECK.txt`); a partitioned client counts 439
+  buildings and 30,279 lit-window panes round its start, so the weather smoke wants 300 buildings there (500 whole).
+  Then 60 automation tests, `mb2 validate all` and the street-hours, place and door smokes, which read the clock or restart
+  the server, pass on that build (`Saved/WP/merge/FINAL.txt`).
+
 ## Not covered
 
 - Night views of the far city (lit windows on the HLODs).
