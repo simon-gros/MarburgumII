@@ -2,7 +2,7 @@
 
 P0 item 1 of the [20 November evening review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md): close the two open security points on ADR-083 (replayed encrypted packets, a stolen hello ticket burning the player's join), then requalify the whole staged matrix on one package from the latest head. Run by the senior-programmer agent on Simon's host (Linux 6.18, RTX 5080), one smoke at a time, on ports 279xx (never 7777 or 17777).
 
-Branch `feat/transport-hardening`, rebased onto `main` `f4d5e89`. The decision is [ADR-086](DECISIONS.md). It was drafted as ADR-085, but that number went to the character sheet (LRP-01/02) on `main` while this branch was being tested.
+Branch `feat/transport-hardening`, rebased onto `main` `f4d5e89`. The decision is [ADR-088](DECISIONS.md). It was drafted as ADR-085 and renumbered twice while this branch was being tested: ADR-085 went to the character sheet (LRP-01/02) on `main`, ADR-086 to the investigation input, and ADR-087 is claimed by the vegetation branch.
 
 ## The builds
 

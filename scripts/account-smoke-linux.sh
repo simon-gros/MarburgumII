@@ -17,7 +17,7 @@
 #     server's ticket, which is then admitted; this server refuses a ticket asked for melje.
 #   Encrypted transport (ADR-083): the ticket is the connection's encryption token and its key comes with it from
 #     the service. A ticket stolen off the wire and redeemed first, without its key, admits nobody, and the player
-#     then joins with that same ticket (ADR-086: its server may redeem a ticket up to three times). The client joins through a
+#     then joins with that same ticket (ADR-088: its server may redeem a ticket up to three times). The client joins through a
 #     recording UDP relay (mb2 wire-relay): the ticket shows in its hello, and nothing after it carries the map's
 #     name, the game mode or the character's name in the clear. No server log holds a ticket or a key, and the
 #     rendered clients never log the encryption token at all (AR13).
@@ -286,7 +286,7 @@ client other-server REFUSED "127.0.0.1:$port?EncryptionToken=$melje_ticket" "${n
 expect_eq "melje can spend its own ticket after this server refused it" "$(redeem_as "$secrets/melje.key" "$melje_ticket")" 200
 echo "Encrypted transport (ADR-083)"
 # A ticket stolen off the wire (it is in the clear in the hello) and redeemed first, without its key: nobody is
-# admitted, and the same ticket still admits its player afterwards (ADR-086). A ticket lives one minute, so the thief
+# admitted, and the same ticket still admits its player afterwards (ADR-088). A ticket lives one minute, so the thief
 # runs in the background and the player follows as soon as the server has redeemed it.
 admit "localhost:$port" t1
 ticket_1=$t1_ticket

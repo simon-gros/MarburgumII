@@ -20,7 +20,7 @@ pub const LOGIN_FAILURES: usize = 5;
 pub const LOGIN_WINDOW_S: i64 = 15 * 60;
 /// Outstanding admission tickets per account; a newer one replaces the oldest.
 pub const ADMISSIONS_PER_ACCOUNT: usize = 3;
-/// How often its server may redeem one ticket within its minute (ADR-086). The ticket travels in the clear in the
+/// How often its server may redeem one ticket within its minute (ADR-088). The ticket travels in the clear in the
 /// engine's hello, so anyone on the path can redeem it first; without the connection key that admits nobody, and the
 /// player's own hello must still work. Admission needs the key, so the ticket alone is no longer single-use.
 pub const REDEEMS_PER_TICKET: u32 = 3;
@@ -469,7 +469,7 @@ impl Service {
     /// A game server redeems a ticket for its connection key; the server's own key says which server it is. A ticket
     /// asked for another server is refused and left as it was (AR1). Its own server may redeem it up to
     /// REDEEMS_PER_TICKET times within its minute: a stolen ticket redeemed first, without its key, admits nobody and
-    /// does not lock the player out (ADR-086). Signing out or a password reset still ends it at once (AR10).
+    /// does not lock the player out (ADR-088). Signing out or a password reset still ends it at once (AR10).
     pub fn redeem(&mut self, server_key: &str, ticket: &str, now: i64) -> Outcome<Admitted> {
         // Every key is compared, to the end, so the time taken does not say which one came close.
         let caller = self.servers.iter().fold(None, |found, s| if secrets::same(server_key, &s.key) { Some(s.id.clone()) } else { found });
@@ -696,7 +696,7 @@ pub mod tests {
         assert_eq!(admitted.key, issued.key);
         assert_eq!(URL_SAFE_NO_PAD.decode(&issued.key).unwrap().len(), 32);
         assert_ne!(issued.key, ticket);
-        // ADR-086: its server may redeem it again (a thief's redeem must not lock the player out), up to the limit.
+        // ADR-088: its server may redeem it again (a thief's redeem must not lock the player out), up to the limit.
         for _ in 1..REDEEMS_PER_TICKET {
             assert_eq!(service.redeem(KEY, &ticket, 62).unwrap().key, issued.key);
         }
