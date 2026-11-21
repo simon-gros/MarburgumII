@@ -1,8 +1,10 @@
 #include "MarburgumStreetFurnitureActor.h"
 
+#include "Algo/Transform.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "MarburgumWorldLoading.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
@@ -85,6 +87,36 @@ bool UMarburgumStreetFurnitureSubsystem::ShouldCreateSubsystem(UObject* Outer) c
     return Super::ShouldCreateSubsystem(Outer) && !FParse::Param(FCommandLine::Get(), TEXT("MB2NoStreetFurniture"));
 }
 
+TOptional<double> UMarburgumStreetFurnitureSubsystem::FindGround(const UWorld& World, const FVector& Surveyed)
+{
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumStreetFurniture), true);
+    const FCollisionObjectQueryParams Static(FCollisionObjectQueryParams::AllStaticObjects);
+    const FVector From = Surveyed + FVector(0.0, 0.0, MarburgumStreetFurniture::GroundAboveCm);
+    const FVector To = Surveyed - FVector(0.0, 0.0, MarburgumStreetFurniture::GroundBelowCm);
+    TArray<FHitResult> Hits;
+    World.LineTraceMultiByObjectType(Hits, From, To, Static, Params);
+    const FHitResult* Ground = nullptr;
+    for (const FHitResult& Hit : Hits)
+    {
+        const bool bWalkable = Hit.bBlockingHit && Hit.ImpactNormal.Z >= MarburgumStreetFurniture::WalkableNormalZ;
+        if (bWalkable && (!Ground || FMath::Abs(Hit.ImpactPoint.Z - Surveyed.Z) < FMath::Abs(Ground->ImpactPoint.Z - Surveyed.Z)))
+        {
+            Ground = &Hit;
+        }
+    }
+    if (Ground)
+    {
+        return Ground->ImpactPoint.Z;
+    }
+    // A wall along a bank steeper than walkable still stands on it.
+    FHitResult Single;
+    if (World.LineTraceSingleByObjectType(Single, From, To, Static, Params))
+    {
+        return Single.ImpactPoint.Z;
+    }
+    return TOptional<double>();
+}
+
 bool UMarburgumStreetFurnitureSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const
 {
     return WorldType == EWorldType::Game || WorldType == EWorldType::PIE;
@@ -111,37 +143,21 @@ void UMarburgumStreetFurnitureSubsystem::OnWorldBeginPlay(UWorld& InWorld)
     }
     Read = All.Num();
 
-    // Each piece stands on what is there: the paving or the landscape nearest the walkable top in the file.
+    // Each piece stands on what is there: the paving or the landscape nearest the walkable top in the file. A client on
+    // the World Partition map has only the cells round its player (ADR-091), so every role takes that from the editor's
+    // ground file where there is one.
     const double Started = FPlatformTime::Seconds();
-    FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumStreetFurniture), true);
-    const FCollisionObjectQueryParams Static(FCollisionObjectQueryParams::AllStaticObjects);
+    TArray<FVector> Surveyed;
+    Algo::Transform(All, Surveyed, [](const FPiece& Piece) { return Piece.Location; });
+    bool bFromFile = false;
+    const TArray<TOptional<double>> GroundCm = MarburgumII::WorldLoading::GroundOf(InWorld, FurnitureFile, Text, Surveyed,
+        &UMarburgumStreetFurnitureSubsystem::FindGround, TEXT("street_furniture"), bFromFile);
     int32 NoGround = 0;
     for (int32 Index = 0; Index < All.Num(); ++Index)
     {
         FPiece& Piece = All[Index];
-        TArray<FHitResult> Hits;
-        InWorld.LineTraceMultiByObjectType(Hits, Piece.Location + FVector(0.0, 0.0, MarburgumStreetFurniture::GroundAboveCm),
-            Piece.Location - FVector(0.0, 0.0, MarburgumStreetFurniture::GroundBelowCm), Static, Params);
-        const FHitResult* Ground = nullptr;
-        for (const FHitResult& Hit : Hits)
+        if (!GroundCm[Index].IsSet())
         {
-            const bool bWalkable = Hit.bBlockingHit && Hit.ImpactNormal.Z >= MarburgumStreetFurniture::WalkableNormalZ;
-            if (bWalkable && (!Ground || FMath::Abs(Hit.ImpactPoint.Z - Piece.Location.Z) < FMath::Abs(Ground->ImpactPoint.Z - Piece.Location.Z)))
-            {
-                Ground = &Hit;
-            }
-        }
-        if (!Ground)
-        {
-            FHitResult Single;
-            if (InWorld.LineTraceSingleByObjectType(Single, Piece.Location + FVector(0.0, 0.0, MarburgumStreetFurniture::GroundAboveCm),
-                    Piece.Location - FVector(0.0, 0.0, MarburgumStreetFurniture::GroundBelowCm), Static, Params))
-            {
-                // A wall along a bank steeper than walkable still stands on it.
-                Piece.Location.Z = Single.ImpactPoint.Z;
-                ++Grounded;
-                continue;
-            }
             if (NoGround < 8)
             {
                 UE_LOG(LogMarburgumStreetFurniture, Log, TEXT("MB2FURNITURE role=%s event=no_ground piece=%d at=%s kind=%d"), Role, Index,
@@ -151,7 +167,7 @@ void UMarburgumStreetFurnitureSubsystem::OnWorldBeginPlay(UWorld& InWorld)
             ++NoGround;
             continue;
         }
-        Piece.Location.Z = Ground->ImpactPoint.Z;
+        Piece.Location.Z = *GroundCm[Index];
         ++Grounded;
     }
 
@@ -166,8 +182,9 @@ void UMarburgumStreetFurnitureSubsystem::OnWorldBeginPlay(UWorld& InWorld)
         return;
     }
     Furniture->Build(All);
-    UE_LOG(LogMarburgumStreetFurniture, Log, TEXT("MB2FURNITURE role=%s event=placed pieces=%d grounded=%d no_ground=%d kinds=%d missing_meshes=%d seconds=%.2f"),
-        Role, Read, Grounded, NoGround, Furniture->NumKinds(), Furniture->NumMissingMeshes(), FPlatformTime::Seconds() - Started);
+    UE_LOG(LogMarburgumStreetFurniture, Log, TEXT("MB2FURNITURE role=%s event=placed pieces=%d grounded=%d no_ground=%d kinds=%d missing_meshes=%d ground=%s seconds=%.2f"),
+        Role, Read, Grounded, NoGround, Furniture->NumKinds(), Furniture->NumMissingMeshes(), bFromFile ? TEXT("file") : TEXT("trace"),
+        FPlatformTime::Seconds() - Started);
 }
 
 void UMarburgumStreetFurnitureSubsystem::Deinitialize()

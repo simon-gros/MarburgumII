@@ -1,5 +1,6 @@
 #include "MarburgumStreetLamps.h"
 
+#include "Algo/Transform.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -184,31 +185,21 @@ void UMarburgumStreetLampsSubsystem::OnWorldBeginPlay(UWorld& InWorld)
     Read = All.Num();
 
     // Each lamp stands on what is there: the paving or the landscape under its surveyed top. A client on the World
-    // Partition map has only the cells round its player (ADR-091), so where the editor has worked that out on the whole
-    // level every role takes it from the ground file, and server and clients put the posts in the same places.
+    // Partition map has only the cells round its player (ADR-091), so every role takes that from the editor's ground
+    // file where there is one, and server and clients put the posts in the same places.
     const double Started = FPlatformTime::Seconds();
-    const FString GroundPath = FPaths::Combine(FPaths::ProjectContentDir(), GroundFile);
-    FString GroundText;
-    TArray<TOptional<double>> GroundCm;
-    FString GroundError = TEXT("none");
-    const bool bFromFile = FFileHelper::LoadFileToString(GroundText, *GroundPath, FFileHelper::EHashOptions::None, FILEREAD_Silent)
-        && ParseGround(GroundText, Fingerprint(Text), All.Num(), GroundCm, GroundError);
-    if (!bFromFile)
-    {
-        // Tracing the whole level is only possible where all of it is in.
-        MarburgumII::WorldLoading::LoadWholeWorldOnServer(InWorld, TEXT("street_lamps"));
-        if (InWorld.IsPartitionedWorld())
-        {
-            UE_LOG(LogMarburgumStreetLamps, Warning, TEXT("MB2LAMPS role=%s event=no_ground_file reason=\"%s\" (scripts/partition-world.sh lamps)"), Role, *GroundError);
-        }
-    }
+    TArray<FVector> Surveyed;
+    Algo::Transform(All, Surveyed, [](const FLamp& Lamp) { return Lamp.Location; });
+    bool bFromFile = false;
+    const TArray<TOptional<double>> GroundCm = MarburgumII::WorldLoading::GroundOf(InWorld, LampsFile, Text, Surveyed,
+        &UMarburgumStreetLampsSubsystem::FindGround, TEXT("street_lamps"), bFromFile);
     TArray<FLamp> Standing;
     Standing.Reserve(All.Num());
     int32 NoGround = 0;
     int32 Masts = 0;
     for (const FLamp& Lamp : All)
     {
-        const TOptional<double> Ground = bFromFile ? GroundCm[Standing.Num()] : FindGround(InWorld, Lamp.Location);
+        const TOptional<double> Ground = GroundCm[Standing.Num()];
         FLamp& Placed = Standing.Add_GetRef(Lamp);
         if (Ground.IsSet())
         {

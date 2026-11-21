@@ -9,7 +9,7 @@
  * map with each actor in its own package:
  *
  *   UnrealEditor-Cmd MarburgumII.uproject -run=WorldPartitionConvertCommandlet /Game/World/lent
- *   UnrealEditor-Cmd MarburgumII.uproject -run=MarburgumPartitionLevel [-Map=/Game/World/lent] [-CheckOnly | -Lamps]
+ *   UnrealEditor-Cmd MarburgumII.uproject -run=MarburgumPartitionLevel [-Map=/Game/World/lent] [-CheckOnly | -Ground]
  *
  * scripts/partition-world.sh runs both and then builds the HLODs. This commandlet sets:
  *
@@ -23,9 +23,9 @@
  *            the street people's walks across it need;
  *   actors   which actors stream (MarburgumPartition::ShouldStream); the rest are always loaded.
  *
- * -Lamps changes none of that and instead writes the street lamps' ground file (MarburgumII::StreetLights::GroundFile):
- * where each lamp stands, found on the whole level by the game's own rule, since a client holds only the cells round its
- * player. Run it after the lamps file or the ground changes.
+ * -Ground changes none of that and instead writes the ground files (MarburgumGroundFile.h) of the street lamps, the plants
+ * and the street furniture: where each stands, found on the whole level by the game's own rules, since a client holds
+ * only the cells round its player. Run it after a placement file or the ground changes.
  *
  * Logs "MB2PARTITION ..." and saves unless -CheckOnly. Returns nonzero if the map is not partitioned or a setting
  * could not be made.

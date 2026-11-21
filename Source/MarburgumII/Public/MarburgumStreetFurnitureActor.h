@@ -57,6 +57,13 @@ public:
     int32 NumRead() const { return Read; }
     int32 NumGrounded() const { return Grounded; }
 
+    /**
+     * What a piece at Surveyed (the walkable top in the file) stands on: the walkable surface nearest that height, or
+     * failing one, the first surface under it, since a wall along a bank steeper than walkable still stands on it. Unset
+     * where there is none. The game and the editor's ground file (MarburgumPartitionLevel -Ground) use this rule.
+     */
+    static TOptional<double> FindGround(const UWorld& World, const FVector& Surveyed);
+
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 

@@ -142,11 +142,11 @@ cargo run --release --manifest-path tools/lent-ground/Cargo.toml -- --mode furni
 # World Partition (ADR-091): /Game/World/lent streams on clients in 128 m cells within 512 m, with one merged Nanite mesh
 # per 256 m cell (HLOD) for the rest of the map; the server keeps it whole. The commandlets above load every actor
 # (FMarburgumWholeLevel) and keep the streaming rules on save; MarburgumRebuildGround splits its new landscape into
-# streaming proxies. A client holds only the cells round its player, so the street lamps take their ground from
-# Content/Marburgum/Lights/lent_street_lights_ground.json, worked out on the whole level. Convert once, then redo the
-# lamps' ground and the HLODs after every façade, ground, bridge or lamp change:
-./scripts/partition-world.sh            # convert (once), settings, lamps, hlods
-./scripts/partition-world.sh lamps      # after content or lamp changes
+# streaming proxies. A client holds only the cells round its player, so the street lamps, plants and street furniture take
+# their ground from <placement file>_ground.json beside each, worked out on the whole level. Convert once, then redo the
+# ground files and the HLODs after every façade, ground or bridge change, and the ground files after a placement file changes:
+./scripts/partition-world.sh            # convert (once), settings, ground, hlods
+./scripts/partition-world.sh ground     # after content, lamp, plant or furniture changes
 ./scripts/partition-world.sh hlods      # after content changes
 # The editor commandlets on the five by five load all of it and need more than a 16 GB process limit; run them, and
 # the editor-mode smokes, as their own unit (systemd-run --user ... -p MemoryMax=28G, as for packaging below).

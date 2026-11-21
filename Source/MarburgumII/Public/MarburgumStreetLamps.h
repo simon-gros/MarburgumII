@@ -77,7 +77,7 @@ public:
     /**
      * What a lamp surveyed at SurveyedTop stands on: the walkable surface nearest that height a little above or below it,
      * so an eave or a canopy over the pavement is not stood on. Unset where the world has none there. The game and the
-     * editor's ground file (MarburgumPartitionLevel -Lamps) use this same rule.
+     * editor's ground file (MarburgumPartitionLevel -Ground) use this same rule.
      */
     static TOptional<double> FindGround(const UWorld& World, const FVector& SurveyedTop);
 

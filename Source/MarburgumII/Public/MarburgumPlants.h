@@ -67,6 +67,13 @@ public:
     int32 NumRead() const { return Read; }
     int32 NumGrounded() const { return Grounded; }
 
+    /**
+     * What a plant at Surveyed (the landscape height in the file) stands on: the walkable surface nearest that height,
+     * or failing one, the first surface under it, since a grassy bank steeper than walkable is still ground for a plant.
+     * Unset where there is none. The game and the editor's ground file (MarburgumPartitionLevel -Ground) use this rule.
+     */
+    static TOptional<double> FindGround(const UWorld& World, const FVector& Surveyed);
+
 protected:
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 

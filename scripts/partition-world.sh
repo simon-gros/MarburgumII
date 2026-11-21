@@ -4,10 +4,10 @@
 #             Content/__ExternalActors__/World/lent, the landscape split into streaming proxies (skipped once done)
 #   settings  MarburgumPartitionLevel: the streaming grid, the HLOD layer /Game/World/HLOD/HLOD_Lent, no server
 #             streaming, and which actors stream
-#   lamps     MarburgumPartitionLevel -Lamps: each street lamp's ground on the whole level into
-#             Content/Marburgum/Lights/lent_street_lights_ground.json, as a client holds only the cells round its player
+#   ground    MarburgumPartitionLevel -Ground: the street lamps', plants' and street furniture's ground on the whole level,
+#             <placement file>_ground.json beside each, as a client holds only the cells round its player
 #   hlods     the engine's HLOD builder: one merged Nanite mesh per 256 m cell under Content/__ExternalActors__
-# Usage: scripts/partition-world.sh [convert|settings|lamps|hlods|all]   (default: all)
+# Usage: scripts/partition-world.sh [convert|settings|ground|hlods|all]   (default: all)
 # Build MarburgumIIEditor first. Conversion and the HLOD build render (no -nullrhi); -RenderOffScreen keeps them off
 # the desktop. The five by five needs more than 16 GB per editor process, so run this as its own unit
 # (systemd-run --user ... -p MemoryMax=28G), as for packaging.
@@ -24,10 +24,10 @@ if [[ -z "$ue_root" ]]; then
 fi
 
 case "$which" in
-    convert|settings|lamps|hlods) steps="$which" ;;
-    all) steps="convert settings lamps hlods" ;;
+    convert|settings|ground|hlods) steps="$which" ;;
+    all) steps="convert settings ground hlods" ;;
     *)
-        echo "Usage: $0 [convert|settings|lamps|hlods|all]" >&2
+        echo "Usage: $0 [convert|settings|ground|hlods|all]" >&2
         exit 2
         ;;
 esac
@@ -51,8 +51,8 @@ for step in $steps; do
         settings)
             editor -run=MarburgumPartitionLevel -Map="$map" -nullrhi
             ;;
-        lamps)
-            editor -run=MarburgumPartitionLevel -Map="$map" -Lamps -nullrhi
+        ground)
+            editor -run=MarburgumPartitionLevel -Map="$map" -Ground -nullrhi
             ;;
         hlods)
             editor -run=WorldPartitionBuilderCommandlet "$map" -Builder=WorldPartitionHLODsBuilder \

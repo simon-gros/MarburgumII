@@ -13,7 +13,7 @@
  *
  * The file is in plan metres (x east, y south of the middle of Stari most); everything here is in Unreal centimetres
  * (X north, Y east), converted once on load. Heights are the surveyed walkable top, which the game grounds by a trace or,
- * on the World Partition map, from GroundFile.
+ * on the World Partition map, from the editor's ground file (MarburgumGroundFile.h).
  *
  * **When they burn** is decided from the world clock and the weather alone, so every client and the server agree without
  * a message: each lamp's photocell switches it on once the sun is low enough for the sky, earlier under thick cloud or
@@ -60,28 +60,6 @@ namespace MarburgumII::StreetLights
 
     /** Reads the lamps file. False with OutError when it is not one. */
     MARBURGUMIISHARED_API bool Parse(const FString& Json, TArray<FLamp>& OutLamps, FString& OutError);
-
-    /**
-     * Where each lamp stands, worked out once by the editor on the whole level (ADR-091): a client on the World Partition
-     * map has only the cells round its player, so a trace there finds no ground under most lamps.
-     * scripts/partition-world.sh lamps writes it (MarburgumPartitionLevel -Lamps) after the lamps file or the ground
-     * changes; it names the lamps file it was made for by a fingerprint of its text, and the game traces instead where
-     * the two do not match. Relative to the project's Content directory.
-     */
-    inline constexpr const TCHAR* GroundFile = TEXT("Marburgum/Lights/lent_street_lights_ground.json");
-
-    /** The lamps file's fingerprint (SHA-1 of its text as UTF-8), as the ground file records it. */
-    MARBURGUMIISHARED_API FString Fingerprint(const FString& LampsJson);
-
-    /** The ground file: for each lamp in the file's order, the height of its foot in Unreal centimetres, unset where none. */
-    MARBURGUMIISHARED_API FString WriteGround(const FString& LampsFingerprint, const TArray<TOptional<double>>& GroundCm);
-
-    /**
-     * Reads the ground file for the lamps file with LampsFingerprint and LampCount lamps. False with OutError when it is
-     * not one, or is for another lamps file.
-     */
-    MARBURGUMIISHARED_API bool ParseGround(const FString& Json, const FString& LampsFingerprint, int32 LampCount,
-        TArray<TOptional<double>>& OutGroundCm, FString& OutError);
 
     /** Plan metres (x east, y south, z up) to Unreal centimetres (X north, Y east). */
     inline FVector FromPlan(double East, double South, double Up)

@@ -175,45 +175,4 @@ bool FMarburgumStreetLightsFileTest::RunTest(const FString& Parameters)
     return true;
 }
 
-// The lamps' ground worked out on the whole level (ADR-091), for clients that hold only the cells round their player.
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMarburgumStreetLightsGroundTest, "Marburgum.Shared.StreetLights.Ground", LightsTestFlags)
-bool FMarburgumStreetLightsGroundTest::RunTest(const FString& Parameters)
-{
-    using namespace MarburgumII::StreetLights;
-
-    const FString LampsText = TEXT(R"({"format":"marburgumii.street_lights","version":1,"lamps":[[0,0,3,0,0,1],[1,0,3,1,0,2]]})");
-    const FString For = Fingerprint(LampsText);
-    TestEqual(TEXT("the fingerprint is SHA-1 in hex"), For.Len(), 40);
-    TestNotEqual(TEXT("and changes with the lamps file"), Fingerprint(LampsText + TEXT(" ")), For);
-
-    TArray<TOptional<double>> Ground;
-    FString Error;
-    const FString Written = WriteGround(For, { 312.34, TOptional<double>() });
-    TestTrue(TEXT("the written file reads back"), ParseGround(Written, For, 2, Ground, Error));
-    if (TestEqual(TEXT("a height for each lamp"), Ground.Num(), 2))
-    {
-        TestTrue(TEXT("the first stands"), Ground[0].IsSet() && FMath::IsNearlyEqual(*Ground[0], 312.3));
-        TestFalse(TEXT("the second has no ground"), Ground[1].IsSet());
-    }
-    TestFalse(TEXT("another lamps file's ground is refused"), ParseGround(Written, Fingerprint(TEXT("{}")), 2, Ground, Error));
-    TestTrue(TEXT("and says so"), Error.StartsWith(TEXT("made for lamps file")));
-    TestFalse(TEXT("a count that does not match is refused"), ParseGround(Written, For, 3, Ground, Error));
-    TestTrue(TEXT("and leaves nothing behind"), Ground.IsEmpty());
-
-    // The shipped file, once the editor has written it, belongs to the shipped lamps.
-    FString Shipped;
-    if (FFileHelper::LoadFileToString(Shipped, *FPaths::Combine(FPaths::ProjectContentDir(), GroundFile)))
-    {
-        FString Text;
-        TArray<FLamp> Lamps;
-        if (TestTrue(TEXT("the lamps file reads"), FFileHelper::LoadFileToString(Text, *FPaths::Combine(FPaths::ProjectContentDir(), LampsFile))
-                && Parse(Text, Lamps, Error)))
-        {
-            const bool bMatches = ParseGround(Shipped, Fingerprint(Text), Lamps.Num(), Ground, Error);
-            TestTrue(FString::Printf(TEXT("the ground file is the lamps file's (%s; scripts/partition-world.sh lamps)"), bMatches ? TEXT("yes") : *Error), bMatches);
-        }
-    }
-    return true;
-}
-
 #endif

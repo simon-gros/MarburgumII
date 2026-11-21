@@ -1,8 +1,10 @@
 #include "MarburgumPlants.h"
 
+#include "Algo/Transform.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "MarburgumWorldLoading.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
@@ -119,6 +121,36 @@ bool UMarburgumPlantsSubsystem::ShouldCreateSubsystem(UObject* Outer) const
     return Super::ShouldCreateSubsystem(Outer) && !FParse::Param(FCommandLine::Get(), TEXT("MB2NoPlants"));
 }
 
+TOptional<double> UMarburgumPlantsSubsystem::FindGround(const UWorld& World, const FVector& Surveyed)
+{
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumPlants), true);
+    const FCollisionObjectQueryParams Static(FCollisionObjectQueryParams::AllStaticObjects);
+    const FVector From = Surveyed + FVector(0.0, 0.0, MarburgumPlants::GroundAboveCm);
+    const FVector To = Surveyed - FVector(0.0, 0.0, MarburgumPlants::GroundBelowCm);
+    TArray<FHitResult> Hits;
+    World.LineTraceMultiByObjectType(Hits, From, To, Static, Params);
+    const FHitResult* Ground = nullptr;
+    for (const FHitResult& Hit : Hits)
+    {
+        const bool bWalkable = Hit.bBlockingHit && Hit.ImpactNormal.Z >= MarburgumPlants::WalkableNormalZ;
+        if (bWalkable && (!Ground || FMath::Abs(Hit.ImpactPoint.Z - Surveyed.Z) < FMath::Abs(Ground->ImpactPoint.Z - Surveyed.Z)))
+        {
+            Ground = &Hit;
+        }
+    }
+    if (Ground)
+    {
+        return Ground->ImpactPoint.Z;
+    }
+    // A grassy bank steeper than walkable is still ground for a plant.
+    FHitResult Single;
+    if (World.LineTraceSingleByObjectType(Single, From, To, Static, Params))
+    {
+        return Single.ImpactPoint.Z;
+    }
+    return TOptional<double>();
+}
+
 bool UMarburgumPlantsSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const
 {
     return WorldType == EWorldType::Game || WorldType == EWorldType::PIE;
@@ -146,37 +178,21 @@ void UMarburgumPlantsSubsystem::OnWorldBeginPlay(UWorld& InWorld)
     }
     Read = All.Num();
 
-    // Each plant stands on the ground under it: the walkable surface nearest the landscape height in the file.
+    // Each plant stands on the ground under it: the walkable surface nearest the landscape height in the file. A client
+    // on the World Partition map has only the cells round its player (ADR-091), so every role takes that from the
+    // editor's ground file where there is one.
     const double Started = FPlatformTime::Seconds();
-    FCollisionQueryParams Params(SCENE_QUERY_STAT(MarburgumPlants), true);
-    const FCollisionObjectQueryParams Static(FCollisionObjectQueryParams::AllStaticObjects);
+    TArray<FVector> Surveyed;
+    Algo::Transform(All, Surveyed, [](const FPlant& Plant) { return Plant.Location; });
+    bool bFromFile = false;
+    const TArray<TOptional<double>> GroundCm = MarburgumII::WorldLoading::GroundOf(InWorld, PlantsFile, Text, Surveyed,
+        &UMarburgumPlantsSubsystem::FindGround, TEXT("plants"), bFromFile);
     int32 NoGround = 0;
     for (int32 Index = 0; Index < All.Num(); ++Index)
     {
         FPlant& Plant = All[Index];
-        TArray<FHitResult> Hits;
-        InWorld.LineTraceMultiByObjectType(Hits, Plant.Location + FVector(0.0, 0.0, MarburgumPlants::GroundAboveCm),
-            Plant.Location - FVector(0.0, 0.0, MarburgumPlants::GroundBelowCm), Static, Params);
-        const FHitResult* Ground = nullptr;
-        for (const FHitResult& Hit : Hits)
+        if (!GroundCm[Index].IsSet())
         {
-            const bool bWalkable = Hit.bBlockingHit && Hit.ImpactNormal.Z >= MarburgumPlants::WalkableNormalZ;
-            if (bWalkable && (!Ground || FMath::Abs(Hit.ImpactPoint.Z - Plant.Location.Z) < FMath::Abs(Ground->ImpactPoint.Z - Plant.Location.Z)))
-            {
-                Ground = &Hit;
-            }
-        }
-        if (!Ground)
-        {
-            FHitResult Single;
-            if (InWorld.LineTraceSingleByObjectType(Single, Plant.Location + FVector(0.0, 0.0, MarburgumPlants::GroundAboveCm),
-                    Plant.Location - FVector(0.0, 0.0, MarburgumPlants::GroundBelowCm), Static, Params))
-            {
-                // A grassy bank steeper than walkable is still ground for a plant.
-                Plant.Location.Z = Single.ImpactPoint.Z;
-                ++Grounded;
-                continue;
-            }
             if (NoGround < 8)
             {
                 UE_LOG(LogMarburgumPlants, Log, TEXT("MB2PLANTS role=%s event=no_ground plant=%d at=%s species=%s"), Role, Index,
@@ -186,7 +202,7 @@ void UMarburgumPlantsSubsystem::OnWorldBeginPlay(UWorld& InWorld)
             ++NoGround;
             continue;
         }
-        Plant.Location.Z = Ground->ImpactPoint.Z;
+        Plant.Location.Z = *GroundCm[Index];
         ++Grounded;
     }
 
@@ -201,8 +217,9 @@ void UMarburgumPlantsSubsystem::OnWorldBeginPlay(UWorld& InWorld)
         return;
     }
     Plants->Build(Species, All, InWorld.GetNetMode() != NM_DedicatedServer);
-    UE_LOG(LogMarburgumPlants, Log, TEXT("MB2PLANTS role=%s event=placed plants=%d grounded=%d no_ground=%d trunks=%d species=%d missing_meshes=%d seconds=%.2f"),
-        Role, Read, Grounded, NoGround, Plants->NumTrunks(), Plants->NumDrawnSpecies(), Plants->NumMissingMeshes(), FPlatformTime::Seconds() - Started);
+    UE_LOG(LogMarburgumPlants, Log, TEXT("MB2PLANTS role=%s event=placed plants=%d grounded=%d no_ground=%d trunks=%d species=%d missing_meshes=%d ground=%s seconds=%.2f"),
+        Role, Read, Grounded, NoGround, Plants->NumTrunks(), Plants->NumDrawnSpecies(), Plants->NumMissingMeshes(),
+        bFromFile ? TEXT("file") : TEXT("trace"), FPlatformTime::Seconds() - Started);
 }
 
 void UMarburgumPlantsSubsystem::Deinitialize()

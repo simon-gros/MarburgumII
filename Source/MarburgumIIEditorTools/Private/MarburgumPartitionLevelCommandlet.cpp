@@ -1,12 +1,19 @@
 #include "MarburgumPartitionLevelCommandlet.h"
 #include "MarburgumEditorMaps.h"
 
+#include "Algo/Transform.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "EngineUtils.h"
 #include "FileHelpers.h"
 #include "HAL/FileManager.h"
+#include "MarburgumGroundFile.h"
+#include "MarburgumPlants.h"
+#include "MarburgumStreetFurniture.h"
+#include "MarburgumStreetFurnitureActor.h"
 #include "MarburgumStreetLamps.h"
 #include "MarburgumStreetLights.h"
+#include "MarburgumVegetation.h"
+#include "MarburgumWorldLoading.h"
 #include "MarburgumWholeLevel.h"
 #include "MeshMerge/MeshMergingSettings.h"
 #include "Misc/FileHelper.h"
@@ -99,37 +106,85 @@ namespace MarburgumPartitionLevel
         return true;
     }
 
-    // Every lamp's ground on the whole level, for the clients that hold only the cells round their player. Returns the
-    // process exit code.
-    int32 WriteLampGround(const UWorld& World)
+    // The ground under each item of a placement file, found on the whole level by its game rule and written beside the
+    // file, for the clients that hold only the cells round their player. Returns false if it could not be written.
+    bool WriteGround(const UWorld& World, const TCHAR* Name, const TCHAR* PlacementFile, const FString& Text, const TArray<FVector>& Surveyed,
+        MarburgumII::WorldLoading::FFindGround FindGround)
     {
-        namespace Lights = MarburgumII::StreetLights;
-        const FString LampsPath = FPaths::Combine(FPaths::ProjectContentDir(), Lights::LampsFile);
-        FString Text;
-        TArray<Lights::FLamp> Lamps;
-        FString Error;
-        if (!FFileHelper::LoadFileToString(Text, *LampsPath) || !Lights::Parse(Text, Lamps, Error))
-        {
-            UE_LOG(LogMarburgumPartitionLevel, Error, TEXT("MB2PARTITION cannot read %s: %s"), *LampsPath, *Error);
-            return 1;
-        }
         TArray<TOptional<double>> Ground;
-        Ground.Reserve(Lamps.Num());
+        Ground.Reserve(Surveyed.Num());
         int32 NoGround = 0;
-        for (const Lights::FLamp& Lamp : Lamps)
+        for (const FVector& Point : Surveyed)
         {
-            Ground.Add(UMarburgumStreetLampsSubsystem::FindGround(World, Lamp.Location));
+            Ground.Add(FindGround(World, Point));
             NoGround += Ground.Last().IsSet() ? 0 : 1;
         }
-        const FString GroundPath = FPaths::Combine(FPaths::ProjectContentDir(), Lights::GroundFile);
-        if (!FFileHelper::SaveStringToFile(Lights::WriteGround(Lights::Fingerprint(Text), Ground), *GroundPath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+        const FString Path = FPaths::Combine(FPaths::ProjectContentDir(), MarburgumII::GroundFile::PathFor(PlacementFile));
+        if (!FFileHelper::SaveStringToFile(MarburgumII::GroundFile::Write(MarburgumII::GroundFile::Fingerprint(Text), Ground), *Path,
+                FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
         {
-            UE_LOG(LogMarburgumPartitionLevel, Error, TEXT("MB2PARTITION could not write %s"), *GroundPath);
+            UE_LOG(LogMarburgumPartitionLevel, Error, TEXT("MB2PARTITION could not write %s"), *Path);
+            return false;
+        }
+        UE_LOG(LogMarburgumPartitionLevel, Display, TEXT("MB2PARTITION ground of=%s items=%d grounded=%d no_ground=%d file=%s"), Name, Surveyed.Num(),
+            Surveyed.Num() - NoGround, NoGround, *Path);
+        return true;
+    }
+
+    bool ReadPlacements(const TCHAR* PlacementFile, FString& OutText)
+    {
+        const FString Path = FPaths::Combine(FPaths::ProjectContentDir(), PlacementFile);
+        if (!FFileHelper::LoadFileToString(OutText, *Path))
+        {
+            UE_LOG(LogMarburgumPartitionLevel, Error, TEXT("MB2PARTITION cannot read %s"), *Path);
+            return false;
+        }
+        return true;
+    }
+
+    // The street lamps', the plants' and the street furniture's ground. Returns the process exit code.
+    int32 WriteGroundFiles(const UWorld& World)
+    {
+        FString Error;
+        FString Text;
+        TArray<FVector> Surveyed;
+
+        TArray<MarburgumII::StreetLights::FLamp> Lamps;
+        if (!ReadPlacements(MarburgumII::StreetLights::LampsFile, Text) || !MarburgumII::StreetLights::Parse(Text, Lamps, Error))
+        {
+            UE_LOG(LogMarburgumPartitionLevel, Error, TEXT("MB2PARTITION street lamps: %s"), *Error);
             return 1;
         }
-        UE_LOG(LogMarburgumPartitionLevel, Display, TEXT("MB2PARTITION lamp_ground lamps=%d grounded=%d no_ground=%d file=%s"), Lamps.Num(),
-            Lamps.Num() - NoGround, NoGround, *GroundPath);
-        return 0;
+        Algo::Transform(Lamps, Surveyed, [](const MarburgumII::StreetLights::FLamp& Lamp) { return Lamp.Location; });
+        if (!WriteGround(World, TEXT("street_lamps"), MarburgumII::StreetLights::LampsFile, Text, Surveyed, &UMarburgumStreetLampsSubsystem::FindGround))
+        {
+            return 1;
+        }
+
+        TArray<MarburgumII::Vegetation::FSpecies> Species;
+        TArray<MarburgumII::Vegetation::FPlant> Plants;
+        if (!ReadPlacements(MarburgumII::Vegetation::PlantsFile, Text) || !MarburgumII::Vegetation::Parse(Text, Species, Plants, Error))
+        {
+            UE_LOG(LogMarburgumPartitionLevel, Error, TEXT("MB2PARTITION plants: %s"), *Error);
+            return 1;
+        }
+        Surveyed.Reset();
+        Algo::Transform(Plants, Surveyed, [](const MarburgumII::Vegetation::FPlant& Plant) { return Plant.Location; });
+        if (!WriteGround(World, TEXT("plants"), MarburgumII::Vegetation::PlantsFile, Text, Surveyed, &UMarburgumPlantsSubsystem::FindGround))
+        {
+            return 1;
+        }
+
+        TArray<MarburgumII::StreetFurniture::FPiece> Pieces;
+        if (!ReadPlacements(MarburgumII::StreetFurniture::FurnitureFile, Text) || !MarburgumII::StreetFurniture::Parse(Text, Pieces, Error))
+        {
+            UE_LOG(LogMarburgumPartitionLevel, Error, TEXT("MB2PARTITION street furniture: %s"), *Error);
+            return 1;
+        }
+        Surveyed.Reset();
+        Algo::Transform(Pieces, Surveyed, [](const MarburgumII::StreetFurniture::FPiece& Piece) { return Piece.Location; });
+        return WriteGround(World, TEXT("street_furniture"), MarburgumII::StreetFurniture::FurnitureFile, Text, Surveyed,
+            &UMarburgumStreetFurnitureSubsystem::FindGround) ? 0 : 1;
     }
 
     // The one HLOD layer: merged meshes, no parent.
@@ -181,7 +236,7 @@ int32 UMarburgumPartitionLevelCommandlet::Main(const FString& Params)
     FString Map = MarburgumEditorMaps::Lent;
     FParse::Value(*Params, TEXT("Map="), Map);
     const bool bCheckOnly = FParse::Param(*Params, TEXT("CheckOnly"));
-    const bool bLamps = FParse::Param(*Params, TEXT("Lamps"));
+    const bool bGround = FParse::Param(*Params, TEXT("Ground"));
 
     FMarburgumWholeLevel WholeLevel(Map);
     UWorld* World = WholeLevel.GetWorld();
@@ -196,9 +251,9 @@ int32 UMarburgumPartitionLevelCommandlet::Main(const FString& Params)
         UE_LOG(LogMarburgumPartitionLevel, Error, TEXT("MB2PARTITION %s is not a World Partition map; convert it first (scripts/partition-world.sh)"), *Map);
         return 1;
     }
-    if (bLamps)
+    if (bGround)
     {
-        return WriteLampGround(*World);
+        return WriteGroundFiles(*World);
     }
 
     TArray<UPackage*> Dirty;
