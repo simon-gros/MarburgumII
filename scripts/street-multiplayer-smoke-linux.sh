@@ -188,7 +188,8 @@ if ! wait_log "$server_log" 'event=street_ready' 180; then
     echo "server did not become ready" >&2
     exit 1
 fi
-if ! grep -aq 'cross_river=1' "$server_log" || ! grep -aq 'bridge_edges=185/185' "$server_log" || ! grep -aq 'edges_wet=0' "$server_log"; then
+# The graph crosses the Drava, keeps every bridge edge (185 on the nine windows, 263 on the five by five) and is dry.
+if ! grep -aq 'cross_river=1' "$server_log" || ! grep -aq 'bridge_edges=\([1-9][0-9]*\)/\1\b' "$server_log" || ! grep -aq 'edges_wet=0' "$server_log"; then
     echo "walk graph is not the qualified one" >&2
     exit 1
 fi

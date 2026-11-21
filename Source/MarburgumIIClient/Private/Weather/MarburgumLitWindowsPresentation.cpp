@@ -11,6 +11,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "StaticMeshResources.h"
+#include "WorldPartition/HLOD/HLODActor.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogMarburgumLitWindows, Log, All);
 
@@ -112,7 +113,9 @@ void UMarburgumLitWindowsPresentation::ReadPanes()
     {
         const UStaticMeshComponent* Component = *It;
         const UStaticMesh* Mesh = Component && Component->GetWorld() == World ? Component->GetStaticMesh() : nullptr;
-        if (!Mesh || Seen.Contains(Mesh) || !Mesh->GetRenderData() || Mesh->GetRenderData()->LODResources.IsEmpty())
+        // A World Partition HLOD (ADR-091) draws far buildings again, merged; its mesh keeps no vertices on the CPU.
+        if (!Mesh || Seen.Contains(Mesh) || !Mesh->GetRenderData() || Mesh->GetRenderData()->LODResources.IsEmpty()
+            || Component->GetOwner<AWorldPartitionHLOD>())
         {
             continue;
         }
@@ -125,7 +128,7 @@ void UMarburgumLitWindowsPresentation::ReadPanes()
         Seen.Add(Mesh);
         const FStaticMeshLODResources& Lod = Mesh->GetRenderData()->LODResources[0];
         const FStaticMeshVertexBuffer& Vertices = Lod.VertexBuffers.StaticMeshVertexBuffer;
-        if (Vertices.GetNumTexCoords() < static_cast<uint32>(Windows::UVChannels) || Vertices.GetNumVertices() == 0)
+        if (Vertices.GetNumTexCoords() < static_cast<uint32>(Windows::UVChannels) || Vertices.GetNumVertices() == 0 || !Vertices.GetTexCoordData())
         {
             continue;
         }
