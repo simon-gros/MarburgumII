@@ -49,7 +49,9 @@ done
 client_cmd=(timeout --kill-after=15 "${MB2_CLIENT_WALL_SECONDS:-3600}" "${client_cmd[@]}")
 
 mkdir -p "$out_dir"
-common_args=(-log -unattended -nosound -nosplash -stdout -FullStdOutLogOutput)
+# -RenderOffScreen on every client, shot or not: a run under systemd-run inherits the desktop's DISPLAY and
+# WAYLAND_DISPLAY, and a client without it opens a window on the owner's screen. The server ignores it.
+common_args=(-log -unattended -nosound -nosplash -stdout -FullStdOutLogOutput -RenderOffScreen)
 server_pid=""
 
 # The staged launcher scripts do not exec the binary, so the server runs in its own

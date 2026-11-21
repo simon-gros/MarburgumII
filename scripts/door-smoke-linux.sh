@@ -65,7 +65,9 @@ for executable in "${server_cmd[0]}" "${client_cmd[0]}"; do
 done
 
 mkdir -p "$out_dir"
-common_args=(-log -unattended -nosound -nosplash -stdout -FullStdOutLogOutput)
+# -RenderOffScreen on every client, shot or not: a run under systemd-run inherits the desktop's DISPLAY and
+# WAYLAND_DISPLAY, and a client without it opens a window on the owner's screen. The server ignores it.
+common_args=(-log -unattended -nosound -nosplash -stdout -FullStdOutLogOutput -RenderOffScreen)
 render_args=(-RenderOffScreen -windowed -ForceRes -ResX=1920 -ResY=1080)
 headless_args=(-NullRHI)
 server_pid=""

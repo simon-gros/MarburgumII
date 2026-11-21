@@ -159,7 +159,9 @@ code_for() { # the code in the newest outbox message to $1
 
 tls_args=("-ini:Engine:[SSL]:OverrideCertificateBundlePath=$out_dir/ca.pem")
 accounts_args=("-MB2Accounts=$service_url" "${tls_args[@]}")
-common_args=(-log -unattended -nosound -nosplash -stdout -FullStdOutLogOutput)
+# -RenderOffScreen on every client, shot or not: a run under systemd-run inherits the desktop's DISPLAY and
+# WAYLAND_DISPLAY, and a client without it opens a window on the owner's screen. The server ignores it.
+common_args=(-log -unattended -nosound -nosplash -stdout -FullStdOutLogOutput -RenderOffScreen)
 # MB2_ACCOUNT_RES=WxH and MB2_ACCOUNT_UI_SCALE=f render the screenshot clients at another size and interface scale
 # (QA U9: the account and creator screens at 150 % on 5:4).
 account_res="${MB2_ACCOUNT_RES:-1920x1080}"
