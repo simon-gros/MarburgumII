@@ -616,6 +616,44 @@ fn check_shop(doc: &Value, key: &str, first_op: &str) -> u8 {
     )
 }
 
+/// The input smoke (scripts/input-smoke-linux.sh): one line of what the server committed for the character between its
+/// clients, compared line by line by the script. Prints "negative=<stage> frame_37=<stage> photography_xp=<n> money=<n>
+/// items=<n> kinds=<n> revision=<n>"; a mission not started is "-", a finished one "completed".
+pub fn snapshot(store: &str, key: &str) -> u8 {
+    let doc = match load(store) {
+        Ok(doc) => doc,
+        Err(error) => return finish(Problems(vec![error]), "unreadable".to_string()),
+    };
+    let mut problems = Problems::default();
+    problems.expect(is_store(&doc), "not_a_current_store");
+    finish(problems, snapshot_line(&doc, key))
+}
+
+fn snapshot_line(doc: &Value, key: &str) -> String {
+    let stage = |id: &str| {
+        let mission = &doc["missions"][key][id];
+        if mission.is_null() {
+            "-".to_string()
+        } else if mission["completed"] == true {
+            "completed".to_string()
+        } else {
+            mission["stage"].as_str().unwrap_or("?").to_string()
+        }
+    };
+    let empty = serde_json::Map::new();
+    let items = doc["inventories"][key].as_object().unwrap_or(&empty);
+    let count: i64 = items.values().filter_map(Value::as_i64).sum();
+    format!(
+        "negative={} frame_37={} photography_xp={} money={} items={count} kinds={} revision={}",
+        stage("raeda_the_negative"),
+        stage("nika_frame_37"),
+        doc["skills"][key]["photography"].as_i64().unwrap_or(0),
+        doc["money"][key],
+        items.len(),
+        doc["revision"]
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -636,6 +674,25 @@ mod tests {
                     "quantity": 1, "money_delta": -15, "revision": 4 }
             }
         })
+    }
+
+    #[test]
+    fn snapshot_names_stages_xp_money_and_items() {
+        let doc = json!({
+            "format": "marburgumii.world_store", "schema_version": 6, "revision": 11,
+            "money": { "k": 120 }, "skills": { "k": { "photography": 30 } },
+            "inventories": { "k": { "camera": 1, "frame_37_print": 1, "fishing_rod": 2 } },
+            "missions": { "k": { "raeda_the_negative": { "stage": "frame_37_print" },
+                "nika_frame_37": { "stage": "what_matters" }, "kiosk_67": { "completed": true } } }
+        });
+        assert_eq!(
+            snapshot_line(&doc, "k"),
+            "negative=frame_37_print frame_37=what_matters photography_xp=30 money=120 items=4 kinds=3 revision=11"
+        );
+        assert_eq!(
+            snapshot_line(&doc, "nobody"),
+            "negative=- frame_37=- photography_xp=0 money=null items=0 kinds=0 revision=11"
+        );
     }
 
     #[test]

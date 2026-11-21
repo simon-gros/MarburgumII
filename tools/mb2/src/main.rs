@@ -42,6 +42,7 @@ Usage: mb2 <command>
   store-check shop <store> <key> <first_op>
   store-check story <store> <key>
   store-check negative <store> <key> <other> <kiosk outcome>
+  store-check snapshot <store> <key>
                          Check a world-store file after a phase of a smoke test.
   movement-check <server log> <client log> <role> <character key> <honest|adversary> <DefaultGame.ini>
                          ADR-019 bound on how far a Lent smoke walker moved on the server.
@@ -90,6 +91,7 @@ fn main() -> ExitCode {
         ["store-check", "shop", store, key, op] => store_check::shop(store, key, op),
         ["store-check", "story", store, key] => store_check::story(store, key),
         ["store-check", "negative", store, key, other, outcome] => store_check::negative(store, key, other, outcome),
+        ["store-check", "snapshot", store, key] => store_check::snapshot(store, key),
         ["movement-check", server, client, role, key, kind, ini] => {
             movement_check::run(server, client, role, key, kind, ini)
         }

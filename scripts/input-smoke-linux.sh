@@ -158,23 +158,9 @@ play() {
 
 # snapshot <label>: what the server has committed for the character, one line (stage, XP, money, items, revision).
 snapshot() {
-    python3 -I - "$store" "$key" "$1" <<'EOF' | tee -a "$out_dir/server-state.txt"
-import json, sys
-path, key, label = sys.argv[1:4]
-with open(path, encoding="utf-8") as f:
-    d = json.load(f)
-missions = d.get("missions", {}).get(key, {})
-def stage(m):
-    s = missions.get(m)
-    return "-" if not s else ("completed" if s.get("completed") else s.get("stage", "?"))
-items = d.get("inventories", {}).get(key, {})
-skills = d.get("skills", {}).get(key, {}) or {}
-xp = skills.get("photography", 0)
-if isinstance(xp, dict):
-    xp = xp.get("xp", 0)
-print(f"{label}: negative={stage('raeda_the_negative')} frame_37={stage('nika_frame_37')} photography_xp={xp} "
-      f"money={d.get('money', {}).get(key)} items={sum(items.values())} kinds={len(items)} revision={d.get('revision')}")
-EOF
+    local line
+    line="$("$repo_root/scripts/mb2.sh" store-check snapshot "$store" "$key")" || status=1
+    echo "$1: $line" | tee -a "$out_dir/server-state.txt"
 }
 # same <a> <b>: the two snapshots agree on everything but the store revision.
 same() {
