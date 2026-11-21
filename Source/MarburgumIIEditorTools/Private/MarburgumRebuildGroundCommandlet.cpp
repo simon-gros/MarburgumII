@@ -1,4 +1,5 @@
 #include "MarburgumRebuildGroundCommandlet.h"
+#include "MarburgumEditorMaps.h"
 
 #include "AssetCompilingManager.h"
 #include "Components/TextRenderComponent.h"
@@ -65,7 +66,6 @@ DEFINE_LOG_CATEGORY_STATIC(LogMarburgumGround, Log, All);
 
 namespace
 {
-    const TCHAR* LentMap = TEXT("/Game/World/lent");
     const TCHAR* GroundDir = TEXT("/Game/World/Ground");
     const TCHAR* ActorPrefix = TEXT("MB2Ground_");
 
@@ -917,7 +917,7 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
     }
     if (FParse::Param(*Params, TEXT("Verify")))
     {
-        FMarburgumWholeLevel WholeLevel(LentMap);
+        FMarburgumWholeLevel WholeLevel(MarburgumEditorMaps::Lent);
         UWorld* World = WholeLevel.GetWorld();
         if (!World)
         {
@@ -1078,11 +1078,11 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
     }
 
     // The level.
-    FMarburgumWholeLevel WholeLevel(LentMap);
+    FMarburgumWholeLevel WholeLevel(MarburgumEditorMaps::Lent);
     UWorld* World = WholeLevel.GetWorld();
     if (!World)
     {
-        UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND cannot load %s"), LentMap);
+        UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND cannot load %s"), MarburgumEditorMaps::Lent);
         return 1;
     }
     // Meshes still compiling after the load have no collision yet, and what the placed actors stand on is measured
@@ -1245,7 +1245,7 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
     }
     if (!WholeLevel.Save())
     {
-        UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND could not save %s"), LentMap);
+        UE_LOG(LogMarburgumGround, Error, TEXT("MB2GROUND could not save %s"), MarburgumEditorMaps::Lent);
         return 1;
     }
     // Chunks of an earlier, smaller extent that no longer exist go with it; the level no longer

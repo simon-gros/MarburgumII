@@ -1,4 +1,5 @@
 #include "MarburgumVehicleContentCommandlet.h"
+#include "MarburgumEditorMaps.h"
 
 #include "MarburgumGodotClip.h"
 #include "MarburgumWholeLevel.h"
@@ -45,7 +46,6 @@ namespace MarburgumVehicleContent
 {
     constexpr const TCHAR* CataloguePath = TEXT("Data/Gameplay/vehicles.v0.1.json");
     constexpr const TCHAR* MaterialPackage = TEXT("/Game/Vehicles/Materials/M_Vehicle");
-    constexpr const TCHAR* LentMap = TEXT("/Game/World/lent");
     constexpr const TCHAR* VehicleFolder = TEXT("Marburgum/Vehicles");
 
     // ======================================================================================================
@@ -1336,12 +1336,12 @@ namespace MarburgumVehicleContent
         TUniquePtr<FMarburgumWholeLevel> WholeLevel;
         if (LoadCatalogue(Vehicles, Instances))
         {
-            WholeLevel = MakeUnique<FMarburgumWholeLevel>(LentMap);
+            WholeLevel = MakeUnique<FMarburgumWholeLevel>(MarburgumEditorMaps::Lent);
         }
         UWorld* World = WholeLevel ? WholeLevel->GetWorld() : nullptr;
         if (!World)
         {
-            UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE cannot load %s"), LentMap);
+            UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE cannot load %s"), MarburgumEditorMaps::Lent);
             return false;
         }
         // The spot traces must see the paved meshes' collision (ADR-040), not only the landscape under them.
@@ -1382,7 +1382,7 @@ namespace MarburgumVehicleContent
         }
         if (!Arrival)
         {
-            UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE %s has no arrival start"), LentMap);
+            UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE %s has no arrival start"), MarburgumEditorMaps::Lent);
             return false;
         }
 
@@ -1495,10 +1495,10 @@ namespace MarburgumVehicleContent
         }
         if (!WholeLevel->Save())
         {
-            UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE could not save %s"), LentMap);
+            UE_LOG(LogMarburgumVehicleContent, Error, TEXT("MB2VEHICLE could not save %s"), MarburgumEditorMaps::Lent);
             return false;
         }
-        UE_LOG(LogMarburgumVehicleContent, Display, TEXT("MB2VEHICLE saved %s vehicles=%d"), LentMap, Placed);
+        UE_LOG(LogMarburgumVehicleContent, Display, TEXT("MB2VEHICLE saved %s vehicles=%d"), MarburgumEditorMaps::Lent, Placed);
         return Placed > 0;
     }
 }

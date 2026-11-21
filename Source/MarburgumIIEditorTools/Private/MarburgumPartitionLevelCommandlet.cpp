@@ -1,4 +1,5 @@
 #include "MarburgumPartitionLevelCommandlet.h"
+#include "MarburgumEditorMaps.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "EngineUtils.h"
@@ -23,7 +24,6 @@ DEFINE_LOG_CATEGORY_STATIC(LogMarburgumPartitionLevel, Log, All);
 
 namespace MarburgumPartitionLevel
 {
-    constexpr const TCHAR* LentMap = TEXT("/Game/World/lent");
     constexpr const TCHAR* HLODLayerPackage = TEXT("/Game/World/HLOD/HLOD_Lent");
     // Unreal centimetres.
     constexpr uint32 MainCellSize = 12800;
@@ -178,7 +178,7 @@ UMarburgumPartitionLevelCommandlet::UMarburgumPartitionLevelCommandlet()
 int32 UMarburgumPartitionLevelCommandlet::Main(const FString& Params)
 {
     using namespace MarburgumPartitionLevel;
-    FString Map = LentMap;
+    FString Map = MarburgumEditorMaps::Lent;
     FParse::Value(*Params, TEXT("Map="), Map);
     const bool bCheckOnly = FParse::Param(*Params, TEXT("CheckOnly"));
     const bool bLamps = FParse::Param(*Params, TEXT("Lamps"));
