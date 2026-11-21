@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "UI/MarburgumInputDevice.h"
 #include "UI/MarburgumUITheme.h"
 #include "UI/MarburgumUIWidgets.h"
 #include "MarburgumInteractionPrompt.generated.h"
@@ -26,6 +27,7 @@ class AMarburgumVehicle;
  * and in a car the prompt offers the way out and names the controls.
  * With a camera in custody and nothing else in reach, it names the photo subject [P] would photograph, and whether
  * the character has documented it yet (ADR-081); the server still decides what a photograph shows.
+ * Keys are named for the device in use, keyboard or gamepad, and switch within one refresh when the player changes device.
  * Refreshes at 10 Hz and only touches widgets whose text changed.
  */
 UCLASS()
@@ -36,6 +38,12 @@ class MARBURGUMIICLIENT_API UMarburgumInteractionPrompt : public UUserWidget
 public:
     /** While a blocking screen or the chat composer owns the keys, no prompt may promise one (UI-P0B). */
     void SetSuppressed(bool bInSuppressed);
+
+    /** What the card shows now, for evidence: its key cap ("E", "RT"), verb and subject; empty when collapsed. */
+    bool IsCardShown() const;
+    FString GetShownKey() const;
+    FString GetShownVerb() const;
+    FString GetShownSubject() const;
 
 protected:
     virtual void NativeOnInitialized() override;
@@ -72,6 +80,8 @@ private:
     float SinceRefresh = 0.f;
     bool Suppressed = false;
     FString LastSignature;
+    /** The device whose keys the card names (E or A, P or RT). */
+    EMarburgumInputDevice ShownDevice = EMarburgumInputDevice::KeyboardMouse;
     TWeakObjectPtr<AActor> Shown;
     /** The photo subject's aim point when the card is about a photograph rather than an actor. */
     TOptional<FVector> ShownPoint;

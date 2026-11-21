@@ -83,7 +83,7 @@ namespace MarburgumUI
         /** A keyboard key cap ("E", "Esc"); inactive caps are drawn hollow. */
         UBorder* KeyCap(const FText& Key, bool bActive = true, UTextBlock** OutLabel = nullptr) const;
         /** A key cap and what it does: "[Esc] Close". */
-        UHorizontalBox* KeyHint(const FText& Key, const FText& Action) const;
+        UHorizontalBox* KeyHint(const FText& Key, const FText& Action, UTextBlock** OutKey = nullptr) const;
         /** A soft gradient behind text over the street. */
         UMarburgumScrim* Scrim(EMarburgumScrimShape Shape, const FLinearColor& Color) const;
         /** A focusable row/tile/tab around Content (padded). Bind its events before adding it to a parent. */

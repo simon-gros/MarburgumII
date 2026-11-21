@@ -21,6 +21,7 @@
 #include "Session/MarburgumAccountSubsystem.h"
 #include "UI/MarburgumAccountScreen.h"
 #include "UI/MarburgumConnectionScreen.h"
+#include "UI/MarburgumInputDevice.h"
 #include "UI/MarburgumInteractionPrompt.h"
 #include "MarburgumInteractable.h"
 #include "MarburgumNpc.h"
@@ -81,6 +82,8 @@ void UMarburgumUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
     PostLoadMapHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UMarburgumUISubsystem::HandlePostLoadMap);
     FishingHandle = AMarburgumPlayerState::OnFishingChanged().AddUObject(this, &UMarburgumUISubsystem::HandleFishingChanged);
     PhotographHandle = FMarburgumClientUiHooks::OnPhotographTaken().AddUObject(this, &UMarburgumUISubsystem::HandlePhotographTaken);
+    // Key hints name the device in use (keyboard and mouse, or a gamepad), switching the moment the other one is used.
+    MarburgumUI::StartInputDeviceTracking();
 }
 
 void UMarburgumUISubsystem::Deinitialize()
@@ -90,6 +93,7 @@ void UMarburgumUISubsystem::Deinitialize()
     AMarburgumPlayerState::OnFishingChanged().Remove(FishingHandle);
     FMarburgumClientUiHooks::OnPhotographTaken().Remove(PhotographHandle);
     FTSTicker::RemoveTicker(ShutterTicker);
+    MarburgumUI::StopInputDeviceTracking();
     if (UMarburgumSessionSubsystem* SessionSubsystem = Session.Get())
     {
         SessionSubsystem->OnSessionChanged().Remove(SessionChangedHandle);
@@ -324,6 +328,7 @@ void UMarburgumUISubsystem::MountGameplayHud(APlayerController* Player)
     {
         ChoicePanel = CreateWidget<UMarburgumChoicePanel>(Player, UMarburgumChoicePanel::StaticClass());
         Root->AddToLayer(EMarburgumUILayer::Screens, ChoicePanel);
+        ChoicePanel->OnClosed.BindUObject(this, &UMarburgumUISubsystem::HandleChoiceClosed);
     }
     if (!ShopPanel)
     {
@@ -385,6 +390,14 @@ void UMarburgumUISubsystem::Back()
     SetSystemMenuOpen(true);
 }
 
+void UMarburgumUISubsystem::Cancel()
+{
+    if (LastPhase == EPhase::Ready && (IsChoiceOpen() || IsShopOpen()))
+    {
+        CloseScreensExcept(nullptr);
+    }
+}
+
 bool UMarburgumUISubsystem::IsSystemMenuOpen() const
 {
     return SystemMenu && SystemMenu->IsOpen();
@@ -433,16 +446,42 @@ bool UMarburgumUISubsystem::ToggleChoice(AMarburgumInteractable* Target, FName M
     }
     if (ChoicePanel->IsOpen())
     {
-        ChoicePanel->Close();
+        ChoicePanel->Close(EMarburgumChoiceClose::Cancelled);
     }
     else
     {
         CloseScreensExcept(ChoicePanel);
         ChoicePanel->Open(Target, MissionId);
+        if (ChoicePanel->IsOpen())
+        {
+            // The card owns the keys while it is up: the answers take clicks, focus and confirm; the street gets nothing.
+            if (Prompt)
+            {
+                Prompt->SetSuppressed(true);
+            }
+            if (Chat)
+            {
+                Chat->LeaveComposer();
+            }
+            GiveInputTo(ChoicePanel->GetPreferredFocus(), ChoicePanel);
+        }
     }
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=client event=choice_panel open=%d mission=%s choices=%d"),
         MarburgumII::Session::UiLogPrefix, ChoicePanel->IsOpen() ? 1 : 0, *MissionId.ToString(), ChoicePanel->GetShownChoiceCount());
     return true;
+}
+
+void UMarburgumUISubsystem::HandleChoiceClosed(EMarburgumChoiceClose Why)
+{
+    if (Prompt)
+    {
+        Prompt->SetSuppressed(false);
+    }
+    // Another screen opening closes the card first and then takes the keys itself.
+    if ((!Shell || !Shell->IsOpen()) && !IsSystemMenuOpen())
+    {
+        ReturnInputToWorld();
+    }
 }
 
 bool UMarburgumUISubsystem::ChooseOption(int32 Number)
@@ -498,7 +537,7 @@ void UMarburgumUISubsystem::HandleFishingChanged(AMarburgumPlayerState* State)
     const FMarburgumFishingStatus& Fishing = State->GetFishing();
     if (Fishing.Phase == EMarburgumFishingPhase::Bite)
     {
-        Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"), LOCTEXT("Bite", "A bite! Press [E] to strike."), MarburgumUI::ETone::Accent, false, EMarburgumGlyph::Fish);
+        Feed->Push(FName(TEXT("fishing")), LOCTEXT("FishingKind", "FISHING"), MarburgumUI::WithDeviceKeys(LOCTEXT("Bite", "A bite! Press [E] to strike.")), MarburgumUI::ETone::Accent, false, EMarburgumGlyph::Fish);
         return;
     }
     // A cast that ended on its own: the receipt already told the catch and the too-early strike.

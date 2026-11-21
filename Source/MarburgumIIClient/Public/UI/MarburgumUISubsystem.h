@@ -23,6 +23,7 @@ class UMarburgumPinnedObjective;
 class UMarburgumNotificationFeed;
 struct FMarburgumInteractionReceipt;
 class UMarburgumUIRoot;
+enum class EMarburgumChoiceClose : uint8;
 
 /**
  * Client presentation owner. Builds the UI root for every loaded world and maps the session view onto
@@ -72,6 +73,8 @@ public:
      * system menu (back to the street, leave the world, quit).
      */
     void Back();
+    /** The gamepad's B in play: closes an open decision or counter, and otherwise does nothing (no system menu). */
+    void Cancel();
     bool IsSystemMenuOpen() const;
 
     /** Scroll the open management screen (inventory, journal, character or skills) by Lines; false if none is open. */
@@ -114,7 +117,8 @@ public:
     const UMarburgumVehicleStatus* GetVehicleStatus() const { return VehicleStatus; }
     const UMarburgumCharacterPanel* GetCharacterPanel() const { return CharacterPanel; }
     const class UMarburgumSkillsPanel* GetSkillsPanel() const { return SkillsPanel; }
-    const class UMarburgumChoicePanel* GetChoicePanel() const { return ChoicePanel; }
+    class UMarburgumChoicePanel* GetChoicePanel() const { return ChoicePanel; }
+    const UMarburgumInteractionPrompt* GetInteractionPrompt() const { return Prompt; }
     const class UMarburgumShopPanel* GetShopPanel() const { return ShopPanel; }
     class UMarburgumSettingsPanel* GetSettingsPanel() const { return SettingsPanel; }
     const UMarburgumManagementShell* GetShell() const { return Shell; }
@@ -138,6 +142,8 @@ private:
     void HandleInteractionReceipt(const FMarburgumInteractionReceipt& Receipt);
     void HandleCombatResult(const struct FMarburgumCombatResult& Result);
     void HandleFishingChanged(class AMarburgumPlayerState* State);
+    /** The decision card closed (chosen, cancelled or dismissed): the prompt comes back and the keys go to the street. */
+    void HandleChoiceClosed(EMarburgumChoiceClose Why);
     void MountGameplayHud(APlayerController* Player);
     /** Closes every open management screen except Keep (nullptr closes all). */
     void CloseScreensExcept(const UObject* Keep);

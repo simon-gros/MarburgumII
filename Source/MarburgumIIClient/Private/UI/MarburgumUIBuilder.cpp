@@ -373,7 +373,7 @@ namespace MarburgumUI
         return Cap;
     }
 
-    UHorizontalBox* FBuilder::KeyHint(const FText& Key, const FText& Action) const
+    UHorizontalBox* FBuilder::KeyHint(const FText& Key, const FText& Action, UTextBlock** OutKey) const
     {
         const FTokens& T = Tokens();
         UHorizontalBox* Line = Row();
@@ -384,6 +384,10 @@ namespace MarburgumUI
         Align(Cap, HAlign_Center, VAlign_Center);
         Inline(Line, Cap, T.Space.XS + 2.f);
         Inline(Line, Text(Action, ETypeRole::Caption, T.Color.TextSecondary), 0.f);
+        if (OutKey)
+        {
+            *OutKey = KeyLabel;
+        }
         return Line;
     }
 

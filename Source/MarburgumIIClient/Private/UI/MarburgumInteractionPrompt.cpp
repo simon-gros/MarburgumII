@@ -22,6 +22,7 @@
 #include "MarburgumPlayerController.h"
 #include "MarburgumPlayerState.h"
 #include "Session/MarburgumSessionSubsystem.h"
+#include "UI/MarburgumInputDevice.h"
 #include "UI/MarburgumUIBuilder.h"
 
 #define LOCTEXT_NAMESPACE "MarburgumInteractionPrompt"
@@ -154,6 +155,12 @@ void UMarburgumInteractionPrompt::Place()
 
 void UMarburgumInteractionPrompt::Refresh()
 {
+    // The player picked up the other device: every card names its keys again, even if nothing else changed.
+    if (ShownDevice != ActiveInputDevice())
+    {
+        ShownDevice = ActiveInputDevice();
+        LastSignature.Reset();
+    }
     AMarburgumPlayerController* Controller = Cast<AMarburgumPlayerController>(GetOwningPlayer());
     const bool bAdmitted = Controller && UMarburgumSessionSubsystem::IsAdmitted(Controller->GetWorld());
     if (bAdmitted)
@@ -521,7 +528,7 @@ bool UMarburgumInteractionPrompt::RefreshPhoto(const AMarburgumPlayerController&
                 FText::Format(LOCTEXT("PhotoNeeds", "Bring {0} and lay it here first."),
                     FText::FromString(MarburgumII::Gameplay::Localized(Needed ? Needed->DisplayName : Frame.Subject->RequiresItem))),
                 ETone::Warning, false, EMarburgumGlyph::Info);
-            KeyLabel->SetText(LOCTEXT("PhotoKey", "P"));
+            KeyLabel->SetText(InputKeyLabel(EMarburgumInputAction::Photograph, ShownDevice));
         }
         return true;
     }
@@ -540,7 +547,7 @@ bool UMarburgumInteractionPrompt::RefreshPhoto(const AMarburgumPlayerController&
     ApplyTo(*Body, FText::FromString(MarburgumII::Gameplay::Localized(Frame.Subject->DisplayName)), false, LOCTEXT("PhotographVerb", "Photograph"),
         bHeld ? LOCTEXT("PhotoHeld", "Already documented; you hold the print.") : FText::FromString(MarburgumII::Gameplay::Localized(Frame.Subject->Note)),
         bHeld ? ETone::Neutral : ETone::Accent, !bHeld, EMarburgumGlyph::Info);
-    KeyLabel->SetText(LOCTEXT("PhotoKey", "P"));
+    KeyLabel->SetText(InputKeyLabel(EMarburgumInputAction::Photograph, ShownDevice));
     return true;
 }
 
@@ -556,13 +563,14 @@ void UMarburgumInteractionPrompt::ApplyTo(const AActor& Target, const FText& Sub
 {
     const FTokens& T = Tokens();
     const FLinearColor VerbColor = Tone == ETone::Neutral ? T.Color.TextSecondary : ToneColor(Tone);
-    KeyLabel->SetText(LOCTEXT("Key", "E"));
+    KeyLabel->SetText(InputKeyLabel(EMarburgumInputAction::Interact, ShownDevice));
     VerbLabel->SetText(MarburgumUI::Caps(Verb));
     VerbLabel->SetColorAndOpacity(FSlateColor(VerbColor));
     VerbGlyph->SetGlyph(Icon);
     VerbGlyph->SetColor(VerbColor);
     SubjectLabel->SetText(Subject);
-    DetailLabel->SetText(Detail);
+    // Authored lines name keyboard keys ("press [P]"); on a gamepad they name its buttons.
+    DetailLabel->SetText(FText::FromString(WithDeviceKeys(Detail.ToString(), ShownDevice)));
     DetailLabel->SetVisibility(Detail.IsEmpty() ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
     FixturePill->SetVisibility(bFixture ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
     // An unavailable verb keeps its key but drawn hollow: the key does nothing useful right now.
@@ -570,6 +578,26 @@ void UMarburgumInteractionPrompt::ApplyTo(const AActor& Target, const FText& Sub
         bKeyActive ? T.Color.AccentPressed : T.Color.BorderStrong, T.BorderWidth));
     KeyLabel->SetColorAndOpacity(FSlateColor(bKeyActive ? T.Color.TextOnAccent : T.Color.TextMuted));
     Card->SetVisibility(Suppressed ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
+}
+
+bool UMarburgumInteractionPrompt::IsCardShown() const
+{
+    return Card && Card->GetVisibility() != ESlateVisibility::Collapsed;
+}
+
+FString UMarburgumInteractionPrompt::GetShownKey() const
+{
+    return IsCardShown() ? KeyLabel->GetText().ToString() : FString();
+}
+
+FString UMarburgumInteractionPrompt::GetShownVerb() const
+{
+    return IsCardShown() ? VerbLabel->GetText().ToString() : FString();
+}
+
+FString UMarburgumInteractionPrompt::GetShownSubject() const
+{
+    return IsCardShown() ? SubjectLabel->GetText().ToString() : FString();
 }
 
 void UMarburgumInteractionPrompt::SetSuppressed(bool bInSuppressed)

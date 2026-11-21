@@ -168,9 +168,13 @@ void UMarburgumSettingsPanel::Build()
     AddBinding(LOCTEXT("Screens", "Character  ·  Skills  ·  Inventory  ·  Journal"), { K(TEXT("C")), K(TEXT("K")), K(TEXT("I")), K(TEXT("J")) });
     AddBinding(LOCTEXT("Choose", "Pick an answer in a decision"), { K(TEXT("1")), K(TEXT("–")), K(TEXT("6")) });
     AddBinding(LOCTEXT("Menu", "Close a screen  ·  game menu"), { K(TEXT("Esc")) });
+    AddBinding(LOCTEXT("Photo", "Take a photograph with the camera"), { K(TEXT("P")) });
     AddBinding(LOCTEXT("Pad", "Gamepad in menus: move, select, back, switch screen"), { K(TEXT("D-pad")), K(TEXT("A")), K(TEXT("B")), K(TEXT("LB/RB")) });
-    UTextBlock* Rebind = B.Text(LOCTEXT("Rebind", "Keys cannot be changed yet; rebinding arrives with the input-mapping design. Walking and "
-        "driving with a gamepad are not part of this build."), ETypeRole::Caption, T.Color.TextMuted);
+    AddBinding(LOCTEXT("PadWalk", "Gamepad: walk  ·  look and aim  ·  run (hold)  ·  jump"), { K(TEXT("L")), K(TEXT("R")), K(TEXT("LT")), K(TEXT("X")) });
+    AddBinding(LOCTEXT("PadAct", "Gamepad: interact  ·  photograph  ·  Journal  ·  Inventory  ·  close  ·  game menu"),
+        { K(TEXT("A")), K(TEXT("RT")), K(TEXT("View")), K(TEXT("Y")), K(TEXT("B")), K(TEXT("Menu")) });
+    UTextBlock* Rebind = B.Text(LOCTEXT("RebindPad", "Keys cannot be changed yet; rebinding arrives with the input-mapping design. Driving, "
+        "fighting, chat and the counter are not on the gamepad in this build. Hints name the keys of the device you used last."), ETypeRole::Caption, T.Color.TextMuted);
     Rebind->SetAutoWrapText(true);
     FBuilder::Stack(List, Rebind, T.Space.XL);
 

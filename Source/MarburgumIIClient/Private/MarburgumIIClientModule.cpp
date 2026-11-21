@@ -37,6 +37,8 @@ public:
             this, &FMarburgumIIClientModule::HandleScroll);
         BackHandle = FMarburgumClientUiHooks::OnBackRequested().AddRaw(
             this, &FMarburgumIIClientModule::HandleBack);
+        CancelHandle = FMarburgumClientUiHooks::OnCancelRequested().AddRaw(
+            this, &FMarburgumIIClientModule::HandleCancel);
     }
 
     virtual void ShutdownModule() override
@@ -52,6 +54,7 @@ public:
         FMarburgumClientUiHooks::OnShopToggleRequested().Remove(ShopHandle);
         FMarburgumClientUiHooks::OnScrollRequested().Remove(ScrollHandle);
         FMarburgumClientUiHooks::OnBackRequested().Remove(BackHandle);
+        FMarburgumClientUiHooks::OnCancelRequested().Remove(CancelHandle);
     }
 
 private:
@@ -66,6 +69,7 @@ private:
     FDelegateHandle ShopHandle;
     FDelegateHandle ScrollHandle;
     FDelegateHandle BackHandle;
+    FDelegateHandle CancelHandle;
 
     void HandleSkills(APlayerController* Player)
     {
@@ -138,6 +142,14 @@ private:
         if (UMarburgumUISubsystem* UI = GetUI(Player))
         {
             UI->Back();
+        }
+    }
+
+    void HandleCancel(APlayerController* Player)
+    {
+        if (UMarburgumUISubsystem* UI = GetUI(Player))
+        {
+            UI->Cancel();
         }
     }
 

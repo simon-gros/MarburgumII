@@ -13,6 +13,7 @@
 #include "Engine/StaticMesh.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/InputSettings.h"
 #include "GameFramework/PlayerInput.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputCoreTypes.h"
@@ -579,6 +580,9 @@ void AMarburgumCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
         UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(MoveForwardAxis, EKeys::S, -1.f));
         UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(MoveRightAxis, EKeys::D, 1.f));
         UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(MoveRightAxis, EKeys::A, -1.f));
+        // The left stick walks on the same axes; its dead zone is DefaultInput.ini's AxisConfig.
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(MoveForwardAxis, EKeys::Gamepad_LeftY, 1.f));
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(MoveRightAxis, EKeys::Gamepad_LeftX, 1.f));
         return true;
     }();
     (void)bMovementAxesMapped;
@@ -586,10 +590,18 @@ void AMarburgumCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
     PlayerInputComponent->BindAxis(MoveRightAxis, this, &AMarburgumCharacter::MoveRight);
     PlayerInputComponent->BindAxisKey(EKeys::MouseX, this, &AMarburgumCharacter::Turn);
     PlayerInputComponent->BindAxisKey(EKeys::MouseY, this, &AMarburgumCharacter::LookUp);
+    // The right stick aims the view, the camera's frame included: a rate, where the mouse is a distance.
+    PlayerInputComponent->BindAxisKey(EKeys::Gamepad_RightX, this, &AMarburgumCharacter::TurnAtRate);
+    PlayerInputComponent->BindAxisKey(EKeys::Gamepad_RightY, this, &AMarburgumCharacter::LookUpAtRate);
     PlayerInputComponent->BindKey(EKeys::SpaceBar, IE_Pressed, this, &ACharacter::Jump);
     PlayerInputComponent->BindKey(EKeys::SpaceBar, IE_Released, this, &ACharacter::StopJumping);
     PlayerInputComponent->BindKey(EKeys::LeftShift, IE_Pressed, this, &AMarburgumCharacter::StartRunning);
     PlayerInputComponent->BindKey(EKeys::LeftShift, IE_Released, this, &AMarburgumCharacter::StopRunning);
+    // On a gamepad: X jumps and the left trigger, held, runs (A is the interaction and confirm button).
+    PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Left, IE_Pressed, this, &ACharacter::Jump);
+    PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Left, IE_Released, this, &ACharacter::StopJumping);
+    PlayerInputComponent->BindKey(EKeys::Gamepad_LeftTrigger, IE_Pressed, this, &AMarburgumCharacter::StartRunning);
+    PlayerInputComponent->BindKey(EKeys::Gamepad_LeftTrigger, IE_Released, this, &AMarburgumCharacter::StopRunning);
     // The original's attack, heavy_attack and guard keys (project.godot).
     PlayerInputComponent->BindKey(EKeys::F, IE_Pressed, this, &AMarburgumCharacter::Jab);
     PlayerInputComponent->BindKey(EKeys::R, IE_Pressed, this, &AMarburgumCharacter::HeavySwing);
@@ -808,4 +820,47 @@ void AMarburgumCharacter::LookUp(float Value)
         FreeLookRemaining = static_cast<float>(MarburgumII::Vehicles::CameraFreeLookSeconds);
     }
     AddControllerPitchInput(-Value);
+}
+
+void AMarburgumCharacter::TurnAtRate(float Rate)
+{
+    const float Degrees = StickDegrees(Rate, GamepadTurnDegreesPerSecond);
+    if (Seating.Vehicle && Degrees != 0.f)
+    {
+        FreeLookRemaining = static_cast<float>(MarburgumII::Vehicles::CameraFreeLookSeconds);
+    }
+    AddControllerYawInput(Degrees / ControllerLookScale(true));
+}
+
+void AMarburgumCharacter::LookUpAtRate(float Rate)
+{
+    // Stick up looks up. The viewport hands Gamepad_RightY over negated (FSceneViewport::OnAnalogValueChanged), so a stick
+    // pushed up arrives negative; the controller's pitch scale is divided out below, whatever its sign.
+    const float Degrees = StickDegrees(-Rate, GamepadLookDegreesPerSecond);
+    if (Seating.Vehicle && Degrees != 0.f)
+    {
+        FreeLookRemaining = static_cast<float>(MarburgumII::Vehicles::CameraFreeLookSeconds);
+    }
+    AddControllerPitchInput(Degrees / ControllerLookScale(false));
+}
+
+float AMarburgumCharacter::StickDegrees(float Rate, float DegreesPerSecond) const
+{
+    // Squared response: a small push is a fine correction for framing a page, a full push turns round.
+    const UWorld* World = GetWorld();
+    const float Push = FMath::Clamp(Rate, -1.f, 1.f);
+    return World ? FMath::Sign(Push) * FMath::Square(Push) * DegreesPerSecond * World->GetDeltaSeconds() : 0.f;
+}
+
+float AMarburgumCharacter::ControllerLookScale(bool bYaw) const
+{
+    // The controller multiplies look input by its legacy scales when DefaultInput.ini enables them; taken out here so the
+    // stick turns at true degrees per second.
+    const APlayerController* Player = Cast<APlayerController>(GetController());
+    if (!Player || !GetDefault<UInputSettings>()->bEnableLegacyInputScales)
+    {
+        return 1.f;
+    }
+    const float Scale = bYaw ? Player->InputYawScale_DEPRECATED : Player->InputPitchScale_DEPRECATED;
+    return FMath::Abs(Scale) < KINDA_SMALL_NUMBER ? 1.f : Scale;
 }

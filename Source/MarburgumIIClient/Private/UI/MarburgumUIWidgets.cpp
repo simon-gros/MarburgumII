@@ -574,9 +574,13 @@ FReply SMarburgumSelectable::OnKeyDown(const FGeometry& MyGeometry, const FKeyEv
     }
     if (App.GetNavigationActionFromKey(InKeyEvent) == EUINavigationAction::Accept)
     {
-        bPressed = true;
-        bHasFocus = true;
-        Invalidate(EInvalidateWidgetReason::Paint);
+        // Only a fresh press arms the row: a confirm held from before the row had focus repeats, and must not act on release.
+        if (!InKeyEvent.IsRepeat())
+        {
+            bPressed = true;
+            bHasFocus = true;
+            Invalidate(EInvalidateWidgetReason::Paint);
+        }
         return FReply::Handled();
     }
     return FReply::Unhandled();

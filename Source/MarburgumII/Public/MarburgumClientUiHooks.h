@@ -27,6 +27,8 @@ public:
     static FMarburgumLocalPlayerUiEvent& OnSkillsToggleRequested();
     /** Escape in play: close what is open, or open the system menu. */
     static FMarburgumLocalPlayerUiEvent& OnBackRequested();
+    /** The gamepad's B in play: close an open counter or decision; unlike Escape it never opens the system menu. */
+    static FMarburgumLocalPlayerUiEvent& OnCancelRequested();
     static FMarburgumChoiceUiEvent& OnMissionChoiceRequested();
     static FMarburgumShopUiEvent& OnShopToggleRequested();
     static FMarburgumNumberKeyUiEvent& OnNumberKeyPressed();

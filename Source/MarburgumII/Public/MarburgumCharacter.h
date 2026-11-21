@@ -149,6 +149,13 @@ private:
     void MoveRight(float Value);
     void Turn(float Value);
     void LookUp(float Value);
+    /** Right stick: Rate in -1..1 turns the view at up to the degrees per second below. */
+    void TurnAtRate(float Rate);
+    void LookUpAtRate(float Rate);
+    float StickDegrees(float Rate, float DegreesPerSecond) const;
+    float ControllerLookScale(bool bYaw) const;
+    static constexpr float GamepadTurnDegreesPerSecond = 160.f;
+    static constexpr float GamepadLookDegreesPerSecond = 110.f;
     void StartRunning();
     void StopRunning();
 

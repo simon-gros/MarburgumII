@@ -15,6 +15,7 @@
 #include "Components/VerticalBoxSlot.h"
 #include "MarburgumPlaces.h"
 #include "MarburgumPlayerState.h"
+#include "UI/MarburgumInputDevice.h"
 #include "UI/MarburgumUIBuilder.h"
 
 #define LOCTEXT_NAMESPACE "MarburgumManagementShell"
@@ -162,7 +163,9 @@ void UMarburgumManagementShell::NativeOnInitialized()
     FBuilder::Align(TabHolder, HAlign_Center, VAlign_Center);
     FBuilder::Inline(Header, TabHolder, T.Space.XL, true);
 
-    UHorizontalBox* CloseHint = B.KeyHint(FText::AsCultureInvariant(TEXT("Esc")), LOCTEXT("Close", "Close"));
+    UTextBlock* CloseKey = nullptr;
+    UHorizontalBox* CloseHint = B.KeyHint(FText::AsCultureInvariant(TEXT("Esc")), LOCTEXT("Close", "Close"), &CloseKey);
+    HintKeys.Add(CloseKey);
     FBuilder::Inline(Header, CloseHint, 0.f);
     FBuilder::Stack(Frame, Header, T.Space.M);
     FBuilder::Stack(Frame, B.Rule(T.Color.Hairline, 1.f), T.Space.XL);
@@ -178,10 +181,14 @@ void UMarburgumManagementShell::NativeOnInitialized()
     // Footer: the keys that work on every screen.
     UHorizontalBox* Footer = B.Row();
     FBuilder::Inline(Footer, B.Spacer(1.f, 1.f), 0.f, true);
-    FBuilder::Inline(Footer, B.KeyHint(FText::AsCultureInvariant(TEXT("Q / E")), LOCTEXT("SwitchScreen", "Switch screen")), T.Space.XL);
-    FBuilder::Inline(Footer, B.KeyHint(FText::AsCultureInvariant(TEXT("↑ ↓")), LOCTEXT("Move", "Move")), T.Space.XL);
-    FBuilder::Inline(Footer, B.KeyHint(FText::AsCultureInvariant(TEXT("Enter")), LOCTEXT("Select", "Select")), T.Space.XL);
-    FBuilder::Inline(Footer, B.KeyHint(FText::AsCultureInvariant(TEXT("Esc")), LOCTEXT("Back", "Back to the street")), 0.f);
+    // The keys of the device in use (RefreshHintKeys): Close, Switch screen, Move, Select, Back.
+    UTextBlock* Keys[4] = {};
+    FBuilder::Inline(Footer, B.KeyHint(FText::AsCultureInvariant(TEXT("Q / E")), LOCTEXT("SwitchScreen", "Switch screen"), &Keys[0]), T.Space.XL);
+    FBuilder::Inline(Footer, B.KeyHint(FText::AsCultureInvariant(TEXT("↑ ↓")), LOCTEXT("Move", "Move"), &Keys[1]), T.Space.XL);
+    FBuilder::Inline(Footer, B.KeyHint(FText::AsCultureInvariant(TEXT("Enter")), LOCTEXT("Select", "Select"), &Keys[2]), T.Space.XL);
+    FBuilder::Inline(Footer, B.KeyHint(FText::AsCultureInvariant(TEXT("Esc")), LOCTEXT("Back", "Back to the street"), &Keys[3]), 0.f);
+    HintKeys.Append(Keys, UE_ARRAY_COUNT(Keys));
+    RefreshHintKeys();
     FBuilder::Stack(Frame, Footer, 0.f);
 
     UBorder* Gutter = B.Surface(ESurfaceKind::Base, FMargin(T.Space.XXXL, T.Space.XL, T.Space.XXXL, T.Space.L), Frame, false);
@@ -275,7 +282,9 @@ FReply UMarburgumManagementShell::NativeOnKeyDown(const FGeometry& InGeometry, c
         return FReply::Handled();
     }
     const TPair<FKey, EMarburgumScreen> Direct[] = { { EKeys::C, EMarburgumScreen::Character }, { EKeys::K, EMarburgumScreen::Skills },
-        { EKeys::I, EMarburgumScreen::Inventory }, { EKeys::J, EMarburgumScreen::Journal }, { EKeys::O, EMarburgumScreen::Settings } };
+        { EKeys::I, EMarburgumScreen::Inventory }, { EKeys::J, EMarburgumScreen::Journal }, { EKeys::O, EMarburgumScreen::Settings },
+        // The pad's Journal (View) and Inventory (Y) buttons close what they opened, as J and I do.
+        { EKeys::Gamepad_Special_Left, EMarburgumScreen::Journal }, { EKeys::Gamepad_FaceButton_Top, EMarburgumScreen::Inventory } };
     for (const TPair<FKey, EMarburgumScreen>& Entry : Direct)
     {
         if (Key == Entry.Key)
@@ -310,9 +319,29 @@ FReply UMarburgumManagementShell::NativeOnKeyDown(const FGeometry& InGeometry, c
     return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
 }
 
+void UMarburgumManagementShell::RefreshHintKeys()
+{
+    HintDevice = ActiveInputDevice();
+    const bool bPad = HintDevice == EMarburgumInputDevice::Gamepad;
+    const FText Labels[] = { InputKeyLabel(EMarburgumInputAction::Back, HintDevice),
+        FText::AsCultureInvariant(bPad ? TEXT("LB / RB") : TEXT("Q / E")), InputKeyLabel(EMarburgumInputAction::Select, HintDevice),
+        InputKeyLabel(EMarburgumInputAction::Confirm, HintDevice), InputKeyLabel(EMarburgumInputAction::Back, HintDevice) };
+    for (int32 Index = 0; Index < HintKeys.Num() && Index < UE_ARRAY_COUNT(Labels); ++Index)
+    {
+        if (HintKeys[Index])
+        {
+            HintKeys[Index]->SetText(Labels[Index]);
+        }
+    }
+}
+
 void UMarburgumManagementShell::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
     Super::NativeTick(MyGeometry, InDeltaTime);
+    if (HintDevice != ActiveInputDevice())
+    {
+        RefreshHintKeys();
+    }
     if (!IsOpen() || !PageWidth)
     {
         return;

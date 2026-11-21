@@ -96,6 +96,14 @@ void AMarburgumPlayerController::SetupInputComponent()
         InputComponent->BindKey(EKeys::B, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleShop);
         // P takes a photograph with the camera in custody (ADR-081).
         InputComponent->BindKey(EKeys::P, IE_Pressed, this, &AMarburgumPlayerController::RequestPhotograph);
+        // The same requests from a gamepad: A interacts, the right trigger is the shutter, View and Y open the Journal and
+        // the Inventory, B closes a counter or decision and Menu is Escape. A screen that owns the keys reads the pad itself.
+        InputComponent->BindKey(EKeys::Gamepad_FaceButton_Bottom, IE_Pressed, this, &AMarburgumPlayerController::RequestInteract);
+        InputComponent->BindKey(EKeys::Gamepad_RightTrigger, IE_Pressed, this, &AMarburgumPlayerController::RequestPhotograph);
+        InputComponent->BindKey(EKeys::Gamepad_Special_Left, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleJournal);
+        InputComponent->BindKey(EKeys::Gamepad_FaceButton_Top, IE_Pressed, this, &AMarburgumPlayerController::RequestToggleInventory);
+        InputComponent->BindKey(EKeys::Gamepad_FaceButton_Right, IE_Pressed, this, &AMarburgumPlayerController::RequestCancel);
+        InputComponent->BindKey(EKeys::Gamepad_Special_Right, IE_Pressed, this, &AMarburgumPlayerController::RequestBack);
         // The wheel and Page Up/Down scroll an open management screen taller than the screen (QA 2026-11-19).
         const TPair<FKey, float> ScrollKeys[] = {
             { EKeys::MouseScrollUp, -3.f }, { EKeys::MouseScrollDown, 3.f }, { EKeys::PageUp, -12.f }, { EKeys::PageDown, 12.f } };
@@ -141,6 +149,14 @@ void AMarburgumPlayerController::RequestBack()
     if (IsLocalController())
     {
         FMarburgumClientUiHooks::OnBackRequested().Broadcast(this);
+    }
+}
+
+void AMarburgumPlayerController::RequestCancel()
+{
+    if (IsLocalController())
+    {
+        FMarburgumClientUiHooks::OnCancelRequested().Broadcast(this);
     }
 }
 

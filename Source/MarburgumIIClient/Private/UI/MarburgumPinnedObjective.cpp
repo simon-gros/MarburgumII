@@ -18,6 +18,7 @@
 #include "MarburgumInteractable.h"
 #include "MarburgumPhotography.h"
 #include "MarburgumPlayerState.h"
+#include "UI/MarburgumInputDevice.h"
 #include "UI/MarburgumUIBuilder.h"
 
 #define LOCTEXT_NAMESPACE "MarburgumPinnedObjective"
@@ -67,7 +68,9 @@ void UMarburgumPinnedObjective::NativeOnInitialized()
     NewsChip = B.Chip(EMarburgumGlyph::Check, FText::GetEmpty(), ETone::Success, &NewsText);
     NewsLabel = NewsText;
     NewsChip->SetVisibility(ESlateVisibility::Collapsed);
-    FBuilder::Inline(Header, B.KeyHint(LOCTEXT("JournalKey", "J"), LOCTEXT("Journal", "Journal")), 0.f);
+    UTextBlock* JournalKey = nullptr;
+    FBuilder::Inline(Header, B.KeyHint(InputKeyLabel(EMarburgumInputAction::Journal), LOCTEXT("Journal", "Journal"), &JournalKey), 0.f);
+    JournalKeyLabel = JournalKey;
     FBuilder::Stack(Column, Header, T.Space.XS);
     // The news chip (UPDATED, COMPLETED) on its own line: beside a longer kind ("ZGODBENA NALOGA") it ran over the label.
     FBuilder::Stack(Column, NewsChip, T.Space.XS);
@@ -139,6 +142,11 @@ void UMarburgumPinnedObjective::NativeTick(const FGeometry& MyGeometry, float In
         SinceGuide = 0.f;
         RefreshGuide();
     }
+    // A step that says "press [P]" names the gamepad's button once the player picks up the pad, and back again.
+    if (ShownDevice != ActiveInputDevice() && !bShowingCompletion)
+    {
+        Refresh();
+    }
     if (NewsLeft <= 0.f)
     {
         return;
@@ -206,7 +214,7 @@ void UMarburgumPinnedObjective::Refresh()
                 ShownStage = NAME_None;
                 bShowingCompletion = true;
                 NameLabel->SetText(Done ? FText::FromString(MarburgumII::Gameplay::Localized(Done->Name)) : FText::FromName(Mission.MissionId));
-                ObjectiveLabel->SetText(LOCTEXT("CompletedLine", "Completed and saved by the server. [J] has the journal entry."));
+                ObjectiveLabel->SetText(WithDeviceKeys(LOCTEXT("CompletedLine", "Completed and saved by the server. [J] has the journal entry.")));
                 ObjectiveLabel->SetColorAndOpacity(FSlateColor(T.Color.TextSecondary));
                 StepGlyph->SetGlyph(EMarburgumGlyph::Check);
                 StepGlyph->SetColor(T.Color.Success);
@@ -239,7 +247,9 @@ void UMarburgumPinnedObjective::Refresh()
     KindLabel->SetText(Mission && FCString::Strcmp(Mission->Category, TEXT("story")) == 0
         ? LOCTEXT("Story", "STORY MISSION") : LOCTEXT("Mission", "MISSION"));
     NameLabel->SetText(Mission ? FText::FromString(MarburgumII::Gameplay::Localized(Mission->Name)) : FText::FromName(Pinned->MissionId));
-    ObjectiveLabel->SetText(Stage ? FText::FromString(MarburgumII::Gameplay::Localized(Stage->ObjectiveText))
+    ShownDevice = ActiveInputDevice();
+    JournalKeyLabel->SetText(InputKeyLabel(EMarburgumInputAction::Journal, ShownDevice));
+    ObjectiveLabel->SetText(Stage ? FText::FromString(WithDeviceKeys(MarburgumII::Gameplay::Localized(Stage->ObjectiveText), ShownDevice))
         : LOCTEXT("UnknownStage", "The next step is not known to this client version."));
     ObjectiveLabel->SetColorAndOpacity(FSlateColor(Stage ? T.Color.TextPrimary : T.Color.TextSecondary));
     StepGlyph->SetGlyph(Stage ? EMarburgumGlyph::ChevronRight : EMarburgumGlyph::Info);

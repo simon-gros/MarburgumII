@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "UI/MarburgumInputDevice.h"
 #include "UI/MarburgumUIWidgets.h"
 #include "MarburgumManagementShell.generated.h"
 
@@ -70,6 +71,10 @@ private:
     void RefreshIdentity();
 
     UPROPERTY(Transient) TObjectPtr<UOverlay> Pages;
+    /** The key caps of the header's Close and the footer's hints, named for the device in use. */
+    UPROPERTY(Transient) TArray<TObjectPtr<UTextBlock>> HintKeys;
+    EMarburgumInputDevice HintDevice = EMarburgumInputDevice::KeyboardMouse;
+    void RefreshHintKeys();
     UPROPERTY(Transient) TObjectPtr<class USizeBox> PageWidth;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> NameLabel;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> PlaceLabel;

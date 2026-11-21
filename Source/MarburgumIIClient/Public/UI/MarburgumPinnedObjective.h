@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "UI/MarburgumInputDevice.h"
 #include "UI/MarburgumUITheme.h"
 #include "UI/MarburgumUIWidgets.h"
 #include "MarburgumPinnedObjective.generated.h"
@@ -56,6 +57,7 @@ private:
     UPROPERTY(Transient) TObjectPtr<UTextBlock> KindLabel;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> NameLabel;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> ObjectiveLabel;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> JournalKeyLabel;
     UPROPERTY(Transient) TObjectPtr<UBorder> NewsChip;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> NewsLabel;
     UPROPERTY(Transient) TObjectPtr<UMarburgumGlyph> StepGlyph;
@@ -70,4 +72,6 @@ private:
     FDelegateHandle MissionsHandle;
     FName ShownMission;
     FName ShownStage;
+    /** The device whose keys the objective line names. */
+    EMarburgumInputDevice ShownDevice = EMarburgumInputDevice::KeyboardMouse;
 };
