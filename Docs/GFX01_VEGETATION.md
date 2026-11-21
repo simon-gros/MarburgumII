@@ -47,6 +47,13 @@ When the map grew to 25 windows, the same rule ran over all of them (`WINDOWS` i
 
 The middle nine keep within 3 % of their earlier counts; the 5×5 ground's finer surface mask (0.3125 m against 0.375 m) moves a few grass edges. Refused: paving within reach 27,756 trees and 22,710 bushes, not grass 15,610 and 16,695, near the square's edge 351 and 395, on a bridge 134 and 13, against a building 68 and 14, in the river 16 and 6, on a walk line 19 and 1. The street furniture was placed again against the new trunks ([GFX01_STREET_FURNITURE.md](GFX01_STREET_FURNITURE.md)).
 
+**Evidence on the five by five** (editor game mode, `d8cc613`, RTX 5080, 1080p, 21 November). The editor server and an editor `-game` client load the 25-window level (server 16.5 GB, client peak 16.7 GB; the two did not fit one 28 GB unit, so each ran in its own). Both log `MB2PLANTS … plants=40604 grounded=40604 no_ground=0 trunks=20144 missing_meshes=0` and `MB2FURNITURE … pieces=2339 grounded=2339 no_ground=0`. The 16 new windows photographed from the survey's views (an aerial and three street views each, 64 views), without plants (`-MB2NoPlants`) | with them, 64 of 64 both times; the server ran without `-MB2Weather`, so it rains. Mestni park becomes the wooded park it is, its paths left free; streets, pavements and squares stay bare:
+
+- [Mestni park, aerial](Captures/gfx01-5x5-2026-11-21/air_mestni_park.jpg) and [in the park](Captures/gfx01-5x5-2026-11-21/street_mestni_park_1.jpg)
+- [Tabor](Captures/gfx01-5x5-2026-11-21/air_tabor.jpg), [Studenci](Captures/gfx01-5x5-2026-11-21/air_studenci.jpg) and [a Studenci street](Captures/gfx01-5x5-2026-11-21/street_studenci_0.jpg), [Mejna](Captures/gfx01-5x5-2026-11-21/air_mejna.jpg), [a Vrbanska street](Captures/gfx01-5x5-2026-11-21/street_vrbanska_2.jpg)
+
+Not measured: frame time with four times the plants. It belongs in the packaged GFX-01 measurement on a free GPU.
+
 ## In the game
 
 - **Data:** `Content/Marburgum/Vegetation/lent_plants.json` (staged with the build), read by `MarburgumVegetation.h` in the shared module.
