@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fetches the OpenStreetMap extract the Lent ground is built from (ADR-040, ADR-045, ADR-087) through the
+# Fetches the OpenStreetMap extract the Lent ground is built from (ADR-040, ADR-045, ADR-090) through the
 # public Overpass API, into Data/World/lent_ground/osm_lent.json.gz. The bounding box is the 2,560 m square
 # of Lent and the 24 windows round it (plan ±1280 m round the middle of Stari most) with at least 150 m
 # to spare, in WGS84. Every way that is not a building (the footprints come from the original game), every multipolygon relation and every tagged node in it, with the

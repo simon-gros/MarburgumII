@@ -46,7 +46,7 @@ A first geospatial benchmark should record exact source file, import units, coor
 
 A map-source replacement must demonstrate a before-and-after crosswalk of Stari most/riverbank roads, `lent_angler`, `lent_first_catch` stage interaction, `lent_hatchback` parking/door/drive/exit positions, swimming/wading depth and recovery, server-owned area bounds, correct collision, navigation and period state. Verify the same current-build server/client/cooked asset digest on each map plus render/streaming performance and explicit owner approval; protect the commercial source from the public repository.
 
-### Five by five — ADR-087 (21 November 2026)
+### Five by five — ADR-090 (21 November 2026)
 
 At the owner's request the level grew again, from nine windows to **25** (one 512 m window → nine → 25). The sixteen new windows are the original game's own, on the same grid round Stari most, and went through the **same pipeline** as the nine: joined footprints and closed shells, survey ground, OpenStreetMap paving, the ADR-053/054 quality rules, the walk graph with its districts and places, street lamps, place names, interior floors, the Drava sheets and their water volumes, and a wider distant ring. `/Game/World/lent` is now a **2,560 m square (plan ±1,280 m)**:
 
@@ -58,11 +58,11 @@ At the owner's request the level grew again, from nine windows to **25** (one 51
 | south | preradoviceva | kurilnica | magdalena | pobreska | mejna |
 | far south | radvanjska | cesta_zmage | tabor | nasipna | crnogorska |
 
-Tabor's mission places now stand on Tabor's own ground; Melje (about 100–170 m east of the new edge) keeps its temporary floor (ADR-052). It is **still one always-loaded level** with no World Partition, now carrying about 2.4 times the geometry of the nine windows; see [ADR-087](DECISIONS.md) for counts, checks and what remains open.
+Tabor's mission places now stand on Tabor's own ground; Melje (about 100–170 m east of the new edge) keeps its temporary floor (ADR-052). It is **still one always-loaded level** with no World Partition, now carrying about 2.4 times the geometry of the nine windows; see [ADR-090](DECISIONS.md) for counts, checks and what remains open.
 
 ### Delivered world-expansion baseline and staging risks — ADR-040/045
 
-ADR-045 made the original-game Unreal level **more than the single 512 m Lent window**: a 3×3 arrangement, now the middle of ADR-087's five by five:
+ADR-045 made the original-game Unreal level **more than the single 512 m Lent window**: a 3×3 arrangement, now the middle of ADR-090's five by five:
 
 | | West | Middle | East |
 | --- | --- | --- | --- |

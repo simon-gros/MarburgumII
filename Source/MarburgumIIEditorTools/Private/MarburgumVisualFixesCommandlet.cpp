@@ -203,7 +203,7 @@ namespace MarburgumVisualFixes
             }
         }
         // A sign left floating far above sign height (a ground rebuild that measured through unbuilt meshes lifted three,
-        // ADR-087) is looked for at its own height first, then at the sign height over the street below it.
+        // ADR-090) is looked for at its own height first, then at the sign height over the street below it.
         TArray<double, TInlineAllocator<2>> Levels = { Origin.Z };
         if (const TOptional<FHitResult> Below = StreetUnder(Origin + Out * 150.0); Below.IsSet() && Origin.Z - Below->ImpactPoint.Z > SignHeight + 200.0)
         {

@@ -1552,7 +1552,7 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
         }
         // The new map's river does not follow the original's bank everywhere: a person or place whose original
         // spot is now in the Drava stands on the nearest dry ground instead (ADR-046, ADR-052). Likewise one whose
-        // spot the map has put a building on stands on the nearest open ground (ADR-087).
+        // spot the map has put a building on stands on the nearest open ground (ADR-090).
         const bool bWet = Entry.Kind != EInteractableKind::FishingSpot && IsWet(Ground.ImpactPoint);
         if (bWet || InBuilding(Planned))
         {

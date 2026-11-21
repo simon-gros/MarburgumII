@@ -15,7 +15,7 @@ use crate::proj;
 use std::path::PathBuf;
 
 /// Half the side of the ring (plan metres) by default: the 25 survey tiles TM_547..551_155..159
-/// reach at least this far from the middle of Stari most on every side (ADR-087). The nine
+/// reach at least this far from the middle of Stari most on every side (ADR-090). The nine
 /// tiles TM_548..550_156..158 alone reach 1,432 m.
 pub const RING_HALF: f64 = 2432.0;
 pub const CELL: f64 = 4.0;

@@ -1079,7 +1079,7 @@ int32 UMarburgumRebuildGroundCommandlet::Main(const FString& Params)
         return 1;
     }
     // Meshes still compiling after the load have no collision yet, and what the placed actors stand on is measured
-    // next: on the five by five (ADR-087) the old surface was read through the unbuilt Stari most deck and façades.
+    // next: on the five by five (ADR-090) the old surface was read through the unbuilt Stari most deck and façades.
     FAssetCompilingManager::Get().FinishAllCompilation();
     TArray<ALandscapeProxy*> OldLandscapes;
     TArray<AActor*> Remove;
