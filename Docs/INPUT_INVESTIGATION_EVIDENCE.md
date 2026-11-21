@@ -90,6 +90,14 @@ photograph taken, the card on the pad and after switching to keyboard and mouse,
 - The Slovene district banner still shows the weather as "Clear" (existing string, not part of this work).
 - The pad's wider "View"/"Pogled" cap sits tight against the pinned objective's header (no overlap).
 
+## Merged to `main`
+
+Merged on the owner's instruction (21 November 2026) together with `main`'s LRP-01/02 character sheet (ADR-085), which
+took the ADR number this work first used; this work is ADR-086. The merged source builds with `-DisableAdaptiveUnity`,
+`mb2 validate all` and the tooling tests pass, localization was regathered (788 entries, none without Slovene), and the
+input smoke passes on the merged source in the editor (`Saved/InputSmoke/20261121T025149Z-en-1920x1080`). The packaged
+results above are for `f756780`; the merged commit has not been packaged.
+
 ## Owner walkthrough (this exact build)
 
 On the playtest host, from `/mnt/data/marburgum-story` with the `f756780` package staged:
