@@ -309,6 +309,7 @@ The driver waits for **settled, constrained or timeout**, rather than a fixed-wi
 ```bash
 ./scripts/mission-smoke-linux.sh editor    # all eight original missions, decisions, store/restart; pads beyond map
 ./scripts/shop-smoke-linux.sh editor       # Kiosk 67: buy, replay, refusals, sell-back, reach, Sunday restart (ADR-060)
+./scripts/sheet-smoke-linux.sh             # Character sheet: legacy wind migrated once, equip from sheet and Inventory, replay, refusals, owner-only privacy, restart (ADR-085)
 ./scripts/weather-smoke-linux.sh editor    # weather: dry vs soaked braking, wet footsteps, live climate turning to rain (ADR-061); the drawn look and captures of clear, overcast, rain, snow, fog and a storm (ADR-062); the six day/night phases below (ADR-064)
 ./scripts/daylight-smoke-linux.sh editor   # day and night: solstice noon, a June sunset, November dusk, a full-moon and a moonless night, a day a minute; the 1990s date on the banner, the sun and night light drawn, the street lamps off by day and burning by night, the windows dark by day and lit by the hour at night, with captures (ADR-064, ADR-065, ADR-066)
 ./scripts/place-smoke-linux.sh editor      # place names: the server sets one client down at ten stops through Lent and the old town; the banner's place, street or square and landmark at each, with captures (ADR-063); MB2_PLACE_CLOCK=2026-11-13T21:00:00Z walks it at night under the street lamps

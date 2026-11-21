@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MarburgumCharacterSheet.h"
 
 /**
  * One committed operation, kept so a replayed operation id is answered without applying it again.
@@ -24,6 +25,8 @@ struct FMarburgumStoredReceipt
     TMap<FString, int64> SkillXp;
     /** Schema 5 (ADR-060): the counter of a purchase or sale; Item and Quantity are the goods, MoneyDelta the price. */
     FString Shop;
+    /** Schema 7 (ADR-085): the equipment slot an `item_equipped` or `item_unequipped` receipt names. */
+    FString Slot;
     int64 Revision = 0;
     FString CommittedUtc;
 };
@@ -60,7 +63,21 @@ struct FMarburgumStoredCondition
     }
 };
 
-/** Durable authoritative world state for one map (schema `marburgumii.world_store` v6). */
+/** What loading had to normalize in a document's attributes and equipment (ADR-085); empty for a clean document. */
+struct FMarburgumStoreMigration
+{
+    /** Characters whose attributes came (partly) from the legacy `wind` key. */
+    TArray<FString> LegacyAliases;
+    /** Characters with both `endurance` and `wind`, holding different values: `endurance` was kept. */
+    TArray<FString> Conflicts;
+    /** Characters whose attributes or equipment held values that were clamped, dropped or defaulted. */
+    TArray<FString> Repaired;
+    TArray<FString> Notes;
+
+    bool IsEmpty() const { return LegacyAliases.IsEmpty() && Conflicts.IsEmpty() && Repaired.IsEmpty(); }
+};
+
+/** Durable authoritative world state for one map (schema `marburgumii.world_store` v7). */
 struct FMarburgumWorldRecord
 {
     int64 Revision = 0;
@@ -82,6 +99,16 @@ struct FMarburgumWorldRecord
     TMap<FString, TArray<FString>> FirstPurchases;
     /** Schema 6 (ADR-081): character key -> photo subjects it has documented (its first-photograph XP is paid). */
     TMap<FString, TArray<FString>> Discoveries;
+    /**
+     * Schema 7 (ADR-085): character key -> Might, Endurance, Eye, Poise. A character with the default scores is absent;
+     * written with canonical ids only (never `wind`).
+     */
+    TMap<FString, MarburgumII::CharacterSheet::FScores> Attributes;
+    /**
+     * Schema 7 (ADR-085): character key -> slot -> item worn or held there. An equipped item stays in the character's
+     * inventory (custody does not move); each copy fills at most one slot. Empty slots and characters are absent.
+     */
+    TMap<FString, TMap<FString, FString>> Equipment;
     /** Operation id (32 hex digits) -> committed operation. */
     TMap<FString, FMarburgumStoredReceipt> Receipts;
 };
@@ -105,12 +132,18 @@ public:
      * the same path is refused (an error), instead of each silently overwriting the other's saves.
      * A missing file is an empty world. A present but unreadable file is an error, never overwritten.
      * Older documents load as-is (schema 1 has no missions, schema 2 no conditions, schema 3 no skills, money
-     * or mission outcomes, schema 4 no shelves or first purchases, schema 5 no discoveries) and the next commit rewrites them at the current schema.
+     * or mission outcomes, schema 4 no shelves or first purchases, schema 5 no discoveries, schema 6 no attributes or
+     * equipment) and the next commit rewrites them at the current schema. Attributes are normalized as they load (a legacy
+     * `wind` becomes `endurance`; MarburgumCharacterSheet.h) and equipment naming an unknown slot or an item that does not
+     * fit it is dropped; GetMigration() says what that changed.
      */
     bool Load(FString& OutError);
 
     /** Schema version of the loaded document; 0 for a new world. */
     int32 GetLoadedSchema() const { return LoadedSchema; }
+
+    /** What loading normalized; empty when the document needed nothing (ADR-085). */
+    const FMarburgumStoreMigration& GetMigration() const { return Migration; }
 
     /** Make Next durable, then adopt it. On failure the previous record stays current. */
     bool Commit(const FMarburgumWorldRecord& Next, FString& OutError);
@@ -130,11 +163,13 @@ private:
     void ReleaseLock();
 
     static FString Serialize(const FMarburgumWorldRecord& Source);
-    static bool Deserialize(const FString& Text, FMarburgumWorldRecord& Out, int32& OutSchema, FString& OutError);
+    static bool Deserialize(const FString& Text, FMarburgumWorldRecord& Out, int32& OutSchema, FString& OutError,
+        FMarburgumStoreMigration& OutMigration);
 
     FString Path;
     FMarburgumWorldRecord Record;
     int32 LoadedSchema = 0;
+    FMarburgumStoreMigration Migration;
     bool bFaultInjection = false;
 #if PLATFORM_UNIX
     int LockDescriptor = -1;

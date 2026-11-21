@@ -750,6 +750,7 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
         "MarburgumMissionRules",
         "MarburgumFishingRules",
         "MarburgumRetailRules",
+        "MarburgumEquipmentRules",
     ] {
         let owners: Vec<&String> = sources
             .iter()
@@ -800,6 +801,9 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
         "Skills",
         "Money",
         "Fishing",
+        "Equipment",
+        "Attributes",
+        "bAttributesKnown",
     ] {
         problems.expect(
             player_state.contains(&format!(
@@ -838,6 +842,40 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
             if enumeration == "EMarburgumInteractionReason" {
                 reasons += 1;
             }
+        }
+    }
+
+    // Character sheet (ADR-085): exactly Might, Endurance, Eye and Poise; Wind survives only as Endurance's legacy alias.
+    let sheet = &catalogue["character_sheet"];
+    let attribute_ids: Vec<&str> = list(&sheet["attributes"], "entries").iter().map(|a| text(&a["id"])).collect();
+    problems.expect(
+        attribute_ids == ["might", "endurance", "eye", "poise"],
+        format!("attributes must be might, endurance, eye, poise in that order, got {attribute_ids:?}"),
+    );
+    for attribute in list(&sheet["attributes"], "entries") {
+        let name = text(&attribute["name"]["en"]);
+        problems.expect(
+            !name.eq_ignore_ascii_case("wind") && text(&attribute["id"]) != "wind",
+            format!("attribute {} presents Wind as a current attribute", text(&attribute["id"])),
+        );
+        let aliases: Vec<&str> = list(attribute, "legacy_aliases").iter().map(text).collect();
+        problems.expect(
+            aliases.is_empty() || (text(&attribute["id"]) == "endurance" && aliases == ["wind"]),
+            format!("attribute {}: only Endurance has a legacy alias, `wind`", text(&attribute["id"])),
+        );
+    }
+    problems.expect(sheet["attributes"].get("provenance").is_some(), "attributes without provenance");
+    let slot_ids: Vec<&str> = list(&sheet["equipment_slots"], "entries").iter().map(|s| text(&s["id"])).collect();
+    problems.expect(
+        slot_ids == ["head", "coat", "trousers", "shoes", "hands", "right_hand", "left_hand", "bag"],
+        format!("equipment slots must be the original eight in sheet order, got {slot_ids:?}"),
+    );
+    for item in list(&catalogue, "items") {
+        for slot in list(item, "equip_slots") {
+            problems.expect(
+                slot_ids.contains(&text(slot)),
+                format!("item {}: unknown equipment slot {}", text(&item["id"]), text(slot)),
+            );
         }
     }
 

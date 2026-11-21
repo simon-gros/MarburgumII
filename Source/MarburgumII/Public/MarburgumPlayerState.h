@@ -38,8 +38,8 @@ struct FMarburgumPlace
 };
 
 /**
- * Network-visible per-player state. The development character key, inventory, missions, current area,
- * condition, skills, money and fishing are server-owned and replicate to their owner only (custody and progress are private),
+ * Network-visible per-player state. The development character key, inventory and equipment, missions, current area,
+ * condition, skills, money, attributes and fishing are server-owned and replicate to their owner only (custody and progress are private),
  * never to other players.
  * Account identity is not implemented: the key is an unauthenticated development identity (ADR-014).
  */
@@ -77,8 +77,18 @@ public:
     const TArray<FMarburgumItemStack>& GetInventory() const { return Inventory; }
     int32 CountItem(FName ItemId) const;
 
-    /** Authority only: replace the replicated inventory with the durable record. */
-    void SetInventoryAuthority(const TArray<FMarburgumItemStack>& Stacks);
+    /**
+     * Owner-visible: the filled equipment slots (ADR-085), known with the inventory. Each names one of the copies the
+     * inventory holds; an empty slot is absent.
+     */
+    const TArray<FMarburgumEquippedItem>& GetEquipment() const { return Equipment; }
+    /** The item in SlotId, or None. */
+    FName GetEquipped(FName SlotId) const;
+    /** The slots ItemId fills (most items fill none). */
+    TArray<FName> GetSlotsHolding(FName ItemId) const;
+
+    /** Authority only: replace the replicated inventory and equipment with the durable record; they always travel together. */
+    void SetInventoryAuthority(const TArray<FMarburgumItemStack>& Stacks, const TArray<FMarburgumEquippedItem>& InEquipment);
 
     /** Fired on the owning client when the replicated inventory changes, and on the server when set. */
     static FMarburgumInventoryChanged& OnInventoryChanged();
@@ -146,6 +156,19 @@ public:
     /** Fired on the owning client when replicated skills or money change, and on the server when set. */
     static FMarburgumPlayerStateChanged& OnProgressChanged();
 
+    /**
+     * Owner-visible: Might, Endurance, Eye and Poise from the durable record (ADR-085); only meaningful once
+     * AreAttributesKnown(). Other players never receive them.
+     */
+    bool AreAttributesKnown() const { return bAttributesKnown; }
+    const FMarburgumAttributes& GetAttributes() const { return Attributes; }
+
+    /** Authority only. No-op when nothing changed. */
+    void SetAttributesAuthority(const FMarburgumAttributes& InAttributes);
+
+    /** Fired on the owning client when the replicated attributes change, and on the server when set. */
+    static FMarburgumPlayerStateChanged& OnAttributesChanged();
+
     /** Owner-visible: the character's line in the water (ADR-048). */
     const FMarburgumFishingStatus& GetFishing() const { return Fishing; }
 
@@ -173,6 +196,9 @@ protected:
 
     UFUNCTION()
     void OnRep_Fishing();
+
+    UFUNCTION()
+    void OnRep_Attributes();
     UFUNCTION()
     void OnRep_Identity();
 
@@ -194,6 +220,9 @@ private:
 
     UPROPERTY(ReplicatedUsing = OnRep_Inventory)
     TArray<FMarburgumItemStack> Inventory;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Inventory)
+    TArray<FMarburgumEquippedItem> Equipment;
 
     UPROPERTY(ReplicatedUsing = OnRep_Missions)
     bool bMissionsKnown = false;
@@ -229,4 +258,10 @@ private:
 
     UPROPERTY(ReplicatedUsing = OnRep_Fishing)
     FMarburgumFishingStatus Fishing;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Attributes)
+    bool bAttributesKnown = false;
+
+    UPROPERTY(ReplicatedUsing = OnRep_Attributes)
+    FMarburgumAttributes Attributes;
 };

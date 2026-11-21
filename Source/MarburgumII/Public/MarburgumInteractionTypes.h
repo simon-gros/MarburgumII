@@ -38,7 +38,9 @@ enum class EMarburgumInteractionReason : uint8
     NoCamera,             // Photography needs a camera in the character's custody (ADR-081).
     NothingInFrame,       // No photo subject close enough, in the middle of the frame and in plain view.
     AlreadyPhotographed,  // That subject is documented and its print is still held: nothing would change.
-    WrongConclusion       // A deduction answered wrongly (ADR-084): nothing recorded; the reply says why, and the player can look again.
+    WrongConclusion,      // A deduction answered wrongly (ADR-084): nothing recorded; the reply says why, and the player can look again.
+    UnknownSlot,          // Not one of the eight equipment slots (ADR-085).
+    NotEquippable         // The item cannot be worn or held in that slot (or is not a known item).
 };
 
 /** What a committed interaction did. Replays (Duplicate) report the original effect. */
@@ -54,7 +56,9 @@ enum class EMarburgumInteractionEffect : uint8
     FishCaught,     // Struck while a fish was on: the fish and its Fishing XP were committed together.
     ItemBought,     // Bought at a counter: shelf, money, goods and any first-purchase Trading XP in one commit (ADR-060).
     ItemSold,       // Sold back at a counter: goods, money and the shelf in one commit.
-    Photographed    // Photographed a subject: the print and any first-photograph Photography XP in one commit (ADR-081).
+    Photographed,   // Photographed a subject: the print and any first-photograph Photography XP in one commit (ADR-081).
+    ItemEquipped,   // Put a held item in an equipment slot; custody unchanged (ADR-085).
+    ItemUnequipped  // Emptied an equipment slot; the item stays in the inventory.
 };
 
 /** What a request at a shop counter asks for (ADR-060). */
@@ -218,6 +222,54 @@ struct FMarburgumCondition
     }
 };
 
+/**
+ * A character's four attributes (ADR-085): Might, Endurance, Eye, Poise, each 1-20 (10 for a new character). Owner only.
+ * Endurance is the original Wind under its Marburgum II name; it is a lasting score, not the stamina in FMarburgumCondition.
+ */
+USTRUCT(BlueprintType)
+struct FMarburgumAttributes
+{
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Character")
+    uint8 Might = 10;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Character")
+    uint8 Endurance = 10;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Character")
+    uint8 Eye = 10;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Character")
+    uint8 Poise = 10;
+
+    /** By catalogue index (MarburgumCharacterSheet.h): 0 Might, 1 Endurance, 2 Eye, 3 Poise. */
+    int32 Get(int32 Index) const
+    {
+        return Index == 0 ? Might : Index == 1 ? Endurance : Index == 2 ? Eye : Poise;
+    }
+
+    bool operator==(const FMarburgumAttributes& Other) const
+    {
+        return Might == Other.Might && Endurance == Other.Endurance && Eye == Other.Eye && Poise == Other.Poise;
+    }
+};
+
+/** One filled equipment slot (ADR-085): the item is one of the copies in the inventory, not an extra one. Owner only. */
+USTRUCT(BlueprintType)
+struct FMarburgumEquippedItem
+{
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Inventory")
+    FName SlotId;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Inventory")
+    FName ItemId;
+
+    bool operator==(const FMarburgumEquippedItem& Other) const { return SlotId == Other.SlotId && ItemId == Other.ItemId; }
+};
+
 /** A validated stack of one item definition in a character's custody (ontology `Inventory`). */
 USTRUCT(BlueprintType)
 struct FMarburgumItemStack
@@ -288,6 +340,10 @@ struct FMarburgumInteractionReceipt
     /** Skill XP the operation awarded. */
     UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Interaction")
     TArray<FMarburgumSkillProgress> SkillXp;
+
+    /** Equipment slot an ItemEquipped or ItemUnequipped receipt names; ItemId is the item put in or taken out (ADR-085). */
+    UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Interaction")
+    FName SlotId;
 
     /** Stock of the target after this decision (a counter: the shelf of ItemId); -1 when unknown. */
     UPROPERTY(BlueprintReadOnly, Category = "Marburgum|Interaction")

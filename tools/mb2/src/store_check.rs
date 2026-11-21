@@ -22,7 +22,7 @@ fn finish(problems: Problems, summary: String) -> u8 {
 }
 
 fn is_store(doc: &Value) -> bool {
-    doc["format"] == "marburgumii.world_store" && doc["schema_version"] == 6
+    doc["format"] == "marburgumii.world_store" && doc["schema_version"] == 7
 }
 
 /// No character's condition was saved (the Gate 1 and Lent smoke clients never run).
@@ -516,6 +516,97 @@ fn check_negative(doc: &Value, key: &str, other: &str, outcome: &str) -> u8 {
     finish(problems, format!("{money} {photography} {trading} {}", documented.len()))
 }
 
+/// Character sheet (scripts/sheet-smoke-linux.sh, ADR-085), on a seeded schema 6 store (revision 1) where A's attributes
+/// say `wind`, B's hold both `wind` and `endurance`, and C has none. Phase 1: the load migrated once (revision 2), then
+/// A's rod and camera and B's rod were equipped. Phase 2: A's rod taken out again. Custody never moves.
+/// Prints "<revision> <equipment of A> <endurance of A>".
+pub fn sheet(store: &str, key_a: &str, key_b: &str, key_c: &str, phase: &str) -> u8 {
+    let doc = match load(store) {
+        Ok(doc) => doc,
+        Err(error) => return finish(Problems(vec![error]), "none - 0".to_string()),
+    };
+    check_sheet(&doc, key_a, key_b, key_c, phase == "2")
+}
+
+fn check_sheet(doc: &Value, key_a: &str, key_b: &str, key_c: &str, restored: bool) -> u8 {
+    let mut problems = Problems::default();
+    problems.expect(is_store(doc), "format");
+    let want_revision = if restored { 6 } else { 5 };
+    problems.expect(doc["revision"] == want_revision, format!("revision={}", doc["revision"]));
+    // Wind never reaches the disk again: the migrated record is written with canonical ids only.
+    problems.expect(!doc.to_string().contains("wind"), "wind still in the store");
+    let attributes = &doc["attributes"];
+    problems.expect(
+        attributes[key_a] == serde_json::json!({"might": 12, "endurance": 14, "eye": 9, "poise": 11}),
+        format!("attributes_a={}", attributes[key_a]),
+    );
+    problems.expect(
+        attributes[key_b] == serde_json::json!({"might": 10, "endurance": 16, "eye": 10, "poise": 10}),
+        format!("attributes_b={}", attributes[key_b]),
+    );
+    problems.expect(attributes.get(key_c).is_none(), format!("attributes_c={}", attributes[key_c]));
+    let want_a = if restored {
+        serde_json::json!({"left_hand": "camera"})
+    } else {
+        serde_json::json!({"left_hand": "camera", "right_hand": "fishing_rod"})
+    };
+    let equipment = &doc["equipment"];
+    problems.expect(equipment[key_a] == want_a, format!("equipment_a={}", equipment[key_a]));
+    problems.expect(
+        equipment[key_b] == serde_json::json!({"right_hand": "fishing_rod"}),
+        format!("equipment_b={}", equipment[key_b]),
+    );
+    problems.expect(
+        doc["inventories"][key_a] == serde_json::json!({"camera": 1, "chub": 2, "fishing_rod": 1})
+            && doc["inventories"][key_b] == serde_json::json!({"fishing_rod": 1}),
+        format!("inventories={}", doc["inventories"]),
+    );
+    let mut receipts: Vec<(String, String, String, String, i64)> = doc["receipts"]
+        .as_object()
+        .map(|all| {
+            all.values()
+                .map(|r| {
+                    (
+                        r["character"].as_str().unwrap_or("").to_string(),
+                        r["kind"].as_str().unwrap_or("").to_string(),
+                        r["slot"].as_str().unwrap_or("").to_string(),
+                        r["item"].as_str().unwrap_or("").to_string(),
+                        r["revision"].as_i64().unwrap_or(0),
+                    )
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    // The two clients play at once, so only the set of commits and their revision range are fixed.
+    problems.expect(
+        receipts.iter().all(|r| (3..=want_revision).contains(&r.4)),
+        format!("receipt revisions={receipts:?}"),
+    );
+    let mut revisions: Vec<i64> = receipts.iter().map(|r| r.4).collect();
+    revisions.sort();
+    revisions.dedup();
+    problems.expect(revisions.len() == receipts.len(), "two receipts share a revision");
+    let mut kinds: Vec<(String, String, String, String)> = receipts.drain(..).map(|r| (r.0, r.1, r.2, r.3)).collect();
+    kinds.sort();
+    let mut want = vec![
+        (key_a.to_string(), "item_equipped".to_string(), "left_hand".to_string(), "camera".to_string()),
+        (key_a.to_string(), "item_equipped".to_string(), "right_hand".to_string(), "fishing_rod".to_string()),
+        (key_b.to_string(), "item_equipped".to_string(), "right_hand".to_string(), "fishing_rod".to_string()),
+    ];
+    if restored {
+        want.push((key_a.to_string(), "item_unequipped".to_string(), "right_hand".to_string(), "fishing_rod".to_string()));
+    }
+    want.sort();
+    problems.expect(kinds == want, format!("receipts={kinds:?}"));
+    let summary = format!(
+        "{} {} {}",
+        doc["revision"],
+        equipment[key_a].as_object().map(|slots| slots.len()).unwrap_or(0),
+        attributes[key_a]["endurance"]
+    );
+    finish(problems, summary)
+}
+
 /// Kiosk 67 (scripts/shop-smoke-linux.sh), after phase 1 on a seeded schema 4 store (revision 1, 50 money, a brass
 /// key): three counter commits, first a newspaper bought with its Trading XP, then sold back, then a pen.
 /// Prints "<revision> <money> <shelves paper,postcard,pen>".
@@ -623,7 +714,7 @@ mod tests {
 
     fn shop_store() -> Value {
         json!({
-            "format": "marburgumii.world_store", "schema_version": 6, "revision": 4,
+            "format": "marburgumii.world_store", "schema_version": 7, "revision": 4,
             "money": { "s": 23 }, "inventories": { "s": { "ballpoint_pen": 1, "brass_key": 1 } },
             "skills": { "s": { "trading": 10 } }, "first_purchases": { "s": ["kiosk_67"] },
             "shelves": { "kiosk_67": { "mariborski_glas": 12, "ballpoint_pen": 5 } },
@@ -654,7 +745,7 @@ mod tests {
 
     fn lent_store() -> Value {
         json!({
-            "format": "marburgumii.world_store", "schema_version": 6, "revision": 1, "stocks": {}, "conditions": {},
+            "format": "marburgumii.world_store", "schema_version": 7, "revision": 1, "stocks": {}, "conditions": {},
             "inventories": { "m": { "fishing_rod": 1 } },
             "missions": { "m": { "lent_first_catch": { "stage": "catch_first_fish", "started_revision": 1 } } },
             "receipts": { "OP": { "character": "m", "kind": "mission_started", "interactable": "lent_angler",
@@ -683,7 +774,7 @@ mod tests {
 
     fn condition_store(revision: i64, conditions: Value) -> Value {
         json!({
-            "format": "marburgumii.world_store", "schema_version": 6, "revision": revision, "stocks": {},
+            "format": "marburgumii.world_store", "schema_version": 7, "revision": revision, "stocks": {},
             "inventories": {}, "missions": {}, "conditions": conditions, "receipts": {}
         })
     }
@@ -728,7 +819,7 @@ mod tests {
     #[test]
     fn interaction_store_counts_three_grants() {
         let doc = json!({
-            "format": "marburgumii.world_store", "schema_version": 6, "revision": 3, "conditions": {},
+            "format": "marburgumii.world_store", "schema_version": 7, "revision": 3, "conditions": {},
             "stocks": { "dev_supply_crate": 0 },
             "inventories": { "a": { "fishing_rod": 2 }, "b": { "fishing_rod": 1 } },
             "receipts": { "OP": { "character": "a" }, "X": { "character": "a" }, "Y": { "character": "b" } }
@@ -742,7 +833,7 @@ mod tests {
     #[test]
     fn mission_store_after_the_opening_and_the_kiosk_passes() {
         let doc = json!({
-            "format": "marburgumii.world_store", "schema_version": 6, "revision": 12,
+            "format": "marburgumii.world_store", "schema_version": 7, "revision": 12,
             "stocks": {}, "conditions": {},
             "inventories": { "p": {
                 "fishing_rod": 1, "brass_key": 1, "drava_cashbox": 1,
@@ -803,5 +894,41 @@ mod tests {
         let mut short = doc.clone();
         short["money"]["p"] = json!(50);
         assert_eq!(check_missions(&short, "p"), 1);
+    }
+
+    #[test]
+    fn sheet_stores_pass_and_fail() {
+        let receipt = |character: &str, kind: &str, slot: &str, item: &str, revision: i64| {
+            json!({"character": character, "kind": kind, "slot": slot, "item": item, "quantity": 1, "revision": revision,
+                   "interactable": "", "committed_utc": ""})
+        };
+        let doc = json!({
+            "format": "marburgumii.world_store", "schema_version": 7, "revision": 5,
+            "inventories": { "a": { "fishing_rod": 1, "camera": 1, "chub": 2 }, "b": { "fishing_rod": 1 } },
+            "attributes": {
+                "a": { "might": 12, "endurance": 14, "eye": 9, "poise": 11 },
+                "b": { "might": 10, "endurance": 16, "eye": 10, "poise": 10 }
+            },
+            "equipment": { "a": { "right_hand": "fishing_rod", "left_hand": "camera" }, "b": { "right_hand": "fishing_rod" } },
+            "receipts": {
+                "R1": receipt("a", "item_equipped", "right_hand", "fishing_rod", 3),
+                "R2": receipt("b", "item_equipped", "right_hand", "fishing_rod", 4),
+                "R3": receipt("a", "item_equipped", "left_hand", "camera", 5)
+            }
+        });
+        assert_eq!(check_sheet(&doc, "a", "b", "c", false), 0);
+        let mut windy = doc.clone();
+        windy["attributes"]["a"]["wind"] = json!(14);
+        assert_eq!(check_sheet(&windy, "a", "b", "c", false), 1);
+        let mut duplicated = doc.clone();
+        duplicated["inventories"]["a"]["fishing_rod"] = json!(2);
+        assert_eq!(check_sheet(&duplicated, "a", "b", "c", false), 1);
+
+        let mut restored = doc.clone();
+        restored["revision"] = json!(6);
+        restored["equipment"]["a"] = json!({ "left_hand": "camera" });
+        restored["receipts"]["R4"] = receipt("a", "item_unequipped", "right_hand", "fishing_rod", 6);
+        assert_eq!(check_sheet(&restored, "a", "b", "c", true), 0);
+        assert_eq!(check_sheet(&restored, "a", "b", "c", false), 1);
     }
 }

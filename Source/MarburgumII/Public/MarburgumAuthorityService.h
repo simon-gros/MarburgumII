@@ -42,6 +42,13 @@ public:
     virtual FMarburgumInteractionReceipt HandlePhotograph(AMarburgumPlayerController& Requester, const FGuid& OperationId)
         PURE_VIRTUAL(UMarburgumAuthorityService::HandlePhotograph, return FMarburgumInteractionReceipt(););
 
+    /**
+     * Validate and, if allowed, durably commit putting ItemId in SlotId, or emptying SlotId when ItemId is None (ADR-085).
+     * Equipment never moves custody: the slot names one of the copies the character holds.
+     */
+    virtual FMarburgumInteractionReceipt HandleEquip(AMarburgumPlayerController& Requester, const FGuid& OperationId, FName SlotId, FName ItemId)
+        PURE_VIRTUAL(UMarburgumAuthorityService::HandleEquip, return FMarburgumInteractionReceipt(););
+
     /** The active service of a world, if any. */
     static UMarburgumAuthorityService* Get(const UWorld* World);
 };

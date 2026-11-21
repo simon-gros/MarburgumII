@@ -3,6 +3,7 @@
 **Created:** 21 November 2026  
 **Status:** Proposed implementation roadmap; no game code, migration, interface, or owner acceptance is claimed by this document.  
 **Priority:** Character foundation and UI/HUD integration after the current integrated-package and owner-playtest P0 gates.  
+**Delivery status (21 November 2026):** LRP-01 and the server, store and UI parts of LRP-02 are **implemented on branch `feat/lrp-attributes-equipment`** ([ADR-085](DECISIONS.md), evidence in [LRP_01_02_EVIDENCE.md](LRP_01_02_EVIDENCE.md)): the four attributes with Wind read only as a legacy alias, store schema 7, the eight slots with server-decided equip/unequip, owner-only replication, the recomposed Character sheet and Inventory, and Slovene for every new string. **Not accepted:** the owner has not played it; the Slovene attribute and slot names await native-speaker review; equipped appearance, bag capacity, clothing assets and every gameplay effect of attributes stay out of scope. SPECIAL-00 (talents/specializations) is untouched.
 **Authority:** [Vision](VISION.md), [Milestones](ROADMAP.md), [Legacy parity](LEGACY_PARITY.md), [Decisions](DECISIONS.md), [UI/HUD ontology](UI_HUD_ONTOLOGY.md), [UI/HUD roadmap](UI_HUD_ROADMAP.md), [UI/HUD design](UI_HUD_DESIGN.md), [Network architecture](NETWORK_ARCHITECTURE.md), and [Playtest freshness](PLAYTEST_FRESHNESS.md).
 
 ## 1. Intent and non-negotiable import policy
