@@ -1130,7 +1130,7 @@ FMarburgumInteractionReceipt UMarburgumWorldAuthority::HandleEquip(AMarburgumPla
     const FMarburgumEquipDecision Decision = MarburgumII::Equipment::DecideEquip(Store->Get(), Character,
         SlotId.IsNone() ? FString() : SlotId.ToString(), ItemId.IsNone() ? FString() : ItemId.ToString(), Next);
     UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=equip character=%s slot=%s item=%s replaced=%s decision=%s"), SheetLogPrefix,
-        *Character, SlotId.IsNone() ? TEXT("-") : *SlotId.ToString(), Decision.Item.IsEmpty() ? TEXT("-") : *Decision.Item,
+        *Character, Decision.Slot.IsEmpty() ? TEXT("-") : *Decision.Slot, Decision.Item.IsEmpty() ? TEXT("-") : *Decision.Item,
         Decision.Replaced.IsEmpty() ? TEXT("-") : *Decision.Replaced, Decision.bApplied ? ToString(Decision.Effect) : ToString(Decision.Reason));
     if (!Decision.bApplied)
     {

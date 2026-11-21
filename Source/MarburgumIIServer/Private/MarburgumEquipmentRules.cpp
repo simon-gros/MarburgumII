@@ -26,17 +26,22 @@ namespace MarburgumII::Equipment
     {
         FMarburgumEquipDecision Decision;
         Decision.Slot = Slot;
+        Decision.Item = Item;
         auto Refuse = [&Decision](EMarburgumInteractionReason Reason)
         {
             Decision.Reason = Reason;
             return Decision;
         };
-        if (!FindEquipmentSlot(Slot))
+        // Lookups ignore case, and an id that crossed the wire as an FName comes back in the spelling the engine
+        // registered first ("Camera", "Head"): only the catalogue's own spelling is compared, stored and logged.
+        const FEquipmentSlotDefinition* SlotDef = FindEquipmentSlot(Slot);
+        if (!SlotDef)
         {
             return Refuse(EMarburgumInteractionReason::UnknownSlot);
         }
+        Decision.Slot = SlotDef->Id;
         const TMap<FString, FString>* Slots = Current.Equipment.Find(Character);
-        const FString* Worn = Slots ? Slots->Find(Slot) : nullptr;
+        const FString* Worn = Slots ? Slots->Find(Decision.Slot) : nullptr;
 
         if (Item.IsEmpty())
         {
@@ -48,7 +53,7 @@ namespace MarburgumII::Equipment
             ++OutNext.Revision;
             Decision.Item = *Worn;
             TMap<FString, FString>& NextSlots = OutNext.Equipment.FindChecked(Character);
-            NextSlots.Remove(Slot);
+            NextSlots.Remove(Decision.Slot);
             if (NextSlots.IsEmpty())
             {
                 OutNext.Equipment.Remove(Character);
@@ -58,23 +63,24 @@ namespace MarburgumII::Equipment
             return Decision;
         }
 
-        Decision.Item = Item;
-        if (!FindItem(Item) || !FitsSlot(Item, Slot))
+        const FItemDefinition* ItemDef = FindItem(Item);
+        if (!ItemDef || !FitsSlot(ItemDef->Id, Decision.Slot))
         {
             return Refuse(EMarburgumInteractionReason::NotEquippable);
         }
-        if (Worn && *Worn == Item)
+        Decision.Item = ItemDef->Id;
+        if (Worn && *Worn == Decision.Item)
         {
             return Refuse(EMarburgumInteractionReason::NothingToDo);
         }
-        if (FreeCopies(Current, Character, Item) < 1)
+        if (FreeCopies(Current, Character, Decision.Item) < 1)
         {
             return Refuse(EMarburgumInteractionReason::InsufficientItems);
         }
         OutNext = Current;
         ++OutNext.Revision;
         Decision.Replaced = Worn ? *Worn : FString();
-        OutNext.Equipment.FindOrAdd(Character).Add(Slot, Item);
+        OutNext.Equipment.FindOrAdd(Character).Add(Decision.Slot, Decision.Item);
         Decision.bApplied = true;
         Decision.Effect = EMarburgumInteractionEffect::ItemEquipped;
         return Decision;

@@ -895,4 +895,40 @@ mod tests {
         short["money"]["p"] = json!(50);
         assert_eq!(check_missions(&short, "p"), 1);
     }
+
+    #[test]
+    fn sheet_stores_pass_and_fail() {
+        let receipt = |character: &str, kind: &str, slot: &str, item: &str, revision: i64| {
+            json!({"character": character, "kind": kind, "slot": slot, "item": item, "quantity": 1, "revision": revision,
+                   "interactable": "", "committed_utc": ""})
+        };
+        let doc = json!({
+            "format": "marburgumii.world_store", "schema_version": 7, "revision": 5,
+            "inventories": { "a": { "fishing_rod": 1, "camera": 1, "chub": 2 }, "b": { "fishing_rod": 1 } },
+            "attributes": {
+                "a": { "might": 12, "endurance": 14, "eye": 9, "poise": 11 },
+                "b": { "might": 10, "endurance": 16, "eye": 10, "poise": 10 }
+            },
+            "equipment": { "a": { "right_hand": "fishing_rod", "left_hand": "camera" }, "b": { "right_hand": "fishing_rod" } },
+            "receipts": {
+                "R1": receipt("a", "item_equipped", "right_hand", "fishing_rod", 3),
+                "R2": receipt("b", "item_equipped", "right_hand", "fishing_rod", 4),
+                "R3": receipt("a", "item_equipped", "left_hand", "camera", 5)
+            }
+        });
+        assert_eq!(check_sheet(&doc, "a", "b", "c", false), 0);
+        let mut windy = doc.clone();
+        windy["attributes"]["a"]["wind"] = json!(14);
+        assert_eq!(check_sheet(&windy, "a", "b", "c", false), 1);
+        let mut duplicated = doc.clone();
+        duplicated["inventories"]["a"]["fishing_rod"] = json!(2);
+        assert_eq!(check_sheet(&duplicated, "a", "b", "c", false), 1);
+
+        let mut restored = doc.clone();
+        restored["revision"] = json!(6);
+        restored["equipment"]["a"] = json!({ "left_hand": "camera" });
+        restored["receipts"]["R4"] = receipt("a", "item_unequipped", "right_hand", "fishing_rod", 6);
+        assert_eq!(check_sheet(&restored, "a", "b", "c", true), 0);
+        assert_eq!(check_sheet(&restored, "a", "b", "c", false), 1);
+    }
 }

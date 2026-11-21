@@ -90,6 +90,21 @@ bool FMarburgumEquipmentRulesTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("both rods still carried"), Record.Inventories.FindRef(Simon).FindRef(Rod), 2);
         TestEqual(TEXT("one rod free again"), MarburgumII::Equipment::FreeCopies(Record, Simon, Rod), 1);
     }
+    // Ids arrive as FNames spelt the way the engine first met them ("Camera", "Head"): stored and reported in catalogue case.
+    {
+        FMarburgumWorldRecord Record = Holding({ { Camera, 1 } });
+        const FMarburgumEquipDecision D = Equip(Record, TEXT("Left_Hand"), TEXT("Camera"));
+        TestTrue(TEXT("a capitalised camera is still a camera"), D.bApplied);
+        TestTrue(TEXT("decision in catalogue case"), D.Slot.Equals(TEXT("left_hand"), ESearchCase::CaseSensitive)
+            && D.Item.Equals(Camera, ESearchCase::CaseSensitive));
+        for (const TPair<FString, FString>& Entry : Record.Equipment.FindRef(Simon))
+        {
+            TestTrue(TEXT("stored in catalogue case"), Entry.Key.Equals(TEXT("left_hand"), ESearchCase::CaseSensitive)
+                && Entry.Value.Equals(Camera, ESearchCase::CaseSensitive));
+        }
+        TestTrue(TEXT("the same camera again, spelt otherwise, is nothing to do"),
+            Equip(Record, TEXT("LEFT_HAND"), TEXT("camera")).Reason == EMarburgumInteractionReason::NothingToDo);
+    }
     // Refusals: unknown slot, misfit item, unknown item, nothing held, another character's things.
     {
         FMarburgumWorldRecord Record = Holding({ { Rod, 1 }, { TEXT("chub"), 3 } });
