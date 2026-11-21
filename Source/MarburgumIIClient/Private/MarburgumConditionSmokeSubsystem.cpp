@@ -471,10 +471,20 @@ void UMarburgumConditionSmokeSubsystem::TickR2(double Now)
         Advance(1, Now);
         return;
     case 1:
-        // One frame later the HUD has drawn the restored state.
-        if (!ShotPrefix.IsEmpty() && Moving->IsWinded())
+        // The HUD shows the restored winded state while it lasts. Its widget adopts the state in its own tick, which is
+        // not ordered against this one, so the frame after bind can come too early (4 of 28 runs to 21 November): wait
+        // for it as long as the body is still winded, up to a second. Breath back first, with no winded HUD, still fails.
+        if (!ShotPrefix.IsEmpty())
         {
-            Expect(Hud && Hud->IsShowingWinded(), TEXT("restored_hud_not_winded"));
+            if (!(Hud && Hud->IsShowingWinded()))
+            {
+                if (Moving->IsWinded() && Now - StepSeconds < 1.0) return;
+                Expect(false, TEXT("restored_hud_not_winded"));
+            }
+            else
+            {
+                MB2_COND_LOG("event=restored_hud_winded after_s=%.3f", Now - StepSeconds);
+            }
         }
         Advance(2, Now);
         return;
