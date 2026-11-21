@@ -68,6 +68,24 @@ On the same `34bbf44` package, door (`DoorSmoke/20261121T045906Z`) and the Slove
 
 One editor run also failed client R on `honest_corrections=5`. That is an unrelated flake: 2 of 30 runs since 10 November, in editor mode while the staged matrix shared the host. It is not addressed here.
 
+## Final head `460a008` (on `main` `9814f26`)
+
+While the runs above were going, `main` took the investigation input work (ADR-086, 26 Source files). The branch was rebased onto `9814f26`, the replay window was renumbered ADR-088, and everything was run again on one fresh package.
+
+| | |
+| --- | --- |
+| Source | `rebase/transport-hardening` `460a008`, tree clean (`dirty=0`) |
+| Editor | `-DisableAdaptiveUnity` build OK; `Automation RunTests Marburgum`: **55/55 Success** |
+| Cook | 2,325 packages; `BUILD SUCCESSFUL` |
+| Server | `sha256 e0e2c621877b9303988c07de4108fcb37a5ff34042914895c0842c75ad62a859` |
+| Client | `sha256 6c162cfd007ddc978d84f819de5a3fdc35dcc6144ddf989bd322b9d7e153fed8` |
+
+**Staged matrix: 25/25 PASS.** account, enc-negative, door, net, interaction, chat, mission, story (English and Slovene), negative (English and Slovene), shop, vehicle (and 5 m cull), combat, condition, swim, weather, lent, place, street-multiplayer (day and night), street-district, street-hours and street-places all passed. `main`'s sheet smoke (`SheetSmoke/20261121T074806Z`) and input smoke (`InputSmoke/20261121T074904Z`) also passed. Raw output: `Saved/P0/head/SUMMARY-final-matrix.txt` and `SUMMARY-final-extra.txt`.
+
+- The condition smoke's R2 saw the HUD show winded after 0.041 s (`ConditionSmoke/20261121T062131Z`). The old one-frame check would have failed that run.
+- 109 client launches logged SDL `dummy`, and the crowd clients ran with `-nullrhi`. No window was opened.
+- The account service's `cargo test`: 38/38 on this tree.
+
 ## Earlier failures on this branch, resolved
 
 - **Slovene story, Velika kavarna photo** (`3618bb6` package): rejected as "nothing in frame". The photo driver aimed 1.5 s after login, from a pawn still being placed about 12 m above the start. The driver now waits for the body to settle and aims again before the shutter. Slovene PASS ×3 and English PASS since.
