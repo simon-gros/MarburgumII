@@ -830,7 +830,10 @@ void UMarburgumWeatherSmokeSubsystem::CheckWindows(const TCHAR* Event, const FSt
     }
     // Every daylight run: the façades carry their households, and the clock is written for their glass.
     Expect(Windows->HasState() && Windows->HasCollection(), TEXT("lit_windows_not_switched"));
-    Expect(Count.Buildings >= 500 && Count.Panes >= 10000 && Count.Households >= Count.Panes / 4,
+    // A client on the World Partition map holds the buildings within 512 m of its player (ADR-091): 439 round the start
+    // by Lent, against 733 when the nine windows were loaded whole.
+    const int32 MinBuildings = World->IsPartitionedWorld() ? 300 : 500;
+    Expect(Count.Buildings >= MinBuildings && Count.Panes >= 10000 && Count.Households >= Count.Panes / 4,
         FString::Printf(TEXT("facade_households_missing buildings=%d panes=%d households=%d"), Count.Buildings, Count.Panes, Count.Households));
     if (Want == TEXT("noon") || Want == TEXT("evening"))
     {

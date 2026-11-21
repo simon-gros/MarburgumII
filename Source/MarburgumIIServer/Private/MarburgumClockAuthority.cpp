@@ -99,6 +99,10 @@ void UMarburgumClockAuthority::OnWorldBeginPlay(UWorld& InWorld)
     }
     Publish();
     InWorld.GetTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(this, &UMarburgumClockAuthority::Publish), CheckSeconds, true);
+    // World time stands still while begin play blocks, and on the World Partition map the server loads every cell then
+    // (ADR-091): seconds behind the wall clock, which is hours at a day a minute. Check again on the first tick rather
+    // than half a minute later, when clients may already be in.
+    InWorld.GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UMarburgumClockAuthority::Publish));
 }
 
 void UMarburgumClockAuthority::Deinitialize()
