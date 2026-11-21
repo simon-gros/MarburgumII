@@ -21,6 +21,8 @@
 #include "MarburgumEquipmentRules.h"
 #include "MarburgumFishingRules.h"
 #include "MarburgumInteractable.h"
+#include "MarburgumInteriorCore.h"
+#include "MarburgumInteriorSubsystem.h"
 #include "MarburgumMissionLogic.h"
 #include "MarburgumMissionRules.h"
 #include "MarburgumNetworkContract.h"
@@ -1444,6 +1446,22 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
     }
     const UMarburgumWaterSubsystem* Water = InWorld.GetSubsystem<UMarburgumWaterSubsystem>();
     const auto IsWet = [Water](const FVector& Feet) { return Water && Water->IsWet(Feet); };
+    // The level's building footprints (the interiors' copy of buildings.json), for spots the map has built on.
+    std::vector<MarburgumInteriors::FPlan> Footprints;
+    UMarburgumInteriorSubsystem::ReadPlans(Footprints, nullptr, false);
+    const auto InBuilding = [&Footprints](const FVector& At)
+    {
+        // Unreal +X is north and +Y east; plan x is east and y south.
+        const MarburgumInteriors::FVec2 Plan{ At.Y / 100.0, -At.X / 100.0 };
+        for (const MarburgumInteriors::FPlan& Footprint : Footprints)
+        {
+            if (Footprint.bShell && MarburgumInteriors::PointInside(Footprint.Outline, Plan))
+            {
+                return true;
+            }
+        }
+        return false;
+    };
     const auto FindGround = [&InWorld, &Params](const FVector& Planned, FHitResult& Out)
     {
         for (const double Above : { 300.0, 1500.0 })
@@ -1533,33 +1551,37 @@ void UMarburgumWorldAuthority::SpawnAuthoredContent(UWorld& InWorld)
             continue;
         }
         // The new map's river does not follow the original's bank everywhere: a person or place whose original
-        // spot is now in the Drava stands on the nearest dry ground instead (ADR-046, ADR-052).
-        if (Entry.Kind != EInteractableKind::FishingSpot && IsWet(Ground.ImpactPoint))
+        // spot is now in the Drava stands on the nearest dry ground instead (ADR-046, ADR-052). Likewise one whose
+        // spot the map has put a building on stands on the nearest open ground (ADR-087).
+        const bool bWet = Entry.Kind != EInteractableKind::FishingSpot && IsWet(Ground.ImpactPoint);
+        if (bWet || InBuilding(Planned))
         {
-            const FVector Wet = Ground.ImpactPoint;
-            bool bDry = false;
-            for (double Radius = 200.0; !bDry && Radius <= 6000.0; Radius += 200.0)
+            const FVector Blocked = Ground.ImpactPoint;
+            const TCHAR* Reason = bWet ? TEXT("in_water") : TEXT("in_building");
+            bool bClear = false;
+            for (double Radius = 200.0; !bClear && Radius <= 6000.0; Radius += 200.0)
             {
-                for (int32 Step = 0; !bDry && Step < 16; ++Step)
+                for (int32 Step = 0; !bClear && Step < 16; ++Step)
                 {
                     const double Angle = Step * UE_TWO_PI / 16.0;
+                    const FVector Around = Planned + FVector(FMath::Cos(Angle), FMath::Sin(Angle), 0.0) * Radius;
                     FHitResult Candidate;
-                    if (FindGround(Planned + FVector(FMath::Cos(Angle), FMath::Sin(Angle), 0.0) * Radius, Candidate)
-                        && !IsWet(Candidate.ImpactPoint))
+                    if (!InBuilding(Around) && FindGround(Around, Candidate)
+                        && (Entry.Kind == EInteractableKind::FishingSpot || !IsWet(Candidate.ImpactPoint)))
                     {
                         Ground = Candidate;
-                        bDry = true;
+                        bClear = true;
                     }
                 }
             }
-            if (!bDry)
+            if (!bClear)
             {
-                UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=content_skipped id=%s reason=in_water at=%s"), InteractLogPrefix,
-                    Entry.Id, *Wet.ToString());
+                UE_LOG(LogMarburgumNet, Warning, TEXT("%s role=server event=content_skipped id=%s reason=%s at=%s"), InteractLogPrefix,
+                    Entry.Id, Reason, *Blocked.ToString());
                 continue;
             }
-            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=content_moved id=%s reason=in_water from=%.0f,%.0f,%.0f by=%.0f"),
-                InteractLogPrefix, Entry.Id, Wet.X, Wet.Y, Wet.Z, FVector::Dist2D(Wet, Ground.ImpactPoint));
+            UE_LOG(LogMarburgumNet, Log, TEXT("%s role=server event=content_moved id=%s reason=%s from=%.0f,%.0f,%.0f by=%.0f"),
+                InteractLogPrefix, Entry.Id, Reason, Blocked.X, Blocked.Y, Blocked.Z, FVector::Dist2D(Blocked, Ground.ImpactPoint));
         }
         const bool bPerson = Entry.Kind == EInteractableKind::Npc;
         // People stand on their feet; a place marker sits half sunk so it reads as a post, crate or sign.

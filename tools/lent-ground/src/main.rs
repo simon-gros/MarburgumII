@@ -1,7 +1,8 @@
-//! lent-ground: builds the ground of `/Game/World/lent` from survey data (ADR-040, ADR-045).
+//! lent-ground: builds the ground of `/Game/World/lent` from survey data (ADR-040, ADR-045, ADR-087).
 //!
-//! The ground covers a square round the middle of Stari most: Lent and, since ADR-045, its eight
-//! neighbouring windows of the original game (plan ±768 m).
+//! The ground covers a square round the middle of Stari most: Lent and, since ADR-087, the 24
+//! windows of the original game round it, five by five (plan ±1280 m). ADR-045 had the nine of
+//! the middle three by three (±768 m).
 //!
 //! Inputs, all outside the repository or committed beside its output:
 //! - the ARSO 2014 LiDAR tiles under the square (GKOT, classified point clouds);
@@ -72,12 +73,13 @@ fn half() -> f64 {
     EXTENT.get().expect("extent set").half
 }
 
-/// Lent and its eight neighbours: 24 components of 126 quads over 1,536 m (0.508 m), and a
-/// 4096² surface mask (0.375 m). Unreal builds a landscape from whole components only, so a grid
-/// that is not a whole number of them loses its east and south edges.
-const DEFAULT_HALF: f64 = 768.0;
-const DEFAULT_POINTS: usize = 3025;
-const DEFAULT_MASK: usize = 4096;
+/// Lent and the 24 windows round it (ADR-087): 40 components of 126 quads over 2,560 m (0.508 m,
+/// as for the nine windows of ADR-045), and an 8192² surface mask (0.3125 m). Unreal builds a
+/// landscape from whole components only, so a grid that is not a whole number of them loses its
+/// east and south edges.
+const DEFAULT_HALF: f64 = 1280.0;
+const DEFAULT_POINTS: usize = 5041;
+const DEFAULT_MASK: usize = 8192;
 
 /// How far under the paving the landscape is pushed, so it never shows through.
 const UNDER_PAVING: f32 = 0.15;
@@ -841,17 +843,17 @@ fn read_ortho(path: &Path) -> Result<Ortho, String> {
 const USAGE: &str = "usage:
   lent-ground merge-buildings --windows lent,center,... --terrain DIR --out buildings.json
   lent-ground --laz A.laz,B.laz,... --osm osm_lent.json.gz --buildings buildings.json --placed placed.txt
-              --ortho DIR/lent_albedo.jpg,DIR/center_albedo.jpg,... --out DIR [--half 768 --points 3025 --mask 4096]
+              --ortho DIR/lent_albedo.jpg,DIR/center_albedo.jpg,... --out DIR [--half 1280 --points 5041 --mask 8192]
               [--walk-graph Content/Marburgum/Street/lent_walk_graph.json] [--mode walk]
        lent-ground --mode lamps --osm osm_lent.json.gz --buildings buildings.json --placed placed.txt --out DIR
               --walk-graph Content/Marburgum/Street/lent_walk_graph.json --lamps Content/Marburgum/Lights/lent_street_lights.json
        lent-ground --mode attractors --osm osm_lent.json.gz --buildings buildings.json --placed placed.txt --out DIR
               --walk-graph Content/Marburgum/Street/lent_walk_graph.json --road-graph ORIGINAL/project/data/road_graph.json
-       lent-ground ring --laz A.laz,B.laz,... --heights DIR/heights.bin --out DIR
-       lent-ground surface-kinds --surface DIR/surface.png --out Content/Marburgum/Ground/lent_surface.bin [--half 768 --cell 2]
+       lent-ground ring --laz A.laz,B.laz,... --heights DIR/heights.bin --out DIR [--half 1280 --points 5041 --ring-half 2432]
+       lent-ground surface-kinds --surface DIR/surface.png --out Content/Marburgum/Ground/lent_surface.bin [--half 1280 --cell 2]
        lent-ground places --osm osm_lent.json.gz --districts ORIGINAL/project/data/districts.json
               --landmarks ORIGINAL/project/data/landmarks.json --out Content/Marburgum/Places/lent_places.json
-              [--tiers bespoke --half 768]
+              [--tiers bespoke --half 1280]
        lent-ground street-zones --walk-graph Content/Marburgum/Street/lent_walk_graph.json
               --road-graph ORIGINAL/project/data/road_graph.json";
 
@@ -922,9 +924,11 @@ fn main() {
         argv.remove(0);
         let result = read_flags(argv.into_iter()).and_then(|f| {
             let get = |k: &str| f.get(k).cloned().ok_or(format!("missing --{k}"));
-            let inner = read_f32(Path::new(&get("heights")?), DEFAULT_POINTS, DEFAULT_HALF)?;
+            let number = |k: &str, default: f64| f.get(k).map_or(Ok(default), |v| v.parse::<f64>().map_err(|e| format!("--{k}: {e}")));
+            let half = number("half", DEFAULT_HALF)?;
+            let inner = read_f32(Path::new(&get("heights")?), number("points", DEFAULT_POINTS as f64)? as usize, half)?;
             let out = PathBuf::from(get("out")?);
-            let summary = ring::build(&list(&get("laz")?), &inner, DEFAULT_HALF, &out.join("ring.bin"))?;
+            let summary = ring::build(&list(&get("laz")?), &inner, half, number("ring-half", ring::RING_HALF)?, &out.join("ring.bin"))?;
             std::fs::write(out.join("ring.json"), serde_json::to_string_pretty(&summary).unwrap() + "\n").map_err(|e| e.to_string())?;
             eprintln!("ring: {summary}");
             Ok(())

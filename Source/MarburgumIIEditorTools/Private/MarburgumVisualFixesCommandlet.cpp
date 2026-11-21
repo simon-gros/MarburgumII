@@ -202,44 +202,54 @@ namespace MarburgumVisualFixes
                 return Sign->GetActorTransform();
             }
         }
-        for (double Step = 0.0; Step <= SignSearch; Step += 25.0)
+        // A sign left floating far above sign height (a ground rebuild that measured through unbuilt meshes lifted three,
+        // ADR-087) is looked for at its own height first, then at the sign height over the street below it.
+        TArray<double, TInlineAllocator<2>> Levels = { Origin.Z };
+        if (const TOptional<FHitResult> Below = StreetUnder(Origin + Out * 150.0); Below.IsSet() && Origin.Z - Below->ImpactPoint.Z > SignHeight + 200.0)
         {
-            for (const double Side : { 1.0, -1.0 })
+            Levels.Add(Below->ImpactPoint.Z + SignHeight);
+        }
+        for (const double Level : Levels)
+        {
+            for (double Step = 0.0; Step <= SignSearch; Step += 25.0)
             {
-                if (Step == 0.0 && Side < 0.0)
+                for (const double Side : { 1.0, -1.0 })
                 {
-                    continue;
-                }
-                const FVector At = Origin + Along * Step * Side;
-                // The wall just behind the old spot first, then the first wall seen from further out over the street.
-                for (const double From : { 400.0, 1500.0 })
-                {
-                    const TOptional<FHitResult> Wall = Trace(World, At + Out * From, At - Out * 1500.0, Sign);
-                    if (!Wall.IsSet() || !IsBuilding(Wall->GetActor()) || FVector::DotProduct(Wall->ImpactNormal.GetSafeNormal2D(), Out) < 0.8)
+                    if (Step == 0.0 && Side < 0.0)
                     {
                         continue;
                     }
-                    const FVector Normal = Wall->ImpactNormal.GetSafeNormal2D();
-                    const TOptional<FHitResult> Street = StreetUnder(Wall->ImpactPoint + Normal * 150.0);
-                    if (!Street.IsSet())
+                    const FVector At = FVector(Origin.X, Origin.Y, Level) + Along * Step * Side;
+                    // The wall just behind the old spot first, then the first wall seen from further out over the street.
+                    for (const double From : { 400.0, 1500.0 })
                     {
-                        continue;
-                    }
-                    double Ceiling = SignHeight + 80.0;
-                    // Eaves or a cornice that come down near the lettering: keep 40 cm clear of them, never under 2.6 m.
-                    const FVector Foot(Wall->ImpactPoint.X + Normal.X * 30.0, Wall->ImpactPoint.Y + Normal.Y * 30.0, Street->ImpactPoint.Z + 200.0);
-                    if (const TOptional<FHitResult> Over = Trace(World, Foot, Foot + FVector(0, 0, Ceiling + Size.Z), Sign); Over.IsSet())
-                    {
-                        Ceiling = Over->ImpactPoint.Z - Street->ImpactPoint.Z - 40.0 - Size.Z * 0.5;
-                    }
-                    // 3.4 m first, then a little lower or higher, to find the band between the ground floor's windows and the next.
-                    for (const double Height : { SignHeight, SignHeight - 40.0, SignHeight + 40.0, SignHeight - 70.0, SignHeight + 80.0 })
-                    {
-                        const double Clamped = FMath::Max(260.0, FMath::Min(Height, Ceiling));
-                        const FVector Centre(Wall->ImpactPoint.X, Wall->ImpactPoint.Y, Street->ImpactPoint.Z + Clamped);
-                        if (Readable(World, Sign, Wall->GetActor(), Centre, Normal, Size, Street->ImpactPoint.Z))
+                        const TOptional<FHitResult> Wall = Trace(World, At + Out * From, At - Out * 1500.0, Sign);
+                        if (!Wall.IsSet() || !IsBuilding(Wall->GetActor()) || FVector::DotProduct(Wall->ImpactNormal.GetSafeNormal2D(), Out) < 0.8)
                         {
-                            return FTransform(Normal.Rotation(), Centre + Normal * SignProud);
+                            continue;
+                        }
+                        const FVector Normal = Wall->ImpactNormal.GetSafeNormal2D();
+                        const TOptional<FHitResult> Street = StreetUnder(Wall->ImpactPoint + Normal * 150.0);
+                        if (!Street.IsSet())
+                        {
+                            continue;
+                        }
+                        double Ceiling = SignHeight + 80.0;
+                        // Eaves or a cornice that come down near the lettering: keep 40 cm clear of them, never under 2.6 m.
+                        const FVector Foot(Wall->ImpactPoint.X + Normal.X * 30.0, Wall->ImpactPoint.Y + Normal.Y * 30.0, Street->ImpactPoint.Z + 200.0);
+                        if (const TOptional<FHitResult> Over = Trace(World, Foot, Foot + FVector(0, 0, Ceiling + Size.Z), Sign); Over.IsSet())
+                        {
+                            Ceiling = Over->ImpactPoint.Z - Street->ImpactPoint.Z - 40.0 - Size.Z * 0.5;
+                        }
+                        // 3.4 m first, then a little lower or higher, to find the band between the ground floor's windows and the next.
+                        for (const double Height : { SignHeight, SignHeight - 40.0, SignHeight + 40.0, SignHeight - 70.0, SignHeight + 80.0 })
+                        {
+                            const double Clamped = FMath::Max(260.0, FMath::Min(Height, Ceiling));
+                            const FVector Centre(Wall->ImpactPoint.X, Wall->ImpactPoint.Y, Street->ImpactPoint.Z + Clamped);
+                            if (Readable(World, Sign, Wall->GetActor(), Centre, Normal, Size, Street->ImpactPoint.Z))
+                            {
+                                return FTransform(Normal.Rotation(), Centre + Normal * SignProud);
+                            }
                         }
                     }
                 }

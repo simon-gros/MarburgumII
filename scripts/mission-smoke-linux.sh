@@ -207,7 +207,7 @@ mv "$out_dir/client-step-petra_kralj.log" "$out_dir/client-step-petra_kralj-pain
 # shellcheck disable=SC2046
 run sign CHOICE mission_under_paint_new_owner $(shot sign) -MB2MissionTarget=under_paint_new_owner \
     -MB2MissionId=under_the_paint_four_names -MB2MissionChoice=preserve_layers
-# The Melje yard and the Tabor trail stand on temporary pads (ADR-052).
+# The Melje yard stands on a temporary pad (ADR-052); the Tabor trail on the Tabor window's own ground (ADR-087).
 step matej_hall_three mission_started
 step melje_yard_gate stage_completed
 step melje_dispatch_lockers stage_completed

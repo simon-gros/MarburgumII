@@ -3,27 +3,28 @@
     "deep_footings_m": {
       "w106429768": 3.0,
       "w1420809685": 4.0,
+      "w158820715": 12.0,
       "w159333167": 9.5,
       "w91792771": 10.0
     },
     "footing_m": 2.5,
     "landscape_points_raised": 0,
-    "paved_points_below_footing": 0,
-    "seated": 870
+    "paved_points_below_footing": 3,
+    "seated": 3182
   },
   "format": "marburgumii.lent_ground",
   "landscape": {
     "col0": "west",
-    "half_extent_m": 768.0,
-    "max_m": 37.73513412475586,
+    "half_extent_m": 1280.0,
+    "max_m": 83.24530792236328,
     "min_m": -13.782779693603516,
-    "points": 3025,
+    "points": 5041,
     "row0": "north",
     "under_paving_m": 0.15000000596046448
   },
   "paved": {
     "chunk_m": 64.0,
-    "chunks": 521,
+    "chunks": 1476,
     "surfaces": [
       "asphalt",
       "yard_asphalt",
@@ -32,33 +33,33 @@
       "kerb",
       "paint"
     ],
-    "triangles": 5392267,
+    "triangles": 14016919,
     "triangles_by_surface": [
-      608506,
-      268071,
-      2527344,
-      400026,
-      1539542,
-      48778
+      1882988,
+      573278,
+      6731270,
+      361725,
+      4357906,
+      109752
     ]
   },
   "paving_edges": {
-    "landscape_points_lowered": 3304,
-    "points_lowered_under_dips": 701701,
-    "points_next_to_paving_lowered": 385750
+    "landscape_points_lowered": 11195,
+    "points_lowered_under_dips": 1987412,
+    "points_next_to_paving_lowered": 1095573
   },
   "paving_flat": {
-    "apron_points_eased": 535155,
-    "bank_points_cut": 57163,
-    "bank_points_raised": 3814,
+    "apron_points_eased": 1399845,
+    "bank_points_cut": 179159,
+    "bank_points_raised": 12264,
     "bump_kept_m": 0.05,
-    "island_points": 1272976,
-    "island_points_moved": 161956,
-    "islands_fitted": 736,
+    "island_points": 3299222,
+    "island_points_moved": 288573,
+    "islands_fitted": 1790,
     "opening_half_width_m": 5.079,
-    "points_flattened": 45222,
-    "stair_points_smoothed": 52698,
-    "verge_points_raised": 694276
+    "points_flattened": 107361,
+    "stair_points_smoothed": 126984,
+    "verge_points_raised": 2089162
   },
   "plan": "metres; x east and y south of the middle of Stari most (D96/TM E 549527.8, N 157564.0); z above the Drava (252.98 m)",
   "sources": [
@@ -127,15 +128,15 @@
     },
     {
       "licence": "ODbL 1.0, © OpenStreetMap contributors",
-      "name": "OpenStreetMap via Overpass, 2026-11-11T18:56:34Z",
+      "name": "OpenStreetMap via Overpass, 2026-11-21T03:35:21Z",
       "role": "streets and land use",
-      "sha256": "c0a0a4068b232bd3bcb44fcf921221a59bb70ef67724ee4975c0e1d9141f4fd2"
+      "sha256": "5d75a59d065af27798bf4efdb1ce8b747c13d28a99b00b65b9d4e8caa45fd1c3"
     },
     {
       "file": "buildings.json",
       "name": "magna-raedarum-marburgum <window>_buildings.json, joined (lent-ground merge-buildings)",
       "role": "building footprints",
-      "sha256": "09e68d5776ce84c4a0109e602c7c22de07ff9b13cd3f7f54ef57bf6ed3821796"
+      "sha256": "61700c6d78e25422deaed90b19c6202a658074dd42e5695641f6af55047c56f4"
     },
     {
       "file": "lent_albedo.jpg",
@@ -199,15 +200,127 @@
       "name": "GURS DOF025 orthophoto (2020–2022)",
       "role": "grass versus hard ground only",
       "sha256": "0bd8dbb6d33abf544c517fc090584d1bad3253d7e3e9cc31e83f6b635a62d6e5"
+    },
+    {
+      "file": "vrbanska_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "ad0c76e10ed540d2a9186be706b2406fedd4a82ba355320db88e54520567d973"
+    },
+    {
+      "file": "vinarska_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "e840af5ae5ce5193c849d543572afb89cdddb379da6886af6ff11af7bb290d4b"
+    },
+    {
+      "file": "mestni_park_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "ec659174392369d01ad7e1f1212e3cbee7cbe7dcc6b37ea4aec1750bd475dd44"
+    },
+    {
+      "file": "tomsiceva_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "e0ccdce0a40f8c68cbd4adba08453d3fbf3e4a1110e6d72c5eb7066a1535bfa1"
+    },
+    {
+      "file": "praprotnikova_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "be9fa367319ca02e3a3e7e833c9e9cfccac59068f56618ce011108d67acbd2e6"
+    },
+    {
+      "file": "smetanova_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "b811109ec14065eb7166a82073cb0430b5b78546d3ff17d37893dcf9081f4836"
+    },
+    {
+      "file": "zelezniska_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "16a26f9c909ae7330a5caeefc1d4dfbd6e6e16883255067749b3f57d184fe8fd"
+    },
+    {
+      "file": "studenci_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "7d9656719329da70ffb0e578915793e04f5d4643aa0c225f9b4effd170f0251f"
+    },
+    {
+      "file": "greenwich_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "fdf9fa04f85ba43c36e1a0cd92224a994517ceb8f59d524a669304424286991a"
+    },
+    {
+      "file": "preradoviceva_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "8fb1928d9f4c10445ba4490261ed456e498089325ebc24ffcb946186fe1ae117"
+    },
+    {
+      "file": "mejna_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "e83defa321b95660af40b24c067ca34bf423ece9ecd7b73694ad397b269cf0a2"
+    },
+    {
+      "file": "radvanjska_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "489948488588af742f1b601d70b9fd21ab0263b3c976733e1d6b532d96f21a52"
+    },
+    {
+      "file": "cesta_zmage_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "13eeeafc8be2c4f3af0d690abd5a2d91ca38a7b94ccc7cfdabe2b196ca02f1e3"
+    },
+    {
+      "file": "tabor_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "dcabd6e8e4b54b2a6a3640bcea08fb29dbbadae6d869aa5f5fe4c73b6071892d"
+    },
+    {
+      "file": "nasipna_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "04625123c96170868734d50754c7b56440cffb1049d1f30f4d7c60128ac607b0"
+    },
+    {
+      "file": "crnogorska_albedo.jpg",
+      "licence": "CC BY 4.0, Geodetska uprava Republike Slovenije",
+      "name": "GURS DOF025 orthophoto (2020–2022)",
+      "role": "grass versus hard ground only",
+      "sha256": "51d94f72ed787d303edcad9010c48c2f50fcf8e095adc26a5edb52b1fb7ee8d6"
     }
   ],
   "streets": {
-    "carriageway_m2": 320463.0,
-    "crossings": 386,
+    "carriageway_m2": 855571.0,
+    "crossings": 806,
     "dropped_kerb_m": 0.03,
     "kerb_m": 0.12,
-    "marked_crossings": 350,
-    "pavement_m2": 468025.0
+    "marked_crossings": 706,
+    "pavement_m2": 1239486.0
   },
   "surface_mask": {
     "channels": [
@@ -216,20 +329,26 @@
       "gravel",
       "river_stones"
     ],
-    "points": 4096,
+    "points": 8192,
     "remainder": "hard standing"
   },
   "survey": {
-    "blob_points_removed": 79880,
-    "filled_under_bridges": 27935,
-    "grid_points": 9150625,
-    "ground_points": 11707448,
+    "blob_points_removed": 207349,
+    "filled_under_bridges": 28133,
+    "grid_points": 25411681,
+    "ground_points": 36108795,
     "hollows_over_3m_deep_and_100m2": [
       {
         "area_m2": 6331.0,
         "deepest_m": 9.5,
         "x": -658.0,
         "y": 70.0
+      },
+      {
+        "area_m2": 2217.0,
+        "deepest_m": 4.400000095367432,
+        "x": 725.0,
+        "y": 582.0
       },
       {
         "area_m2": 1046.0,
@@ -244,6 +363,18 @@
         "y": -369.0
       },
       {
+        "area_m2": 830.0,
+        "deepest_m": 6.0,
+        "x": -1176.0,
+        "y": 165.0
+      },
+      {
+        "area_m2": 622.0,
+        "deepest_m": 6.800000190734863,
+        "x": 408.0,
+        "y": -821.0
+      },
+      {
         "area_m2": 601.0,
         "deepest_m": 8.399999618530273,
         "x": -666.0,
@@ -254,6 +385,18 @@
         "deepest_m": 5.099999904632568,
         "x": 478.0,
         "y": -419.0
+      },
+      {
+        "area_m2": 440.0,
+        "deepest_m": 4.599999904632568,
+        "x": 353.0,
+        "y": -872.0
+      },
+      {
+        "area_m2": 409.0,
+        "deepest_m": 4.300000190734863,
+        "x": 396.0,
+        "y": 1082.0
       },
       {
         "area_m2": 344.0,
@@ -268,6 +411,12 @@
         "y": -115.0
       },
       {
+        "area_m2": 192.0,
+        "deepest_m": 4.099999904632568,
+        "x": 598.0,
+        "y": 825.0
+      },
+      {
         "area_m2": 179.0,
         "deepest_m": 4.0,
         "x": 666.0,
@@ -278,6 +427,24 @@
         "deepest_m": 9.5,
         "x": -221.0,
         "y": -365.0
+      },
+      {
+        "area_m2": 148.0,
+        "deepest_m": 3.299999952316284,
+        "x": -813.0,
+        "y": 691.0
+      },
+      {
+        "area_m2": 143.0,
+        "deepest_m": 3.200000047683716,
+        "x": -821.0,
+        "y": 715.0
+      },
+      {
+        "area_m2": 128.0,
+        "deepest_m": 3.799999952316284,
+        "x": 380.0,
+        "y": 1084.0
       },
       {
         "area_m2": 125.0,
@@ -298,6 +465,12 @@
         "y": 625.0
       },
       {
+        "area_m2": 111.0,
+        "deepest_m": 4.199999809265137,
+        "x": -813.0,
+        "y": 701.0
+      },
+      {
         "area_m2": 108.0,
         "deepest_m": 11.0,
         "x": 186.0,
@@ -310,8 +483,8 @@
         "y": 440.0
       }
     ],
-    "measured_grid_points": 4756212,
-    "points_in_window": 27460251
+    "measured_grid_points": 14709888,
+    "points_in_window": 80079548
   },
   "version": 2
 }

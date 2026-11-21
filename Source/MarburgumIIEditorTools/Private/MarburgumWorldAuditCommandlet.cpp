@@ -23,8 +23,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogMarburgumWorldAudit, Log, All);
 
 namespace MarburgumWorldAudit
 {
-    // The playable square of ADR-045 is plan +-768 m; the distant ring (ADR-054) lies outside it on purpose.
-    constexpr double PlayableHalfExtent = 76800.0;
+    // The playable square of ADR-087 is plan +-1280 m (ADR-045 had +-768 m); the distant ring (ADR-054) lies outside it on purpose.
+    constexpr double PlayableHalfExtent = 128000.0;
     constexpr double SquareSlack = 2000.0;
     // A prop is anything placed whose footprint fits in 10 m and that is not part of the generated city.
     constexpr double PropMaxHalfWidth = 500.0;

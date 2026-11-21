@@ -130,6 +130,15 @@ int32 UMarburgumInteriorAuditCommandlet::Main(const FString& Params)
     OnlyText.ParseIntoArray(Only, TEXT(","));
 
     const bool bWriteFloors = FParse::Param(*Params, TEXT("WriteFloors"));
+    // The plans are read from the game's copy of buildings.json. Measuring floors is what brings that copy up to date, so
+    // take the footprints the façades were built from first; otherwise a changed buildings.json (ADR-087's 3,363
+    // footprints) would be measured as the old set and only copied afterwards.
+    if (bWriteFloors && IFileManager::Get().Copy(*UMarburgumInteriorSubsystem::RuntimeFile(TEXT("buildings.json")),
+            *UMarburgumInteriorSubsystem::SourceFile(TEXT("buildings.json"))) != COPY_OK)
+    {
+        UE_LOG(LogMarburgumInteriorAudit, Error, TEXT("MB2INTERIOR_AUDIT cannot copy buildings.json for the game"));
+        return 1;
+    }
     std::vector<MI::FPlan> Plans;
     TArray<FString> Names;
     const double ClassifyStart = FPlatformTime::Seconds();
