@@ -41,6 +41,11 @@ const PROBE_M: f64 = 0.25;
 const CREST_BACK_M: f64 = 0.3;
 /// Points closer than this make one run.
 const JOIN_M: f64 = 2.0;
+/// A run carries on over this much bank that is merely less steep, so a quay reads as one railing, not as stubs; an
+/// open zone, a bridge, a walk line or the lack of water still ends it.
+const SOFT_GAP_M: f64 = 3.0;
+/// Shorter runs are left out: a lone module or two on a bank reads as a stray fence, not a quay railing.
+const MIN_RUN_M: f64 = 6.0;
 /// The railing stands this far inside the paved edge.
 const RAIL_INSET_M: f64 = 0.25;
 const MODULE_M: f64 = 2.0;
@@ -53,6 +58,11 @@ pub const OPEN_AT: [(&str, Pt); 2] = [("lent_angler_fishing_spot", [18.13, -52.1
 const BRIDGE_CLEAR_M: f64 = 3.0;
 /// A module's line keeps this far from every walk line.
 const WALK_CLEAR_M: f64 = 0.45;
+/// Paving that stands this far over the landscape is a deck (a bridge, mapped as an area or not), which has its own
+/// parapet; its drop to the river below is not a quay.
+const DECK_M: f64 = 1.5;
+/// A module whose centre is this close to one already placed (two runs meeting at a corner) is left out.
+const MODULE_APART_M: f64 = 1.5;
 
 pub struct Inputs<'a> {
     pub walkable: &'a Shapes,
@@ -80,8 +90,10 @@ pub struct Counts {
     pub quay_points: usize,
     pub open_for_people: usize,
     pub by_bridge: usize,
+    pub on_deck: usize,
     pub on_walk_line: usize,
     pub short_runs: usize,
+    pub crossing: usize,
     pub runs: usize,
     pub run_m: f64,
     pub drops: Vec<f64>,
@@ -102,6 +114,8 @@ pub fn place(inp: &Inputs, kind: u8, source: u8, n: &mut Counts) -> Vec<Piece> {
     for contour in inp.walkable.iter().flatten() {
         let m = contour.len();
         let mut current: Vec<Point> = Vec::new();
+        // How much less steep bank the current run has crossed since its last quay point.
+        let mut soft_m = 0.0;
         let flush = |current: &mut Vec<Point>, runs: &mut Vec<Vec<Point>>| {
             if !current.is_empty() {
                 runs.push(std::mem::take(current));
@@ -136,12 +150,21 @@ pub fn place(inp: &Inputs, kind: u8, source: u8, n: &mut Counts) -> Vec<Piece> {
                     continue;
                 };
                 n.by_water += 1;
+                let paved = [p[0] - out[0] * 0.3, p[1] - out[1] * 0.3];
+                if (inp.top.sample(paved) - inp.heights.sample(paved)) as f64 > DECK_M {
+                    n.on_deck += 1;
+                    flush(&mut current, &mut runs);
+                    continue;
+                }
                 let window = (FALL_REACH_M / PROBE_M).round() as usize;
                 let height = |k: usize| if k == 0 { inp.top.sample([p[0] - out[0] * 0.05, p[1] - out[1] * 0.05]) as f64 } else { inp.heights.sample(probe(k)) as f64 };
                 let (crest_k, fall) = (0..k_water).map(|k| (k, height(k) - height(k + window))).fold((0, f64::MIN), |best, c| if c.1 > best.1 { c } else { best });
                 let crest_top = height(crest_k);
                 if crest_top < MIN_DROP_M || fall < MIN_FALL_M {
-                    flush(&mut current, &mut runs);
+                    soft_m += len / steps as f64;
+                    if soft_m > SOFT_GAP_M {
+                        flush(&mut current, &mut runs);
+                    }
                     continue;
                 }
                 n.quay_points += 1;
@@ -165,10 +188,11 @@ pub fn place(inp: &Inputs, kind: u8, source: u8, n: &mut Counts) -> Vec<Piece> {
                     continue;
                 }
                 if let Some(last) = current.last() {
-                    if dist(last.at, inner) > JOIN_M {
+                    if dist(last.at, inner) > JOIN_M + soft_m {
                         flush(&mut current, &mut runs);
                     }
                 }
+                soft_m = 0.0;
                 current.push(Point { at: inner });
             }
         }
@@ -178,7 +202,7 @@ pub fn place(inp: &Inputs, kind: u8, source: u8, n: &mut Counts) -> Vec<Piece> {
     let mut out = Vec::new();
     for run in runs {
         let length: f64 = run.windows(2).map(|w| dist(w[0].at, w[1].at)).sum();
-        if length < MODULE_M {
+        if length < MIN_RUN_M {
             n.short_runs += 1;
             continue;
         }
@@ -203,6 +227,10 @@ pub fn place(inp: &Inputs, kind: u8, source: u8, n: &mut Counts) -> Vec<Piece> {
             let (a, b) = (at(s0), at(s1));
             let centre = [(a[0] + b[0]) / 2.0, (a[1] + b[1]) / 2.0];
             // As a fence panel: the front faces across the run, so the module's length lies along it.
+            if out.iter().any(|p: &Piece| dist(p.at, centre) < MODULE_APART_M) {
+                n.crossing += 1;
+                continue;
+            }
             out.push(Piece { at: centre, kind, yaw: (yaw_to(a, b) + 90.0).rem_euclid(360.0), source });
         }
     }
@@ -221,7 +249,8 @@ pub fn summary(n: &Counts, pieces: usize) -> Value {
         "edge_points": n.edge_points,
         "edge_points_by_the_river": n.by_water,
         "quay_points": n.quay_points,
-        "left_open": { "where_people_meet_the_water": n.open_for_people, "by_a_bridge": n.by_bridge, "on_a_walk_line": n.on_walk_line },
+        "left_open": { "where_people_meet_the_water": n.open_for_people, "by_a_bridge": n.by_bridge, "on_a_deck": n.on_deck, "on_a_walk_line": n.on_walk_line },
+        "modules_crossing_another_left_out": n.crossing,
         "quay_height_above_water_m": { "min": q(0.0), "median": q(0.5), "p90": q(0.9), "max": q(1.0) },
         "open_at": OPEN_AT.iter().map(|(name, p)| json!({ "name": name, "x": p[0], "y": p[1], "radius_m": OPEN_RADIUS_M })).collect::<Vec<_>>(),
     })
@@ -257,5 +286,55 @@ mod tests {
         assert!(pieces.iter().all(|p| (p.at[1] + RAIL_INSET_M).abs() < 0.05), "on the river edge, inset");
         assert!(pieces.iter().all(|p| (p.yaw - 90.0).abs() < 1.0 || (p.yaw - 270.0).abs() < 1.0), "facing across the run");
         assert!(pieces.len() >= 8 && pieces.len() <= 10, "{} modules on 20 m", pieces.len());
+    }
+
+    /// A quay from x -20 to 10 with 2 m of gentle bank in it (-4 to -2), then gentle bank to 16 and a steep 4 m stub to
+    /// 20: the short gentle stretch is railed over, the stub is left out.
+    #[test]
+    fn one_railing_over_a_short_gap_and_no_stubs() {
+        let promenade = shapes::polygon(&[vec![[-20.0, -6.0], [20.0, -6.0], [20.0, 0.0], [-20.0, 0.0]]]);
+        let river = shapes::polygon(&[vec![[-30.0, 1.0], [30.0, 1.0], [30.0, 20.0], [-30.0, 20.0]]]);
+        let empty: Shapes = Vec::new();
+        let steep = |x: f64| !((-4.0..-2.0).contains(&x) || (10.0..16.0).contains(&x));
+        let mut heights = Grid::new(161, 40.0, 0.0);
+        for r in 0..161 {
+            for c in 0..161 {
+                let p = heights.pos(r, c);
+                let z = if p[1] <= 0.0 { 2.0 } else if steep(p[0]) { -0.5 } else { (2.0 - 0.5 * p[1]).max(-0.5) };
+                heights.set(r, c, z as f32);
+            }
+        }
+        let top = heights.clone();
+        let walk = Segments::new(4.0);
+        let inp = Inputs { walkable: &promenade, water: &river, bridges: &empty, heights: &heights, top: &top, walk: &walk, half: 40.0 };
+        let mut n = Counts::default();
+        let pieces = place(&inp, 6, 4, &mut n);
+        let xs: Vec<f64> = pieces.iter().map(|p| p.at[0]).collect();
+        assert_eq!(n.runs, 1, "one run over the gap: {xs:?}");
+        assert!(xs.iter().all(|&x| x < 10.5), "the 4 m stub is left out: {xs:?}");
+        assert!(xs.iter().any(|&x| (-4.5..-1.5).contains(&x)), "railed over the 2 m gap: {xs:?}");
+        assert!((13..=15).contains(&pieces.len()), "{} modules on 30 m", pieces.len());
+    }
+
+    /// A deck 6 m over a landscape that runs flat into the river: a long drop, but a bridge's, not a quay's.
+    #[test]
+    fn no_railing_on_a_deck() {
+        let deck = shapes::polygon(&[vec![[-20.0, -6.0], [20.0, -6.0], [20.0, 0.0], [-20.0, 0.0]]]);
+        let river = shapes::polygon(&[vec![[-30.0, 1.0], [30.0, 1.0], [30.0, 20.0], [-30.0, 20.0]]]);
+        let empty: Shapes = Vec::new();
+        let mut heights = Grid::new(161, 40.0, 0.0);
+        let mut top = Grid::new(161, 40.0, 0.0);
+        for r in 0..161 {
+            for c in 0..161 {
+                let p = heights.pos(r, c);
+                heights.set(r, c, if p[1] <= 0.5 { 0.0 } else { -0.5 });
+                top.set(r, c, if p[1] <= 0.0 { 6.0 } else { -0.5 });
+            }
+        }
+        let walk = Segments::new(4.0);
+        let inp = Inputs { walkable: &deck, water: &river, bridges: &empty, heights: &heights, top: &top, walk: &walk, half: 40.0 };
+        let mut n = Counts::default();
+        assert!(place(&inp, 6, 4, &mut n).is_empty());
+        assert!(n.on_deck > 0);
     }
 }

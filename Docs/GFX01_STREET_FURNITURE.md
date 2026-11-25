@@ -35,19 +35,22 @@ Runs: 1,873 m of barrier in the square. 7 panels were left out where a walk line
 
 ## The railing along the quays (VQ-024)
 
-ADR-040 left the promenade ending "in a paved edge over the water". `tools/lent-ground/src/quay.rs` walks every paved walkable edge (pavements and squares) that has the Drava within 6 m outward, and reads the ground outward in 0.25 m steps to the water. On the survey's ground the edge itself is rarely the drop: most of the paving stops on a flat verge, and the bank falls 1–5 m further out.
+ADR-040 left the promenade ending "in a paved edge over the water". `tools/lent-ground/src/quay.rs` walks every paved walkable edge (pavements and squares) that has the Drava within 6 m outward (only river water, `water=river` or `waterway=riverbank`: the five by five also holds a mapped pond in Mestni park, whose edge stays open), and reads the ground outward in 0.25 m steps to the water. On the survey's ground the edge itself is rarely the drop: most of the paving stops on a flat verge, and the bank falls 1–5 m further out.
 
 So the railing goes on the **bank's crest**, where the ground falls steepest:
 
 - **Steep enough:** a crest at least 1 m above the river (z 0 is the Drava's surface, ADR-040) that falls at least 0.8 m within 1 m. A gentle slope fails that test, and stays open for wading in and fishing.
 - **Open where people meet the water:** nothing within 8 m of the Lent angler (the fishing spot is placed relative to him) or of the swim smoke's way in, nothing within 3 m of a bridge (its own parapets), and nothing on a walk line.
-- **Modules:** whole 2 m modules on runs at least one module long, 0.3 m back from the crest.
+- **One railing, not stubs:** a run carries on over up to 3 m of bank that is merely less steep (an open zone, a bridge, a walk line or the lack of water still ends it), and runs shorter than 6 m are left out. Without this the five by five got 72 runs, 44 of them a single module, which read as stray fences.
+- **Modules:** whole 2 m modules along each run, 0.3 m back from the crest.
 
-**Result:**
+**Result on the five by five (ADR-090):**
 
-- 2,502 edge points (0.5 m apart) lie by the river, and 544 of them are a quay.
-- **46 modules on 15 runs, 103 m**, almost all along Lent east of Stari most, at a median of 1.75 m above the water (1.0–3.5 m).
-- 32 runs shorter than a module are left out, as are 135 points by a bridge.
+- 5,209 edge points (0.5 m apart) lie by the river, and 2,089 of them are a quay.
+- **357 modules on 27 runs, 737 m**, standing a median of 1.6 m above the water (1.1–1.8 m for nine in ten; four on the high bank in Greenwich at 8–9.2 m). By window: Smetanova 168, Studenci 86, Titov most 45 (Lent east of Stari most), Greenwich 44, Lent 9, Pristan 5.
+- 61 runs shorter than 6 m are left out, as are 134 points by a bridge and 32 on walk lines.
+- Counting every water area as river put 31 modules round the Mestni park pond, 20 m above the Drava; the river-only rule removes them.
+- On the nine windows (21 November) the first version of the rule, without joined runs, gave 46 modules on 15 runs, 103 m.
 - No point near the angler or the swimmers' way in was steep, so the rule itself keeps both open, not only the exclusion zones.
 - On our survey the Lent bank right by Stari most is a slope, so it gets no railing.
 

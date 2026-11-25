@@ -1378,10 +1378,10 @@ The evening review of 20 November listed two open P0 security points on ADR-083:
    - the paint compiled for instancing.
 4. **Server and client put up the same pieces from the file**, not replicated, as the lamps and plants are. `-MB2NoStreetFurniture` leaves them out.
 5. **Railing along the quays (VQ-024)**, added to the same file as a seventh piece:
-   - **Where:** where a paved promenade or square meets the Drava and, between its edge and the water, the ground stands at least 1 m above the river and falls at least 0.8 m within 1 m (a steep bank or wall, not a slope people walk down).
+   - **Where:** where a paved promenade or square meets the Drava (river water only; a park pond keeps its open edge) and, between its edge and the water, the ground stands at least 1 m above the river and falls at least 0.8 m within 1 m (a steep bank or wall, not a slope people walk down).
    - **How:** a 2 m module of painted steel railing (our own `SM_Street_QuayRailing_01`, generated, one collision box) every 2 m along the bank's crest, 0.3 m back from it.
    - **Open:** within 8 m of the Lent angler and of the swimmers' way in, by bridges, and on walk lines.
-   - **Result:** 46 modules on 15 runs (103 m), mostly along Lent east of Stari most. The open zones were never steep, so the rule alone already keeps them open.
+   - **Result:** on the five by five (ADR-090) 357 modules on 27 runs (737 m), 1.0–9.2 m above the water; a run carries on over up to 3 m of less steep bank and runs under 6 m are left out, from Smetanova and Studenci in the west to Greenwich in the east (on the nine windows 46 modules, 103 m). The open zones were never steep, so the rule alone already keeps them open.
    - **Not built:** the stone quay wall needs the landscape reshaped in the ground build.
 6. **Unity-safe tests.** Three shared tests put `using namespace MarburgumII;` at file scope, which leaked into the next test files of their unity blob (an ambiguous `Weather`, `Missions`). They now declare it inside each test.
 
