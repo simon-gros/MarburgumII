@@ -29,7 +29,8 @@ namespace MarburgumPlantContent
 
 /**
  * The street kit's content (GFX-01; MarburgumStreetFurniture.h names the meshes): the original game's six
- * SM_Street_*_01 meshes and their vertex-colour M_MarburgumPaint, copied from the original.
+ * SM_Street_*_01 meshes and their vertex-colour M_MarburgumPaint, copied from the original, and our own
+ * SM_Street_QuayRailing_01, generated here (painted steel in M_StreetLampMetal).
  *
  * - The paint is drawn on instanced components, so it is compiled for them.
  * - The original's meshes collide against every triangle, so a shelter's roof stops whoever stands under it. Each is

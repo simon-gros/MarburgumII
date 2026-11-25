@@ -38,19 +38,21 @@ use std::collections::HashMap;
 use std::path::Path;
 
 /// The kit, in the original's `EPiece` order, which is also `MarburgumStreetFurniture.h`'s `EPiece`.
-pub const PIECES: [&str; 6] = ["stop_post", "shelter", "bench", "fence_panel", "wall_panel", "bollard"];
+pub const PIECES: [&str; 7] = ["stop_post", "shelter", "bench", "fence_panel", "wall_panel", "bollard", "quay_railing"];
 const STOP_POST: u8 = 0;
 const SHELTER: u8 = 1;
 const BENCH: u8 = 2;
 const FENCE_PANEL: u8 = 3;
 const WALL_PANEL: u8 = 4;
 const BOLLARD: u8 = 5;
+const QUAY_RAILING: u8 = 6;
 
-pub const SOURCES: [&str; 4] = ["stop", "bench", "bollard", "barrier"];
+pub const SOURCES: [&str; 5] = ["stop", "bench", "bollard", "barrier", "quay"];
 const STOP: u8 = 0;
 const MAPPED_BENCH: u8 = 1;
 const MAPPED_BOLLARD: u8 = 2;
 const BARRIER: u8 = 3;
+const QUAY: u8 = 4;
 
 /// Footprints, metres across (along the front) and deep (front to back), from the original's kit.
 const SHELTER_SIZE: [f64; 2] = [3.6, 1.4];
@@ -59,6 +61,8 @@ const POST_SIZE: [f64; 2] = [0.44, 0.09];
 const BOLLARD_SIZE: [f64; 2] = [0.15, 0.15];
 const PANEL_MODULE_M: f64 = 2.0;
 const PANEL_DEPTH: [f64; 2] = [0.1, 0.32];
+/// A quay railing module, along its run and across.
+const QUAY_MODULE: [f64; 2] = [2.0, 0.1];
 const BOLLARD_SPACING_M: f64 = 1.5;
 /// The original's stop arrangement, metres in the stop's frame (right of the post, behind it).
 const SHELTER_SETBACK_M: f64 = 1.30;
@@ -160,8 +164,13 @@ fn read_trunks(path: &Path) -> Result<Vec<Trunk>, String> {
 pub struct Inputs<'a> {
     pub osm: &'a Osm,
     pub carriageway: &'a Shapes,
+    /// The paved walkable ground (pavements and squares), whose edge over the river carries the quay railing.
+    pub walkable: &'a Shapes,
+    pub heights: &'a Grid,
     pub footprints: &'a Shapes,
     pub water: &'a Shapes,
+    /// The river alone, whose quays carry the railing (other water, such as a park pond, keeps its open edge).
+    pub river: &'a Shapes,
     pub bridges: &'a Shapes,
     pub top: &'a Grid,
     pub half: f64,
@@ -233,11 +242,11 @@ impl Ground<'_> {
     }
 }
 
-struct Piece {
-    at: Pt,
-    kind: u8,
-    yaw: f64,
-    source: u8,
+pub(crate) struct Piece {
+    pub(crate) at: Pt,
+    pub(crate) kind: u8,
+    pub(crate) yaw: f64,
+    pub(crate) source: u8,
 }
 
 #[derive(Default)]
@@ -479,7 +488,20 @@ pub fn build(inp: &Inputs, walk_graph: &Path, plants: &Path, osm_path: &Path, ou
         inside: inp.half - EDGE_M,
     };
     let mut n = Counts::default();
-    let pieces = place(inp, &g, &mut n);
+    let mut pieces = place(inp, &g, &mut n);
+    let mut q = crate::quay::Counts::default();
+    let quay_inputs = crate::quay::Inputs { walkable: inp.walkable, water: inp.river, bridges: inp.bridges, heights: inp.heights, top: inp.top, walk: &walk, half: inp.half };
+    let mut railing = crate::quay::place(&quay_inputs, QUAY_RAILING, QUAY, &mut q);
+    // The same clearances as every other piece: a railing module on a building, a tree, the road or a walk line is left out.
+    railing.retain(|p| match g.refuse(p.at, p.yaw, [QUAY_MODULE[0], QUAY_MODULE[1]], WALK_CLEAR_M) {
+        None => true,
+        Some(why) => {
+            n.refuse("quay_railing", why);
+            false
+        }
+    });
+    let quay_summary = crate::quay::summary(&q, railing.len());
+    pieces.extend(railing);
 
     let mut by_piece = serde_json::Map::new();
     for (i, name) in PIECES.iter().enumerate() {
@@ -501,6 +523,7 @@ pub fn build(inp: &Inputs, walk_graph: &Path, plants: &Path, osm_path: &Path, ou
         "panels_gapped_for_walkers": n.panels_gapped_for_walkers,
         "refused": refused.into_iter().map(|(k, v)| (k.clone(), json!(v))).collect::<serde_json::Map<_, _>>(),
         "trees_kept_clear_of": trunk_count,
+        "quay": quay_summary,
     });
     let doc = json!({
         "format": "marburgumii.street_furniture",

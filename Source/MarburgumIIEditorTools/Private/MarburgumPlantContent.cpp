@@ -7,6 +7,7 @@
 #include "FileHelpers.h"
 #include "IAssetTools.h"
 #include "MarburgumStreetFurniture.h"
+#include "MarburgumStreetLights.h"
 #include "MarburgumVegetation.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialExpressionConstant.h"
@@ -14,6 +15,7 @@
 #include "Materials/MaterialExpressionVectorParameter.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "MeshDescription.h"
+#include "MeshDescriptionBuilder.h"
 #include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
 #include "Misc/Paths.h"
@@ -280,9 +282,163 @@ namespace MarburgumStreetKitContent
 {
     namespace Furniture = MarburgumII::StreetFurniture;
 
+    namespace
+    {
+        /** Painted steel, the street lanterns' dark green (MarburgumStreetLightContent); alpha is how metallic. */
+        const FVector4f RailingGreen(0.025f, 0.05f, 0.038f, 0.2f);
+        constexpr double RailHalfLengthCm = 100.0;
+        constexpr double RailTopCm = 110.0;
+        constexpr double PostHalfCm = 3.0;
+        constexpr double RailHalfCm = 2.5;
+        /** The mid rails, centimetres above the ground. */
+        constexpr double MidRailsCm[] = { 40.0, 75.0 };
+
+        /** Boxes into one mesh description with vertex colours: the street lamps' way of building a kit piece. */
+        struct FBoxes
+        {
+            FMeshDescription Description;
+            FMeshDescriptionBuilder Builder;
+            FPolygonGroupID Group;
+            int32 Triangles = 0;
+
+            FBoxes()
+            {
+                FStaticMeshAttributes(Description).Register();
+                Builder.SetMeshDescription(&Description);
+                Builder.EnablePolyGroups();
+                Builder.SetNumUVLayers(1);
+                Group = Builder.AppendPolygonGroup(TEXT("Metal"));
+            }
+
+            /** A quad whose front faces Outward, corners in order round it. */
+            void Quad(const FVector& A, const FVector& B, const FVector& C, const FVector& D, const FVector& Outward, const FVector4f& Colour)
+            {
+                const FVector Cross = FVector::CrossProduct(C - A, D - B);
+                const bool bFlip = FVector::DotProduct(Cross, Outward) < 0.0;
+                const FVector Normal = (bFlip ? -Cross : Cross).GetSafeNormal();
+                const FVector Corners[4] = { A, B, C, D };
+                const FVector2D UVs[4] = { FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1) };
+                FVertexInstanceID Ids[4];
+                for (int32 K = 0; K < 4; ++K)
+                {
+                    Ids[K] = Builder.AppendInstance(Builder.AppendVertex(Corners[K]));
+                    Builder.SetInstanceNormal(Ids[K], Normal);
+                    Builder.SetInstanceUV(Ids[K], UVs[K], 0);
+                    Builder.SetInstanceColor(Ids[K], Colour);
+                }
+                if (bFlip)
+                {
+                    Builder.AppendTriangle(Ids[0], Ids[2], Ids[1], Group);
+                    Builder.AppendTriangle(Ids[0], Ids[3], Ids[2], Group);
+                }
+                else
+                {
+                    Builder.AppendTriangle(Ids[0], Ids[1], Ids[2], Group);
+                    Builder.AppendTriangle(Ids[0], Ids[2], Ids[3], Group);
+                }
+                Triangles += 2;
+            }
+
+            void Box(const FVector& Min, const FVector& Max, const FVector4f& Colour)
+            {
+                const FVector P[8] = {
+                    FVector(Min.X, Min.Y, Min.Z), FVector(Max.X, Min.Y, Min.Z), FVector(Max.X, Max.Y, Min.Z), FVector(Min.X, Max.Y, Min.Z),
+                    FVector(Min.X, Min.Y, Max.Z), FVector(Max.X, Min.Y, Max.Z), FVector(Max.X, Max.Y, Max.Z), FVector(Min.X, Max.Y, Max.Z),
+                };
+                Quad(P[0], P[3], P[2], P[1], -FVector::ZAxisVector, Colour);
+                Quad(P[4], P[5], P[6], P[7], FVector::ZAxisVector, Colour);
+                Quad(P[0], P[1], P[5], P[4], -FVector::YAxisVector, Colour);
+                Quad(P[1], P[2], P[6], P[5], FVector::XAxisVector, Colour);
+                Quad(P[2], P[3], P[7], P[6], FVector::YAxisVector, Colour);
+                Quad(P[3], P[0], P[4], P[7], -FVector::XAxisVector, Colour);
+            }
+        };
+
+        /**
+         * The quay railing: a 2 m module along Y, its front +X as every panel of the kit. A post at each end (the next
+         * module's post stands in the same place on a straight run), a top rail at 1.10 m and two mid rails. One box
+         * blocks it, so nobody walks or falls through.
+         */
+        bool WriteQuayRailing(TArray<UPackage*>& Dirty, FString& OutError)
+        {
+            const FString Path = Furniture::MeshPath(Furniture::EPiece::QuayRailing);
+            const FString PackageName = FPackageName::ObjectPathToPackageName(Path);
+            UMaterial* Metal = LoadObject<UMaterial>(nullptr, *FString::Printf(TEXT("%s.%s"), MarburgumII::StreetLights::MetalMaterialPackage,
+                *FPackageName::GetShortName(MarburgumII::StreetLights::MetalMaterialPackage)));
+            if (!Metal)
+            {
+                OutError = TEXT("no M_StreetLampMetal (scripts/create-weather-content.sh lamps)");
+                return false;
+            }
+            UPackage* Package = FPackageName::DoesPackageExist(PackageName) ? LoadPackage(nullptr, *PackageName, LOAD_None) : CreatePackage(*PackageName);
+            if (Package)
+            {
+                Package->FullyLoad();
+            }
+            const FString Name = FPackageName::GetShortName(PackageName);
+            UStaticMesh* Mesh = Package ? FindObject<UStaticMesh>(Package, *Name) : nullptr;
+            if (Mesh)
+            {
+                FAssetCompilingManager::Get().FinishAllCompilation();
+                Mesh->Modify();
+            }
+            else if (Package)
+            {
+                Mesh = NewObject<UStaticMesh>(Package, *Name, RF_Public | RF_Standalone);
+            }
+            if (!Mesh)
+            {
+                OutError = FString::Printf(TEXT("could not create %s"), *PackageName);
+                return false;
+            }
+            FBoxes Shape;
+            for (const double End : { -RailHalfLengthCm, RailHalfLengthCm })
+            {
+                Shape.Box(FVector(-PostHalfCm, End - PostHalfCm, 0.0), FVector(PostHalfCm, End + PostHalfCm, RailTopCm + 2.0), RailingGreen);
+            }
+            Shape.Box(FVector(-RailHalfCm - 1.0, -RailHalfLengthCm, RailTopCm - 2.0 * RailHalfCm), FVector(RailHalfCm + 1.0, RailHalfLengthCm, RailTopCm), RailingGreen);
+            for (const double Z : MidRailsCm)
+            {
+                Shape.Box(FVector(-RailHalfCm, -RailHalfLengthCm, Z - RailHalfCm), FVector(RailHalfCm, RailHalfLengthCm, Z + RailHalfCm), RailingGreen);
+            }
+            const int32 Triangles = Shape.Triangles;
+            Mesh->SetNumSourceModels(1);
+            FStaticMeshSourceModel& Source = Mesh->GetSourceModel(0);
+            Source.BuildSettings.bRecomputeNormals = false;
+            Source.BuildSettings.bRecomputeTangents = true;
+            Source.BuildSettings.bRemoveDegenerates = true;
+            Source.BuildSettings.bGenerateLightmapUVs = false;
+            Mesh->CreateMeshDescription(0, MoveTemp(Shape.Description));
+            Mesh->CommitMeshDescription(0);
+            Mesh->SetStaticMaterials({ FStaticMaterial(Metal, TEXT("Metal"), TEXT("Metal")) });
+            Mesh->GetNaniteSettings().bEnabled = false;
+            Mesh->CreateBodySetup();
+            UBodySetup* Body = Mesh->GetBodySetup();
+            Body->Modify();
+            Body->AggGeom.EmptyElements();
+            FKBoxElem Solid(2.0 * (RailHalfCm + 3.0), 2.0 * (RailHalfLengthCm + PostHalfCm), RailTopCm + 2.0);
+            Solid.Center = FVector(0.0, 0.0, (RailTopCm + 2.0) * 0.5);
+            Body->AggGeom.BoxElems.Add(Solid);
+            Body->CollisionTraceFlag = CTF_UseSimpleAsComplex;
+            Body->bNeverNeedsCookedCollisionData = false;
+            Body->CreatePhysicsMeshes();
+            Mesh->Build(true);
+            Mesh->PostEditChange();
+            FAssetCompilingManager::Get().FinishAllCompilation();
+            Mesh->MarkPackageDirty();
+            Dirty.AddUnique(Package);
+            UE_LOG(LogMarburgumPlantContent, Display, TEXT("MB2KITCONTENT mesh=%s generated triangles=%d"), *Name, Triangles);
+            return true;
+        }
+    }
+
     bool Write(FString& OutError)
     {
         TArray<UPackage*> Dirty;
+        if (!WriteQuayRailing(Dirty, OutError))
+        {
+            return false;
+        }
         UMaterial* Paint = LoadObject<UMaterial>(nullptr, PaintMaterial);
         if (!Paint)
         {
@@ -296,7 +452,8 @@ namespace MarburgumStreetKitContent
         Paint->PostEditChange();
         Paint->MarkPackageDirty();
         Dirty.Add(Paint->GetPackage());
-        for (int32 Index = 0; Index < static_cast<int32>(Furniture::EPiece::Count); ++Index)
+        // The original's six pieces (the railing above is ours, with its own collision).
+        for (int32 Index = 0; Index < static_cast<int32>(Furniture::EPiece::QuayRailing); ++Index)
         {
             const FString Path = Furniture::MeshPath(static_cast<Furniture::EPiece>(Index));
             UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Path);

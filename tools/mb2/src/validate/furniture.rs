@@ -10,7 +10,7 @@ const CONTRACT: &str = "Source/MarburgumIIShared/Public/MarburgumStreetFurniture
 const READER: &str = "Source/MarburgumIIShared/Private/MarburgumStreetFurniture.cpp";
 const GAME_INI: &str = "Config/DefaultGame.ini";
 /// The kit's asset names, in the contract's EPiece order.
-const MESHES: [&str; 6] = ["StopPost", "Shelter", "Bench", "FencePanel", "WallPanel", "Bollard"];
+const MESHES: [&str; 7] = ["StopPost", "Shelter", "Bench", "FencePanel", "WallPanel", "Bollard", "QuayRailing"];
 /// Half the side of the ground's square, metres (lent-ground's default extent).
 const HALF_M: f64 = 1280.0;
 

@@ -73,7 +73,7 @@ namespace MarburgumII::StreetFurniture
 
     FString MeshPath(EPiece Piece)
     {
-        static const TCHAR* Names[] = { TEXT("StopPost"), TEXT("Shelter"), TEXT("Bench"), TEXT("FencePanel"), TEXT("WallPanel"), TEXT("Bollard") };
+        static const TCHAR* Names[] = { TEXT("StopPost"), TEXT("Shelter"), TEXT("Bench"), TEXT("FencePanel"), TEXT("WallPanel"), TEXT("Bollard"), TEXT("QuayRailing") };
         static_assert(UE_ARRAY_COUNT(Names) == static_cast<int32>(EPiece::Count));
         const TCHAR* Name = Names[static_cast<int32>(Piece)];
         return FString::Printf(TEXT("/Game/World/StreetFurniture/SM_Street_%s_01.SM_Street_%s_01"), Name, Name);
@@ -86,6 +86,7 @@ namespace MarburgumII::StreetFurniture
         case EPiece::Shelter:
         case EPiece::FencePanel:
         case EPiece::WallPanel:
+        case EPiece::QuayRailing:
             return LargeCullCm;
         default:
             return SmallCullCm;

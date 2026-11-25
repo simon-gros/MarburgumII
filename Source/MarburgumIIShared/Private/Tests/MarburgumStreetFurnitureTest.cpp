@@ -36,6 +36,8 @@ bool FMarburgumStreetFurnitureFileTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("the shelter's mesh"), MeshPath(EPiece::Shelter), FString(TEXT("/Game/World/StreetFurniture/SM_Street_Shelter_01.SM_Street_Shelter_01")));
     TestEqual(TEXT("a panel is drawn far"), CullDistanceCm(EPiece::WallPanel), LargeCullCm);
     TestEqual(TEXT("a bollard near"), CullDistanceCm(EPiece::Bollard), SmallCullCm);
+    TestEqual(TEXT("the quay railing's mesh"), MeshPath(EPiece::QuayRailing), FString(TEXT("/Game/World/StreetFurniture/SM_Street_QuayRailing_01.SM_Street_QuayRailing_01")));
+    TestTrue(TEXT("a quay railing on a quay reads"), Parse(TEXT(R"({"format":"marburgumii.street_furniture","version":1,"furniture":[[1,2,3,6,0,4]]})"), Pieces, Error) && Pieces.Num() == 1 && Pieces[0].Piece == EPiece::QuayRailing && Pieces[0].Source == ESource::Quay);
     TestFalse(TEXT("a wrong format is refused"), Parse(TEXT(R"({"format":"marburgumii.street_lights","version":1,"furniture":[]})"), Pieces, Error));
     TestFalse(TEXT("a bad piece is refused"), Parse(TEXT(R"({"format":"marburgumii.street_furniture","version":1,"furniture":[[0,0,0,9,0,0]]})"), Pieces, Error));
     TestFalse(TEXT("a short row is refused"), Parse(TEXT(R"({"format":"marburgumii.street_furniture","version":1,"furniture":[[0,0,0,0,0]]})"), Pieces, Error));
@@ -61,6 +63,7 @@ bool FMarburgumStreetFurnitureFileTest::RunTest(const FString& Parameters)
     }
     TestTrue(TEXT("stops, shelters and benches"), ByPiece[0] > 0 && ByPiece[1] > 0 && ByPiece[2] > 0);
     TestTrue(TEXT("fences and walls"), ByPiece[3] > 0 && ByPiece[4] > 0);
+    TestTrue(TEXT("and a railing along the quays"), ByPiece[static_cast<int32>(EPiece::QuayRailing)] > 0);
     return true;
 }
 

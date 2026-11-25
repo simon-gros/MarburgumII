@@ -33,6 +33,32 @@ Stops in detail:
 
 Runs: 1,873 m of barrier in the square. 7 panels were left out where a walk line crosses. Panels refused for carriageway: 58 fence and 23 wall. Panels refused for a building: 89 wall and 7 fence, mostly walls drawn along a building's own wall. 9 panels were refused for a tree. 17 mapped bollards stand in the carriageway (they close pedestrian streets to cars) and are left out, as the rule says. The file's `summary` has every count.
 
+## The railing along the quays (VQ-024)
+
+ADR-040 left the promenade ending "in a paved edge over the water". `tools/lent-ground/src/quay.rs` walks every paved walkable edge (pavements and squares) that has the Drava within 6 m outward, and reads the ground outward in 0.25 m steps to the water. On the survey's ground the edge itself is rarely the drop: most of the paving stops on a flat verge, and the bank falls 1–5 m further out.
+
+So the railing goes on the **bank's crest**, where the ground falls steepest:
+
+- **Steep enough:** a crest at least 1 m above the river (z 0 is the Drava's surface, ADR-040) that falls at least 0.8 m within 1 m. A gentle slope fails that test, and stays open for wading in and fishing.
+- **Open where people meet the water:** nothing within 8 m of the Lent angler (the fishing spot is placed relative to him) or of the swim smoke's way in, nothing within 3 m of a bridge (its own parapets), and nothing on a walk line.
+- **Modules:** whole 2 m modules on runs at least one module long, 0.3 m back from the crest.
+
+**Result:**
+
+- 2,502 edge points (0.5 m apart) lie by the river, and 544 of them are a quay.
+- **46 modules on 15 runs, 103 m**, almost all along Lent east of Stari most, at a median of 1.75 m above the water (1.0–3.5 m).
+- 32 runs shorter than a module are left out, as are 135 points by a bridge.
+- No point near the angler or the swimmers' way in was steep, so the rule itself keeps both open, not only the exclusion zones.
+- On our survey the Lent bank right by Stari most is a slope, so it gets no railing.
+
+**The railing** is our own `SM_Street_QuayRailing_01` (`scripts/create-weather-content.sh furniture`):
+
+- painted steel in the street lanterns' dark green (`M_StreetLampMetal`), 60 triangles;
+- posts at both ends, a top rail at 1.10 m and two mid rails;
+- one collision box, so nobody walks or falls through.
+
+**The quay wall itself is not built.** The landscape slopes from the crest to the water, and a vertical stone face needs that ground reshaped in the ground build (`lent-ground`, `MarburgumRebuildGround -Verify`). That is a separate change.
+
 ## In the game
 
 - **Data:** `Content/Marburgum/Furniture/lent_street_furniture.json` (staged), read by `MarburgumStreetFurniture.h`.

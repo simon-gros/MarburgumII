@@ -7,7 +7,8 @@
  *
  * tools/lent-ground (`--mode furniture`) furnishes every bus platform with a stop post, and with a shelter and a bench
  * where the map records them. It places every mapped bench and bollard, and lines fence, wall and bollard runs with
- * 2 m panels and 1.5 m posts. It writes Content/Marburgum/Furniture/lent_street_furniture.json. Nothing stands in the
+ * 2 m panels and 1.5 m posts. Where a paved promenade ends in a steep drop to the Drava, a railing runs along the bank's
+ * crest, open where people meet the water. It writes Content/Marburgum/Furniture/lent_street_furniture.json. Nothing stands in the
  * carriageway, a building, the river, on a bridge or within reach of a tree's trunk, and no solid piece stands on the
  * street people's walk lines (a panel across one leaves a gap).
  *
@@ -38,6 +39,8 @@ namespace MarburgumII::StreetFurniture
         /** A 2 m module of masonry with a coping. */
         WallPanel,
         Bollard,
+        /** A 2 m module of painted steel railing along a quay's edge over the river. */
+        QuayRailing,
         Count,
     };
 
@@ -51,6 +54,8 @@ namespace MarburgumII::StreetFurniture
         Bollard,
         /** A fence, wall or bollard run. */
         Barrier,
+        /** A quay's edge over the river. */
+        Quay,
         Count,
     };
 

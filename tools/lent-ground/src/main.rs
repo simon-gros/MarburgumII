@@ -50,6 +50,7 @@ mod lamps;
 mod mesh;
 mod osm;
 mod places;
+mod quay;
 mod plants;
 mod proj;
 mod ring;
@@ -430,6 +431,8 @@ struct Streets {
     unpaved: Shapes,
     bridges: Shapes,
     water: Shapes,
+    /// The Drava alone (`water=river`, `waterway=riverbank`): the quays its railing follows, not a park pond.
+    river: Shapes,
     junctions: Vec<Pt>,
     centre_lines: Vec<Vec<Pt>>,
     road_paths: Vec<Vec<Pt>>,
@@ -507,6 +510,7 @@ fn streets(osm: &Osm, buildings: &Shapes, window: &Shapes) -> Streets {
     let setts = area_shapes(osm, |t| matches!(tag(t, "surface"), Some("sett" | "cobblestone" | "unhewn_cobblestone" | "paving_stones" | "granite")) && (t.contains_key("highway") || t.contains_key("place") || t.contains_key("area:highway")));
     let bridges = area_shapes(osm, |t| tag(t, "man_made") == Some("bridge"));
     let water = area_shapes(osm, |t| tag(t, "natural") == Some("water") || tag(t, "waterway") == Some("riverbank"));
+    let river = area_shapes(osm, |t| tag(t, "water") == Some("river") || tag(t, "waterway") == Some("riverbank"));
 
     // Streets pass under bridges, so only buildings and the river cut them.
     let blocked = shapes::union_all(&[buildings.clone(), water.clone()]);
@@ -546,7 +550,7 @@ fn streets(osm: &Osm, buildings: &Shapes, window: &Shapes) -> Streets {
         })
         .collect();
 
-    Streets { carriageway, pavement, plazas, parking, setts, unpaved, bridges, water, junctions, centre_lines, road_paths, crossings }
+    Streets { carriageway, pavement, plazas, parking, setts, unpaved, bridges, water, river, junctions, centre_lines, road_paths, crossings }
 }
 
 /// The direction of the nearest road at `p`.
@@ -1051,7 +1055,20 @@ fn run(args: &Args) -> Result<(), String> {
     }
     if let Some((plants, out)) = &args.furniture {
         let top = read_f32(&args.out.join("top.bin"), EXTENT.get().expect("extent set").points, half())?;
-        let inputs = furniture::Inputs { osm: &osm, carriageway: &st.carriageway, footprints: &footprints, water: &st.water, bridges: &st.bridges, top: &top, half: half() };
+        let heights = read_f32(&args.out.join("heights.bin"), EXTENT.get().expect("extent set").points, half())?;
+        let walkable = shapes::union_all(&[st.pavement.clone(), st.plazas.clone()]);
+        let inputs = furniture::Inputs {
+            osm: &osm,
+            carriageway: &st.carriageway,
+            walkable: &walkable,
+            heights: &heights,
+            footprints: &footprints,
+            water: &st.water,
+            river: &st.river,
+            bridges: &st.bridges,
+            top: &top,
+            half: half(),
+        };
         let walk = args.walk_graph.as_ref().expect("checked in parse_args");
         let summary = furniture::build(&inputs, walk, plants, &args.osm, out)?;
         eprintln!("furniture: {summary} ({:.1}s)", t0.elapsed().as_secs_f64());

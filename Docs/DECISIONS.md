@@ -1355,7 +1355,7 @@ The evening review of 20 November listed two open P0 security points on ADR-083:
   - Service tests: 38.
   - Editor account smoke PASS (`Saved/AccountSmoke/20261120T233811Z`). A thief redeems the player's ticket first with a wrong key and admits nobody. The player is then admitted once, through the recording relay, with that same ticket. The ticket replayed while the character is in the world is refused as already in the world.
 
-## ADR-089 — Street furniture from the original game's kit, placed from OpenStreetMap clear of walkers and trees (GFX-01, VQ-023; implemented 2026-11-21; owner approval OPEN)
+## ADR-089 — Street furniture from the original game's kit, placed from OpenStreetMap clear of walkers and trees, and a railing on the steep quays (GFX-01, VQ-023, VQ-024; implemented 2026-11-21; owner approval OPEN)
 
 **Context.** Apart from the street lamps (ADR-065), the square had no street furniture: no stop furniture at the bus stops of ADR-069, and no benches, fences, walls or bollards (VQ-023). The original game ported a six-piece street kit and placed it from each window's OpenStreetMap topology (`feat/unreal-street-kit`). The kit's meshes exist; its placement code reads the original's per-window topology files, which this map does not use.
 
@@ -1377,7 +1377,13 @@ The evening review of 20 November listed two open P0 security points on ADR-083:
    - Nanite off, since the paint was not compiled for it and drew as the default material;
    - the paint compiled for instancing.
 4. **Server and client put up the same pieces from the file**, not replicated, as the lamps and plants are. `-MB2NoStreetFurniture` leaves them out.
-5. **Unity-safe tests.** Three shared tests put `using namespace MarburgumII;` at file scope, which leaked into the next test files of their unity blob (an ambiguous `Weather`, `Missions`). They now declare it inside each test.
+5. **Railing along the quays (VQ-024)**, added to the same file as a seventh piece:
+   - **Where:** where a paved promenade or square meets the Drava and, between its edge and the water, the ground stands at least 1 m above the river and falls at least 0.8 m within 1 m (a steep bank or wall, not a slope people walk down).
+   - **How:** a 2 m module of painted steel railing (our own `SM_Street_QuayRailing_01`, generated, one collision box) every 2 m along the bank's crest, 0.3 m back from it.
+   - **Open:** within 8 m of the Lent angler and of the swimmers' way in, by bridges, and on walk lines.
+   - **Result:** 46 modules on 15 runs (103 m), mostly along Lent east of Stari most. The open zones were never steep, so the rule alone already keeps them open.
+   - **Not built:** the stone quay wall needs the landscape reshaped in the ground build.
+6. **Unity-safe tests.** Three shared tests put `using namespace MarburgumII;` at file scope, which leaked into the next test files of their unity blob (an ambiguous `Weather`, `Missions`). They now declare it inside each test.
 
 **Not decided here.**
 - The kit's appearance: the original's material-library binding, paint variants and 1990s colours.
@@ -1386,6 +1392,7 @@ The evening review of 20 November listed two open P0 security points on ADR-083:
 
 **Rejected.**
 - Placing pieces on walk lines and letting street people collide.
+- A railing along the whole river edge of the paving: most of it stands under 1 m above the water on a slope, where people wade in and fish.
 - Moving trees to make room.
 - Standing the 17 mapped bollards that are in the carriageway (they would block traffic lanes the paving draws as open).
 
