@@ -4,8 +4,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Game\n"
-"POT-Creation-Date: 2026-11-21 02:51\n"
-"PO-Revision-Date: 2026-11-21 02:51\n"
+"POT-Creation-Date: 2026-11-26 02:24\n"
+"PO-Revision-Date: 2026-11-26 02:24\n"
 "Language-Team: \n"
 "Language: sl\n"
 "MIME-Version: 1.0\n"
@@ -3261,579 +3261,670 @@ msgctxt "MarburgumPlayerCondition,Waiting"
 msgid "Waiting for the server to restore this character"
 msgstr "Čakanje, da strežnik obnovi stanje tega lika"
 
+#. Key:	NeuralSafe
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(103)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(103)
+msgctxt "MarburgumSettingsPanel,NeuralSafe"
+msgid "Safe"
+msgstr "Varno"
+
+#. Key:	NeuralGuided
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(104)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(104)
+msgctxt "MarburgumSettingsPanel,NeuralGuided"
+msgid "Guided"
+msgstr "Vodeno"
+
 #. Key:	Overline
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(108)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(108)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(137)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(137)
 msgctxt "MarburgumSettingsPanel,Overline"
 msgid "SETTINGS"
 msgstr "NASTAVITVE"
 
 #. Key:	Title
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(109)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(109)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(138)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(138)
 msgctxt "MarburgumSettingsPanel,Title"
 msgid "How the game looks, sounds and answers"
 msgstr "Kako je igra videti, kako zveni in kako se odziva"
 
 #. Key:	Interface
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(117)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(117)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(146)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(146)
 msgctxt "MarburgumSettingsPanel,Interface"
 msgid "INTERFACE"
 msgstr "VMESNIK"
 
 #. Key:	LanguageLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(118)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(118)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(147)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(147)
 msgctxt "MarburgumSettingsPanel,LanguageLabel"
 msgid "Language"
 msgstr "Jezik"
 
 #. Key:	LanguageDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(119)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(119)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(148)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(148)
 msgctxt "MarburgumSettingsPanel,LanguageDesc"
 msgid "The language of menus, screens and notices. Place names are always Slovene; what people in the city say, and mission texts, are still in English in this build."
 msgstr "Jezik menijev, zaslonov in obvestil. Imena krajev so vedno slovenska; pogovori z ljudmi v mestu in besedila nalog so v tej različici še v angleščini."
 
 #. Key:	ScaleLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(120)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(120)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(149)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(149)
 msgctxt "MarburgumSettingsPanel,ScaleLabel"
 msgid "Interface scale"
 msgstr "Velikost vmesnika"
 
 #. Key:	ScaleFixed
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(122)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(122)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(151)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(151)
 msgctxt "MarburgumSettingsPanel,ScaleFixed"
 msgid "The size of every panel and text on top of the display's own scaling. Fixed for this run by -MB2UIScale."
 msgstr "Velikost vseh plošč in besedila poleg povečave, ki jo uporablja zaslon. Za ta zagon je določena s parametrom -MB2UIScale."
 
 #. Key:	ScaleDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(123)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(123)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(152)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(152)
 msgctxt "MarburgumSettingsPanel,ScaleDesc"
 msgid "The size of every panel and text on top of the display's own scaling. 100 % suits most screens; raise it on a large television or a high-density laptop."
 msgstr "Velikost vseh plošč in besedila poleg povečave, ki jo uporablja zaslon. 100 % ustreza večini zaslonov; povečaj jo na velikem televizorju ali prenosniku z visoko gostoto slikovnih pik."
 
 #. Key:	TextLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(125)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(125)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(154)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(154)
 msgctxt "MarburgumSettingsPanel,TextLabel"
 msgid "Text size"
 msgstr "Velikost besedila"
 
 #. Key:	TextDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(126)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(126)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(155)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(155)
 msgctxt "MarburgumSettingsPanel,TextDesc"
 msgid "Larger reading text in panels, the journal, chat and subtitles, without enlarging the frames."
 msgstr "Večje besedilo na ploščah, v dnevniku, klepetu in podnapisih, brez povečanja okvirjev."
 
 #. Key:	ContrastLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(127)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(127)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(156)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(156)
 msgctxt "MarburgumSettingsPanel,ContrastLabel"
 msgid "High contrast"
 msgstr "Visok kontrast"
 
 #. Key:	ContrastDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(128)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(128)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(157)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(157)
 msgctxt "MarburgumSettingsPanel,ContrastDesc"
 msgid "Opaque panels, brighter secondary text and stronger outlines that read over any street."
 msgstr "Neprosojne plošče, svetlejše pomožno besedilo in izrazitejši obrisi, ki so dobro vidni na ozadju katere koli ulice."
 
 #. Key:	MotionLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(129)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(129)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(158)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(158)
 msgctxt "MarburgumSettingsPanel,MotionLabel"
 msgid "Reduce motion"
 msgstr "Zmanjšaj gibanje"
 
 #. Key:	MotionDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(130)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(130)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(159)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(159)
 msgctxt "MarburgumSettingsPanel,MotionDesc"
 msgid "No slides, pulses or long fades: titles and notifications appear and leave at once."
 msgstr "Brez drsenja, utripanja ali dolgega bledenja: naslovi in obvestila se pojavijo in izginejo takoj."
 
 #. Key:	HudLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(131)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(131)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(160)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(160)
 msgctxt "MarburgumSettingsPanel,HudLabel"
 msgid "HUD opacity"
 msgstr "Neprosojnost prikaza HUD"
 
 #. Key:	HudDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(132)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(132)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(161)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(161)
 msgctxt "MarburgumSettingsPanel,HudDesc"
 msgid "How strongly the exploration HUD is drawn over the street. Screens and warnings stay opaque."
 msgstr "Kako izrazito je HUD med raziskovanjem prikazan čez ulico. Zasloni in opozorila ostanejo neprosojni."
 
 #. Key:	ConditionLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(133)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(133)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(162)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(162)
 msgctxt "MarburgumSettingsPanel,ConditionLabel"
 msgid "Condition"
 msgstr "Stanje"
 
 #. Key:	ConditionDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(134)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(134)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(163)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(163)
 msgctxt "MarburgumSettingsPanel,ConditionDesc"
 msgid "Show vitality and stamina only when they change or matter, or keep them on screen."
 msgstr "Vitalnost in vzdržljivost prikaži le, ko se spremenita ali sta pomembni, ali pa naj bosta ves čas na zaslonu."
 
 #. Key:	NoticeLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(135)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(135)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(164)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(164)
 msgctxt "MarburgumSettingsPanel,NoticeLabel"
 msgid "Notification time"
 msgstr "Čas prikaza obvestil"
 
 #. Key:	NoticeDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(136)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(136)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(165)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(165)
 msgctxt "MarburgumSettingsPanel,NoticeDesc"
 msgid "How long mission, item and server notices stay before they fade. Refusals always stay a little longer."
 msgstr "Kako dolgo so obvestila o nalogah, predmetih in strežniku prikazana, preden zbledijo. Obvestila o zavrnitvah so vedno prikazana nekoliko dlje."
 
 #. Key:	StampLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(137)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(137)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(166)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(166)
 msgctxt "MarburgumSettingsPanel,StampLabel"
 msgid "Chat timestamps"
 msgstr "Časovne oznake v klepetu"
 
 #. Key:	StampDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(138)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(138)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(167)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(167)
 msgctxt "MarburgumSettingsPanel,StampDesc"
 msgid "Each chat line carries the time this computer received it."
 msgstr "Vsaka vrstica klepeta je opremljena s časom, ko jo je ta računalnik prejel."
 
 #. Key:	Audio
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(140)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(140)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(169)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(169)
 msgctxt "MarburgumSettingsPanel,Audio"
 msgid "AUDIO"
 msgstr "ZVOK"
 
 #. Key:	VolumeLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(141)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(141)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(170)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(170)
 msgctxt "MarburgumSettingsPanel,VolumeLabel"
 msgid "Master volume"
 msgstr "Glavna glasnost"
 
 #. Key:	VolumeDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(142)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(142)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(171)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(171)
 msgctxt "MarburgumSettingsPanel,VolumeDesc"
 msgid "The loudness of everything the game plays. Separate music and effects levels arrive when the game has separate music and effects channels."
 msgstr "Glasnost vsega, kar igra predvaja. Ločeni nastavitvi glasnosti glasbe in učinkov bosta na voljo, ko bo igra imela ločena kanala za glasbo in učinke."
 
 #. Key:	Display
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(145)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(145)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(174)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(174)
 msgctxt "MarburgumSettingsPanel,Display"
 msgid "DISPLAY"
 msgstr "ZASLON"
 
 #. Key:	ResolutionLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(146)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(146)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(175)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(175)
 msgctxt "MarburgumSettingsPanel,ResolutionLabel"
 msgid "Resolution"
 msgstr "Ločljivost"
 
 #. Key:	ResolutionDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(147)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(147)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(176)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(176)
 msgctxt "MarburgumSettingsPanel,ResolutionDesc"
 msgid "The size of the game's window. Changing it in game is not offered yet; start the client with -ResX and -ResY to choose."
 msgstr "Velikost okna igre. Spreminjanje med igro še ni na voljo; izbereš jo tako, da odjemalec zaženeš s parametroma -ResX in -ResY."
 
 #. Key:	WindowLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(149)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(149)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(178)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(178)
 msgctxt "MarburgumSettingsPanel,WindowLabel"
 msgid "Window mode"
 msgstr "Način prikaza"
 
 #. Key:	WindowDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(150)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(150)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(179)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(179)
 msgctxt "MarburgumSettingsPanel,WindowDesc"
 msgid "Full screen, borderless or windowed, as the client was started."
 msgstr "Celozaslonsko, brez robov ali v oknu, kot ob zagonu odjemalca."
 
 #. Key:	DpiLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(151)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(151)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(180)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(180)
 msgctxt "MarburgumSettingsPanel,DpiLabel"
 msgid "Display scaling"
 msgstr "Merilo prikaza"
 
 #. Key:	DpiDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(152)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(152)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(181)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(181)
 msgctxt "MarburgumSettingsPanel,DpiDesc"
 msgid "The interface is designed at 1080p and follows the window's height: 80 % at 720p, 133 % at 1440p and 200 % at 4K. Interface scale multiplies on top."
 msgstr "Vmesnik je zasnovan za 1080p in se prilagaja višini okna: 80 % pri 720p, 133 % pri 1440p in 200 % pri 4K. Merilo vmesnika to vrednost dodatno pomnoži."
 
 #. Key:	VSyncLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(154)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(154)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(183)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(183)
 msgctxt "MarburgumSettingsPanel,VSyncLabel"
 msgid "Vertical sync"
 msgstr "Navpična sinhronizacija"
 
 #. Key:	VSyncDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(155)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(155)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(184)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(184)
 msgctxt "MarburgumSettingsPanel,VSyncDesc"
 msgid "Waits for the display before showing each frame: no tearing, slightly more input delay."
 msgstr "Pred prikazom vsake sličice počaka na zaslon: brez trganja slike, z nekoliko večjim zamikom vnosa."
 
 #. Key:	FpsLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(156)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(156)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(185)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(185)
 msgctxt "MarburgumSettingsPanel,FpsLabel"
 msgid "Frame-rate limit"
 msgstr "Omejitev sličic na sekundo"
 
 #. Key:	FpsDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(157)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(157)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(186)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(186)
 msgctxt "MarburgumSettingsPanel,FpsDesc"
 msgid "Caps how many frames the game draws per second, to keep a laptop cool and quiet."
 msgstr "Omeji število sličic, ki jih igra izriše na sekundo, da prenosnik ostane hladen in tih."
 
+#. Key:	Graphics
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(188)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(188)
+msgctxt "MarburgumSettingsPanel,Graphics"
+msgid "GRAPHICS"
+msgstr "GRAFIKA"
+
+#. Key:	NeuralLabel
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(189)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(189)
+msgctxt "MarburgumSettingsPanel,NeuralLabel"
+msgid "DLSS 5 neural rendering"
+msgstr "Nevronsko upodabljanje DLSS 5"
+
+#. Key:	NeuralDesc
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(190)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(190)
+msgctxt "MarburgumSettingsPanel,NeuralDesc"
+msgid "Optional. NVIDIA's neural rendering redraws each finished frame for richer light and materials. Safe works from colour alone; Guided also uses depth and motion and holds detail better while moving. It needs an NVIDIA RTX card, Windows with DirectX 12, DLSS upscaling and NVIDIA's DLSS 5 runtime, which the game does not include. It can change faces and signs, and only this computer's picture changes."
+msgstr "Neobvezno. NVIDIA-jevo nevronsko upodabljanje vsako dokončano sličico izriše znova z bogatejšo svetlobo in materiali. Varno deluje samo iz barv; Vodeno uporablja tudi globino in gibanje ter med premikanjem bolje ohrani podrobnosti. Potrebuje kartico NVIDIA RTX, Windows z DirectX 12, povečevanje DLSS in NVIDIA-jevo izvajalno okolje DLSS 5, ki ga igra ne vključuje. Lahko spremeni obraze in napise, spremeni pa se le slika na tem računalniku."
+
 #. Key:	Controls
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(159)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(159)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(195)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(195)
 msgctxt "MarburgumSettingsPanel,Controls"
 msgid "CONTROLS"
 msgstr "UPRAVLJANJE"
 
 #. Key:	Move
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(161)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(161)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(197)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(197)
 msgctxt "MarburgumSettingsPanel,Move"
 msgid "Walk"
 msgstr "Hoja"
 
 #. Key:	Run
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(162)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(162)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(198)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(198)
 msgctxt "MarburgumSettingsPanel,Run"
 msgid "Run  ·  handbrake when driving"
 msgstr "Tek  ·  ročna zavora med vožnjo"
 
 #. Key:	Jump
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(163)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(163)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(199)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(199)
 msgctxt "MarburgumSettingsPanel,Jump"
 msgid "Jump"
 msgstr "Skok"
 
 #. Key:	Interact
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(164)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(164)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(200)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(200)
 msgctxt "MarburgumSettingsPanel,Interact"
 msgid "Talk, inspect, fish, enter or leave a car"
 msgstr "Pogovor, ogled, ribolov, vstop v avto ali izstop iz njega"
 
 #. Key:	Shop
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(165)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(165)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(201)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(201)
 msgctxt "MarburgumSettingsPanel,Shop"
 msgid "Open a shopkeeper's counter"
 msgstr "Odpri ponudbo pri trgovcu"
 
 #. Key:	Fight
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(166)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(166)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(202)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(202)
 msgctxt "MarburgumSettingsPanel,Fight"
 msgid "Jab  ·  heavy swing  ·  guard (hold)"
 msgstr "Kratek udarec  ·  močan zamah  ·  obramba (drži)"
 
 #. Key:	Chat
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(167)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(167)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(203)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(203)
 msgctxt "MarburgumSettingsPanel,Chat"
 msgid "Chat"
 msgstr "Klepet"
 
 #. Key:	Screens
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(168)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(168)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(204)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(204)
 msgctxt "MarburgumSettingsPanel,Screens"
 msgid "Character  ·  Skills  ·  Inventory  ·  Journal"
 msgstr "Lik  ·  Veščine  ·  Inventar  ·  Dnevnik"
 
 #. Key:	Choose
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(169)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(169)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(205)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(205)
 msgctxt "MarburgumSettingsPanel,Choose"
 msgid "Pick an answer in a decision"
 msgstr "Izberi odgovor pri odločitvi"
 
 #. Key:	Menu
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(170)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(170)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(206)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(206)
 msgctxt "MarburgumSettingsPanel,Menu"
 msgid "Close a screen  ·  game menu"
 msgstr "Zapri zaslon  ·  meni igre"
 
 #. Key:	Photo
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(171)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(171)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(207)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(207)
 msgctxt "MarburgumSettingsPanel,Photo"
 msgid "Take a photograph with the camera"
 msgstr "Fotografiraj s fotoaparatom"
 
 #. Key:	Pad
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(172)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(172)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(208)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(208)
 msgctxt "MarburgumSettingsPanel,Pad"
 msgid "Gamepad in menus: move, select, back, switch screen"
 msgstr "Igralni plošček v menijih: premikanje, izbira, nazaj, preklop zaslona"
 
 #. Key:	PadWalk
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(173)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(173)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(209)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(209)
 msgctxt "MarburgumSettingsPanel,PadWalk"
 msgid "Gamepad: walk  ·  look and aim  ·  run (hold)  ·  jump"
 msgstr "Igralni plošček: hoja  ·  pogled in merjenje  ·  tek (drži)  ·  skok"
 
 #. Key:	PadAct
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(174)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(174)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(210)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(210)
 msgctxt "MarburgumSettingsPanel,PadAct"
 msgid "Gamepad: interact  ·  photograph  ·  Journal  ·  Inventory  ·  close  ·  game menu"
 msgstr "Igralni plošček: dejanje  ·  fotografija  ·  Dnevnik  ·  Inventar  ·  zapri  ·  meni igre"
 
 #. Key:	RebindPad
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(176)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(176)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(212)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(212)
 msgctxt "MarburgumSettingsPanel,RebindPad"
 msgid "Keys cannot be changed yet; rebinding arrives with the input-mapping design. Driving, fighting, chat and the counter are not on the gamepad in this build. Hints name the keys of the device you used last."
 msgstr "Tipk še ni mogoče spremeniti; spreminjanje bo na voljo ob uvedbi sistema za preslikavo vnosa. Vožnja, boj, klepet in pult z igralnim ploščkom v tej različici niso na voljo. Namigi kažejo tipke naprave, ki si jo nazadnje uporabil."
 
 #. Key:	Restore
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(181)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(181)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(217)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(217)
 msgctxt "MarburgumSettingsPanel,Restore"
 msgid "RESTORE"
 msgstr "PONASTAVITEV"
 
 #. Key:	UndoLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(182)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(182)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(218)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(218)
 msgctxt "MarburgumSettingsPanel,UndoLabel"
 msgid "Undo changes"
 msgstr "Razveljavi spremembe"
 
 #. Key:	UndoDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(183)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(183)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(219)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(219)
 msgctxt "MarburgumSettingsPanel,UndoDesc"
 msgid "Puts every setting back the way it was when this screen opened."
 msgstr "Vse nastavitve povrne v stanje ob odprtju tega zaslona."
 
 #. Key:	ResetLabel
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(184)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(184)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(220)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(220)
 msgctxt "MarburgumSettingsPanel,ResetLabel"
 msgid "Reset to defaults"
 msgstr "Ponastavi na privzeto"
 
 #. Key:	ResetDesc
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(185)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(185)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(221)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(221)
 msgctxt "MarburgumSettingsPanel,ResetDesc"
-msgid "Puts every interface, audio and display setting here back to the shipped values."
-msgstr "Vse nastavitve vmesnika, zvoka in prikaza na tem zaslonu povrne na privzete vrednosti igre."
+msgid "Puts every interface, audio, display and graphics setting here back to the shipped values."
+msgstr "Vse nastavitve vmesnika, zvoka, prikaza in grafike na tem zaslonu povrne na privzete vrednosti igre."
 
 #. Key:	About
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(192)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(192)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(228)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(228)
 msgctxt "MarburgumSettingsPanel,About"
 msgid "ABOUT THIS SETTING"
 msgstr "O TEJ NASTAVITVI"
 
 #. Key:	Current
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(200)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(200)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(236)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(236)
 msgctxt "MarburgumSettingsPanel,Current"
 msgid "Now"
 msgstr "Trenutno"
 
 #. Key:	Default
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(203)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(203)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(239)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(239)
 msgctxt "MarburgumSettingsPanel,Default"
 msgid "Default"
 msgstr "Privzeto"
 
 #. Key:	Local
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(206)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(206)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(242)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(242)
 msgctxt "MarburgumSettingsPanel,Local"
 msgid "Saved on this computer as soon as you change it. Nothing here is sent to the server or to your account."
 msgstr "Shrani se na ta računalnik takoj, ko spremeniš nastavitev. Nič od tega se ne pošlje strežniku ali v tvoj račun."
 
 #. Key:	Change
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(210)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(210)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(246)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(246)
 msgctxt "MarburgumSettingsPanel,Change"
 msgid "Change value"
 msgstr "Spremeni vrednost"
 
 #. Key:	Next
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(211)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(211)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(247)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(247)
 msgctxt "MarburgumSettingsPanel,Next"
 msgid "Next value"
 msgstr "Naslednja vrednost"
 
 #. Key:	Large
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(348)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(348)
 msgctxt "MarburgumSettingsPanel,Large"
 msgid "Large"
 msgstr "Veliko"
 
 #. Key:	Larger
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(348)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(348)
 msgctxt "MarburgumSettingsPanel,Larger"
 msgid "Larger"
 msgstr "Večje"
 
 #. Key:	Standard
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(312)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(348)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(348)
 msgctxt "MarburgumSettingsPanel,Standard"
 msgid "Standard"
 msgstr "Običajno"
 
 #. Key:	Always
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(316)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(316)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(352)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(352)
 msgctxt "MarburgumSettingsPanel,Always"
 msgid "Always"
 msgstr "Vedno"
 
 #. Key:	WhenItMatters
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(316)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(316)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(352)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(352)
 msgctxt "MarburgumSettingsPanel,WhenItMatters"
 msgid "When it matters"
 msgstr "Ko je pomembno"
 
 #. Key:	Long
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(318)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(318)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(354)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(354)
 msgctxt "MarburgumSettingsPanel,Long"
 msgid "Long"
 msgstr "Dolgo"
 
 #. Key:	Short
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(318)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(318)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(354)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(354)
 msgctxt "MarburgumSettingsPanel,Short"
 msgid "Short"
 msgstr "Kratko"
 
 #. Key:	Unavailable
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(323)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(323)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(359)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(359)
 msgctxt "MarburgumSettingsPanel,Unavailable"
 msgid "Unavailable"
 msgstr "Ni na voljo"
 
 #. Key:	Unlimited
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(329)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(329)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(365)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(365)
 msgctxt "MarburgumSettingsPanel,Unlimited"
 msgid "Unlimited"
 msgstr "Brez omejitve"
 
 #. Key:	Fps
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(330)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(330)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(366)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(366)
 msgctxt "MarburgumSettingsPanel,Fps"
 msgid "{0} fps"
 msgstr "{0} fps"
 
 #. Key:	Size
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(334)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(334)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(370)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(370)
 msgctxt "MarburgumSettingsPanel,Size"
 msgid "{0} × {1}"
 msgstr "{0} × {1}"
 
 #. Key:	Fullscreen
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(344)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(344)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(380)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(380)
 msgctxt "MarburgumSettingsPanel,Fullscreen"
 msgid "Full screen"
 msgstr "Celozaslonsko"
 
 #. Key:	Borderless
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(345)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(345)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(381)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(381)
 msgctxt "MarburgumSettingsPanel,Borderless"
 msgid "Borderless"
 msgstr "Brez robov"
 
 #. Key:	Windowed
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(346)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(346)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(382)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(382)
 msgctxt "MarburgumSettingsPanel,Windowed"
 msgid "Windowed"
 msgstr "V oknu"
 
-#. Key:	SystemLanguage
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(505)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(505)
-msgctxt "MarburgumSettingsPanel,SystemLanguage"
-msgid "The system's"
-msgstr "Sistemski jezik"
+#. Key:	NeuralOverridden
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(419)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(419)
+msgctxt "MarburgumSettingsPanel,NeuralOverridden"
+msgid "DLSS 5's own controls have overridden this choice for now."
+msgstr "Lastne nastavitve DLSS 5 so to izbiro začasno preglasile."
 
-#. Key:	NotApplicable
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(511)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(511)
-msgctxt "MarburgumSettingsPanel,NotApplicable"
-msgid "—"
-msgstr "—"
+#. Key:	NeuralSafeMode
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(427)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(427)
+msgctxt "MarburgumSettingsPanel,NeuralSafeMode"
+msgid "Not running: the game was started in safe render mode (-MB2SafeRender)."
+msgstr "Ne deluje: igra je bila zagnana v varnem načinu upodabljanja (-MB2SafeRender)."
+
+#. Key:	NeuralNeedsDlss
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(431)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(431)
+msgctxt "MarburgumSettingsPanel,NeuralNeedsDlss"
+msgid "Not running: DLSS upscaling is not active on this computer."
+msgstr "Ne deluje: povečevanje DLSS na tem računalniku ni dejavno."
+
+#. Key:	NeuralNoPlugin
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(435)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(435)
+msgctxt "MarburgumSettingsPanel,NeuralNoPlugin"
+msgid "Not running: DLSS 5 is only part of Windows builds running on DirectX 12."
+msgstr "Ne deluje: DLSS 5 je del le različic za Windows z DirectX 12."
+
+#. Key:	NeuralNoNvidia
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(439)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(439)
+msgctxt "MarburgumSettingsPanel,NeuralNoNvidia"
+msgid "Not running: it needs an NVIDIA RTX graphics card."
+msgstr "Ne deluje: potrebuje grafično kartico NVIDIA RTX."
+
+#. Key:	NeuralNoRuntime
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(443)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(443)
+msgctxt "MarburgumSettingsPanel,NeuralNoRuntime"
+msgid "Not running: NVIDIA's DLSS 5 runtime is not installed."
+msgstr "Ne deluje: NVIDIA-jevo izvajalno okolje DLSS 5 ni nameščeno."
+
+#. Key:	NeuralNotStarted
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(445)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(445)
+msgctxt "MarburgumSettingsPanel,NeuralNotStarted"
+msgid "Not running: the DLSS 5 plugin did not start."
+msgstr "Ne deluje: vtičnik DLSS 5 se ni zagnal."
 
 #. Key:	Percent
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(55)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(55)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(56)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(56)
 msgctxt "MarburgumSettingsPanel,Percent"
 msgid "{0} %"
 msgstr "{0} %"
 
+#. Key:	DescAndStatus
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(598)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(598)
+msgctxt "MarburgumSettingsPanel,DescAndStatus"
+msgid "{0}\n\n{1}"
+msgstr "{0}\n\n{1}"
+
 #. Key:	Off
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(60)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(60)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(61)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(61)
 msgctxt "MarburgumSettingsPanel,Off"
 msgid "Off"
 msgstr "Izklopljeno"
 
 #. Key:	On
-#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(60)
-#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(60)
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(61)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(61)
 msgctxt "MarburgumSettingsPanel,On"
 msgid "On"
 msgstr "Vklopljeno"
+
+#. Key:	SystemLanguage
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(610)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(610)
+msgctxt "MarburgumSettingsPanel,SystemLanguage"
+msgid "The system's"
+msgstr "Sistemski jezik"
+
+#. Key:	NotApplicable
+#. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(617)
+#: Source/MarburgumIIClient/Private/UI/MarburgumSettingsPanel.cpp(617)
+msgctxt "MarburgumSettingsPanel,NotApplicable"
+msgid "—"
+msgstr "—"
 
 #. Key:	Equipped
 #. SourceLocation:	Source/MarburgumIIClient/Private/UI/MarburgumSheetText.cpp(102)

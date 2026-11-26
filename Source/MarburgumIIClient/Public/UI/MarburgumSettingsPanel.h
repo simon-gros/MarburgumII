@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Render/MarburgumRenderPolicy.h"
 #include "MarburgumSettingsPanel.generated.h"
 
 class UScrollBox;
@@ -27,6 +28,7 @@ enum class EMarburgumSetting : uint8
     Resolution,   // Read-only.
     WindowMode,   // Read-only.
     DisplayScale, // Read-only.
+    NeuralRendering, // UMarburgumRenderFeatureSubsystem's request (ADR-030), saved in [MarburgumII.Render].
     ResetDefaults,
     UndoChanges
 };
@@ -38,8 +40,9 @@ DECLARE_DELEGATE(FMarburgumSettingsPresentationChanged);
  * the Escape menu). Every change applies at once and is saved to this machine's GameUserSettings.ini; nothing reaches
  * the server or the account. Left/Right (or the d-pad) step a value, Enter steps it forward; "Undo changes" restores
  * what the screen opened with and "Reset to defaults" the shipped values. Display settings are limited to what is safe
- * at run time (VSync, frame-rate cap); resolution and window mode are shown, not switched. Key bindings are shown as
- * they are; rebinding arrives with the input-mapping design.
+ * at run time (VSync, frame-rate cap); resolution and window mode are shown, not switched. Graphics holds the optional
+ * DLSS 5 neural rendering choice, which is kept even where it cannot run, with the reason shown beside it. Key
+ * bindings are shown as they are; rebinding arrives with the input-mapping design.
  */
 UCLASS()
 class MARBURGUMIICLIENT_API UMarburgumSettingsPanel : public UUserWidget
@@ -65,6 +68,9 @@ public:
     /** Steps Setting by Direction as the row would (tests and the capture tour). */
     void StepSetting(EMarburgumSetting Setting, int32 Direction);
 
+    /** Focuses Setting's row and scrolls it into view (the capture tour); false if the screen has no such row. */
+    bool FocusSetting(EMarburgumSetting Setting);
+
 protected:
     virtual void NativeOnInitialized() override;
 
@@ -85,6 +91,8 @@ private:
     void Refresh();
     void ShowDetail(int32 RowIndex);
     FText ValueText(EMarburgumSetting Setting) const;
+    /** Why the chosen neural rendering profile does not run here; empty when it runs or is off. */
+    FText NeuralRenderingBlocked() const;
 
     UPROPERTY(Transient) TObjectPtr<UVerticalBox> List;
     UPROPERTY(Transient) TObjectPtr<UScrollBox> Scroller;
@@ -108,6 +116,7 @@ private:
         float MasterVolume = 1.f;
         bool bVSync = false;
         float FrameRateLimit = 0.f;
+        MarburgumII::Render::ENeuralRendering NeuralRendering = MarburgumII::Render::ENeuralRendering::Off;
     };
     FSnapshot Capture() const;
     void ApplySnapshot(const FSnapshot& Snapshot);

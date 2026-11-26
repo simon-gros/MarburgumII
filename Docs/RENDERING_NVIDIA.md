@@ -42,6 +42,8 @@ Neural rendering is the original project's two DLSS5ForUE5 profiles. It runs onl
 
 The choice is saved in `GameUserSettings.ini`, `[MarburgumII.Render]`. It is kept while a plugin is missing, so it applies again once the plugin is installed.
 
+- Settings screen (O, then GRAPHICS): **DLSS 5 neural rendering** steps `off`/`safe`/`guided` and saves through the same subsystem. Where the chosen profile does not run, the detail column names the reason from the policy's note (Windows/DirectX 12 only, no NVIDIA GPU, DLSS not active, runtime not installed, safe render mode, or overridden by the plugin's own controls). On Linux it always reports that DLSS 5 is part of Windows builds only. "Reset to defaults" sets it to `off`, and "Undo changes" restores the value the screen opened with. The other four settings are not on the screen yet.
+
 - Console (saves the choice): `mb2.Render.Upscaler`, `mb2.Render.DlssMode`, `mb2.Render.FrameGeneration`, `mb2.Render.Reflex`; and `mb2.Render.Status`.
 - This launch only (not saved): `-MB2Upscaler=` `-MB2DlssMode=` `-MB2FrameGeneration=` `-MB2Reflex=`. `-MB2SafeRender` forces TSR, no frame generation and no Reflex.
 

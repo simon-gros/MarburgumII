@@ -16,6 +16,7 @@
 #include "MarburgumSessionContract.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "Render/MarburgumRenderFeatureSubsystem.h"
 #include "UI/MarburgumUIBuilder.h"
 #include "UI/MarburgumUISettings.h"
 #include "UnrealClient.h"
@@ -87,6 +88,34 @@ namespace
 
     /** What the screen opened with. File-scope so it survives the rebuild a theme change causes. */
     bool bSnapshotTaken = false;
+
+    /** Absent on dedicated servers and -nullrhi processes, which draw nothing. */
+    UMarburgumRenderFeatureSubsystem* RenderFeatures(const UUserWidget& Widget)
+    {
+        const UGameInstance* GameInstance = Widget.GetGameInstance();
+        return GameInstance ? GameInstance->GetSubsystem<UMarburgumRenderFeatureSubsystem>() : nullptr;
+    }
+
+    FText NeuralRenderingText(MarburgumII::Render::ENeuralRendering Value)
+    {
+        switch (Value)
+        {
+        case MarburgumII::Render::ENeuralRendering::Safe: return LOCTEXT("NeuralSafe", "Safe");
+        case MarburgumII::Render::ENeuralRendering::Guided: return LOCTEXT("NeuralGuided", "Guided");
+        default: return LOCTEXT("Off", "Off");
+        }
+    }
+
+    /** Saves a new profile through the subsystem, which re-resolves and cuts temporal history; unchanged is left alone. */
+    void SetNeuralRendering(UMarburgumRenderFeatureSubsystem* Render, MarburgumII::Render::ENeuralRendering Value)
+    {
+        if (Render && Render->GetRequest().NeuralRendering != Value)
+        {
+            MarburgumII::Render::FRenderRequest Request = Render->GetRequest();
+            Request.NeuralRendering = Value;
+            Render->SetRequest(Request);
+        }
+    }
 }
 
 void UMarburgumSettingsPanel::NativeOnInitialized()
@@ -156,6 +185,13 @@ void UMarburgumSettingsPanel::Build()
     AddRow(EMarburgumSetting::FrameRateLimit, LOCTEXT("FpsLabel", "Frame-rate limit"),
         LOCTEXT("FpsDesc", "Caps how many frames the game draws per second, to keep a laptop cool and quiet."), true);
 
+    AddSection(LOCTEXT("Graphics", "GRAPHICS"));
+    AddRow(EMarburgumSetting::NeuralRendering, LOCTEXT("NeuralLabel", "DLSS 5 neural rendering"),
+        LOCTEXT("NeuralDesc", "Optional. NVIDIA's neural rendering redraws each finished frame for richer light and materials. Safe "
+            "works from colour alone; Guided also uses depth and motion and holds detail better while moving. It needs an NVIDIA RTX "
+            "card, Windows with DirectX 12, DLSS upscaling and NVIDIA's DLSS 5 runtime, which the game does not include. It can "
+            "change faces and signs, and only this computer's picture changes."), true);
+
     AddSection(LOCTEXT("Controls", "CONTROLS"));
     const auto K = [](const TCHAR* Key) { return FText::FromString(Key); };
     AddBinding(LOCTEXT("Move", "Walk"), { K(TEXT("W")), K(TEXT("A")), K(TEXT("S")), K(TEXT("D")) });
@@ -182,7 +218,7 @@ void UMarburgumSettingsPanel::Build()
     AddAction(EMarburgumSetting::UndoChanges, LOCTEXT("UndoLabel", "Undo changes"),
         LOCTEXT("UndoDesc", "Puts every setting back the way it was when this screen opened."));
     AddAction(EMarburgumSetting::ResetDefaults, LOCTEXT("ResetLabel", "Reset to defaults"),
-        LOCTEXT("ResetDesc", "Puts every interface, audio and display setting here back to the shipped values."));
+        LOCTEXT("ResetDesc", "Puts every interface, audio, display and graphics setting here back to the shipped values."));
 
     USizeBox* ListWidth = B.Bounded(ListColumn, 820.f, 480.f);
     FBuilder::Inline(Columns, ListWidth, T.Space.XXL, true, false);
@@ -351,8 +387,62 @@ FText UMarburgumSettingsPanel::ValueText(EMarburgumSetting Setting) const
         const float Dpi = Size.X > 0 ? GetDefault<UUserInterfaceSettings>()->GetDPIScaleBasedOnSize(Size) : 1.f;
         return Percent(Dpi);
     }
+    // The saved choice, which is kept while it cannot run; the detail says why it does not.
+    case EMarburgumSetting::NeuralRendering:
+    {
+        const UMarburgumRenderFeatureSubsystem* Render = RenderFeatures(*this);
+        return Render ? NeuralRenderingText(Render->GetRequest().NeuralRendering) : LOCTEXT("Unavailable", "Unavailable");
+    }
     default: return FText::GetEmpty();
     }
+}
+
+FText UMarburgumSettingsPanel::NeuralRenderingBlocked() const
+{
+    const UMarburgumRenderFeatureSubsystem* Render = RenderFeatures(*this);
+    if (!Render || Render->GetRequest().NeuralRendering == MarburgumII::Render::ENeuralRendering::Off)
+    {
+        return FText::GetEmpty();
+    }
+    // The policy's notes name the reason (ADR-029/030), e.g. "neural_rendering:runtime_missing:nvngx_dlssnr.dll".
+    FString Reason;
+    for (const FString& Note : Render->GetResolution().Notes)
+    {
+        if (Note == TEXT("safe_mode") || Note.StartsWith(TEXT("neural_rendering:")))
+        {
+            Reason = Note;
+            break;
+        }
+    }
+    if (Reason.Contains(TEXT(":overridden:")))
+    {
+        return LOCTEXT("NeuralOverridden", "DLSS 5's own controls have overridden this choice for now.");
+    }
+    if (Render->GetResolution().NeuralRendering != MarburgumII::Render::ENeuralRendering::Off)
+    {
+        return FText::GetEmpty();
+    }
+    if (Reason == TEXT("safe_mode"))
+    {
+        return LOCTEXT("NeuralSafeMode", "Not running: the game was started in safe render mode (-MB2SafeRender).");
+    }
+    if (Reason.Contains(TEXT("requires_dlss")))
+    {
+        return LOCTEXT("NeuralNeedsDlss", "Not running: DLSS upscaling is not active on this computer.");
+    }
+    if (Reason.Contains(TEXT("plugin_not_installed")) || Reason.Contains(TEXT("plugin_disabled")))
+    {
+        return LOCTEXT("NeuralNoPlugin", "Not running: DLSS 5 is only part of Windows builds running on DirectX 12.");
+    }
+    if (Reason.Contains(TEXT("not_nvidia_gpu")))
+    {
+        return LOCTEXT("NeuralNoNvidia", "Not running: it needs an NVIDIA RTX graphics card.");
+    }
+    if (Reason.Contains(TEXT("runtime_missing")))
+    {
+        return LOCTEXT("NeuralNoRuntime", "Not running: NVIDIA's DLSS 5 runtime is not installed.");
+    }
+    return LOCTEXT("NeuralNotStarted", "Not running: the DLSS 5 plugin did not start.");
 }
 
 void UMarburgumSettingsPanel::Change(EMarburgumSetting Setting, int32 Direction)
@@ -396,6 +486,13 @@ void UMarburgumSettingsPanel::Change(EMarburgumSetting Setting, int32 Direction)
             Game->SetFrameRateLimit(FrameSteps[StepIndex(NearestStep(FrameSteps, Game->GetFrameRateLimit()), UE_ARRAY_COUNT(FrameSteps), Dir, bWrap)]);
         }
         break;
+    case EMarburgumSetting::NeuralRendering:
+        if (UMarburgumRenderFeatureSubsystem* Render = RenderFeatures(*this))
+        {
+            const int32 Current = static_cast<int32>(Render->GetRequest().NeuralRendering);
+            SetNeuralRendering(Render, static_cast<MarburgumII::Render::ENeuralRendering>(StepIndex(Current, 3, Dir, bWrap)));
+        }
+        break;
     case EMarburgumSetting::UndoChanges:
         ApplySnapshot(OpenedWith());
         break;
@@ -406,6 +503,7 @@ void UMarburgumSettingsPanel::Change(EMarburgumSetting Setting, int32 Direction)
             Game->SetVSyncEnabled(false);
             Game->SetFrameRateLimit(0.f);
         }
+        SetNeuralRendering(RenderFeatures(*this), MarburgumII::Render::ENeuralRendering::Off);
         break;
     default:
         return;
@@ -446,6 +544,10 @@ UMarburgumSettingsPanel::FSnapshot UMarburgumSettingsPanel::Capture() const
     Out.MasterVolume = S.MasterVolume;
     Out.bVSync = Game && Game->IsVSyncEnabled();
     Out.FrameRateLimit = Game ? Game->GetFrameRateLimit() : 0.f;
+    if (const UMarburgumRenderFeatureSubsystem* Render = RenderFeatures(*this))
+    {
+        Out.NeuralRendering = Render->GetRequest().NeuralRendering;
+    }
     return Out;
 }
 
@@ -467,6 +569,7 @@ void UMarburgumSettingsPanel::ApplySnapshot(const FSnapshot& Snapshot)
         Game->SetVSyncEnabled(Snapshot.bVSync);
         Game->SetFrameRateLimit(Snapshot.FrameRateLimit);
     }
+    SetNeuralRendering(RenderFeatures(*this), Snapshot.NeuralRendering);
 }
 
 void UMarburgumSettingsPanel::Refresh()
@@ -490,7 +593,9 @@ void UMarburgumSettingsPanel::ShowDetail(int32 RowIndex)
     FocusedRow = RowIndex;
     const EMarburgumSetting Setting = Rows[RowIndex].Setting;
     DetailTitle->SetText(Labels.FindRef(RowIndex));
-    DetailBody->SetText(Descriptions.FindRef(RowIndex));
+    const FText Blocked = Setting == EMarburgumSetting::NeuralRendering ? NeuralRenderingBlocked() : FText::GetEmpty();
+    DetailBody->SetText(Blocked.IsEmpty() ? Descriptions.FindRef(RowIndex)
+        : FText::Format(LOCTEXT("DescAndStatus", "{0}\n\n{1}"), Descriptions.FindRef(RowIndex), Blocked));
     const bool bValued = Rows[RowIndex].Value.IsValid();
     DetailValue->SetText(bValued ? ValueText(Setting) : FText::GetEmpty());
     FText Default;
@@ -508,6 +613,7 @@ void UMarburgumSettingsPanel::ShowDetail(int32 RowIndex)
     case EMarburgumSetting::ConditionDisplay: Default = LOCTEXT("WhenItMatters", "When it matters"); break;
     case EMarburgumSetting::NotificationTime: Default = LOCTEXT("Standard", "Standard"); break;
     case EMarburgumSetting::FrameRateLimit: Default = LOCTEXT("Unlimited", "Unlimited"); break;
+    case EMarburgumSetting::NeuralRendering: Default = NeuralRenderingText(MarburgumII::Render::ENeuralRendering::Off); break;
     default: Default = LOCTEXT("NotApplicable", "—"); break;
     }
     DetailDefault->SetText(Default);
@@ -573,6 +679,18 @@ FText UMarburgumSettingsPanel::GetShownValue(EMarburgumSetting Setting) const
 void UMarburgumSettingsPanel::StepSetting(EMarburgumSetting Setting, int32 Direction)
 {
     Change(Setting, Direction);
+}
+
+bool UMarburgumSettingsPanel::FocusSetting(EMarburgumSetting Setting)
+{
+    const int32 Index = Rows.IndexOfByPredicate([Setting](const FRow& Row) { return Row.Setting == Setting; });
+    if (Index == INDEX_NONE)
+    {
+        return false;
+    }
+    RestoreFocus(Index);
+    ShowDetail(Index);
+    return true;
 }
 
 #undef LOCTEXT_NAMESPACE

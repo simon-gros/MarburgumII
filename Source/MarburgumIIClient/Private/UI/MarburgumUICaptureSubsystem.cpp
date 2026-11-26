@@ -13,6 +13,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "UI/MarburgumSettingsPanel.h"
 #include "UI/MarburgumUISubsystem.h"
 #include "UnrealClient.h"
 
@@ -300,6 +301,12 @@ bool UMarburgumUICaptureSubsystem::BeginTourStep(const FString& Step)
     if (Step.StartsWith(TEXT("inventory:"))) return UI->ShowInventoryItem(FName(*Step.RightChop(10)));
     if (Step == TEXT("journal")) return UI->ToggleJournal();
     if (Step == TEXT("settings")) return UI->ToggleSettings();
+    // `settings:graphics`: Settings on the DLSS 5 neural rendering row, with the reason it does or does not run here.
+    if (Step == TEXT("settings:graphics"))
+    {
+        UMarburgumSettingsPanel* Panel = UI->ToggleSettings() ? UI->GetSettingsPanel() : nullptr;
+        return Panel && Panel->FocusSetting(EMarburgumSetting::NeuralRendering);
+    }
     if (Step == TEXT("chat"))
     {
         Controller->SendGeneralChat(TEXT("Dober dan from the tour: one general line, as every player on this server sees it."));
@@ -325,7 +332,7 @@ void UMarburgumUICaptureSubsystem::EndTourStep(const FString& Step)
         return;
     }
     if (Step == TEXT("character") || Step == TEXT("skills") || Step == TEXT("inventory") || Step == TEXT("journal")
-        || Step == TEXT("settings") || Step == TEXT("menu"))
+        || Step == TEXT("settings") || Step == TEXT("settings:graphics") || Step == TEXT("menu"))
     {
         UI->Back(); // Escape closes what the step opened.
     }

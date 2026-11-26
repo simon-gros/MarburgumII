@@ -76,7 +76,9 @@ receipts distinguished from refusals; NPC speech as serif subtitles; vitals and 
 (swimming, winded, injured, down), or always by preference; the vehicle readout only in a car. Character (C), Skills
 (K), Inventory (I), Journal (J) and Settings (O) share one shell: a dimmed, blurred street, the character's name and
 street, tabs with their keys, Q/E to switch, the HUD hidden and input owned by the screen until Esc. The Escape menu
-(Back to the street, Settings, Leave the world, Quit the game, each Leave/Quit confirmed) never pauses the world. The
+(Back to the street, Settings, Leave the world, Quit the game, each Leave/Quit confirmed) never pauses the world.
+Settings' GRAPHICS section holds the optional DLSS 5 neural rendering choice (Off/Safe/Guided, ADR-030), which is kept
+where it cannot run and shows the reason in the detail column. The
 decision and counter cards number their options on key caps with consequence chips. The title, sign-in, registration
 and credentials screens stand over a vector survey plate of the Drava at Lent (Stari most, Glavni most, graticule);
 the creator splits into a card and a framed 3D stage whose widths are divided at run time, so they cannot overlap
