@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   managed-tools:
-    name: C# manifest validation (.NET 10)
+    name: C# manifest validation (.NET 11)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -47,4 +47,4 @@ jobs:
       # Rules, store, HTTP contract, per-address limit and the sign-in burst that must not starve a redeem.
       - run: cargo test --manifest-path services/accounts/Cargo.toml
 
-# This workflow does not test or package Unreal Engine 5.8.3.
+# This workflow does not test or package Unreal Engine 5.8.4.

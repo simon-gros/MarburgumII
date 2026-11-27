@@ -1452,3 +1452,18 @@ The evening review of 20 November listed two open P0 security points on ADR-083:
 **Evidence.** The bake: `HEADMIRROR right … dent cm max 13.98 hole cm2 14.0 area cm2 20.5 … seam depth cm p50/p95 [0.29, 0.43]`, `HEADMIRROR left no hole`; `HEADFIT … moved/height max 0.0029` (0.0103 before), nonmanifold 0. Folded head faces 13 → 0; UV overlap at 1024²: 0 texels (198 for a rebake of ADR-059's mesh). Only 209 vertices move by more than 1 mm, all on the right 12 to 18.5 cm below the top of the head. The rig's checks, the FBX's units and pelvis, and the import (bounds z 90.26, `SK_Mannequin`, material, physics, matte constants) are those of ADR-059. The editor loads all 146 assets under `/Game/Characters` with no failures and the 12 inherited template references. In Blender: `Docs/Captures/character-protagonist/right_ear_before_after.jpg`. `scripts/account-smoke-linux.sh editor` passes before and after (`Saved/AccountSmoke/20261125T161814Z`, `20261125T162200Z`); the creator's turned shot, before and after: `Docs/Captures/character-protagonist/creator_right_ear_before_after.jpg`. The face from the front is unchanged.
 
 **Not covered.** A packaged run; the owner's playtest. Both ears now carry the left ear's coarse vertex colours, and the dark sideburn in front of the left ear is mirrored with it.
+
+## ADR-093 - Unreal Engine 5.8.4 replaces 5.8.3, .NET 11 replaces .NET 10, and development moves to Windows (accepted 2026-11-27)
+
+**Problem.** The team has moved development from Linux to Windows 11 (Visual Studio 18, MSVC 14.52, Windows SDK 10.0.26100) and is taking the 5.8.4 patch release. The exact-patch pin (`.unreal-engine-version`) and every check that enforces it still demand 5.8.3, so a 5.8.4 editor would be rejected by `MarburgumII.Tools`, `mb2 engine-version`, the playtest freshness guard and the UI ontology validator.
+
+**Decision.**
+
+- **The required engine is Unreal Engine 5.8.4, exactly.** `.unreal-engine-version`, the C# manifest check, `mb2`'s playtest guard and UI ontology validator, the `engine` field of the Chat, core, first-launch and UI/HUD data contracts, the `.uproject` description, the script messages and the example playtest profile now say 5.8.4. `EngineAssociation` stays `5.8`.
+- **Dated evidence keeps its engine.** Reviews, audits, evidence records, earlier ADRs, the parity matrix and code comments that describe behaviour observed in 5.8.3 (`DefaultEngine.ini` AR9 and the RHI note, `MarburgumVehicleDynamics.h`) are not rewritten; they record what was measured, on what it was measured.
+- **The C# tooling moves to .NET 11.** `global.json` pins SDK 11.0.100 (feature-band roll-forward, so CI's `setup-dotnet` follows it) and `MarburgumII.Tools` targets `net11.0`. This supersedes ADR-018's .NET 10 pin; the rest of ADR-018 stands. UnrealBuildTool still uses the engine's bundled .NET.
+- **Windows is the primary development platform.** The `scripts/*-linux.sh` scripts remain the reference procedure until Windows equivalents exist; Windows parity is the next work.
+
+**Evidence.** For .NET 11 only: on Windows, SDK 11.0.100, `dotnet build tools/MarburgumII.Tools` and `dotnet run --project tools/MarburgumII.Tools -- verify` (results in the commit). For the engine, none yet: this changes the pin, not a build. No 5.8.4 Editor, Client or Server build, UHT run, package or smoke test has been made on Windows.
+
+**Not covered.** Re-verifying the 5.8.3 observations above on 5.8.4; the DLSS/Streamline plugins' 5.8.4 builds and `DLSS5ForUE5` 0.6.1 against 5.8.4; the Windows build and smoke scripts; a packaged run; the owner's playtest.

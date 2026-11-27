@@ -2,7 +2,7 @@
   "FileVersion": 3,
   "EngineAssociation": "5.8",
   "Category": "Games",
-  "Description": "Magna Raedarum: Marburgum II — MMORPG-first Unreal Engine 5.8.3",
+  "Description": "Magna Raedarum: Marburgum II — MMORPG-first Unreal Engine 5.8.4",
   "Modules": [
     {
       "Name": "MarburgumII",

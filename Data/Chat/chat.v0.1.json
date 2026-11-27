@@ -1,7 +1,7 @@
 {
   "format": "marburgumii.chat.descriptive_contract",
   "version": "0.1.0",
-  "engine": "Unreal Engine 5.8.3",
+  "engine": "Unreal Engine 5.8.4",
   "status": "cxx_source_scaffold_native_build_and_owner_approval_pending",
   "message": {
     "max_code_units": 240,

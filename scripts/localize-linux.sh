@@ -3,13 +3,13 @@
 # Content/Localization/Game/sl/Game.po, compile the .locres files the client loads, and export the .po files again
 # (new or changed strings appear there with an empty msgstr for the translator).
 #
-# Usage: UE_ROOT=/path/to/UE_5.8.3 scripts/localize-linux.sh
+# Usage: UE_ROOT=/path/to/UE_5.8.4 scripts/localize-linux.sh
 # Exit status 0 when the pipeline ran; the summary lists how many Slovene entries are still untranslated.
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 if [[ -z "${UE_ROOT:-}" ]]; then
-    echo "Set UE_ROOT to your Unreal Engine 5.8.3 installation root." >&2
+    echo "Set UE_ROOT to your Unreal Engine 5.8.4 installation root." >&2
     exit 2
 fi
 "$repo_root/scripts/check-engine-version.sh" "$UE_ROOT"

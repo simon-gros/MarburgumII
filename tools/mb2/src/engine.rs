@@ -4,7 +4,7 @@ use std::path::Path;
 
 use crate::repo;
 
-/// "5.8.3" from an Engine/Build/Build.version document.
+/// "5.8.4" from an Engine/Build/Build.version document.
 pub fn installed_version(build_version: &serde_json::Value) -> Option<String> {
     let part = |key: &str| build_version[key].as_u64().map(|n| n.to_string());
     Some(format!(

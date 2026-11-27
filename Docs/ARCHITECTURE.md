@@ -8,7 +8,7 @@
 
 ## Engine invariant
 
-**Unreal Engine 5.8.3 is required.** `.unreal-engine-version` pins the exact patch. The portable `EngineAssociation` in `MarburgumII.uproject` uses `5.8` because official engine associations may be major/minor identifiers; source-built engines can use machine-specific GUIDs. Neither proves patch level. Verify `Engine/Build/Build.version` before each Unreal build.
+**Unreal Engine 5.8.4 is required.** `.unreal-engine-version` pins the exact patch. The portable `EngineAssociation` in `MarburgumII.uproject` uses `5.8` because official engine associations may be major/minor identifiers; source-built engines can use machine-specific GUIDs. Neither proves patch level. Verify `Engine/Build/Build.version` before each Unreal build.
 
 ## Technology boundaries
 
@@ -19,7 +19,7 @@
 | Unreal client module | C++ | Presentation, input and client-only adapters; session, UI and test drivers | Builds; Stage 0C UI and Gate 1 HUD modules |
 | Unreal server module | C++ | Interaction authority and the development world store (ADR-014/015); admission telemetry | Builds; Gate 1 smoke passes |
 | UnrealBuildTool | C# | Engine's `.Target.cs` and `.Build.cs` build rules | Configured |
-| External tools | C# / .NET 10 | Project manifest checks, future data pipelines | Manifest validator |
+| External tools | C# / .NET 11 | Project manifest checks, future data pipelines | Manifest validator |
 | Repository tooling | Rust (`tools/mb2`) | Source-contract validators, playtest freshness guard, smoke-test helpers (ADR-018) | Validators, guard and helpers with unit tests |
 | Editor content tooling | C++ (`MarburgumIIEditorTools`, Editor target only) | Map generator commandlet for FrontEnd, NetSmoke and Lent | Generates all three maps |
 | Simulation library | Rust | Pure deterministic native operations through stable C ABI | Crate and tests; not linked to UE |
@@ -78,4 +78,4 @@ The [QA audit](QA_AUDIT_2026-11-19.md) records stronger HTTPS/account limits, RP
 
 ## Acceptance
 
-A valid source tree and green C#/Rust CI are **not** a passed Unreal build. Stage 0 requires **real UE 5.8.3** Client/Server/Editor native builds, UHT completion, module loading, Editor launch, a dedicated-server process joined by one and then two separate clients, a replicated GameState check and documented reconnect/authority smoke evidence.
+A valid source tree and green C#/Rust CI are **not** a passed Unreal build. Stage 0 requires **real UE 5.8.4** Client/Server/Editor native builds, UHT completion, module loading, Editor launch, a dedicated-server process joined by one and then two separate clients, a replicated GameState check and documented reconnect/authority smoke evidence.

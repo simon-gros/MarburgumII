@@ -19,7 +19,7 @@ which="${1:-all}"
 map=/Game/World/lent
 
 if [[ -z "$ue_root" ]]; then
-    echo "Set UE_ROOT to your Unreal Engine 5.8.3 installation root." >&2
+    echo "Set UE_ROOT to your Unreal Engine 5.8.4 installation root." >&2
     exit 2
 fi
 

@@ -17,7 +17,7 @@ set -uo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
-ue_root="${UE_ROOT:-/mnt/data/unreal/5.8.3}"
+ue_root="${UE_ROOT:-/mnt/data/unreal/5.8.4}"
 export UE_ROOT="$ue_root"
 
 do_package=0

@@ -11,7 +11,7 @@ The [evening review](DEVELOPMENT_REVIEW_2026-11-20_EVENING.md) and [research can
 
 ## Required toolchains
 
-Unreal Engine **5.8.3 exactly**, its corresponding platform-native C++ toolchain, Git and Git LFS, .NET SDK 10 (pinned by `global.json`) and Rust stable. Python is not used (ADR-018).
+Unreal Engine **5.8.4 exactly**, its corresponding platform-native C++ toolchain, Git and Git LFS, .NET SDK 11 (pinned by `global.json`) and Rust stable. Python is not used (ADR-018).
 
 No Unreal binaries are distributed here. You must separately install the engine and satisfy its license and platform-specific dependencies.
 
@@ -22,7 +22,7 @@ git clone https://github.com/simon-gros/MarburgumII.git
 cd MarburgumII
 git lfs install
 
-export UE_ROOT=/absolute/path/to/UnrealEngine-5.8.3
+export UE_ROOT=/absolute/path/to/UnrealEngine-5.8.4
 ./scripts/check-engine-version.sh "$UE_ROOT"
 ./scripts/build-linux.sh
 ```
@@ -33,11 +33,11 @@ If the engine was built from source, a local installation GUID may be required f
 
 ## Windows
 
-Install/register Unreal Engine **5.8.3** and its supported C++ compiler toolchain. Generate IDE project files through your installed engine, then build `MarburgumIIEditor` in `Development Editor | Win64`. Confirm `Engine/Build/Build.version` reports 5.8.3, even if the desktop engine association says only `5.8`.
+Install/register Unreal Engine **5.8.4** and its supported C++ compiler toolchain. Generate IDE project files through your installed engine, then build `MarburgumIIEditor` in `Development Editor | Win64`. Confirm `Engine/Build/Build.version` reports 5.8.4, even if the desktop engine association says only `5.8`.
 
 ## Client/server targets
 
-The game is designed as an MMORPG from Stage 0. On Linux use `UE_ROOT` pointing to **exactly 5.8.3** and build separate executable targets:
+The game is designed as an MMORPG from Stage 0. On Linux use `UE_ROOT` pointing to **exactly 5.8.4** and build separate executable targets:
 
 ```bash
 ./scripts/build-linux.sh MarburgumIIEditor
@@ -309,12 +309,12 @@ A client asks for a ticket for the address it is about to join (`POST /v1/admiss
 
 ## Messaging validation (CHAT-001)
 
-General and private text chat source resides in `AMarburgumPlayerController`; client UMG resides in `MarburgumIIClient`. See [CHAT.md](CHAT.md). Use a genuine UE **5.8.3** Editor/Client/Server compilation plus the native automation test `Marburgum.Chat.TextPolicy`, followed by **three** separate clients to prove that a bystander never receives private text. The source-only chat checker in CI is a dependency/regression check, **not** a live network or owner-acceptance test. Earlier **packaged** Linux dedicated-server/three-client delivery and recipient isolation are recorded in [CHAT-001 evidence](STAGE0C_CHAT_EVIDENCE.md). This documentation update did not rerun those tests; regression against the current assets and owner UI/focus acceptance remain outstanding.
+General and private text chat source resides in `AMarburgumPlayerController`; client UMG resides in `MarburgumIIClient`. See [CHAT.md](CHAT.md). Use a genuine UE **5.8.4** Editor/Client/Server compilation plus the native automation test `Marburgum.Chat.TextPolicy`, followed by **three** separate clients to prove that a bystander never receives private text. The source-only chat checker in CI is a dependency/regression check, **not** a live network or owner-acceptance test. Earlier **packaged** Linux dedicated-server/three-client delivery and recipient isolation are recorded in [CHAT-001 evidence](STAGE0C_CHAT_EVIDENCE.md). This documentation update did not rerun those tests; regression against the current assets and owner UI/focus acceptance remain outstanding.
 
 ## Independent source checks
 
 ```bash
-dotnet run --project tools/MarburgumII.Tools -- verify   # .NET 10: modules, targets, side boundaries
+dotnet run --project tools/MarburgumII.Tools -- verify   # .NET 11: modules, targets, side boundaries
 scripts/mb2.sh validate all                            # Rust: UI ontology, chat, gameplay, accounts contract, no Python, scripts executable and stamping staged runs
 cargo test --manifest-path tools/mb2/Cargo.toml
 cargo test --manifest-path native/marburgum-sim-core/Cargo.toml

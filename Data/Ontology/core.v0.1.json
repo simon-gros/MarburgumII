@@ -2,7 +2,7 @@
   "format": "marburgumii.descriptive_ontology",
   "version": "0.1.0",
   "title": "Magna Raedarum: Marburgum II — Foundational Game Ontology",
-  "engine": "Unreal Engine 5.8.3",
+  "engine": "Unreal Engine 5.8.4",
   "status": "design_only_not_implemented",
   "description": "Engine-neutral descriptive vocabulary; not yet a runtime schema or validator.",
   "conventions": {

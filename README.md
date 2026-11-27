@@ -4,7 +4,7 @@
   <p><em>A server-authoritative urban MMORPG in a fictionalized 1990s Maribor, Slovenia.</em></p>
   <p>
     <img alt="Status: pre-alpha" src="https://img.shields.io/badge/STATUS-PRE--ALPHA-886b53?style=flat-square">
-    <img alt="Engine: Unreal Engine 5.8.3" src="https://img.shields.io/badge/UNREAL-5.8.3-29364e?style=flat-square">
+    <img alt="Engine: Unreal Engine 5.8.4" src="https://img.shields.io/badge/UNREAL-5.8.4-29364e?style=flat-square">
     <img alt="Primary development: Linux" src="https://img.shields.io/badge/DEVELOPMENT-LINUX-43596a?style=flat-square">
     <img alt="Network: server authoritative" src="https://img.shields.io/badge/MULTIPLAYER-SERVER%20AUTHORITATIVE-436857?style=flat-square">
   </p>
@@ -24,7 +24,7 @@
 
 ## The world
 
-**Marburgum II** rebuilds the original *Magna Raedarum: Marburgum* as an MMORPG-first game using **Unreal Engine 5.8.3**. Walk the Drava riverfront, encounter people with their own routines, investigate urban mysteries, fish, photograph places, learn skills, shop, drive and share a persistent fictionalized 1990s Maribor with other players.
+**Marburgum II** rebuilds the original *Magna Raedarum: Marburgum* as an MMORPG-first game using **Unreal Engine 5.8.4**. Walk the Drava riverfront, encounter people with their own routines, investigate urban mysteries, fish, photograph places, learn skills, shop, drive and share a persistent fictionalized 1990s Maribor with other players.
 
 Its current world covers **2,560 × 2,560 metres** across 25 original map windows centred on Lent (five by five, ADR-090), including streets, bridges, urban blocks and the Drava. It remains **one always-loaded development level**, not a finished city or a proven 250-player shard. Game rules and persistent state belong to an authoritative dedicated server; solo-friendly play and cooperation use that architecture.
 
@@ -73,7 +73,7 @@ The latest development has made the city more playable and recognizable. Mission
 
 ## Building from source
 
-**Requirements:** Unreal Engine **5.8.3 exactly**, supported Linux C++ compiler/toolchain, Git LFS, .NET **10** SDK and stable Rust. Unreal Engine and some licensed/local assets are **not** distributed with this repository. Linux is the primary tested development environment; Windows parity has not been established.
+**Requirements:** Unreal Engine **5.8.4 exactly**, supported Linux C++ compiler/toolchain, Git LFS, .NET **11** SDK and stable Rust. Unreal Engine and some licensed/local assets are **not** distributed with this repository. Linux is the primary tested development environment; Windows parity has not been established.
 
 ```bash
 git clone https://github.com/simon-gros/MarburgumII.git
@@ -81,7 +81,7 @@ cd MarburgumII
 git lfs install
 git lfs pull
 
-export UE_ROOT=/absolute/path/to/UnrealEngine-5.8.3
+export UE_ROOT=/absolute/path/to/UnrealEngine-5.8.4
 ./scripts/check-engine-version.sh "$UE_ROOT"
 
 ./scripts/build-linux.sh MarburgumIIEditor
@@ -131,7 +131,7 @@ These commands are **instructions, not tests run by this documentation update**.
 ## How it is built
 
 ```text
-                     Unreal Engine 5.8.3 / C++
+                     Unreal Engine 5.8.4 / C++
                     ┌─────────────────────────┐
                     │  MarburgumII (runtime)  │
                     │  Shared gameplay types  │
@@ -144,7 +144,7 @@ These commands are **instructions, not tests run by this documentation update**.
           └───────────────┘   replication └───────────────┘
 
           Rust: validation / tooling, account HTTPS service
-          .NET 10: manifest verification and build support
+          .NET 11: manifest verification and build support
           Experimental Rust C ABI: not linked to game runtime
 ```
 
@@ -156,7 +156,7 @@ The server owns meaningful gameplay mutations, NPC destinations, combat resoluti
 
 ## What's next
 
-**First complete the latest integrated test.** Package one clean UE 5.8.3 Linux Client+Server including encrypted admission, localizations, Chapter IV, Photography, floor/door data and the corrected ADR-079 crowds. Run strict day/night 2–3-client population, staged interiors, mission/vehicle/chat regressions, and record source/asset hashes, actual failures and the owner's personal decision.
+**First complete the latest integrated test.** Package one clean UE 5.8.4 Linux Client+Server including encrypted admission, localizations, Chapter IV, Photography, floor/door data and the corrected ADR-079 crowds. Run strict day/night 2–3-client population, staged interiors, mission/vehicle/chat regressions, and record source/asset hashes, actual failures and the owner's personal decision.
 
 **Then deepen lived-in Maribor.** Furnish the already opened rooms, make a small named NPC routine, add analog 1990s city life and a Photography album, and implement historically verified street details. All are gated in the [research-backed additions roadmap](Docs/GAMEPLAY_RESEARCH_ROADMAP_2026-11-20.md), separate from the existing [milestones](Docs/ROADMAP.md) and [graphics plan](Docs/GRAPHICS_ROADMAP.md). Microsoft TRELLIS remains the project's selected image-to-3D workflow; generated visuals still require rights and quality review.
 

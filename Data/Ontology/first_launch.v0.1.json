@@ -1,7 +1,7 @@
 {
   "format": "marburgumii.first_launch.descriptive_ontology",
   "version": "0.1.0",
-  "engine": "Unreal Engine 5.8.3",
+  "engine": "Unreal Engine 5.8.4",
   "status": "planned_not_implemented",
   "source": "Docs/FIRST_LAUNCH_ONTOLOGY.md",
   "scope": "Email-confirmed account -> username/password login -> mandatory first-character creation -> server-authorized world entry",

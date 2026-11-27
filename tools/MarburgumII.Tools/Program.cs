@@ -25,9 +25,9 @@ void RequireFile(string path)
 }
 
 if (!File.Exists(Path.Combine(root, ".unreal-engine-version"))
-    || Read(".unreal-engine-version").Trim() != "5.8.3")
+    || Read(".unreal-engine-version").Trim() != "5.8.4")
 {
-    errors.Add("Required Unreal Engine version must be 5.8.3.");
+    errors.Add("Required Unreal Engine version must be 5.8.4.");
 }
 
 var requiredModules = new Dictionary<string, string>
@@ -148,6 +148,6 @@ if (File.Exists(Path.Combine(root, sharedBuildPath)) && Read(sharedBuildPath).Co
 foreach (string error in errors) Console.Error.WriteLine($"ERROR: {error}");
 if (errors.Count > 0) return 1;
 
-Console.WriteLine("Marburgum II manifests valid — UE 5.8.3, separated shared/client/server modules and targets, editor-only tooling.");
+Console.WriteLine("Marburgum II manifests valid — UE 5.8.4, separated shared/client/server modules and targets, editor-only tooling.");
 Console.WriteLine("NOTE: This is a source-only check. It does not compile Unreal or prove network connectivity.");
 return 0;

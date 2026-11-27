@@ -67,8 +67,8 @@ pub fn check(root: &Path, problems: &mut Problems) -> Vec<String> {
         return Vec::new();
     }
     problems.expect(
-        doc["engine"] == "Unreal Engine 5.8.3",
-        "Engine pin must remain exactly Unreal Engine 5.8.3",
+        doc["engine"] == "Unreal Engine 5.8.4",
+        "Engine pin must remain exactly Unreal Engine 5.8.4",
     );
     problems.expect(
         doc["version"] == "0.1.0" && doc["status"] == "design_only_not_implemented",

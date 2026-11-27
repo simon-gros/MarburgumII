@@ -1,4 +1,4 @@
-//! Fail-closed freshness guard for native Unreal 5.8.3 client/server playtests (Docs/PLAYTEST_FRESHNESS.md).
+//! Fail-closed freshness guard for native Unreal 5.8.4 client/server playtests (Docs/PLAYTEST_FRESHNESS.md).
 //!
 //! It never claims a build exists until both real UAT archives are sealed. A local, ignored profile
 //! supplies the actual engine path, import commands, build/cook commands and launch commands.
@@ -740,8 +740,8 @@ pub fn engine_gate(engine: &Path) -> Outcome<Value> {
     let data: Value = serde_json::from_slice(&raw)
         .map_err(|e| Blocked(format!("Invalid {}: {e}", path.display())))?;
     let version = crate::engine::installed_version(&data).unwrap_or_default();
-    if version != "5.8.3" {
-        return blocked(format!("Unreal {version} is not the required 5.8.3"));
+    if version != "5.8.4" {
+        return blocked(format!("Unreal {version} is not the required 5.8.4"));
     }
     Ok(
         json!({ "version": version, "path": engine.to_string_lossy(), "build_version_sha256": hex(&Sha256::digest(&raw)) }),
@@ -797,7 +797,7 @@ pub fn profile_read(path: &Path) -> Outcome<Value> {
         .map(str::is_empty)
         .unwrap_or(true)
     {
-        return blocked("Profile must specify the UE 5.8.3 engine_root");
+        return blocked("Profile must specify the UE 5.8.4 engine_root");
     }
     for key in [
         "import_commands",
