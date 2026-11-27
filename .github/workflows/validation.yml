@@ -47,4 +47,20 @@ jobs:
       # Rules, store, HTTP contract, per-address limit and the sign-in burst that must not starve a redeem.
       - run: cargo test --manifest-path services/accounts/Cargo.toml
 
+  windows:
+    name: Windows tooling (ADR-093)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet run --project tools/MarburgumII.Tools -- verify
+      - run: rustc --version && cargo --version
+      # The playtest guard's job objects, file lock and paths; the account service's Windows stop signals.
+      - run: cargo test --manifest-path tools/mb2/Cargo.toml
+      - run: cargo run --release --manifest-path tools/mb2/Cargo.toml -- validate all
+      - run: cargo test --manifest-path services/accounts/Cargo.toml
+      - run: cargo test --manifest-path tools/lent-ground/Cargo.toml
+      - run: cargo test --manifest-path native/marburgum-sim-core/Cargo.toml
 # This workflow does not test or package Unreal Engine 5.8.4.

@@ -5,7 +5,7 @@
   <p>
     <img alt="Status: pre-alpha" src="https://img.shields.io/badge/STATUS-PRE--ALPHA-886b53?style=flat-square">
     <img alt="Engine: Unreal Engine 5.8.4" src="https://img.shields.io/badge/UNREAL-5.8.4-29364e?style=flat-square">
-    <img alt="Primary development: Linux" src="https://img.shields.io/badge/DEVELOPMENT-LINUX-43596a?style=flat-square">
+    <img alt="Primary development: Windows" src="https://img.shields.io/badge/DEVELOPMENT-WINDOWS-43596a?style=flat-square">
     <img alt="Network: server authoritative" src="https://img.shields.io/badge/MULTIPLAYER-SERVER%20AUTHORITATIVE-436857?style=flat-square">
   </p>
   <p>
@@ -73,14 +73,37 @@ The latest development has made the city more playable and recognizable. Mission
 
 ## Building from source
 
-**Requirements:** Unreal Engine **5.8.4 exactly**, supported Linux C++ compiler/toolchain, Git LFS, .NET **11** SDK and stable Rust. Unreal Engine and some licensed/local assets are **not** distributed with this repository. Linux is the primary tested development environment; Windows parity has not been established.
+**Requirements:** Unreal Engine **5.8.4 exactly**, Git LFS, .NET **11** SDK and stable Rust. Unreal Engine and some licensed/local assets are **not** distributed with this repository.
 
-```bash
+Windows 11 is the primary development platform (ADR-093): Visual Studio 2026 (18) with the MSVC v14.5x toolset and a Windows 11 SDK, and Rust on the MSVC host. The Editor target builds against the Epic Games Launcher engine; **the dedicated Server and Client targets need a source-built 5.8.4** (the Launcher build refuses them).
+
+```powershell
 git clone https://github.com/simon-gros/MarburgumII.git
 cd MarburgumII
 git lfs install
 git lfs pull
 
+$env:UE_ROOT = 'D:\path\to\UnrealEngine-5.8.4'
+.\scripts\check-engine-version.ps1
+
+.\scripts\build-windows.ps1 MarburgumIIEditor
+.\scripts\build-windows.ps1 MarburgumIIServer
+.\scripts\build-windows.ps1 MarburgumIIClient
+
+.\scripts\package-windows.ps1          # Saved\StagedBuilds\WindowsServer and WindowsClient, then BUILD_STAMP
+.\scripts\build-stamp.ps1 check
+.\scripts\mb2.ps1 validate all
+```
+
+If PowerShell refuses to run local scripts, allow them for your user once: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+
+The smoke suites have not been ported yet; they remain Linux scripts and run on Linux (below) until their Windows twins exist.
+
+### Linux
+
+Linux was the primary platform until ADR-093 and its scripts are kept working, but Windows is now the platform the team builds on.
+
+```bash
 export UE_ROOT=/absolute/path/to/UnrealEngine-5.8.4
 ./scripts/check-engine-version.sh "$UE_ROOT"
 

@@ -15,7 +15,28 @@ Unreal Engine **5.8.4 exactly**, its corresponding platform-native C++ toolchain
 
 No Unreal binaries are distributed here. You must separately install the engine and satisfy its license and platform-specific dependencies.
 
-## Linux / CachyOS
+## Windows (primary, ADR-093)
+
+Windows 11 with Visual Studio 2026 (18), the MSVC v14.5x toolset and a Windows 11 SDK; Rust stable on the MSVC host; .NET 11 SDK; Git LFS.
+
+```powershell
+$env:UE_ROOT = 'D:\path\to\UnrealEngine-5.8.4'
+.\scripts\check-engine-version.ps1
+.\scripts\build-windows.ps1 MarburgumIIEditor
+.\scripts\build-windows.ps1 MarburgumIIServer   # source-built engine only
+.\scripts\build-windows.ps1 MarburgumIIClient   # source-built engine only
+.\scripts\package-windows.ps1                   # Saved\StagedBuilds\Windows{Server,Client}, then BUILD_STAMP
+```
+
+The `.ps1` scripts are the Windows twins of the `.sh` ones: same checks, same exit codes, same `BUILD_STAMP` keys (plus `platform=Win64`). `build-windows.ps1` calls the engine's `Engine\Build\BatchFiles\Build.bat` for `Win64 Development`; `package-windows.ps1` calls `RunUAT.bat BuildCookRun` with the same maps as `package-linux.sh`.
+
+The Epic Games Launcher engine builds the Editor target but refuses `MarburgumIIServer` and `MarburgumIIClient` ("Server targets are not currently supported from this engine distribution"). Build 5.8.4 from source (`git clone --depth 1 --branch 5.8.4-release https://github.com/EpicGames/UnrealEngine.git`, then `Setup.bat` and `GenerateProjectFiles.bat`; the GitHub account must be linked to an Epic account) and point `UE_ROOT` at it.
+
+MSVC rejects names that shadow a class member or a global (C4458/C4459 are errors under UE's warning level) and Unreal declares a `Windows` namespace. Don't name locals after inherited members (`Owner`, `Slot`, `Character`, `Padding`), don't reuse catalogue names (`Items`, `Skills`, `Attributes`) inside `using namespace MarburgumII::Gameplay`, and don't declare file-scope names such as `Key` in a translation unit that unity-builds with engine container headers.
+
+The smoke suites are still Linux-only (`scripts/*-linux.sh`).
+
+## Linux / CachyOS (secondary)
 
 ```bash
 git clone https://github.com/simon-gros/MarburgumII.git
@@ -31,9 +52,6 @@ export UE_ROOT=/absolute/path/to/UnrealEngine-5.8.4
 
 If the engine was built from source, a local installation GUID may be required for desktop double-click workflows. Register or choose the association on the local machine; don't replace the portable `EngineAssociation` in the committed project with your own GUID.
 
-## Windows
-
-Install/register Unreal Engine **5.8.4** and its supported C++ compiler toolchain. Generate IDE project files through your installed engine, then build `MarburgumIIEditor` in `Development Editor | Win64`. Confirm `Engine/Build/Build.version` reports 5.8.4, even if the desktop engine association says only `5.8`.
 
 ## Client/server targets
 
