@@ -17,7 +17,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogMarburgumLitWindowsContent, Log, All);
 
 namespace MarburgumLitWindowsContent
 {
-    namespace Windows = MarburgumII::LitWindows;
+    namespace LitWindowsRules = MarburgumII::LitWindows;
     namespace Lights = MarburgumII::StreetLights;
 
     namespace
@@ -48,8 +48,8 @@ namespace MarburgumLitWindowsContent
 
         UMaterialParameterCollection* WriteCollection(TArray<UPackage*>& Dirty)
         {
-            UPackage* Package = OpenPackage(Windows::CollectionPackage);
-            const FString Name = FPackageName::GetShortName(Windows::CollectionPackage);
+            UPackage* Package = OpenPackage(LitWindowsRules::CollectionPackage);
+            const FString Name = FPackageName::GetShortName(LitWindowsRules::CollectionPackage);
             UMaterialParameterCollection* Collection = Package ? FindObject<UMaterialParameterCollection>(Package, *Name) : nullptr;
             if (!Collection && Package)
             {
@@ -65,8 +65,8 @@ namespace MarburgumLitWindowsContent
                 FGuid Id;
             };
             bool bChanged = false;
-            for (const FWanted& Wanted : { FWanted{ Windows::EveningParameter, EveningId }, FWanted{ Windows::MorningParameter, MorningId },
-                     FWanted{ Windows::GroundParameter, GroundId }, FWanted{ Windows::DuskParameter, DuskId } })
+            for (const FWanted& Wanted : { FWanted{ LitWindowsRules::EveningParameter, EveningId }, FWanted{ LitWindowsRules::MorningParameter, MorningId },
+                     FWanted{ LitWindowsRules::GroundParameter, GroundId }, FWanted{ LitWindowsRules::DuskParameter, DuskId } })
             {
                 FCollectionScalarParameter* Existing = Collection->ScalarParameters.FindByPredicate(
                     [&Wanted](const FCollectionScalarParameter& Parameter) { return Parameter.ParameterName == FName(Wanted.Name); });
@@ -109,19 +109,19 @@ namespace MarburgumLitWindowsContent
             Code += TEXT("float E = Tag.x;\nfloat M = Tag.y;\nfloat K = Kind.x;\nbool Ground = Kind.y > 0.5;\n");
             Code += TEXT("float Lit = Ground ? (E < GroundShare ? 1.0 : 0.0) : ((E < EveningShare || M < MorningShare) ? 1.0 : 0.0);\n");
             Code += TEXT("float X = E * 7.0 + M * 3.0;\nfloat Strength = 0.55 + 0.45 * (X - floor(X));\n");
-            Code += FString::Printf(TEXT("float3 Colour = %s;\n"), *Float3(Lights::KelvinColour(Windows::TungstenKelvin)));
-            Code += FString::Printf(TEXT("if (Ground) { Colour = %s; Strength = %.4f; }\n"), *Float3(Lights::KelvinColour(Windows::ShopKelvin)), Windows::ShopGlow);
-            Code += FString::Printf(TEXT("else if (K >= %.6f) { Colour = %s; Strength *= %.4f; }\n"), Windows::TungstenShare + Windows::FluorescentShare,
-                *Float3(Lights::KelvinColour(Windows::TelevisionKelvin)), Windows::TelevisionGlow);
-            Code += FString::Printf(TEXT("else if (K >= %.6f) { Colour = %s; }\n"), Windows::TungstenShare, *Float3(Lights::KelvinColour(Windows::FluorescentKelvin)));
-            Code += FString::Printf(TEXT("return Colour * (Strength * %.4f * Lit * saturate(Dusk));\n"), Windows::GlowOnScreen);
+            Code += FString::Printf(TEXT("float3 Colour = %s;\n"), *Float3(Lights::KelvinColour(LitWindowsRules::TungstenKelvin)));
+            Code += FString::Printf(TEXT("if (Ground) { Colour = %s; Strength = %.4f; }\n"), *Float3(Lights::KelvinColour(LitWindowsRules::ShopKelvin)), LitWindowsRules::ShopGlow);
+            Code += FString::Printf(TEXT("else if (K >= %.6f) { Colour = %s; Strength *= %.4f; }\n"), LitWindowsRules::TungstenShare + LitWindowsRules::FluorescentShare,
+                *Float3(Lights::KelvinColour(LitWindowsRules::TelevisionKelvin)), LitWindowsRules::TelevisionGlow);
+            Code += FString::Printf(TEXT("else if (K >= %.6f) { Colour = %s; }\n"), LitWindowsRules::TungstenShare, *Float3(Lights::KelvinColour(LitWindowsRules::FluorescentKelvin)));
+            Code += FString::Printf(TEXT("return Colour * (Strength * %.4f * Lit * saturate(Dusk));\n"), LitWindowsRules::GlowOnScreen);
             return Code;
         }
 
         UMaterial* WriteGlass(UMaterialParameterCollection* Collection, TArray<UPackage*>& Dirty, FString& OutError)
         {
-            UPackage* Package = OpenPackage(Windows::GlassMaterialPackage);
-            const FString Name = FPackageName::GetShortName(Windows::GlassMaterialPackage);
+            UPackage* Package = OpenPackage(LitWindowsRules::GlassMaterialPackage);
+            const FString Name = FPackageName::GetShortName(LitWindowsRules::GlassMaterialPackage);
             UMaterial* Material = Package ? FindObject<UMaterial>(Package, *Name) : nullptr;
             if (Material)
             {
@@ -139,7 +139,7 @@ namespace MarburgumLitWindowsContent
             }
             if (!Material)
             {
-                OutError = FString::Printf(TEXT("could not create %s"), Windows::GlassMaterialPackage);
+                OutError = FString::Printf(TEXT("could not create %s"), LitWindowsRules::GlassMaterialPackage);
                 return nullptr;
             }
             Material->MaterialDomain = MD_Surface;
@@ -156,9 +156,9 @@ namespace MarburgumLitWindowsContent
 
             // By night: the pane's household, and the clock's four numbers.
             UMaterialExpressionTextureCoordinate* Tag = Expression<UMaterialExpressionTextureCoordinate>(Material);
-            Tag->CoordinateIndex = Windows::TagChannel;
+            Tag->CoordinateIndex = LitWindowsRules::TagChannel;
             UMaterialExpressionTextureCoordinate* Kind = Expression<UMaterialExpressionTextureCoordinate>(Material);
-            Kind->CoordinateIndex = Windows::KindChannel;
+            Kind->CoordinateIndex = LitWindowsRules::KindChannel;
             const auto Parameter = [&](const TCHAR* ParameterName)
             {
                 UMaterialExpressionCollectionParameter* E = Expression<UMaterialExpressionCollectionParameter>(Material);
@@ -180,10 +180,10 @@ namespace MarburgumLitWindowsContent
             };
             Input(TEXT("Tag"), Tag);
             Input(TEXT("Kind"), Kind);
-            Input(TEXT("EveningShare"), Parameter(Windows::EveningParameter));
-            Input(TEXT("MorningShare"), Parameter(Windows::MorningParameter));
-            Input(TEXT("GroundShare"), Parameter(Windows::GroundParameter));
-            Input(TEXT("Dusk"), Parameter(Windows::DuskParameter));
+            Input(TEXT("EveningShare"), Parameter(LitWindowsRules::EveningParameter));
+            Input(TEXT("MorningShare"), Parameter(LitWindowsRules::MorningParameter));
+            Input(TEXT("GroundShare"), Parameter(LitWindowsRules::GroundParameter));
+            Input(TEXT("Dusk"), Parameter(LitWindowsRules::DuskParameter));
             // Bright on screen whatever the eye's exposure, as the lamps' glass is.
             UMaterialExpressionEyeAdaptationInverse* OnScreen = Expression<UMaterialExpressionEyeAdaptationInverse>(Material);
             OnScreen->LightValueInput.Connect(0, Glow);
@@ -234,7 +234,7 @@ namespace MarburgumLitWindowsContent
         UMaterialParameterCollection* Collection = WriteCollection(Dirty);
         if (!Collection)
         {
-            OutError = FString::Printf(TEXT("could not create %s"), Windows::CollectionPackage);
+            OutError = FString::Printf(TEXT("could not create %s"), LitWindowsRules::CollectionPackage);
             return false;
         }
         if (!WriteGlass(Collection, Dirty, OutError))
@@ -246,7 +246,7 @@ namespace MarburgumLitWindowsContent
             OutError = TEXT("could not save the lit windows");
             return false;
         }
-        UE_LOG(LogMarburgumLitWindowsContent, Display, TEXT("MB2WINDOWCONTENT saved=%d material=%s collection=%s"), Dirty.Num(), Windows::GlassMaterial, Windows::Collection);
+        UE_LOG(LogMarburgumLitWindowsContent, Display, TEXT("MB2WINDOWCONTENT saved=%d material=%s collection=%s"), Dirty.Num(), LitWindowsRules::GlassMaterial, LitWindowsRules::Collection);
         UE_LOG(LogMarburgumLitWindowsContent, Display, TEXT("MB2WINDOWCONTENT glow:\n%s"), *GlowCode());
         return true;
     }

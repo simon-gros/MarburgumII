@@ -34,7 +34,7 @@ namespace MarburgumShopSmoke
     const TCHAR* const Paper = TEXT("mariborski_glas");
     const TCHAR* const Postcard = TEXT("maribor_postcard");
     const TCHAR* const Pen = TEXT("ballpoint_pen");
-    const TCHAR* const Key = TEXT("brass_key");
+    const TCHAR* const BrassKey = TEXT("brass_key");
     // The smoke seeds this purse and the brass key (scripts/shop-smoke-linux.sh).
     constexpr int64 SeededMoney = 50;
 }
@@ -192,7 +192,7 @@ FString UMarburgumShopSmokeSubsystem::Snapshot() const
 {
     const AMarburgumPlayerState* State = LocalState();
     return FString::Printf(TEXT("money=%lld paper=%d postcard=%d pen=%d key=%d xp=%lld shelves=%s"), State ? State->GetMoney() : -1,
-        Count(Paper), Count(Postcard), Count(Pen), Count(Key), State ? State->GetSkillXp(TEXT("trading")) : -1, *Shelves());
+        Count(Paper), Count(Postcard), Count(Pen), Count(BrassKey), State ? State->GetSkillXp(TEXT("trading")) : -1, *Shelves());
 }
 
 void UMarburgumShopSmokeSubsystem::ExpectRefused(const FMarburgumInteractionReceipt& R, EMarburgumInteractionReason Reason, const FString& Prior,
@@ -276,7 +276,7 @@ void UMarburgumShopSmokeSubsystem::TickBuy(double Now)
         if (Now - StepSeconds < SettleSeconds) return;
         Expect(Counter->IsShopOpen(), TEXT("counter_not_open"));
         Expect(Shelves() == TEXT("12,8,6"), FString::Printf(TEXT("start_shelves=%s"), *Shelves()));
-        Expect(State->GetMoney() == SeededMoney && Count(Key) == 1 && State->GetSkillXp(TEXT("trading")) == 0,
+        Expect(State->GetMoney() == SeededMoney && Count(BrassKey) == 1 && State->GetSkillXp(TEXT("trading")) == 0,
             FString::Printf(TEXT("start=%s"), *Snapshot()));
         if (UI)
         {
@@ -338,7 +338,7 @@ void UMarburgumShopSmokeSubsystem::TickBuy(double Now)
         if (!R) return;
         ExpectRefused(*R, EMarburgumInteractionReason::InvalidQuantity, Before, TEXT("six"));
         Advance(6, Now);
-        Trade(EMarburgumTradeAction::Sell, Key, 1, false, TEXT("sell_key"));
+        Trade(EMarburgumTradeAction::Sell, BrassKey, 1, false, TEXT("sell_key"));
         return;
     }
     case 6:
@@ -438,7 +438,7 @@ void UMarburgumShopSmokeSubsystem::TickClosed(double Now)
         if (Now - StepSeconds < SettleSeconds) return;
         Expect(!Petra()->IsShopOpen(), TEXT("counter_open_on_sunday"));
         Expect(Shelves() == TEXT("12,8,5"), FString::Printf(TEXT("restored_shelves=%s"), *Shelves()));
-        Expect(State->GetMoney() == SeededMoney - 20 + 8 - 15 && Count(Pen) == 1 && Count(Paper) == 0 && Count(Key) == 1
+        Expect(State->GetMoney() == SeededMoney - 20 + 8 - 15 && Count(Pen) == 1 && Count(Paper) == 0 && Count(BrassKey) == 1
                 && State->GetSkillXp(TEXT("trading")) == 10,
             FString::Printf(TEXT("restored=%s"), *Snapshot()));
         MB2_SHOP_LOG("event=restored %s", *Snapshot());

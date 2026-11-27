@@ -47,10 +47,10 @@ namespace MarburgumII::Missions
 
         void RemoveItem(FMarburgumWorldRecord& Record, const FString& Character, const FString& Item, int32 Quantity)
         {
-            TMap<FString, int32>& Items = Record.Inventories.FindOrAdd(Character);
-            if ((Items.FindOrAdd(Item) -= Quantity) <= 0)
+            TMap<FString, int32>& Inventory = Record.Inventories.FindOrAdd(Character);
+            if ((Inventory.FindOrAdd(Item) -= Quantity) <= 0)
             {
-                Items.Remove(Item);
+                Inventory.Remove(Item);
             }
         }
 

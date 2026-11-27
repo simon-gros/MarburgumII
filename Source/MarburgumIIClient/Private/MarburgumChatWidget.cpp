@@ -245,9 +245,9 @@ void UMarburgumChatWidget::AddEntry(const FEntry& Entry)
     const FTokens& T = Tokens();
     UWidget* Full = MakeLine(Entry, false);
     History->AddChild(Full);
-    if (UScrollBoxSlot* Slot = Cast<UScrollBoxSlot>(Full->Slot))
+    if (UScrollBoxSlot* LineSlot = Cast<UScrollBoxSlot>(Full->Slot))
     {
-        Slot->SetPadding(FMargin(0.f, 0.f, 0.f, T.Space.XS));
+        LineSlot->SetPadding(FMargin(0.f, 0.f, 0.f, T.Space.XS));
     }
     while (History->GetChildrenCount() > MaxHistory)
     {

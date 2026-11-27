@@ -20,9 +20,9 @@ void UMarburgumUIRoot::NativeOnInitialized()
     for (int32 Index = 0; Index < LayerCount; ++Index)
     {
         UOverlay* Layer = WidgetTree->ConstructWidget<UOverlay>();
-        UOverlaySlot* Slot = Root->AddChildToOverlay(Layer);
-        Slot->SetHorizontalAlignment(HAlign_Fill);
-        Slot->SetVerticalAlignment(VAlign_Fill);
+        UOverlaySlot* LayerSlot = Root->AddChildToOverlay(Layer);
+        LayerSlot->SetHorizontalAlignment(HAlign_Fill);
+        LayerSlot->SetVerticalAlignment(VAlign_Fill);
         // Empty layers must not swallow clicks meant for layers below or for the game.
         Layer->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
         Layers.Add(Layer);
@@ -39,8 +39,8 @@ void UMarburgumUIRoot::AddToLayer(EMarburgumUILayer Layer, UWidget* Content)
 {
     if (UOverlay* Target = GetLayer(Layer); Target && Content)
     {
-        UOverlaySlot* Slot = Target->AddChildToOverlay(Content);
-        Slot->SetHorizontalAlignment(HAlign_Fill);
-        Slot->SetVerticalAlignment(VAlign_Fill);
+        UOverlaySlot* ContentSlot = Target->AddChildToOverlay(Content);
+        ContentSlot->SetHorizontalAlignment(HAlign_Fill);
+        ContentSlot->SetVerticalAlignment(VAlign_Fill);
     }
 }

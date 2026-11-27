@@ -17,7 +17,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogMarburgumLitWindows, Log, All);
 
 namespace MarburgumLitWindowsPresentation
 {
-    namespace Windows = MarburgumII::LitWindows;
+    namespace LitWindowsRules = MarburgumII::LitWindows;
 
     /** The shares move by the minute; this is often enough. */
     constexpr double UpdateSeconds = 0.5;
@@ -61,10 +61,10 @@ void UMarburgumLitWindowsPresentation::Tick(float DeltaTime)
     {
         bTried = true;
         bDark = FParse::Param(FCommandLine::Get(), TEXT("MB2NoLitWindows"));
-        Collection = LoadObject<UMaterialParameterCollection>(nullptr, Windows::Collection, nullptr, LOAD_NoWarn | LOAD_Quiet);
+        Collection = LoadObject<UMaterialParameterCollection>(nullptr, LitWindowsRules::Collection, nullptr, LOAD_NoWarn | LOAD_Quiet);
         if (!Collection)
         {
-            UE_LOG(LogMarburgumLitWindows, Warning, TEXT("lit windows: no %s (scripts/create-weather-content.sh windows); the windows stay dark"), Windows::Collection);
+            UE_LOG(LogMarburgumLitWindows, Warning, TEXT("lit windows: no %s (scripts/create-weather-content.sh windows); the windows stay dark"), LitWindowsRules::Collection);
         }
     }
     FDateTime Utc;
@@ -76,7 +76,7 @@ void UMarburgumLitWindowsPresentation::Tick(float DeltaTime)
     const bool bWeather = Weather && Weather->bKnown;
     const Lights::FSky Sky = Lights::SkyAt(Utc, bWeather ? Weather->CloudCover : 0.0, bWeather ? Weather->Fog : 0.0, bWeather ? Weather->Thunder : 0.0);
     const Clock::FCivil Local = Clock::MarburgumAt(Utc);
-    State = Windows::StateAt(Local, Sky);
+    State = LitWindowsRules::StateAt(Local, Sky);
     if (bDark)
     {
         State.Dusk = 0.0f;
@@ -89,10 +89,10 @@ void UMarburgumLitWindowsPresentation::Tick(float DeltaTime)
     }
     if (UMaterialParameterCollectionInstance* Instance = Collection ? World->GetParameterCollectionInstance(Collection) : nullptr)
     {
-        Instance->SetScalarParameterValue(FName(Windows::EveningParameter), State.Evening);
-        Instance->SetScalarParameterValue(FName(Windows::MorningParameter), State.Morning);
-        Instance->SetScalarParameterValue(FName(Windows::GroundParameter), State.Ground);
-        Instance->SetScalarParameterValue(FName(Windows::DuskParameter), State.Dusk);
+        Instance->SetScalarParameterValue(FName(LitWindowsRules::EveningParameter), State.Evening);
+        Instance->SetScalarParameterValue(FName(LitWindowsRules::MorningParameter), State.Morning);
+        Instance->SetScalarParameterValue(FName(LitWindowsRules::GroundParameter), State.Ground);
+        Instance->SetScalarParameterValue(FName(LitWindowsRules::DuskParameter), State.Dusk);
     }
 }
 
@@ -103,7 +103,7 @@ void UMarburgumLitWindowsPresentation::ReadPanes()
     Panes.Reset();
     Buildings = 0;
     UWorld* World = GetWorld();
-    const UMaterialInterface* FacadeGlass = LoadObject<UMaterialInterface>(nullptr, Windows::FacadeGlassInstance, nullptr, LOAD_NoWarn | LOAD_Quiet);
+    const UMaterialInterface* FacadeGlass = LoadObject<UMaterialInterface>(nullptr, LitWindowsRules::FacadeGlassInstance, nullptr, LOAD_NoWarn | LOAD_Quiet);
     if (!World || !FacadeGlass)
     {
         return;
@@ -128,7 +128,7 @@ void UMarburgumLitWindowsPresentation::ReadPanes()
         Seen.Add(Mesh);
         const FStaticMeshLODResources& Lod = Mesh->GetRenderData()->LODResources[0];
         const FStaticMeshVertexBuffer& Vertices = Lod.VertexBuffers.StaticMeshVertexBuffer;
-        if (Vertices.GetNumTexCoords() < static_cast<uint32>(Windows::UVChannels) || Vertices.GetNumVertices() == 0 || !Vertices.GetTexCoordData())
+        if (Vertices.GetNumTexCoords() < static_cast<uint32>(LitWindowsRules::UVChannels) || Vertices.GetNumVertices() == 0 || !Vertices.GetTexCoordData())
         {
             continue;
         }
@@ -144,8 +144,8 @@ void UMarburgumLitWindowsPresentation::ReadPanes()
             }
             for (uint32 Vertex = Section.MinVertexIndex; Vertex <= Section.MaxVertexIndex; ++Vertex)
             {
-                const FVector2f Tag = Vertices.GetVertexUV(Vertex, Windows::TagChannel);
-                const FVector2f Kind = Vertices.GetVertexUV(Vertex, Windows::KindChannel);
+                const FVector2f Tag = Vertices.GetVertexUV(Vertex, LitWindowsRules::TagChannel);
+                const FVector2f Kind = Vertices.GetVertexUV(Vertex, LitWindowsRules::KindChannel);
                 Households.FindOrAdd(Byte(Tag.X) | Byte(Tag.Y) << 8 | Byte(Kind.X) << 16 | (Kind.Y > 0.5f ? 1u << 24 : 0u))++;
             }
         }
@@ -156,9 +156,9 @@ void UMarburgumLitWindowsPresentation::ReadPanes()
         for (const TPair<uint32, int32>& Household : Households)
         {
             FPane Pane;
-            Pane.Tag.Evening = Windows::Rank(Household.Key);
-            Pane.Tag.Morning = Windows::Rank(Household.Key >> 8);
-            Pane.Tag.Kind = Windows::Rank(Household.Key >> 16);
+            Pane.Tag.Evening = LitWindowsRules::Rank(Household.Key);
+            Pane.Tag.Morning = LitWindowsRules::Rank(Household.Key >> 8);
+            Pane.Tag.Kind = LitWindowsRules::Rank(Household.Key >> 16);
             Pane.Tag.bGround = (Household.Key >> 24) != 0;
             Pane.Building = Buildings;
             Pane.Panes = FMath::Max(1, Household.Value / VerticesPerPane);

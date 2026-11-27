@@ -87,7 +87,7 @@ void UMarburgumAccountScreen::NativeOnInitialized()
     // The title screens' survey plate of the Drava at Lent behind the forms (hidden while the creator's stage is up),
     // with a warm glow and a shade on the left where the card stands.
     UOverlay* MotifLayer = WidgetTree->ConstructWidget<UOverlay>();
-    const auto Fill = [](UOverlaySlot* Slot) { Slot->SetHorizontalAlignment(HAlign_Fill); Slot->SetVerticalAlignment(VAlign_Fill); };
+    const auto Fill = [](UOverlaySlot* FillSlot) { FillSlot->SetHorizontalAlignment(HAlign_Fill); FillSlot->SetVerticalAlignment(VAlign_Fill); };
     Fill(MotifLayer->AddChildToOverlay(B.Scrim(EMarburgumScrimShape::SoftBand, T.Color.Accent.CopyWithNewOpacity(0.05f))));
     Fill(MotifLayer->AddChildToOverlay(WidgetTree->ConstructWidget<UMarburgumMapPlate>()));
     UHorizontalBox* ShadeRow = B.Row();

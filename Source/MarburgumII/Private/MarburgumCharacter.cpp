@@ -424,18 +424,18 @@ void AMarburgumCharacter::UpdateDrivingCamera(float DeltaSeconds)
     CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, TargetArm, DeltaSeconds, CameraFramingSpeed);
     CameraBoom->SetRelativeLocation(FMath::VInterpTo(CameraBoom->GetRelativeLocation(), TargetBoom, DeltaSeconds, CameraFramingSpeed));
 
-    AController* Owner = GetController();
+    AController* ViewController = GetController();
     FreeLookRemaining = FMath::Max(0.f, FreeLookRemaining - DeltaSeconds);
-    if (!Seat || !Owner || FreeLookRemaining > 0.f)
+    if (!Seat || !ViewController || FreeLookRemaining > 0.f)
     {
         return;
     }
     // Swing back round behind the car, and down to the driving pitch.
     const float Weight = 1.f - FMath::Exp(-static_cast<float>(CameraHeadingSharpness) * DeltaSeconds);
-    const FRotator Current = Owner->GetControlRotation();
+    const FRotator Current = ViewController->GetControlRotation();
     const FRotator Wanted(-static_cast<float>(CameraPitchDegrees), Vehicle->GetActorRotation().Yaw, 0.f);
     const FRotator Delta = (Wanted - Current).GetNormalized();
-    Owner->SetControlRotation(FRotator(Current.Pitch + Delta.Pitch * Weight, Current.Yaw + Delta.Yaw * Weight, 0.f));
+    ViewController->SetControlRotation(FRotator(Current.Pitch + Delta.Pitch * Weight, Current.Yaw + Delta.Yaw * Weight, 0.f));
 }
 
 void AMarburgumCharacter::SetFishingPoseAuthority(EMarburgumFishingPhase Phase)
@@ -718,9 +718,9 @@ void AMarburgumCharacter::ResolveSwingAuthority(bool bHeavy, const TCHAR* Refusa
         bHeavy ? 1 : 0, Result.bOk ? 1 : 0, WireWord(Result.Reason),
         WireWord(Result.Outcome), Result.TargetId.IsNone() ? TEXT("-") : *Result.TargetId.ToString(),
         Result.Damage, Result.TargetVitality);
-    if (AMarburgumPlayerController* Owner = Cast<AMarburgumPlayerController>(GetController()))
+    if (AMarburgumPlayerController* OwningController = Cast<AMarburgumPlayerController>(GetController()))
     {
-        Owner->ClientReceiveCombatResult(Result);
+        OwningController->ClientReceiveCombatResult(Result);
     }
 }
 

@@ -511,8 +511,8 @@ void UMarburgumModelCard::SetSelected(bool bSelected)
         .SetHovered(RoundedBrush(C.Raised, R, C.Accent, Width))
         .SetPressed(RoundedBrush(C.Panel, R, C.AccentPressed, Width))
         .SetDisabled(RoundedBrush(FLinearColor::Transparent, R, C.Disabled, T.BorderWidth));
-    const FMargin Padding(T.Space.L, T.Space.M);
-    Style.SetNormalPadding(Padding).SetPressedPadding(Padding);
+    const FMargin ButtonPadding(T.Space.L, T.Space.M);
+    Style.SetNormalPadding(ButtonPadding).SetPressedPadding(ButtonPadding);
     Button->SetStyle(Style);
     StateText->SetVisibility(bSelected ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden);
 }

@@ -209,9 +209,9 @@ void UMarburgumManagementShell::AddPage(EMarburgumScreen Screen, UWidget* Page)
     {
         return;
     }
-    UOverlaySlot* Slot = Pages->AddChildToOverlay(Page);
-    Slot->SetHorizontalAlignment(HAlign_Fill);
-    Slot->SetVerticalAlignment(VAlign_Fill);
+    UOverlaySlot* PageSlot = Pages->AddChildToOverlay(Page);
+    PageSlot->SetHorizontalAlignment(HAlign_Fill);
+    PageSlot->SetVerticalAlignment(VAlign_Fill);
     PageWidgets.Add(Screen, Page);
 }
 

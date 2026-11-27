@@ -59,10 +59,10 @@ namespace
         TArray<FMarburgumItemStack> Stacks;
         if (Owned)
         {
-            TArray<FString> Items;
-            Owned->GetKeys(Items);
-            Items.Sort();
-            for (const FString& Item : Items)
+            TArray<FString> ItemIds;
+            Owned->GetKeys(ItemIds);
+            ItemIds.Sort();
+            for (const FString& Item : ItemIds)
             {
                 if ((*Owned)[Item] > 0)
                 {
@@ -107,7 +107,7 @@ namespace
 
     TArray<FMarburgumSkillProgress> ToSkills(const TMap<FString, int64>* Owned)
     {
-        TArray<FMarburgumSkillProgress> Skills;
+        TArray<FMarburgumSkillProgress> Progress;
         if (Owned)
         {
             TArray<FString> Ids;
@@ -115,15 +115,15 @@ namespace
             Ids.Sort();
             for (const FString& Id : Ids)
             {
-                Skills.Add({ FName(*Id), (*Owned)[Id] });
+                Progress.Add({ FName(*Id), (*Owned)[Id] });
             }
         }
-        return Skills;
+        return Progress;
     }
 
-    TArray<FMarburgumItemStack> ToStacks(const TMap<FString, int32>& Items)
+    TArray<FMarburgumItemStack> ToStacks(const TMap<FString, int32>& Owned)
     {
-        return ToStacks(&Items);
+        return ToStacks(&Owned);
     }
 
     /** Filled slots in sheet order (ADR-085). */
@@ -143,12 +143,12 @@ namespace
     FMarburgumAttributes ToAttributes(const MarburgumII::CharacterSheet::FScores* Stored)
     {
         const MarburgumII::CharacterSheet::FScores Scores = Stored ? *Stored : MarburgumII::CharacterSheet::FScores();
-        FMarburgumAttributes Attributes;
-        Attributes.Might = static_cast<uint8>(Scores[0]);
-        Attributes.Endurance = static_cast<uint8>(Scores[1]);
-        Attributes.Eye = static_cast<uint8>(Scores[2]);
-        Attributes.Poise = static_cast<uint8>(Scores[3]);
-        return Attributes;
+        FMarburgumAttributes Result;
+        Result.Might = static_cast<uint8>(Scores[0]);
+        Result.Endurance = static_cast<uint8>(Scores[1]);
+        Result.Eye = static_cast<uint8>(Scores[2]);
+        Result.Poise = static_cast<uint8>(Scores[3]);
+        return Result;
     }
 
     TArray<FMarburgumSkillProgress> ToSkillAwards(const TMap<FString, int64>& Xp)
@@ -166,10 +166,10 @@ namespace
         return Parts.IsEmpty() ? TEXT("-") : FString::Join(Parts, TEXT(","));
     }
 
-    FString Describe(const TArray<FMarburgumSkillProgress>& Skills)
+    FString Describe(const TArray<FMarburgumSkillProgress>& Progress)
     {
         TArray<FString> Parts;
-        for (const FMarburgumSkillProgress& Skill : Skills)
+        for (const FMarburgumSkillProgress& Skill : Progress)
         {
             Parts.Add(FString::Printf(TEXT("%s:%lld"), *Skill.SkillId.ToString(), Skill.Xp));
         }

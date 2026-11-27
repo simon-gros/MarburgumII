@@ -481,9 +481,9 @@ void AMarburgumPlayerController::ServerToggleDoor_Implementation(AMarburgumDoor*
     {
         return;
     }
-    if (const AMarburgumCharacter* Character = Cast<AMarburgumCharacter>(Body))
+    if (const AMarburgumCharacter* Rider = Cast<AMarburgumCharacter>(Body))
     {
-        if (Character->GetSeatedVehicle())
+        if (Rider->GetSeatedVehicle())
         {
             return;
         }
