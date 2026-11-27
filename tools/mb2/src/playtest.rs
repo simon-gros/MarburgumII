@@ -6,9 +6,8 @@
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
+#[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
-use std::os::unix::io::AsRawFd;
-use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -230,7 +229,7 @@ impl Guard {
                 cooked |= [".pak", ".utoc", ".ucas", ".uasset"]
                     .iter()
                     .any(|ext| relative.ends_with(ext));
-                executable |= meta.permissions().mode() & 0o111 != 0;
+                executable |= is_executable(&path, &meta);
                 files.insert(relative, file_entry(&path, meta.len())?);
             }
             if files.is_empty() || !cooked {
@@ -508,17 +507,18 @@ impl Guard {
                     .join(format!("runtime-{index:02}-{kind}.log"));
                 fs::create_dir_all(log.parent().unwrap()).map_err(|e| Blocked(e.to_string()))?;
                 let stream = File::create(&log).map_err(|e| Blocked(e.to_string()))?;
-                // Each role runs in its own process group: UE's launcher .sh starts the real binary without
-                // exec, so stopping only the script's pid would leave the server running on its port.
-                let child = Command::new(&executable)
+                let mut command = Command::new(&executable);
+                command
                     .args(&args[1..])
                     .current_dir(executable.parent().unwrap())
                     .stdout(stream.try_clone().map_err(|e| Blocked(e.to_string()))?)
                     .stderr(stream)
-                    .stdin(Stdio::null())
-                    .process_group(0)
+                    .stdin(Stdio::null());
+                sys::isolate(&mut command);
+                let child = command
                     .spawn()
                     .map_err(|e| Blocked(format!("Cannot start {kind}: {e}")))?;
+                sys::adopt(&child).map_err(|e| Blocked(format!("Cannot contain {kind}: {e}")))?;
                 children.push(child);
                 if index == 0 {
                     std::thread::sleep(Duration::from_secs(2));
@@ -582,18 +582,31 @@ impl Guard {
             .append(true)
             .open(self.playtests().join(".lock"))
             .map_err(|e| Blocked(e.to_string()))?;
-        // SAFETY: flock on a file descriptor this function owns for the whole locked section.
-        if unsafe { libc::flock(handle.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
-            return blocked("Another playtest build/session is running");
+        match handle.try_lock() {
+            Ok(()) => {}
+            Err(std::fs::TryLockError::WouldBlock) => return blocked("Another playtest build/session is running"),
+            Err(std::fs::TryLockError::Error(e)) => return blocked(e.to_string()),
         }
         let result = action();
-        // SAFETY: as above; the descriptor is still open.
-        unsafe { libc::flock(handle.as_raw_fd(), libc::LOCK_UN) };
+        let _ = handle.unlock();
         result
     }
 }
 
 // ---- free helpers ---------------------------------------------------------------------------------
+
+/// Unix: any execute bit. Windows carries no mode bits, so the launcher's extension decides.
+#[cfg(unix)]
+fn is_executable(_path: &Path, meta: &fs::Metadata) -> bool {
+    meta.permissions().mode() & 0o111 != 0
+}
+
+#[cfg(windows)]
+fn is_executable(path: &Path, _meta: &fs::Metadata) -> bool {
+    path.extension()
+        .and_then(|e| e.to_str())
+        .is_some_and(|e| ["exe", "bat", "cmd", "com"].contains(&e.to_ascii_lowercase().as_str()))
+}
 
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
@@ -607,9 +620,37 @@ fn expand_home(path: &str) -> PathBuf {
 }
 
 /// Canonical path when it exists, otherwise the path made absolute.
+#[cfg(unix)]
 fn resolve(path: &Path) -> PathBuf {
     fs::canonicalize(path)
         .unwrap_or_else(|_| std::path::absolute(path).unwrap_or_else(|_| path.to_path_buf()))
+}
+
+/// Canonical path when it exists, otherwise the path made absolute. Profile templates join with `/`, which a
+/// verbatim (`\\?\`) path would keep as part of a file name, so separators are normalised first and the verbatim
+/// prefix canonicalize adds is dropped again for ordinary drive paths; every path the guard compares goes through
+/// here, so `starts_with` checks see one spelling.
+#[cfg(windows)]
+fn resolve(path: &Path) -> PathBuf {
+    let text = path.to_string_lossy();
+    let (verbatim, rest) = match text.strip_prefix(r"\\?\") {
+        Some(rest) => (true, rest),
+        None => (false, text.as_ref()),
+    };
+    let normal = PathBuf::from(if verbatim && !rest.starts_with("UNC\\") {
+        rest.replace('/', "\\")
+    } else if verbatim {
+        text.to_string()
+    } else {
+        rest.replace('/', "\\")
+    });
+    let full = fs::canonicalize(&normal)
+        .unwrap_or_else(|_| std::path::absolute(&normal).unwrap_or_else(|_| normal.clone()));
+    let shown = full.to_string_lossy();
+    match shown.strip_prefix(r"\\?\") {
+        Some(drive) if drive.as_bytes().get(1) == Some(&b':') => PathBuf::from(drive),
+        _ => full,
+    }
 }
 
 fn read_json(path: &Path) -> Outcome<Value> {
@@ -840,10 +881,10 @@ pub fn profile_read(path: &Path) -> Outcome<Value> {
     Ok(profile)
 }
 
-/// Stops every role's whole process group (the launcher script and the binary it started), newest first.
+/// Stops every role's whole process group (the launcher and the binary it started), newest first.
 fn stop_all(children: &mut [Child]) {
     for child in children.iter_mut().rev() {
-        signal_group(child.id(), libc::SIGTERM);
+        sys::terminate(child.id());
     }
     for child in children.iter_mut() {
         let deadline = Instant::now() + Duration::from_secs(8);
@@ -852,65 +893,228 @@ fn stop_all(children: &mut [Child]) {
             std::thread::sleep(Duration::from_millis(100));
         }
         if group_alive(child.id()) {
-            signal_group(child.id(), libc::SIGKILL);
+            sys::kill(child.id());
         }
         let _ = child.wait();
+        sys::release(child.id());
     }
 }
 
-/// Signals the process group led by `pid`. process_group(0) made each launched role's pid its group id; the group
-/// outlives a reaped launcher script, so the binary it started is still reached.
-fn signal_group(pid: u32, signal: libc::c_int) {
-    // SAFETY: kill(2) on a process group this process created; a group that no longer exists yields ESRCH.
-    unsafe { libc::kill(-(pid as libc::pid_t), signal) };
-}
-
-/// Whether a live (not zombie) process is left in the group led by `pid`. kill(-pid, 0) is not enough: an orphan
-/// that has exited stays in its group as a zombie until its new parent reaps it, which a subreaper may do late.
-fn group_alive(pid: u32) -> bool {
-    let Ok(entries) = fs::read_dir("/proc") else {
-        // SAFETY: as in signal_group; signal 0 has no effect on the target.
-        return unsafe { libc::kill(-(pid as libc::pid_t), 0) == 0 };
-    };
-    entries
-        .flatten()
-        .filter(|e| {
-            e.file_name()
-                .to_string_lossy()
-                .bytes()
-                .all(|b| b.is_ascii_digit())
-        })
-        .any(|e| {
-            // /proc/<n>/stat: "pid (comm) state ppid pgrp ..."; comm may hold spaces and parentheses.
-            let Ok(stat) = fs::read_to_string(e.path().join("stat")) else {
-                return false;
-            };
-            let Some(rest) = stat.rfind(')').map(|at| &stat[at + 1..]) else {
-                return false;
-            };
-            let mut fields = rest.split_whitespace();
-            let state = fields.next().unwrap_or("Z");
-            let group = fields.nth(1).and_then(|g| g.parse::<u32>().ok());
-            group == Some(pid) && state != "Z" && state != "X"
-        })
-}
+use sys::{group_alive, install_interrupt_flag};
 
 static INTERRUPTED: AtomicBool = AtomicBool::new(false);
 
-extern "C" fn on_interrupt(_: libc::c_int) {
-    INTERRUPTED.store(true, Ordering::SeqCst);
+/// Each launched role runs in a process group (Unix) or job object (Windows) that `stop_all` ends as a whole.
+#[cfg(unix)]
+mod sys {
+    use super::{Child, Command, Ordering, INTERRUPTED};
+    use std::fs;
+    use std::os::unix::process::CommandExt;
+
+    /// Each role runs in its own process group: UE's launcher .sh starts the real binary without exec, so stopping
+    /// only the script's pid would leave the server running on its port.
+    pub fn isolate(command: &mut Command) {
+        command.process_group(0);
+    }
+
+    pub fn adopt(_child: &Child) -> std::io::Result<()> {
+        Ok(())
+    }
+
+    pub fn release(_pid: u32) {}
+
+    pub fn terminate(pid: u32) {
+        signal_group(pid, libc::SIGTERM);
+    }
+
+    pub fn kill(pid: u32) {
+        signal_group(pid, libc::SIGKILL);
+    }
+
+    /// Signals the process group led by `pid`. process_group(0) made each launched role's pid its group id; the
+    /// group outlives a reaped launcher script, so the binary it started is still reached.
+    fn signal_group(pid: u32, signal: libc::c_int) {
+        // SAFETY: kill(2) on a process group this process created; a group that no longer exists yields ESRCH.
+        unsafe { libc::kill(-(pid as libc::pid_t), signal) };
+    }
+
+    /// Whether a live (not zombie) process is left in the group led by `pid`. kill(-pid, 0) is not enough: an
+    /// orphan that has exited stays in its group as a zombie until its new parent reaps it, which a subreaper may
+    /// do late.
+    pub fn group_alive(pid: u32) -> bool {
+        let Ok(entries) = fs::read_dir("/proc") else {
+            // SAFETY: as in signal_group; signal 0 has no effect on the target.
+            return unsafe { libc::kill(-(pid as libc::pid_t), 0) == 0 };
+        };
+        entries
+            .flatten()
+            .filter(|e| {
+                e.file_name()
+                    .to_string_lossy()
+                    .bytes()
+                    .all(|b| b.is_ascii_digit())
+            })
+            .any(|e| {
+                // /proc/<n>/stat: "pid (comm) state ppid pgrp ..."; comm may hold spaces and parentheses.
+                let Ok(stat) = fs::read_to_string(e.path().join("stat")) else {
+                    return false;
+                };
+                let Some(rest) = stat.rfind(')').map(|at| &stat[at + 1..]) else {
+                    return false;
+                };
+                let mut fields = rest.split_whitespace();
+                let state = fields.next().unwrap_or("Z");
+                let group = fields.nth(1).and_then(|g| g.parse::<u32>().ok());
+                group == Some(pid) && state != "Z" && state != "X"
+            })
+    }
+
+    extern "C" fn on_interrupt(_: libc::c_int) {
+        INTERRUPTED.store(true, Ordering::SeqCst);
+    }
+
+    /// Ctrl+C ends the session cleanly (children stopped, post-session freshness check) instead of killing the guard.
+    pub fn install_interrupt_flag() -> &'static std::sync::atomic::AtomicBool {
+        // SAFETY: the handler only stores to an atomic, which is async-signal-safe.
+        unsafe {
+            libc::signal(
+                libc::SIGINT,
+                on_interrupt as *const () as libc::sighandler_t,
+            )
+        };
+        &INTERRUPTED
+    }
 }
 
-/// Ctrl+C ends the session cleanly (children stopped, post-session freshness check) instead of killing the guard.
-fn install_interrupt_flag() -> &'static AtomicBool {
-    // SAFETY: the handler only stores to an atomic, which is async-signal-safe.
-    unsafe {
-        libc::signal(
-            libc::SIGINT,
-            on_interrupt as *const () as libc::sighandler_t,
-        )
+#[cfg(windows)]
+mod sys {
+    use super::{Child, Command, Ordering, INTERRUPTED};
+    use std::collections::BTreeMap;
+    use std::os::windows::io::AsRawHandle;
+    use std::os::windows::process::CommandExt;
+    use std::sync::Mutex;
+    use windows_sys::core::BOOL;
+    use windows_sys::Win32::Foundation::{CloseHandle, GetLastError, HANDLE};
+    use windows_sys::Win32::System::Console::{GenerateConsoleCtrlEvent, SetConsoleCtrlHandler, CTRL_BREAK_EVENT, CTRL_C_EVENT};
+    use windows_sys::Win32::System::JobObjects::{
+        AssignProcessToJobObject, CreateJobObjectW, JobObjectBasicAccountingInformation, JobObjectExtendedLimitInformation,
+        QueryInformationJobObject, SetInformationJobObject, TerminateJobObject, JOBOBJECT_BASIC_ACCOUNTING_INFORMATION,
+        JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
     };
-    &INTERRUPTED
+    use windows_sys::Win32::System::Threading::CREATE_NEW_PROCESS_GROUP;
+
+    /// The job object holding each launched role, by the launcher's pid. A UE Windows launcher stub starts the real
+    /// binary and waits for it; the binary inherits the job, so ending the job ends both.
+    static JOBS: Mutex<BTreeMap<u32, usize>> = Mutex::new(BTreeMap::new());
+
+    fn job(pid: u32) -> Option<HANDLE> {
+        JOBS.lock().unwrap().get(&pid).map(|h| *h as HANDLE)
+    }
+
+    /// Its own console process group, so CTRL_BREAK reaches the role and not this guard.
+    pub fn isolate(command: &mut Command) {
+        command.creation_flags(CREATE_NEW_PROCESS_GROUP);
+    }
+
+    /// Puts a just-started role in a fresh job that dies with this guard. The launcher is assigned right after
+    /// CreateProcess, well before a UE stub has loaded far enough to start its binary.
+    pub fn adopt(child: &Child) -> std::io::Result<()> {
+        // SAFETY: plain Win32 calls on handles this process owns; the job handle is kept in JOBS until release.
+        unsafe {
+            let job = CreateJobObjectW(std::ptr::null(), std::ptr::null());
+            if job.is_null() {
+                return Err(std::io::Error::last_os_error());
+            }
+            let mut limits: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = std::mem::zeroed();
+            limits.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+            let ok = SetInformationJobObject(
+                job,
+                JobObjectExtendedLimitInformation,
+                &limits as *const _ as *const _,
+                std::mem::size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
+            ) != 0
+                && AssignProcessToJobObject(job, child.as_raw_handle() as HANDLE) != 0;
+            if !ok {
+                let error = std::io::Error::from_raw_os_error(GetLastError() as i32);
+                CloseHandle(job);
+                return Err(error);
+            }
+            JOBS.lock().unwrap().insert(child.id(), job as usize);
+        }
+        Ok(())
+    }
+
+    pub fn release(pid: u32) {
+        if let Some(job) = JOBS.lock().unwrap().remove(&pid) {
+            // SAFETY: the handle came from CreateJobObjectW and is closed once; KILL_ON_JOB_CLOSE ends any straggler.
+            unsafe { CloseHandle(job as HANDLE) };
+        }
+    }
+
+    /// CTRL_BREAK to the role's process group; UE's console handler turns it into a clean exit request.
+    pub fn terminate(pid: u32) {
+        // SAFETY: no pointers; fails harmlessly when the group is gone or shares no console with this guard.
+        unsafe { GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, pid) };
+    }
+
+    pub fn kill(pid: u32) {
+        if let Some(job) = job(pid) {
+            // SAFETY: a live job handle from JOBS.
+            unsafe { TerminateJobObject(job, 1) };
+        }
+    }
+
+    /// Whether any process is left in the role's job (the launcher or anything it started).
+    pub fn group_alive(pid: u32) -> bool {
+        let Some(job) = job(pid) else {
+            return false;
+        };
+        // SAFETY: a live job handle and a correctly sized, zeroed out-structure.
+        unsafe {
+            let mut info: JOBOBJECT_BASIC_ACCOUNTING_INFORMATION = std::mem::zeroed();
+            QueryInformationJobObject(
+                job,
+                JobObjectBasicAccountingInformation,
+                &mut info as *mut _ as *mut _,
+                std::mem::size_of::<JOBOBJECT_BASIC_ACCOUNTING_INFORMATION>() as u32,
+                std::ptr::null_mut(),
+            ) != 0
+                && info.ActiveProcesses > 0
+        }
+    }
+
+    unsafe extern "system" fn on_interrupt(event: u32) -> BOOL {
+        if event == CTRL_C_EVENT {
+            INTERRUPTED.store(true, Ordering::SeqCst);
+            return 1;
+        }
+        0
+    }
+
+    /// Ctrl+C ends the session cleanly (children stopped, post-session freshness check) instead of killing the guard.
+    pub fn install_interrupt_flag() -> &'static std::sync::atomic::AtomicBool {
+        // SAFETY: the handler only stores to an atomic.
+        unsafe { SetConsoleCtrlHandler(Some(on_interrupt), 1) };
+        &INTERRUPTED
+    }
+
+    /// Whether the process `pid` is still running (tests only: the job is gone once released).
+    #[cfg(test)]
+    pub fn process_alive(pid: u32) -> bool {
+        use windows_sys::Win32::Foundation::STILL_ACTIVE;
+        use windows_sys::Win32::System::Threading::{GetExitCodeProcess, OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION};
+        // SAFETY: the handle is checked and closed; the exit code is a plain out-parameter.
+        unsafe {
+            let handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid);
+            if handle.is_null() {
+                return false;
+            }
+            let mut code = 0u32;
+            let alive = GetExitCodeProcess(handle, &mut code) != 0 && code == STILL_ACTIVE as u32;
+            CloseHandle(handle);
+            alive
+        }
+    }
 }
 
 /// Civil UTC date-time from Unix seconds (proleptic Gregorian; Howard Hinnant's algorithm).
@@ -974,7 +1178,13 @@ pub fn run(action: &str, profile_path: &Path) -> u8 {
 mod tests {
     //! Source-only, isolated tests of the freshness guard (no Unreal required).
     use super::*;
-    use std::os::unix::fs::symlink;
+    #[cfg(unix)]
+    use std::os::unix::fs::symlink as symlink_file;
+    #[cfg(windows)]
+    use std::os::windows::fs::symlink_file;
+
+    /// The launcher extension the archive check counts as executable on this platform.
+    const LAUNCHER: &str = if cfg!(windows) { "bat" } else { "sh" };
 
     struct Fixture {
         _dir: tempfile::TempDir,
@@ -985,7 +1195,7 @@ mod tests {
     impl Fixture {
         fn new() -> Self {
             let dir = tempfile::tempdir().unwrap();
-            let root = fs::canonicalize(dir.path()).unwrap();
+            let root = resolve(dir.path());
             Self {
                 guard: Guard::new(root.clone()),
                 root,
@@ -1002,6 +1212,7 @@ mod tests {
 
         fn executable(&self, relative: &str) -> PathBuf {
             let path = self.put(relative, b"#!/bin/sh\n");
+            #[cfg(unix)]
             fs::set_permissions(&path, fs::Permissions::from_mode(0o755)).unwrap();
             path
         }
@@ -1069,7 +1280,11 @@ mod tests {
         let f = Fixture::new();
         let target = f.put("Assets/real.uasset", b"v1");
         fs::create_dir_all(f.root.join("Content")).unwrap();
-        symlink(&target, f.root.join("Content/fake.uasset")).unwrap();
+        if let Err(e) = symlink_file(&target, f.root.join("Content/fake.uasset")) {
+            // Windows needs Developer Mode or the symlink privilege to create one.
+            eprintln!("symlink_refused skipped: cannot create a symlink here ({e})");
+            return;
+        }
         assert!(f.guard.asset_snapshot(&no_extra_roots()).is_err());
     }
 
@@ -1077,8 +1292,8 @@ mod tests {
     fn missing_cooked_assets_rejected() {
         let f = Fixture::new();
         let run = f.root.join("Saved/Playtests/run");
-        f.executable("Saved/Playtests/run/client/GameClient.sh");
-        f.executable("Saved/Playtests/run/server/GameServer.sh");
+        f.executable(&format!("Saved/Playtests/run/client/GameClient.{LAUNCHER}"));
+        f.executable(&format!("Saved/Playtests/run/server/GameServer.{LAUNCHER}"));
         assert!(f
             .guard
             .archive_snapshot(&run_profile(), &run_values(&run), &run)
@@ -1089,8 +1304,8 @@ mod tests {
     fn modified_package_invalidates_seal() {
         let f = Fixture::new();
         let run = f.root.join("Saved/Playtests/run");
-        for (role, exe) in [("client", "GameClient.sh"), ("server", "GameServer.sh")] {
-            f.executable(&format!("Saved/Playtests/run/{role}/{exe}"));
+        for (role, exe) in [("client", "GameClient"), ("server", "GameServer")] {
+            f.executable(&format!("Saved/Playtests/run/{role}/{exe}.{LAUNCHER}"));
             f.put(
                 &format!("Saved/Playtests/run/{role}/Content.pak"),
                 b"cooked v1",
@@ -1113,7 +1328,7 @@ mod tests {
         let f = Fixture::new();
         let run = f.root.join("Saved/Playtests/run");
         for role in ["client", "server"] {
-            f.executable(&format!("Saved/Playtests/run/{role}/Game.sh"));
+            f.executable(&format!("Saved/Playtests/run/{role}/Game.{LAUNCHER}"));
             f.put(
                 &format!("Saved/Playtests/run/{role}/Game/Content/Paks/Game.pak"),
                 b"cooked v1",
@@ -1154,6 +1369,7 @@ mod tests {
         );
     }
 
+    #[cfg(unix)]
     #[test]
     fn stopping_a_launcher_script_stops_the_binary_it_started() {
         let f = Fixture::new();
@@ -1188,6 +1404,44 @@ mod tests {
         );
     }
 
+    #[cfg(windows)]
+    #[test]
+    fn stopping_a_launcher_stops_the_binary_it_started() {
+        let f = Fixture::new();
+        let pid_file = f.root.join("binary.pid");
+        // Like UE's Windows launcher stub: it starts the binary and waits for it.
+        let script = format!(
+            "& {{ $p = Start-Process -PassThru -WindowStyle Hidden ping -ArgumentList '-n','60','127.0.0.1'; \
+             Set-Content -LiteralPath '{}' $p.Id; $p.WaitForExit() }}",
+            pid_file.display()
+        );
+        let mut command = Command::new("powershell");
+        command.args(["-NoProfile", "-NonInteractive", "-Command", &script]);
+        sys::isolate(&mut command);
+        let launcher = command.spawn().unwrap();
+        sys::adopt(&launcher).unwrap();
+        let deadline = Instant::now() + Duration::from_secs(20);
+        while fs::read_to_string(&pid_file)
+            .map(|s| s.trim().is_empty())
+            .unwrap_or(true)
+            && Instant::now() < deadline
+        {
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        let binary: u32 = fs::read_to_string(&pid_file)
+            .unwrap()
+            .trim()
+            .parse()
+            .unwrap();
+        assert!(sys::process_alive(binary));
+        let mut children = vec![launcher];
+        stop_all(&mut children);
+        assert!(
+            !sys::process_alive(binary),
+            "the launched binary {binary} outlived its launcher"
+        );
+    }
+
     #[test]
     fn wrong_engine_patch_rejected() {
         let f = Fixture::new();
@@ -1199,6 +1453,11 @@ mod tests {
         f.put(
             "UE/Engine/Build/Build.version",
             br#"{"MajorVersion":5,"MinorVersion":8,"PatchVersion":3}"#,
+        );
+        assert!(engine_gate(&f.root.join("UE")).is_err());
+        f.put(
+            "UE/Engine/Build/Build.version",
+            br#"{"MajorVersion":5,"MinorVersion":8,"PatchVersion":4}"#,
         );
         assert!(engine_gate(&f.root.join("UE")).is_ok());
     }

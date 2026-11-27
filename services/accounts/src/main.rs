@@ -118,11 +118,7 @@ async fn main() -> ExitCode {
     let handle = axum_server::Handle::new();
     let stopping = handle.clone();
     tokio::spawn(async move {
-        let mut term = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()).expect("SIGTERM");
-        tokio::select! {
-            _ = tokio::signal::ctrl_c() => {}
-            _ = term.recv() => {}
-        }
+        terminated().await;
         stopping.graceful_shutdown(Some(std::time::Duration::from_secs(5)));
     });
     println!("mb2-accounts event=listening bind={} store_revision={revision}", args.bind);
@@ -142,5 +138,28 @@ async fn main() -> ExitCode {
             eprintln!("mb2-accounts: {error}");
             ExitCode::from(1)
         }
+    }
+}
+
+/// Ctrl+C, or the service manager's stop request: SIGTERM on Unix, CTRL_BREAK/CTRL_CLOSE/CTRL_SHUTDOWN on Windows.
+#[cfg(unix)]
+async fn terminated() {
+    let mut term = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()).expect("SIGTERM");
+    tokio::select! {
+        _ = tokio::signal::ctrl_c() => {}
+        _ = term.recv() => {}
+    }
+}
+
+#[cfg(windows)]
+async fn terminated() {
+    let mut brk = tokio::signal::windows::ctrl_break().expect("CTRL_BREAK");
+    let mut close = tokio::signal::windows::ctrl_close().expect("CTRL_CLOSE");
+    let mut shutdown = tokio::signal::windows::ctrl_shutdown().expect("CTRL_SHUTDOWN");
+    tokio::select! {
+        _ = tokio::signal::ctrl_c() => {}
+        _ = brk.recv() => {}
+        _ = close.recv() => {}
+        _ = shutdown.recv() => {}
     }
 }
