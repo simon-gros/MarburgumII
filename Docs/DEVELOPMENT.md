@@ -34,7 +34,7 @@ The Epic Games Launcher engine builds the Editor target but refuses `MarburgumII
 
 MSVC rejects names that shadow a class member or a global (C4458/C4459 are errors under UE's warning level) and Unreal declares a `Windows` namespace. Don't name locals after inherited members (`Owner`, `Slot`, `Character`, `Padding`), don't reuse catalogue names (`Items`, `Skills`, `Attributes`) inside `using namespace MarburgumII::Gameplay`, and don't declare file-scope names such as `Key` in a translation unit that unity-builds with engine container headers.
 
-The smoke suites are still Linux-only (`scripts/*-linux.sh`).
+Every shell script has a PowerShell twin (`x-linux.sh` -> `x-windows.ps1`, `x.sh` -> `x.ps1`; `mb2 validate` enforces it). The smoke twins share `scripts\lib\MarburgumSmoke.psm1`: each role runs in its own job object, so a wall-clock limit or a stop ends everything it started and nothing outlives the runner. In editor mode the first run on a machine builds the derived-data cache and can time clients out; run it again.
 
 ## Linux / CachyOS (secondary)
 

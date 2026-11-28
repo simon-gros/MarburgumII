@@ -97,7 +97,7 @@ $env:UE_ROOT = 'D:\path\to\UnrealEngine-5.8.4'
 
 If PowerShell refuses to run local scripts, allow them for your user once: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
-The smoke suites have not been ported yet; they remain Linux scripts and run on Linux (below) until their Windows twins exist.
+Every smoke suite has a Windows twin: `.\scripts\<name>-windows.ps1 [staged|editor]` runs the same phases and writes the same evidence as `scripts/<name>-linux.sh` (shared plumbing in `scripts\lib\MarburgumSmoke.psm1`). For example `.\scripts\net-smoke-windows.ps1 editor`.
 
 ### Linux
 
