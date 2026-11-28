@@ -14,6 +14,8 @@
 #include <fcntl.h>
 #include <sys/file.h>
 #include <unistd.h>
+#elif PLATFORM_WINDOWS
+#include "Windows/WindowsHWrapper.h"
 #endif
 
 namespace
@@ -774,8 +776,16 @@ bool FMarburgumWorldStore::Commit(const FMarburgumWorldRecord& Next, FString& Ou
             return false;
         }
     }
-    // rename(2) replaces the previous document atomically on the same filesystem.
-    if (!Files.MoveFile(*Path, *TempPath))
+    // rename(2) replaces the previous document atomically on the same filesystem. On Windows IPlatformFile::MoveFile
+    // is MoveFileW, which refuses an existing target, so the replace is MoveFileExW's: same volume, the new document
+    // in place of the old in one step, and WRITE_THROUGH returns only once the rename is on disk.
+#if PLATFORM_WINDOWS
+    const bool bReplaced = ::MoveFileExW(*FPaths::ConvertRelativePathToFull(TempPath), *FPaths::ConvertRelativePathToFull(Path),
+        MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) != 0;
+#else
+    const bool bReplaced = Files.MoveFile(*Path, *TempPath);
+#endif
+    if (!bReplaced)
     {
         Files.DeleteFile(*TempPath);
         OutError = TEXT("could not replace the store file");
