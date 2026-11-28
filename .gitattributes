@@ -23,3 +23,4 @@ Content/Marburgum/Fonts/*.ttf filter=lfs diff=lfs merge=lfs -text
 *.locres binary
 *.locmeta binary
 *.ps1 text eol=crlf
+*.psm1 text eol=crlf
